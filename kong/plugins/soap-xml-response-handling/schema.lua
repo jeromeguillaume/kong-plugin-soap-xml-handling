@@ -1,6 +1,6 @@
 
 local typedefs = require "kong.db.schema.typedefs"
-local xmlgeneral   = require("kong.plugins.lua-xml-handling-lib.xmlgeneral")
+local xmlgeneral   = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
 return {
   name = "soap-xml-response-handling",

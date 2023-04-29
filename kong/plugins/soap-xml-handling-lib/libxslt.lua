@@ -1,6 +1,6 @@
 local libxslt = {}
 
-require("kong.plugins.lua-xml-handling-lib.libxslt.internals")
+require("kong.plugins.soap-xml-handling-lib.libxslt.internals")
 
 local ffi = require("ffi")
 local loaded, xslt = pcall(ffi.load, "xslt")

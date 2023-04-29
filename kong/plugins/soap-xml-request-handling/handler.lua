@@ -11,7 +11,7 @@ local plugin = {
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------
 function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
-  local xmlgeneral = require("kong.plugins.lua-xml-handling-lib.xmlgeneral")
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelope_transformed
   local errMessage
   local soapFaultBody
@@ -88,7 +88,7 @@ end
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
 
-  local xmlgeneral = require("kong.plugins.lua-xml-handling-lib.xmlgeneral")
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   
   -- Get SOAP envelope from the request
   local soapEnvelope = kong.request.get_raw_body()

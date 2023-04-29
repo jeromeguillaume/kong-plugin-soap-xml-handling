@@ -1,8 +1,8 @@
 local libxml2ex = {}
 
-require("kong.plugins.lua-xml-handling-lib.libxml2ex.xmlschemas")
-require("kong.plugins.lua-xml-handling-lib.libxml2ex.tree")
-require("kong.plugins.lua-xml-handling-lib.libxml2ex.xmlerror")
+require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlschemas")
+require("kong.plugins.soap-xml-handling-lib.libxml2ex.tree")
+require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlerror")
 require("xmlua.libxml2.xmlerror")
 
 local ffi = require("ffi")

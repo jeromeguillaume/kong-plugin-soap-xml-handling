@@ -143,7 +143,21 @@ Request - XSD validation failed: Error code: 1871, Line: 3, Message: Element '{h
 The plugin applies a XSLT Transformation on XML request **after** the XSD Validation.
 In this example we **change the Tag name from ```<Subtract>...</Subtract>```** (present in the request) **to ```<Add>...</Add>```**.
 
-**Without XSLT**: Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>```, remove ```<b>7</b>```, the expected result is ```-3```
+**Without XSLT**: Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>```, remove ```<b>7</b>```, so the new request is:
+```
+http POST http://localhost:8000/calcWebService \
+Content-Type:"text/xml; charset=utf-8" \
+--raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
+  <soap:Body>
+    <Subtract xmlns=\"http://tempuri.org/\">
+      <a>5</a>
+    </Subtract>
+  </soap:Body>
+</soap:Envelope>"
+```
+
+The expected result is ```-3```
 ```xml
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
   <soap:Body>
@@ -170,7 +184,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
    </xsl:template>
 </xsl:stylesheet>
 ```
-**With XSLT**: Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>``` the expected result is ```13```:
+**With XSLT**: Use request defined at Example #3, the expected result is ```13```:
 ```xml
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
   <soap:Body>
@@ -211,7 +225,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
    </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>``` and remove ```<b>7</b>```. The expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
+Use request defined at Example #3. The expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
 - SOAP tag are in capital letter: ```<SOAP-ENV:Envelope>``` instead of ```<soap:Envelope>```
 - Namespace is injected: ```xmlns:ns="urn:calc"```
 ```xml
@@ -249,7 +263,7 @@ Open ```soap-xml-response-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>```and remove ```<b>7</b>``` the expected result is ```<KongResult>13</KongResult>```:
+Use request defined at Example #3, the expected result is ```<KongResult>13</KongResult>```:
 ```xml
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
   <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
@@ -308,7 +322,7 @@ exclude-result-prefixes="soapenv">
 
 </xsl:stylesheet>
 ```
-Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>``` and remove ```<b>7</b>``` the expected result is:
+Use request defined at Example #3, the expected result is:
 ```xml
 <addResponse>
   <KongResult>13</KongResult>

@@ -10,7 +10,7 @@ local plugin = {
 -- XSLT TRANSFORMATION - AFTER XSD: Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
-  local xmlgeneral = require("kong.plugins.lua-xml-handling-lib.xmlgeneral")
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelope_transformed
   local soapFaultBody
   
@@ -94,7 +94,7 @@ function plugin:header_filter(plugin_conf)
     return
   end
 
-  local xmlgeneral = require("kong.plugins.lua-xml-handling-lib.xmlgeneral")
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
   local soapEnvelope = kong.service.response.get_raw_body()
   -- There is no SOAP envelope (or Body content) so we don't do anything
@@ -152,7 +152,7 @@ function plugin:body_filter(plugin_conf)
     return
   end
 
-  local xmlgeneral = require("kong.plugins.lua-xml-handling-lib.xmlgeneral")
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
   -- Get modified SOAP envelope set by the plugin itself on 'header_filter'
   if  kong.ctx.shared.xmlSoapHandlingFault  and

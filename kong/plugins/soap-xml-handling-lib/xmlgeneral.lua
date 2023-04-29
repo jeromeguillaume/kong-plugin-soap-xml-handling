@@ -120,8 +120,8 @@ end
 -- Transform XML with XSLT Transformation
 ------------------------------------------
 function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
-  local libxml2ex   = require("kong.plugins.lua-xml-handling-lib.libxml2ex")
-  local libxslt     = require("kong.plugins.lua-xml-handling-lib.libxslt")
+  local libxml2ex   = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+  local libxslt     = require("kong.plugins.soap-xml-handling-lib.libxslt")
   local libxml2     = require("xmlua.libxml2")
   local ffi         = require("ffi")
   local errMessage  = ""
@@ -200,7 +200,7 @@ end
 --------------------------------------
 function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema)
   local ffi           = require("ffi")
-  local libxml2ex     = require("kong.plugins.lua-xml-handling-lib.libxml2ex")
+  local libxml2ex     = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local libxml2       = require("xmlua.libxml2")
   local errMessage    = nil
   local err           = nil
@@ -272,7 +272,7 @@ end
 ---------------------------------------------
 function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPathRegisterNs)
   local ffi         = require("ffi")
-  local libxml2ex   = require("kong.plugins.lua-xml-handling-lib.libxml2ex")
+  local libxml2ex   = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local libxml2     = require("xmlua.libxml2")
   local rcXpath     = false
   
