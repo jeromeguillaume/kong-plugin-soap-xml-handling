@@ -202,14 +202,12 @@ This example uses a new backend Web Service (https://websrv.cs.fsu.edu/~engelen/
 Note: the ```websrv.cs.fsu.edu``` introduces a new XML NameSpace so we have to change the XSLT transform to make the proper call.
 
 Add a Kong ```Upstream``` named ```websrv.cs.fsu.edu``` and defines a ```target```with ```websrv.cs.fsu.edu:443``` value. 
-Add ```xml-request-4-route-by-xpath``` plugin and configure the plugin with:
+Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```RouteToPath``` property with the value ```/~engelen/calcserver.cgi```
 - ```RouteToUpstream``` property with the value ```websrv.cs.fsu.edu```
 - ```RouteXPath``` property with the value ```/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']```
 - ```RouteXPathCondition``` property with the value ```5```
 - ```RouteXPathRegisterNs``` leave the default value; we can register also specific NameSpace with the syntax ```prefix,uri```
-
-Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformAfter``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">

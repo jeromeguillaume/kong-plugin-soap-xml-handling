@@ -213,4 +213,20 @@ function libxml2ex.xmlGetNoNsProp	(node, name)
   return attribute
 end
 
+-- Dump an XML document in memory and return the #xmlChar * and it's size in bytes. 
+-- It's up to the caller to free the memory with xmlFree(). 
+-- The resulting byte array is zero terminated, though the last 0 is not included in the returned size.
+-- cur:	the document
+-- mem:	OUT: the memory pointer
+-- size:	OUT: the memory length
+function  libxml2ex.xmlDocDumpMemory (doc)
+  local dump, size
+  local rcDump
+  xml2.xmlDocDumpMemory(doc, dump, size)
+  rcDump = dump
+  -- free Buffer
+  xml2.xmlBufferFree(dump)
+  return rcDump
+end
+
 return libxml2ex

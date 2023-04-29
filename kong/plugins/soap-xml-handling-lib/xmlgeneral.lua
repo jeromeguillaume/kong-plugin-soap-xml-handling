@@ -142,20 +142,6 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options)
   
   if errMessage == nil then
-
-    --[[
-    -- Allocate a xsltStylesheet
-    style = libxslt.xsltNewStylesheet ()
-    if style == nil then
-      errMessage = "error calling 'xsltNewStylesheet'"
-    else
-      -- Parse an XSLT stylesheet with a user-provided stylesheet struct.
-      errDump = libxslt.xsltParseStylesheetUser (style, xslt_doc)
-      if errDump == -1 then
-        errMessage = "error calling 'xsltParseStylesheetUser'"
-      end
-    end]]
-    
     -- Parse XSLT document
     style = libxslt.xsltParseStylesheetDoc (xslt_doc)
     if style ~= nil then
@@ -170,8 +156,12 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   -- If the XSLT and the XML are correctly loaded and parsed
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
+    local dump = libxml2ex.xmlDocDumpMemory(xml_doc)
+    if dump ~= nil then  
+      kong.log.notice("dump: " .. dump)
+    end
     local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
-    
+
     if xml_transformed ~= nil then
       -- Get Root Element, which is <soap:Envelope>
       xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_transformed)
@@ -185,6 +175,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
     if xmlNodePtrRoot ~= nil then
       -- Dump into a String the XML transformed by XSLT
       xml_transformed_dump, errDump = libxml2ex.xmlNodeDump	(xml_transformed, xmlNodePtrRoot, 1, 1)
+      
       if errDump == 0 then
         -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
         xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
