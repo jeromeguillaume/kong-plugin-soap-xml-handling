@@ -332,8 +332,7 @@ Use request defined at Example #3, the expected result is:
 ### Example #8: Response | Use a SOAP/XML WebService with a ```Content-Encondig: gzip```
 With ```Content-Encondig: gzip``` the SOAP/XML Response body is zipped. So the ```soap-xml-response-handling``` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
 
-1) Create a Kong Service named ```dataAccess``` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso
-This simple backend Web Service converts a digit number to a number in full
+1) Create a Kong Service named ```dataAccess``` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso. This simple backend Web Service converts a digit number to a number in full
 
 2) Create a Route on the Service ```dataAccess``` with the ```path``` value ```/dataAccess```
 
