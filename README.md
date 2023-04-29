@@ -331,6 +331,8 @@ Use request defined at Example #3, the expected result is:
 
 ### Example #8: Response | Use a SOAP/XML WebService with a ```Content-Encondig: gzip```
 With ```Content-Encondig: gzip``` the SOAP/XML Response body is zipped. So the ```soap-xml-response-handling``` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
+In this example the XSLT **changes the Tag names**:
+-  from ```<m:NumberToWordsResult>...</m:NumberToWordsResult>``` (present in the response) to **```<KongResult>...</KongResult>```**
 
 1) Create a Kong Service named ```dataAccess``` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso. This simple backend Web Service converts a digit number to a number in full
 
@@ -351,7 +353,7 @@ Accept-Encoding:'gzip' \
 </soap:Envelope>'
 ```
 
-The expected result is ```<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>``` with ```Content-Encoding: gzip```
+The expected result is zipped with ```Content-Encoding: gzip``` header and we have ```<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>```
 ```xml
 ...
 Connection: keep-alive
@@ -383,7 +385,7 @@ Content-Length: 213
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at step #3, the expected result is ``` <KongResult>five hundred </KongResult>``` with ```Content-Encoding: gzip```
+Use request defined at step #3, the expected result is zipped with ```Content-Encoding: gzip``` header and we have ```<KongResult>five hundred </KongResult>```
 ```xml
 Connection: keep-alive
 Content-Encoding: gzip
