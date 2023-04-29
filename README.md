@@ -244,7 +244,7 @@ In this example the XSLT **changes the Tag names**:
 -  from ```<ns:addResponse>...</ns:addResponse>``` (present in the response) to **```<addResponse>...</addResponse>```**
 -  from ```<result>...</result>``` (present in the response) to **```<KongResult>...</KongResult>```**
 
-Open ```soap-xml-response-handling``` plugin and configure the plugin with:
+Add ```soap-xml-response-handling``` plugin and configure the plugin with:
 - ```XsltTransformBefore``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -327,4 +327,46 @@ Use request defined at Example #3, the expected result is:
 <addResponse>
   <KongResult>13</KongResult>
 </addResponse>
+```
+
+### Other: Response | Let's use a SOAP/XML WebService with a ```Content-Encondig: gzip```
+With ```Content-Encondig: gzip``` the SOAP/XML Response body is zipped. So the ```soap-xml-response-handling``` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
+
+1) Create a Kong Service named ```dataAccess``` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso
+This simple backend Web Service converts a digit number to a number in full
+
+2) Create a Route on the Service ```dataAccess``` with the ```path``` value ```/dataAccess```
+
+3) Add ```soap-xml-response-handling``` plugin and let the default paramaters
+
+4) Call the ```dataAccess``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
+```
+http 'http://localhost:8000/dataaccess' \
+Content-Type:'text/xml; charset=utf-8' \
+Accept-Encoding:'gzip' \
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <NumberToWords xmlns="http://www.dataaccess.com/webservicesserver/">
+      <ubiNum>500</ubiNum>
+    </NumberToWords>
+  </soap:Body>
+</soap:Envelope>'
+```
+
+The expected result is ```five hundred``` with ```Content-Encoding: gzip```
+```xml
+Cache-Control: private, max-age=0
+Connection: keep-alive
+Content-Encoding: gzip
+Content-Length: 213
+...
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
+      <m:NumberToWordsResult>five hundred </m:NumberToWordsResult>
+    </m:NumberToWordsResponse>
+  </soap:Body>
+</soap:Envelope>
 ```
