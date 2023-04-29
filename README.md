@@ -331,6 +331,7 @@ Use request defined at Example #3, the expected result is:
 
 ### Example #8: Response | Use a SOAP/XML WebService with a ```Content-Encondig: gzip```
 With ```Content-Encondig: gzip``` the SOAP/XML Response body is zipped. So the ```soap-xml-response-handling``` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
+
 In this example the XSLT **changes the Tag names**:
 -  from ```<m:NumberToWordsResult>...</m:NumberToWordsResult>``` (present in the response) to **```<KongResult>...</KongResult>```**
 
