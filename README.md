@@ -351,7 +351,7 @@ Accept-Encoding:'gzip' \
 </soap:Envelope>'
 ```
 
-The expected result is ```five hundred``` with ```Content-Encoding: gzip```
+The expected result is ```<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>``` with ```Content-Encoding: gzip```
 ```xml
 ...
 Connection: keep-alive
