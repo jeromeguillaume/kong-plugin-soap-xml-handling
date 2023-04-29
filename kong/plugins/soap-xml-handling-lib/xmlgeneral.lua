@@ -183,7 +183,6 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
     end
   end
   
-  --if err ~= nil then
   if errMessage ~= nil then
     kong.log.err ("XSLT transformation, errMessage: " .. errMessage)
   end

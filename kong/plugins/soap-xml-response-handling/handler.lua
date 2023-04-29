@@ -11,28 +11,28 @@ local plugin = {
 -----------------------------------------------------------------------------------------
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  local soapEnvelope_transformed
+  local soapEnvelopeTransformed
   local soapFaultBody
   
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) Before
   if plugin_conf.xsltTransformBefore then
     local errMessage
-    soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore)    
+    soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore)    
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError,
                                                   errMessage)
     end
   else
-    soapEnvelope_transformed = soapEnvelope
+    soapEnvelopeTransformed = soapEnvelope
   end
   
   -- If there is no error and
   -- If there is a configuration for XSD SOAP schema validation then:
   -- => We validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
-    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelope_transformed, plugin_conf.xsdSoapSchema)
+    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
@@ -44,7 +44,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is a configuration for XSD API schema validation then:
   -- => we validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then  
-    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema)    
+    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema)    
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
@@ -57,7 +57,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- => we apply XSL Transformation (XSLT) After
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
     local errMessage
-    soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope_transformed, plugin_conf.xsltTransformAfter)
+    soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError,
@@ -65,7 +65,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     end
   end
   
-  return soapEnvelope_transformed, soapFaultBody
+  return soapEnvelopeTransformed, soapFaultBody
 
 end
 
@@ -83,6 +83,12 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  local soapEnvelopeTransformed
+  local soapFaultBody
+  local soapEnvelope
+  local soapDeflated
+  local err
   
   -- In case of error set by previous plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
@@ -94,21 +100,41 @@ function plugin:header_filter(plugin_conf)
     return
   end
 
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-
-  local soapEnvelope = kong.service.response.get_raw_body()
+  -- Get SOAP Envolope from the Body
+  soapEnvelope = kong.service.response.get_raw_body()
   -- There is no SOAP envelope (or Body content) so we don't do anything
   if not soapEnvelope then
-    kong.log.notice("The Body is 'nil'")
+    kong.log.notice("The Body is 'nil': nothing to do")
     return
   end
+  local kongUtils = require("kong.tools.utils")
+  
+  -- If the Body is deflated/zipped, we inflate/unzip it
+  if kong.response.get_header("Content-Encoding") == "gzip" then
+    local soapDeflated, err = kongUtils.inflate_gzip(soapEnvelope)
+    if err then
+      err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
+      soapFaultBody = xmlgeneral.formatSoapFault("Internal Error", err)
+      kong.log.err(err)
+    else
+      soapEnvelope = soapDeflated
+    end
+  end
 
-  -- Handle all SOAP/XML topics of the Response: XSLT before, XSD validation and XSLT After
-  local soapEnvelope_transformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope)
+  -- If there is no error
+  if soapFaultBody == nil then
+    -- Handle all SOAP/XML topics of the Response: XSLT before, XSD validation and XSLT After
+    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope)
+  end
   
   -- If there is an error during SOAP/XML we change the HTTP staus code and
   -- the Body content (with the detailed error message) will be changed by 'body_filter' phase
   if soapFaultBody ~= nil then
+    -- If the Body is zipped we removed it
+    -- We don't have to deflate/zip it because there will have an error message with a few number of characters
+    if kong.response.get_header("Content-Encoding") == "gzip" then
+      kong.response.clear_header("Content-Encoding")
+    end
     -- Return a Fault code to Client
     kong.response.set_status(xmlgeneral.HTTPCodeSOAPFault)
     kong.response.set_header("Content-Length", #soapFaultBody)
@@ -121,17 +147,28 @@ function plugin:header_filter(plugin_conf)
       soapEnvelope = soapFaultBody
     }
   -- If the SOAP envelope is transformed
-  elseif soapEnvelope_transformed then
+  elseif soapEnvelopeTransformed then
+    -- If the Backend API Body is deflated/zipped, we deflate/zip the new transformed SOAP/XML Body
+    if kong.response.get_header("Content-Encoding") == "gzip" then
+      local soapInflated, err = kongUtils.deflate_gzip(soapEnvelopeTransformed)
+      if err then
+        kong.log.err("Failed to deflate the gzipped SOAP/XML Body: " .. err)
+        -- We are unable to deflate/zip new transformed SOAP/XML Body, so we remove the 'Content-Encoding' header
+        kong.response.clear_header("Content-Encoding")
+      else
+        soapEnvelopeTransformed = soapInflated
+      end
+    end
     -- We aren't able to call 'kong.response.set_raw_body()' at this stage to change the body content
     -- but it will be done by 'body_filter' phase
-    kong.response.set_header("Content-Length", #soapEnvelope_transformed)
+    kong.response.set_header("Content-Length", #soapEnvelopeTransformed)
 
     -- We set the new SOAP Envelope for cascading Plugins because they are not able to retrieve it
     -- by calling 'kong.response.get_raw_body ()' in header_filter
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = false,
       priority = plugin.PRIORITY,
-      soapEnvelope = soapEnvelope_transformed
+      soapEnvelope = soapEnvelopeTransformed
     }
   end
   
