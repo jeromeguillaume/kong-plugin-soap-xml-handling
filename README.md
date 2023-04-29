@@ -390,7 +390,8 @@ Use request defined at step #3, the expected result is zipped with ```Content-En
 ```xml
 Connection: keep-alive
 Content-Encoding: gzip
-Content-Length: 213
+Content-Length: 185
+...
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
