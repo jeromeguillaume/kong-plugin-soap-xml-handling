@@ -341,7 +341,7 @@ This simple backend Web Service converts a digit number to a number in full
 
 4) Call the ```dataAccess``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
-http 'http://localhost:8000/dataaccess' \
+http 'http://localhost:8000/dataAccess' \
 Content-Type:'text/xml; charset=utf-8' \
 Accept-Encoding:'gzip' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
