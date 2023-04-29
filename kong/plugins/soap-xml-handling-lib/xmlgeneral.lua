@@ -156,10 +156,6 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   -- If the XSLT and the XML are correctly loaded and parsed
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
-    local dump = libxml2ex.xmlDocDumpMemory(xml_doc)
-    if dump ~= nil then  
-      kong.log.notice("dump: " .. dump)
-    end
     local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
 
     if xml_transformed ~= nil then
