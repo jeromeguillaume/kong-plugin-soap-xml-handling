@@ -354,7 +354,7 @@ Accept-Encoding:'gzip' \
 </soap:Envelope>'
 ```
 
-The expected result is zipped with ```Content-Encoding: gzip``` header and we have ```<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>```
+The expected result is zipped with ```Content-Encoding: gzip``` header and we get ```<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>```
 ```xml
 ...
 Connection: keep-alive
@@ -386,7 +386,7 @@ Content-Length: 213
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at step #3, the expected result is zipped with ```Content-Encoding: gzip``` header and we have ```<KongResult>five hundred </KongResult>```
+Use request defined at step #3, the expected result is zipped with ```Content-Encoding: gzip``` header and we get ```<KongResult>five hundred </KongResult>```
 ```xml
 Connection: keep-alive
 Content-Encoding: gzip
