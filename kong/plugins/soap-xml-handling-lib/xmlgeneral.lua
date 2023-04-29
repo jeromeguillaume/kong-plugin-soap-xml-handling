@@ -143,6 +143,19 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   
   if errMessage == nil then
 
+    --[[
+    -- Allocate a xsltStylesheet
+    style = libxslt.xsltNewStylesheet ()
+    if style == nil then
+      errMessage = "error calling 'xsltNewStylesheet'"
+    else
+      -- Parse an XSLT stylesheet with a user-provided stylesheet struct.
+      errDump = libxslt.xsltParseStylesheetUser (style, xslt_doc)
+      if errDump == -1 then
+        errMessage = "error calling 'xsltParseStylesheetUser'"
+      end
+    end]]
+    
     -- Parse XSLT document
     style = libxslt.xsltParseStylesheetDoc (xslt_doc)
     if style ~= nil then

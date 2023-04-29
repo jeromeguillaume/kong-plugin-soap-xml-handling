@@ -337,9 +337,7 @@ This simple backend Web Service converts a digit number to a number in full
 
 2) Create a Route on the Service ```dataAccess``` with the ```path``` value ```/dataAccess```
 
-3) Add ```soap-xml-response-handling``` plugin and let the default paramaters
-
-4) Call the ```dataAccess``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
+3) Call the ```dataAccess``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
 http 'http://localhost:8000/dataAccess' \
 Content-Type:'text/xml; charset=utf-8' \
@@ -356,7 +354,7 @@ Accept-Encoding:'gzip' \
 
 The expected result is ```five hundred``` with ```Content-Encoding: gzip```
 ```xml
-Cache-Control: private, max-age=0
+...
 Connection: keep-alive
 Content-Encoding: gzip
 Content-Length: 213
@@ -366,6 +364,35 @@ Content-Length: 213
   <soap:Body>
     <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
       <m:NumberToWordsResult>five hundred </m:NumberToWordsResult>
+    </m:NumberToWordsResponse>
+  </soap:Body>
+</soap:Envelope>
+```
+4) Add ```soap-xml-response-handling``` plugin and and configure the plugin with:
+- ```xsltTransformBefore``` property with this value:
+```xml
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+   <xsl:template match="//*[local-name()='NumberToWordsResult']">
+    <KongResult>
+      <xsl:apply-templates select="@*|node()" />
+    </KongResult>
+  </xsl:template>
+</xsl:stylesheet>
+```
+Use request defined at step #3, the expected result is ``` <KongResult>five hundred </KongResult>``` with ```Content-Encoding: gzip```
+```xml
+Connection: keep-alive
+Content-Encoding: gzip
+Content-Length: 213
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
+      <KongResult>five hundred </KongResult>
     </m:NumberToWordsResponse>
   </soap:Body>
 </soap:Envelope>
