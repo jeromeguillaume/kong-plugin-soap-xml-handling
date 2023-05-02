@@ -320,6 +320,7 @@ Open ```soap-xml-response-handling``` plugin and configure the plugin with:
 ```
 Use request defined at Example #3, the expected result is:
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
 <addResponse>
   <KongResult>13</KongResult>
 </addResponse>
