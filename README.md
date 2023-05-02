@@ -189,6 +189,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 ```
 **With XSLT**: Use request defined at Example #3, the expected result is ```13```:
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
   <soap:Body>
     <AddResponse xmlns="http://tempuri.org/">
