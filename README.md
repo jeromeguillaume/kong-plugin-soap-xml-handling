@@ -296,11 +296,7 @@ In this example the XSLT removes all <soap> tags and **converts the response fro
 Open ```soap-xml-response-handling``` plugin and configure the plugin with:
 - ```XsltTransformAfter``` property with this value:
 ```xml
-<xsl:stylesheet version="1.0" 
-xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-exclude-result-prefixes="soapenv">
-
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" exclude-result-prefixes="soapenv">
   <xsl:strip-space elements="*"/>
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <!-- remove all elements in the soapenv namespace -->
@@ -320,7 +316,6 @@ exclude-result-prefixes="soapenv">
           <xsl:value-of select="." />
       </xsl:element>
   </xsl:template>
-
 </xsl:stylesheet>
 ```
 Use request defined at Example #3, the expected result is:
