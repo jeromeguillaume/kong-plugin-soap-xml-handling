@@ -211,7 +211,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```RouteToUpstream``` property with the value ```websrv.cs.fsu.edu```
 - ```RouteXPath``` property with the value ```/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']```
 - ```RouteXPathCondition``` property with the value ```5```
-- ```RouteXPathRegisterNs``` leave the default value; we can register also specific NameSpace with the syntax ```prefix,uri```
+- ```RouteXPathRegisterNs``` leave the default value; we can also register specific NameSpace with the syntax ```prefix,uri```
 - ```XsltTransformAfter``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
