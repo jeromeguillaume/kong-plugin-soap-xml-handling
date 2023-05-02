@@ -60,6 +60,7 @@ Content-Type:"text/xml; charset=utf-8" \
 
 The expected result is ```12```:
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
   <soap:Body>
     <AddResponse xmlns="http://tempuri.org/">
