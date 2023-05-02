@@ -3,6 +3,7 @@ local libxml2ex = {}
 require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlschemas")
 require("kong.plugins.soap-xml-handling-lib.libxml2ex.tree")
 require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlerror")
+require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlwriter")
 require("xmlua.libxml2.xmlerror")
 
 local ffi = require("ffi")
@@ -74,6 +75,7 @@ function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
     return ffi.gc(validation_context, libxml2.xmlSchemaFreeValidCtxt)
 end
 
+-- *** DOESN'T WORK ***
 -- Parse an XML in-memory document and build a tree.
 -- buffer:	a pointer to a char array
 -- size:	the size of the array
@@ -199,8 +201,45 @@ function libxml2ex.xmlNodeDump	(xmlDocPtr, xmlNodePtr, level, format)
   return xmlDump, errDump
 end
 
-function libxml2ex.xmlSchemaValidCtxtGetParserCtxt (xmlSchemaValidCtxtPtr)
-  return xml2.xmlSchemaValidCtxtGetParserCtxt(xmlSchemaValidCtxtPtr)
+local function xmlOutputBufferCreate(buffer)
+  return ffi.gc(xml2.xmlOutputBufferCreateBuffer(buffer, nil), xml2.xmlOutputBufferClose)
+end
+
+-- Dumps the canonized image of given XML document into memory. For details see "Canonical XML" (http://www.w3.org/TR/xml-c14n) or "Exclusive XML Canonicalization" (http://www.w3.org/TR/xml-exc-c14n)
+-- doc:	the XML document for canonization
+-- nodes:	the nodes set to be included in the canonized image or NULL if all document nodes should be included
+-- mode:	the c14n mode (see @xmlC14NMode)
+-- inclusive_ns_prefixes:	the list of inclusive namespace prefixes ended with a NULL or NULL if there is no inclusive namespaces (only for exclusive canonicalization, ignored otherwise)
+-- with_comments:	include comments in the result (!=0) or not (==0)
+-- doc_txt_ptr:	the memory pointer for allocated canonical XML text; the caller of this functions is responsible for calling xmlFree() to free allocated memory
+-- Returns:	the number of bytes written on success or a negative value on fail
+function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodePtr)
+  local errDump = -1
+  local xmlDump = ""
+  
+  local xmlBuffer = xml2.xmlBufferCreate();
+  
+  if xmlBuffer ~= ffi.NULL then
+    local libxml2       = require("xmlua.libxml2")
+    
+    local output_buffer = xmlOutputBufferCreate(xmlBuffer)
+    if output_buffer ~= ffi.NULL then
+      local rc = xml2.xmlC14NDocSaveTo(xmlDocPtr, xmlNodePtr, 0, nil, 1, output_buffer)
+      if tonumber(rc) ~= -1 then
+        xmlDump = libxml2.xmlBufferGetContent(xmlBuffer)
+        errDump = 0
+      else
+        ngx.log(ngx.ERR, "Error calling 'xmlC14NDocSaveTo'")
+      end
+    else
+      ngx.log(ngx.ERR, "Error calling 'xmlOutputBufferCreate'")
+    end
+    -- free Buffer
+    xml2.xmlBufferFree(xmlBuffer)
+  else
+    ngx.log(ngx.ERR, "Error calling 'xmlBufferCreate'")
+  end
+  return xmlDump, errDump
 end
 
 -- Search and get the value of an attribute associated to a node This does the entity substitution. This function looks in DTD attribute declaration for #FIXED or default declaration values unless DTD use has been turned off. This function is similar to xmlGetProp except it will accept only an attribute in no namespace.
@@ -223,6 +262,11 @@ function  libxml2ex.xmlDocDumpMemory (doc)
   local dump, size
   local rcDump
   xml2.xmlDocDumpMemory(doc, dump, size)
+  if dump ~= ffi.NULL then
+    ngx.log(ngx.NOTICE, "dump: " .. dump)
+  else
+    ngx.log(ngx.NOTICE, "dump is null")
+  end
   rcDump = dump
   -- free Buffer
   xml2.xmlBufferFree(dump)

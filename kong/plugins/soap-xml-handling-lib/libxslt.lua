@@ -35,4 +35,52 @@ function libxslt.xsltApplyStylesheet (style, doc)
     return ffi.gc(doc_transformed, libxml2.xmlFreeDoc)
 end
 
+function libxslt.make_parameter_table()
+    return setmetatable({}, {
+        __newindex = function (t, key, value)
+          if type(value) == "string" then
+            if string.find(value, "'") then
+              error("cannot use apostrophe in string value passed to xslt")
+            end
+            rawset(t, key, "'" .. value .. "'")
+          elseif type(value) == "number" then
+            rawset(t, key, value)
+          else
+            error("cannot pass value of type " .. type(value) .. " as parameter to xslt")
+          end
+        end,
+    })
+  end
+  
+-- Apply the stylesheet to the document and allow the user to provide its own transformation context.
+-- style:	a parsed XSLT stylesheet
+-- doc:	a parsed XML document
+-- params:	a NULL terminated array of parameters names/values tuples
+-- output:	the targetted output
+-- profile:	profile FILE * output or NULL
+-- userCtxt:	user provided transform context
+-- Returns:	the result document or NULL in case of error
+function libxslt.xsltApplyStylesheetUser(stylesheet, doc, params)
+
+    local context = xslt.xsltNewTransformContext(stylesheet, doc)
+    local xml2 = ffi.load "xml2"
+    ffi.gc(context, xslt.xsltFreeTransformContext)
+
+    local param_pairs = {}
+    for k, v in pairs(params) do
+      param_pairs[#param_pairs + 1] = k
+      param_pairs[#param_pairs + 1] = v
+    end
+
+    local params_array = ffi.new("const char*[?]", #param_pairs + 1, param_pairs)
+    params_array[#param_pairs] = nil
+
+    local result = xslt.xsltApplyStylesheetUser(stylesheet, doc, params_array, ffi.NULL, ffi.NULL, context)
+    if result == nil then
+        return nil
+    end
+    ffi.gc(result, xml2.xmlFreeDoc)
+
+end
+
 return libxslt

@@ -6,6 +6,17 @@ ffi.cdef[[
                                 xmlNodePtr cur, 
                                 int level, 
                                 int format);
+    
+    void        xmlNodeDumpOutput(xmlOutputBufferPtr buf,
+                                xmlDocPtr doc,
+                                xmlNodePtr cur,
+                                int level,
+                                int format,
+                                const char *encoding);
     xmlChar *	xmlGetNoNsProp	(const xmlNode * node, 
                                 const xmlChar * name);
+    void	    xmlDocDumpMemory(xmlDocPtr cur, 
+                                xmlChar ** mem, 
+                                int * size);
+           
 ]]

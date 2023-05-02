@@ -79,7 +79,7 @@ Add ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformBefore``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output omit-xml-declaration="yes" indent="yes"/>
+    <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
     <xsl:strip-space elements="*"/>
     <xsl:template match="node()|@*">
         <xsl:copy>
@@ -172,7 +172,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformAfter``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output omit-xml-declaration="yes" indent="yes"/>
+    <xsl:output omit-xml-declaration="no" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:template match="node()|@*">
         <xsl:copy>
@@ -211,7 +211,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformAfter``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output omit-xml-declaration="yes" indent="yes"/>
+    <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
     <xsl:strip-space elements="*"/>
     <xsl:template match="node()|@*">
         <xsl:copy>
@@ -246,6 +246,7 @@ Add ```soap-xml-response-handling``` plugin and configure the plugin with:
 - ```XsltTransformBefore``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <xsl:template match="@*|node()">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()" />
@@ -296,7 +297,7 @@ xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
 exclude-result-prefixes="soapenv">
 
 <xsl:strip-space elements="*"/>
-<xsl:output method="xml" version="1.0" encoding="UTF-8" indent="yes"/>
+<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
 
 <!-- remove all elements in the soapenv namespace -->
 <xsl:template match="soapenv:*">
@@ -372,6 +373,7 @@ Content-Length: 213
 - ```xsltTransformBefore``` property with this value:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <xsl:template match="@*|node()">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()" />

@@ -36,7 +36,6 @@ ffi.cdef[[
                                                         xmlSchemaValidityWarningFunc warn, 
                                                         void * ctx);
     
-    xmlParserCtxtPtr	    xmlSchemaValidCtxtGetParserCtxt	    (xmlSchemaValidCtxtPtr ctxt);
     void	                xmlSchemaSetParserStructuredErrors	(xmlSchemaParserCtxtPtr ctxt, 
                                                                 xmlStructuredErrorFunc serror, 
                                                                 void * ctx);
@@ -44,4 +43,11 @@ ffi.cdef[[
                                                                 xmlStructuredErrorFunc serror, 
                                                                 void * ctx);
     void                    xmlSchemaFreeParserCtxt		        (xmlSchemaParserCtxtPtr ctxt);
+
+    int	                    xmlC14NDocDumpMemory		        (xmlDocPtr doc, 
+                                                                xmlNodeSetPtr nodes, 
+                                                                int mode, 
+                                                                xmlChar ** inclusive_ns_prefixes, 
+                                                                int with_comments, 
+                                                                xmlChar ** doc_txt_ptr);
 ]]

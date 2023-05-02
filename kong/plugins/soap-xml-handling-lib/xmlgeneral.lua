@@ -116,6 +116,43 @@ function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = "text/xml; charset=utf-8"})
 end
 
+----------------------------------------------------------------------------------------
+-- Prepare a XML declaration (which starts by '<?')
+-- The XLST removes it; so if the user defines its xslt file with 
+-- omit-xml-declaration="no" we format it and append it to SOAP/XML content (after XSLT)
+--
+-- Example: <?xml version="1.0" encoding="utf-8"?>
+----------------------------------------------------------------------------------------
+function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, omitXmlDeclaration, standalone, indent)
+  local xmlDeclaration = ""
+  local ffi = require("ffi")
+  
+  -- If we have to Format and Add (to SOAP/XML content) a XML declaration
+  if omitXmlDeclaration == 0 then
+    xmlDeclaration = "<?xml version=\""
+    if version == ffi.NULL then
+      xmlDeclaration = xmlDeclaration .. "1.0\""
+    else
+      xmlDeclaration = xmlDeclaration .. ffi.string(version) .. "\""
+    end
+    xmlDeclaration = xmlDeclaration .. " encoding=\""
+    if encoding == ffi.NULL then
+      xmlDeclaration = xmlDeclaration .. "utf-8\""
+    else
+      xmlDeclaration = xmlDeclaration .. ffi.string(encoding) .. "\""
+    end
+    if standalone == 1 then
+      xmlDeclaration = xmlDeclaration .. " standalone=\"yes\""
+    end
+    xmlDeclaration = xmlDeclaration .. "?>"
+    if indent == 1 then
+      xmlDeclaration = xmlDeclaration .. "\n"
+    end
+  end
+  
+  return xmlDeclaration
+end
+
 ------------------------------------------
 -- Transform XML with XSLT Transformation
 ------------------------------------------
@@ -150,15 +187,39 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
     else
       errMessage = "error calling 'xsltParseStylesheetDoc'"
     end
-
   end
 
   -- If the XSLT and the XML are correctly loaded and parsed
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
     local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
-
+    
     if xml_transformed ~= nil then
+      -- Dump into a String the canonized image of the XML transformed by XSLT
+      xml_transformed_dump, errDump = libxml2ex.xmlC14NDocSaveTo (xml_transformed, nil)
+      if errDump == 0 then
+        -- If needed we wppend the xml declaration
+        -- Example: <?xml version="1.0" encoding="utf-8"?>
+        xml_transformed_dump = xmlgeneral.XSLT_Format_XMLDeclaration (
+                                            plugin_conf, 
+                                            style.version, 
+                                            style.encoding,
+                                            style.omitXmlDeclaration, 
+                                            style.standalone, 
+                                            style.indent) .. xml_transformed_dump
+
+        -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
+        xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
+        kong.log.notice ("XSLT transformation, END: " .. xml_transformed_dump)
+      else
+        errMessage = "error calling 'xmlC14NDocSaveTo'"
+      end
+    else
+      errMessage = "error calling 'xsltApplyStylesheet'"
+    end
+
+    --[[if xml_transformed ~= nil then
+
       -- Get Root Element, which is <soap:Envelope>
       xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_transformed)
       if xmlNodePtrRoot == nil then
@@ -180,7 +241,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
       else
         errMessage = "error calling 'xmlNodeDump'"
       end
-    end
+    end]]
   end
   
   if errMessage ~= nil then
