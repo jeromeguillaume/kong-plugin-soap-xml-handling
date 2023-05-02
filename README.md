@@ -390,6 +390,7 @@ Connection: keep-alive
 Content-Encoding: gzip
 Content-Length: 185
 ...
+<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
