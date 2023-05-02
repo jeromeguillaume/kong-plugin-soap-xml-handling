@@ -268,6 +268,7 @@ Add ```soap-xml-response-handling``` plugin and configure the plugin with:
 ```
 Use request defined at Example #3, the expected result is ```<KongResult>13</KongResult>```:
 ```xml
+<?xml version="1.0" encoding="utf-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
   <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
     <addResponse>
