@@ -228,7 +228,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 </xsl:stylesheet>
 ```
 Use request defined at Example #3, the expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
-- SOAP tag are in capital letter: ```<SOAP-ENV:Envelope>``` instead of ```<soap:Envelope>```
+- SOAP tags are in capital letter: ```<SOAP-ENV:Envelope>``` instead of ```<soap:Envelope>```
 - Namespace is injected: ```xmlns:ns="urn:calc"```
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
