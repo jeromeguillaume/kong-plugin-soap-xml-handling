@@ -7,98 +7,29 @@ xmlgeneral.ResponseTextError  = "Response"
 xmlgeneral.SepTextError       = " - "
 xmlgeneral.XSLTError          = "XSLT transformation failed"
 xmlgeneral.XSDError           = "XSD validation failed"
-
-xmlgeneral.XSD_SOAP = [[
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-            xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
-            targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" >
-  <!-- Envelope, header and body -->
-  <xs:element name="Envelope" type="tns:Envelope" />
-  <xs:complexType name="Envelope" >
-    <xs:sequence>
-      <xs:element ref="tns:Header" minOccurs="0" />
-      <xs:element ref="tns:Body" minOccurs="1" />
-      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax" />
-    </xs:sequence>
-    <xs:anyAttribute namespace="##other" processContents="lax" />
-  </xs:complexType>
-  <xs:element name="Header" type="tns:Header" />
-  <xs:complexType name="Header" >
-    <xs:sequence>
-      <xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax" />
-    </xs:sequence>
-    <xs:anyAttribute namespace="##other" processContents="lax" />
-  </xs:complexType>
-
-  <xs:element name="Body" type="tns:Body" />
-  <xs:complexType name="Body" >
-    <xs:sequence>
-      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax" />
-    </xs:sequence>
-    <xs:anyAttribute namespace="##any" processContents="lax" >
-    <xs:annotation>
-      <xs:documentation>
-      Prose in the spec does not specify that attributes are allowed on the Body element
-    </xs:documentation>
-    </xs:annotation>
-  </xs:anyAttribute>
-  </xs:complexType>
-        
-  <!-- Global Attributes.  The following attributes are intended to be usable via qualified attribute names on any complex type referencing them.  -->
-  <xs:attribute name="mustUnderstand" >	
-      <xs:simpleType>
-      <xs:restriction base='xs:boolean'>
-      <xs:pattern value='0|1' />
-    </xs:restriction>
-    </xs:simpleType>
-  </xs:attribute>
-  <xs:attribute name="actor" type="xs:anyURI" />
-  <xs:simpleType name="encodingStyle" >
-    <xs:annotation>
-    <xs:documentation>
-      'encodingStyle' indicates any canonicalization conventions followed in the contents of the containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/' indicates the pattern described in SOAP specification
-    </xs:documentation>
-  </xs:annotation>
-    <xs:list itemType="xs:anyURI" />
-  </xs:simpleType>
-  <xs:attribute name="encodingStyle" type="tns:encodingStyle" />
-  <xs:attributeGroup name="encodingStyle" >
-    <xs:attribute ref="tns:encodingStyle" />
-  </xs:attributeGroup>
-  <xs:element name="Fault" type="tns:Fault" />
-  <xs:complexType name="Fault" final="extension" >
-    <xs:annotation>
-    <xs:documentation>
-      Fault reporting structure
-    </xs:documentation>
-  </xs:annotation>
-    <xs:sequence>
-      <xs:element name="faultcode" type="xs:QName" />
-      <xs:element name="faultstring" type="xs:string" />
-      <xs:element name="faultactor" type="xs:anyURI" minOccurs="0" />
-      <xs:element name="detail" type="tns:detail" minOccurs="0" />      
-    </xs:sequence>
-  </xs:complexType>
-  <xs:complexType name="detail">
-    <xs:sequence>
-      <xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded" processContents="lax" />
-    </xs:sequence>
-    <xs:anyAttribute namespace="##any" processContents="lax" /> 
-  </xs:complexType>
-</xs:schema>
-]]
+xmlgeneral.BeforeXSD          = " (before XSD validation)"
+xmlgeneral.AfterXSD           = " (after XSD validation)"
 
 ---------------------------------
 -- Format the SOAP Fault message
 ---------------------------------
-function xmlgeneral.formatSoapFault(ErrMsg, ErrEx)
+function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
+  local detailErrMsg
+  
+  -- If verbose mode is enabled we display the detailed Error Message
+  if VerboseResponse then
+    detailErrMsg = ErrMsg .. ": " .. ErrEx
+  else
+    detailErrMsg = ErrMsg
+  end
+
   local soapErrMsg = "\
 <?xml version=\"1.0\" encoding=\"utf-8\"?> \
 <soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"> \
   <soap:Body> \
     <soap:Fault>\
       <faultcode>soap:Client</faultcode>\
-      <faultstring>" .. ErrMsg .. ": " .. ErrEx .. "</faultstring>\
+      <faultstring>" .. detailErrMsg .. "</faultstring>\
       <detail/>\
     </soap:Fault>\
   </soap:Body>\
@@ -127,7 +58,7 @@ function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, o
   local xmlDeclaration = ""
   local ffi = require("ffi")
   
-  -- If we have to Format and Add (to SOAP/XML content) a XML declaration
+  -- If we have to Format and Add (to SOAP/XML content) the XML declaration
   if omitXmlDeclaration == 0 then
     xmlDeclaration = "<?xml version=\""
     if version == ffi.NULL then
@@ -340,6 +271,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
 
   local context = libxml2.xmlNewParserCtxt()
   local document = libxml2.xmlCtxtReadMemory(context, XMLtoSearch)
+  
   if not document then
     kong.log.err ("RouteByXPath, xmlCtxtReadMemory error, no document")
   end

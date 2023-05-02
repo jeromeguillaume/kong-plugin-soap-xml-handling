@@ -140,6 +140,8 @@ end
 -- Format the Error Message
 function libxml2ex.formatErrMsg(xmlError)
 
+  local errMessage = ""
+
   local xmlErrorMsg = ffi.string(xmlError.message)
   -- If the last character is Return Line
   if xmlErrorMsg:sub(-1) == '\n' then
@@ -147,9 +149,22 @@ function libxml2ex.formatErrMsg(xmlError)
     xmlErrorMsg = xmlErrorMsg:sub(1, -2)
   end
   
-  local errMessage =  "Error code: "  .. tonumber(xmlError.code) ..
-                      ", Line: "      .. tonumber(xmlError.line) ..
-                      ", Message: "   .. xmlErrorMsg
+  -- If there is a node information
+  if xmlError.node ~= ffi.NULL then
+    local ptrNode = ffi.cast("xmlNode *", xmlError.node)
+    errMessage = "Error Node: " .. ffi.string(ptrNode.name) .. ", "
+  end
+  
+  if xmlError.ctxt == ffi.NULL then
+    ngx.log(ngx.NOTICE, "*** xmlError.ctxt is null***")
+    else
+      ngx.log(ngx.NOTICE, "*** xmlError.ctxt is not null***")
+    end
+    
+  errMessage =  errMessage .. 
+                "Error code: "  .. tonumber(xmlError.code) ..
+                ", Line: "      .. tonumber(xmlError.line) ..
+                ", Message: "   .. xmlErrorMsg
   return errMessage
 end
 
@@ -250,27 +265,6 @@ function libxml2ex.xmlGetNoNsProp	(node, name)
   local attribute = xml2.xmlGetNoNsProp (node, name)
 
   return attribute
-end
-
--- Dump an XML document in memory and return the #xmlChar * and it's size in bytes. 
--- It's up to the caller to free the memory with xmlFree(). 
--- The resulting byte array is zero terminated, though the last 0 is not included in the returned size.
--- cur:	the document
--- mem:	OUT: the memory pointer
--- size:	OUT: the memory length
-function  libxml2ex.xmlDocDumpMemory (doc)
-  local dump, size
-  local rcDump
-  xml2.xmlDocDumpMemory(doc, dump, size)
-  if dump ~= ffi.NULL then
-    ngx.log(ngx.NOTICE, "dump: " .. dump)
-  else
-    ngx.log(ngx.NOTICE, "dump is null")
-  end
-  rcDump = dump
-  -- free Buffer
-  xml2.xmlBufferFree(dump)
-  return rcDump
 end
 
 return libxml2ex

@@ -24,7 +24,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore)
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError,
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                  xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage)
     end
   end
@@ -36,7 +37,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelope_transformed, plugin_conf.xsdSoapSchema)    
     if errMessage ~= nil then
         -- Format a Fault code to Client
-        soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
+        soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                    xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage)
     end
   end
@@ -48,7 +50,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema)
     if errMessage ~= nil then
         -- Format a Fault code to Client
-        soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
+        soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                    xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage)
     end
   end
@@ -59,7 +62,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope_transformed, plugin_conf.xsltTransformAfter)
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError,
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                  xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage)
     end
   end

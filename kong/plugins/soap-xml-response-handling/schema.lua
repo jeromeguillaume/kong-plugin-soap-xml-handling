@@ -1,6 +1,6 @@
 
-local typedefs = require "kong.db.schema.typedefs"
-local xmlgeneral   = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+local typedefs      = require "kong.db.schema.typedefs"
+local xmldefinition = require("kong.plugins.soap-xml-handling-lib.xmldefinition")
 
 return {
   name = "soap-xml-response-handling",
@@ -10,9 +10,10 @@ return {
     { config = {
         type = "record",
         fields = {
+          { VerboseResponse = { type = "boolean", required = false }, },
           { xsltTransformBefore = { type = "string", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
-          { xsdSoapSchema = { type = "string", required = false, default = xmlgeneral.XSD_SOAP }, },
+          { xsdSoapSchema = { type = "string", required = false, default = xmldefinition.XSD_SOAP }, },
           { xsltTransformAfter = { type = "string", required = false }, },
         },
     }, },

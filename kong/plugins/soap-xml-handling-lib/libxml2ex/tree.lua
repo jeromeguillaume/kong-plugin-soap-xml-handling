@@ -14,9 +14,6 @@ ffi.cdef[[
                                 int format,
                                 const char *encoding);
     xmlChar *	xmlGetNoNsProp	(const xmlNode * node, 
-                                const xmlChar * name);
-    void	    xmlDocDumpMemory(xmlDocPtr cur, 
-                                xmlChar ** mem, 
-                                int * size);
-           
+                                const xmlChar * name);  
+    xmlChar *	xmlGetNodePath	(const xmlNode * node);
 ]]

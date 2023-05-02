@@ -21,7 +21,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore)    
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError,
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage)
     end
   else
@@ -35,7 +36,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema)
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage)
     end
   end
@@ -47,7 +49,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema)    
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage)
     end
   end
@@ -60,7 +63,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter)
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError,
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage)
     end
   end
@@ -112,9 +116,10 @@ function plugin:header_filter(plugin_conf)
   -- If the Body is deflated/zipped, we inflate/unzip it
   if kong.response.get_header("Content-Encoding") == "gzip" then
     local soapDeflated, err = kongUtils.inflate_gzip(soapEnvelope)
+    
     if err then
       err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
-      soapFaultBody = xmlgeneral.formatSoapFault("Internal Error", err)
+      soapFaultBody = xmlgeneral.formatSoapFault(plugin_conf.VerboseResponse, "soap-xml-response-handling - Internal Error", err)
       kong.log.err(err)
     else
       soapEnvelope = soapDeflated
