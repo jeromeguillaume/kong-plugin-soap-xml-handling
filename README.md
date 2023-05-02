@@ -79,17 +79,17 @@ Add ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformBefore``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
-    <xsl:strip-space elements="*"/>
-    <xsl:template match="node()|@*">
-        <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
-    </xsl:template>   
-    <xsl:template match="//*[local-name()='a']">
-       <xsl:copy-of select="."/>
-       <b>8</b>
-   </xsl:template>
+  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='a']">
+    <xsl:copy-of select="."/>
+      <b>8</b>
+  </xsl:template>
 </xsl:stylesheet>
 ```
 Use request defined at step #3, **remove ```<b>7</b>```**, the expected result is no longer ```12``` but ```13```:
@@ -172,16 +172,16 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformAfter``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-    <xsl:strip-space elements="*"/>
-    <xsl:template match="node()|@*">
-        <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
-    </xsl:template>   
-    <xsl:template match="//*[local-name()='Subtract']">
-       <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
-   </xsl:template>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='Subtract']">
+    <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
+  </xsl:template>
 </xsl:stylesheet>
 ```
 **With XSLT**: Use request defined at Example #3, the expected result is ```13```:
@@ -211,16 +211,16 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformAfter``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-    <xsl:strip-space elements="*"/>
-    <xsl:template match="node()|@*">
-        <xsl:copy>
-            <xsl:apply-templates select="node()|@*"/>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
         </xsl:copy>
     </xsl:template>
-     <xsl:template match="//*[local-name()='Subtract']">
-       <urn:add xmlns:urn="urn:calc"><xsl:apply-templates select="@*|node()" /></urn:add>
-   </xsl:template>
+    <xsl:template match="//*[local-name()='Subtract']">
+      <urn:add xmlns:urn="urn:calc"><xsl:apply-templates select="@*|node()" /></urn:add>
+  </xsl:template>
 </xsl:stylesheet>
 ```
 Use request defined at Example #3, the expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
@@ -296,28 +296,25 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
 exclude-result-prefixes="soapenv">
 
-<xsl:strip-space elements="*"/>
-<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-
-<!-- remove all elements in the soapenv namespace -->
-<xsl:template match="soapenv:*">
+  <xsl:strip-space elements="*"/>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <!-- remove all elements in the soapenv namespace -->
+  <xsl:template match="soapenv:*">
     <xsl:apply-templates select="node()"/>
-</xsl:template>
-
-<!-- for the remaining elements (i.e. elements in the default namespace) ... -->
-<xsl:template match="*">
-    <!-- ... create a new element with similar name in no-namespace -->
-    <xsl:element name="{local-name()}">
-        <xsl:apply-templates select="@*|node()"/>
-    </xsl:element>
-</xsl:template>
-
-<!-- convert attributes to elements -->
-<xsl:template match="@*">
-    <xsl:element name="{local-name()}">
-        <xsl:value-of select="." />
-    </xsl:element>
-</xsl:template>
+  </xsl:template>
+  <!-- for the remaining elements (i.e. elements in the default namespace) ... -->
+  <xsl:template match="*">
+      <!-- ... create a new element with similar name in no-namespace -->
+      <xsl:element name="{local-name()}">
+          <xsl:apply-templates select="@*|node()"/>
+      </xsl:element>
+  </xsl:template>
+  <!-- convert attributes to elements -->
+  <xsl:template match="@*">
+      <xsl:element name="{local-name()}">
+          <xsl:value-of select="." />
+      </xsl:element>
+  </xsl:template>
 
 </xsl:stylesheet>
 ```
