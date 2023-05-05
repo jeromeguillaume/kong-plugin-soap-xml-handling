@@ -5,9 +5,9 @@ docker rm -f kong-gateway-soap-xml-handling >/dev/null
 docker run -d --name kong-gateway-soap-xml-handling \
 --network=kong-net \
 --link kong-database-soap-xml-handling:kong-database-soap-xml-handling \
---mount type=bind,source=/Users/jeromeg/Documents/Kong/Tips/kong-plugin-soap-xml-handling/kong/plugins/soap-xml-request-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling \
---mount type=bind,source=/Users/jeromeg/Documents/Kong/Tips/kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling \
---mount type=bind,source=/Users/jeromeg/Documents/Kong/Tips/kong-plugin-soap-xml-handling/kong/plugins/soap-xml-handling-lib,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib \
+--mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-request-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling \
+--mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-response-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling \
+--mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-handling-lib,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database-soap-xml-handling" \
 -e "KONG_PG_USER=kong" \

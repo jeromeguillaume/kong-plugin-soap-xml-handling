@@ -27,7 +27,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 1) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
 [See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database).
 
-2) Provion a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content.
+2) Provision a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content.
 ```
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
@@ -39,7 +39,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 
 ## How configure and test ```calcWebService/Calc.asmx``` Service in Kong
 1) Create a Kong Service named ```calcWebService``` with this URL: https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx.
-This simple backend Web Service adds 2 numbers.
+This simple backend Web Service adds or subtracts 2 numbers.
 
 2) Create a Route on the Service ```calcWebService``` with the ```path``` value ```/calcWebService```
 
@@ -74,7 +74,7 @@ The expected result is ```12```:
 ### Example #1: Request | ```XSLT TRANSFORMATION - BEFORE XSD```: adding a Tag in XML request by using XSLT 
 
 The plugin applies a XSLT Transformation on XML request **before** the XSD Validation.
-In this example the XSLT **adds the value ```<b>8</b>```** that will be not present in the request.
+In this example the XSLT **adds the value ```<b>8</b>```** that will not be present in the request.
 
 Add ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```XsltTransformBefore``` property with this XSLT definition:
@@ -131,12 +131,16 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 
 Use request defined at step #3, **change** ```<soap:Envelope>``` by **```<soap:EnvelopeKong>```**  and **change** ```</soap:Envelope>``` by **```</soap:EnvelopeKong>```** => Kong says: 
 ```xml
+HTTP/1.1 500 Internal Server Error
+...
 <faultstring>
 Request - XSD validation failed: Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.
 </faultstring>
 ```
-Use request defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
+Use request defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property => Kong says: 
 ```xml
+HTTP/1.1 500 Internal Server Error
+...
 <faultstring>
 Request - XSD validation failed: Error code: 1871, Line: 3, Message: Element '{http://tempuri.org/}Subtract': Missing child element(s). Expected is ( {http://tempuri.org/}a ).
 </faultstring>
