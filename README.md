@@ -104,7 +104,7 @@ Use request defined at step #3, **remove ```<b>7</b>```**, the expected result i
   </soap:Body>
 </soap:Envelope>
 ```
-### Example #2: Request | ```XSD VALIDATION```: calling incorrectly ```calcWebService``` and detecting issue in the Request with XSD schema
+### Example #2: Request | ```XSD VALIDATION```: calling incorrectly ```calcWebService``` and detecting issue on the Request with XSD schema
 Calling incorrectly ```calcWebService``` and detecting issue in the Request with XSD schema. 
 We call incorrectly the Service by injecting a SOAP error; the plugin detects it, sends an error message to the Consumer and Kong doesn't call the SOAP backend API.
 
