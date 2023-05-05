@@ -109,6 +109,7 @@ Calling incorrectly ```calcWebService``` and detecting issue in the Request with
 We call incorrectly the Service by injecting a SOAP error; the plugin detects it, sends an error message to the Consumer and Kong doesn't call the SOAP backend API.
 
 Open ```soap-xml-request-handling``` plugin and configure the plugin with:
+- ```VerboseRequest```: enabled
 - ```XsdApiSchema``` property with this value:
 ```xml
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -251,6 +252,7 @@ In this example the XSLT **changes the Tag names**:
 -  from ```<result>...</result>``` (present in the response) to **```<KongResult>...</KongResult>```**
 
 Add ```soap-xml-response-handling``` plugin and configure the plugin with:
+- ```VerboseResponse```: enabled
 - ```XsltTransformBefore``` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
