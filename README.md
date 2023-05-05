@@ -1,5 +1,5 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
-This repository concerns Kong plugins developed in Lua and use the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the XMLua/libxml2 library.
+This repository concerns Kong plugins developed in Lua and use the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 All GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
 This plugin doesn't apply to Kong OSS.
 
