@@ -134,10 +134,10 @@ Use request defined at step #3, **change** ```<soap:Envelope>``` by **```<soap:E
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>
-Request - XSD validation failed: Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.
+Request - XSD validation failed: Error Node: EnvelopeKong, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.
 </faultstring>
 ```
-Use request defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property => Kong says: 
+Use request defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
