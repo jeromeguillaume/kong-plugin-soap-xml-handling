@@ -142,7 +142,7 @@ Use request defined at step #3, **remove ```<a>5</a>```** => there is an error b
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>
-Request - XSD validation failed: Error code: 1871, Line: 3, Message: Element '{http://tempuri.org/}Subtract': Missing child element(s). Expected is ( {http://tempuri.org/}a ).
+Request - XSD validation failed: Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}a ).
 </faultstring>
 ```
 ### Example #3: Request | ```XSLT TRANSFORMATION - AFTER XSD```:  renaming a Tag in XML request by using XSLT
