@@ -1,7 +1,7 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
 This repository concerns Kong plugins developed in Lua and use the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
-All GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
-This plugin doesn't apply to Kong OSS.
+Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
+These plugins don't apply to Kong OSS.
 
 The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in this order:
 
@@ -25,7 +25,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 ![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
 
 
-## How deploy XML Handling plugins
+## How deploy SOAP/XML Handling plugins
 1) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
 [See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database).
 
@@ -46,7 +46,7 @@ This simple backend Web Service adds or subtracts 2 numbers.
 2) Create a Route on the Service ```calcWebService``` with the ```path``` value ```/calcWebService```
 
 3) Call the ```calcWebService``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
-```
+```. It adds two numbers ```5``` and ```7```
 http POST http://localhost:8000/calcWebService \
 Content-Type:"text/xml; charset=utf-8" \
 --raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -95,7 +95,7 @@ Add ```soap-xml-request-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at step #3, **remove ```<b>7</b>```**, the expected result is no longer ```12``` but ```13```:
+Use command defined at step #3, **remove ```<b>7</b>```**, the expected result is no longer ```12``` but ```13```:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
@@ -132,7 +132,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 </xs:schema>
 ```
 
-Use request defined at step #3, **change** ```<soap:Envelope>``` by **```<soap:EnvelopeKong>```**  and **change** ```</soap:Envelope>``` by **```</soap:EnvelopeKong>```** => Kong says: 
+Use command defined at step #3, **change** ```<soap:Envelope>``` by **```<soap:EnvelopeKong>```**  and **change** ```</soap:Envelope>``` by **```</soap:EnvelopeKong>```** => Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
@@ -152,7 +152,7 @@ Request - XSD validation failed: Error Node: Add, Error code: 1871, Line: 1, Mes
 The plugin applies a XSLT Transformation on XML request **after** the XSD Validation.
 In this example we **change the Tag name from ```<Subtract>...</Subtract>```** (present in the request) **to ```<Add>...</Add>```**.
 
-**Without XSLT**: Use request defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>```, remove ```<b>7</b>```, so the new request is:
+**Without XSLT**: Use command defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>```, remove ```<b>7</b>```, so the new command is:
 ```
 http POST http://localhost:8000/calcWebService \
 Content-Type:"text/xml; charset=utf-8" \
@@ -210,8 +210,6 @@ The plugin searches the XPath entry and compares it to a Condition value. If thi
 
 This example uses a new backend Web Service (https://websrv.cs.fsu.edu/~engelen/calc.wsdl) which provides the same capabilities as ```calcWebService``` Service (https://ecs.syr.edu) defined at step #1. 
 
-Note: the ```websrv.cs.fsu.edu``` introduces a new XML NameSpace so we have to change the XSLT transform to make the proper call.
-
 Add a Kong ```Upstream``` named ```websrv.cs.fsu.edu``` and defines a ```target```with ```websrv.cs.fsu.edu:443``` value. 
 Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```RouteToPath``` property with the value ```/~engelen/calcserver.cgi```
@@ -219,7 +217,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
 - ```RouteXPath``` property with the value ```/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']```
 - ```RouteXPathCondition``` property with the value ```5```
 - ```RouteXPathRegisterNs``` leave the default value; we can also register specific NameSpace with the syntax ```prefix,uri```
-- ```XsltTransformAfter``` property with this XSLT definition:
+- ```XsltTransformAfter``` property with the following XSLT definition (the ```websrv.cs.fsu.edu``` introduces a new XML NameSpace so we have to change the XSLT transformation to make the proper call):
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -234,7 +232,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at Example #3, the expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
+Use command defined at Example #3, the expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
 - SOAP tags are in capital letter: ```<SOAP-ENV:Envelope>``` instead of ```<soap:Envelope>```
 - Namespace is injected: ```xmlns:ns="urn:calc"```
 ```xml
@@ -274,7 +272,7 @@ Add ```soap-xml-response-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at Example #3, the expected result is ```<KongResult>13</KongResult>```:
+Use command defined at Example #3, the expected result is ```<KongResult>13</KongResult>```:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
@@ -298,6 +296,8 @@ Open ```soap-xml-response-handling``` plugin and configure the plugin with:
   </xs:complexType>
 </xs:schema>
 ```
+For testing purposes only: one can play with the XSD schema to raise error by temporarily replacing ```KongResult``` by ```KongResult2```
+
 ### Example #7: Response | ```XSLT TRANSFORMATION - AFTER XSD```:  transforming the SOAP response to a XML response
 In this example the XSLT removes all <soap> tags and **converts the response from SOAP to XML**.
 
@@ -326,7 +326,7 @@ Open ```soap-xml-response-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at Example #3, the expected result is:
+Use command defined at Example #3, the expected result is:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <addResponse>

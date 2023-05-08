@@ -79,7 +79,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     if rcXpath then
       kong.service.set_upstream(plugin_conf.RouteToUpstream)
       kong.service.request.set_path(plugin_conf.RouteToPath)
-      kong.log.notice("Upstream changed successfully")
+      kong.log. debug("Upstream changed successfully")
     end
   end
 

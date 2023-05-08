@@ -100,7 +100,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   local xml_transformed_dump  = ""
   local xmlNodePtrRoot        = nil
   
-  kong.log.notice("XSLT transformation, BEGIN: " .. XMLtoTransform)
+  kong.log. debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
   
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING,
@@ -141,38 +141,13 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
 
         -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
         xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
-        kong.log.notice ("XSLT transformation, END: " .. xml_transformed_dump)
+        kong.log. debug ("XSLT transformation, END: " .. xml_transformed_dump)
       else
         errMessage = "error calling 'xmlC14NDocSaveTo'"
       end
     else
       errMessage = "error calling 'xsltApplyStylesheet'"
     end
-
-    --[[if xml_transformed ~= nil then
-
-      -- Get Root Element, which is <soap:Envelope>
-      xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_transformed)
-      if xmlNodePtrRoot == nil then
-        errMessage = "error calling 'xmlDocGetRootElement'"  
-      end
-    else
-      errMessage = "error calling 'xsltApplyStylesheet'"
-    end
-
-    if xmlNodePtrRoot ~= nil then
-      -- Dump into a String the XML transformed by XSLT
-      xml_transformed_dump, errDump = libxml2ex.xmlNodeDump	(xml_transformed, xmlNodePtrRoot, 1, 1)
-      
-      if errDump == 0 then
-        -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
-        xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
-        -- Dump into a String the XML transformed
-        kong.log.notice ("XSLT transformation, END: " .. xml_transformed_dump)
-      else
-        errMessage = "error calling 'xmlNodeDump'"
-      end
-    end]]
   end
   
   if errMessage ~= nil then
@@ -232,23 +207,23 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       local xmlNodePtrChildWS = libxml2.xmlFirstElementChild(xmlNodePtrChild)
 
       -- Dump in a String the WebService part
-      kong.log.notice ("XSD validation API part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
+      kong.log. debug ("XSD validation API part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
 
       -- Check validity of One element with its XSD schema
       is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS)
     else
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
-      kong.log.notice ("XSD validation SOAP part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
+      kong.log. debug ("XSD validation SOAP part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
 
       -- Check validity of XML with its XSD schema
       is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc)
-      kong.log.notice ("is_valid: " .. is_valid)
+      kong.log. debug ("is_valid: " .. is_valid)
     end
   end
   
   if not errMessage and is_valid == 0 then
-    kong.log.notice ("XSD validation of SOAP schema: Ok")
+    kong.log. debug ("XSD validation of SOAP schema: Ok")
   elseif errMessage then
     kong.log.err ("XSD validation of SOAP schema: Ko, " .. errMessage)
   else
@@ -267,7 +242,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local libxml2     = require("xmlua.libxml2")
   local rcXpath     = false
   
-  kong.log.notice("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
+  kong.log. debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
 
   local context = libxml2.xmlNewParserCtxt()
   local document = libxml2.xmlCtxtReadMemory(context, XMLtoSearch)
@@ -279,7 +254,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local context = libxml2.xmlXPathNewContext(document)
   
   -- Register NameSpace(s)
-  kong.log.notice("XPathRegisterNs length: " .. #XPathRegisterNs)
+  kong.log. debug("XPathRegisterNs length: " .. #XPathRegisterNs)
   
   -- Go on each NameSpace definition
   for i = 1, #XPathRegisterNs do
@@ -295,7 +270,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
       rc = libxml2.xmlXPathRegisterNs(context, prefix, uri)
     end
     if rc then
-      kong.log.notice("RouteByXPath, successful registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
+      kong.log. debug("RouteByXPath, successful registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
     else
       kong.log.err("RouteByXPath, failure registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
     end
@@ -307,7 +282,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
     -- If we found the XPath element
     if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then        
         local nodeContent = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
-        kong.log.notice("libxml2.xmlNodeGetContent: " .. nodeContent)
+        kong.log. debug("libxml2.xmlNodeGetContent: " .. nodeContent)
         if nodeContent == XPathCondition then
           rcXpath = true
         end
@@ -320,9 +295,9 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local msg = "with XPath=\"" .. XPath .. "\" and XPathCondition=\"" .. XPathCondition .. "\""
   
   if rcXpath then
-    kong.log.notice ("RouteByXPath: Ok " .. msg)
+    kong.log. debug ("RouteByXPath: Ok " .. msg)
   else
-    kong.log.notice ("RouteByXPath: Ko " .. msg)
+    kong.log. debug ("RouteByXPath: Ko " .. msg)
   end
   return rcXpath
 end

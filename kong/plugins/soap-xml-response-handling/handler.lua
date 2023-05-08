@@ -100,7 +100,7 @@ function plugin:header_filter(plugin_conf)
   -- are called (and the 'access' is not called which enables the enable_buffering())
   if kong.ctx.shared.xmlSoapHandlingFault and 
      kong.ctx.shared.xmlSoapHandlingFault.error then
-    kong.log.notice("A pending error has been set by previous plugin: we do nothing in this plugin")
+    kong.log. debug("A pending error has been set by previous plugin: we do nothing in this plugin")
     return
   end
 
@@ -108,7 +108,7 @@ function plugin:header_filter(plugin_conf)
   soapEnvelope = kong.service.response.get_raw_body()
   -- There is no SOAP envelope (or Body content) so we don't do anything
   if not soapEnvelope then
-    kong.log.notice("The Body is 'nil': nothing to do")
+    kong.log. debug("The Body is 'nil': nothing to do")
     return
   end
   local kongUtils = require("kong.tools.utils")
@@ -190,7 +190,7 @@ function plugin:body_filter(plugin_conf)
   if  kong.ctx.shared.xmlSoapHandlingFault        and
       kong.ctx.shared.xmlSoapHandlingFault.error  and 
       kong.ctx.shared.xmlSoapHandlingFault.priority ~= plugin.PRIORITY then
-    kong.log.notice("A pending error has been set by previous plugin: we do nothing in this plugin")
+    kong.log. debug("A pending error has been set by previous plugin: we do nothing in this plugin")
     return
   end
 

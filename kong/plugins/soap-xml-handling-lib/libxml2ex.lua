@@ -141,6 +141,11 @@ end
 function libxml2ex.formatErrMsg(xmlError)
 
   local errMessage = ""
+  
+  if xmlError.ctxt == ffi.NULL then
+    ngx.log(ngx.ERR, "*** xmlError.ctxt is null***")
+    return errMessage
+  end
 
   local xmlErrorMsg = ffi.string(xmlError.message)
   -- If the last character is Return Line
@@ -155,12 +160,6 @@ function libxml2ex.formatErrMsg(xmlError)
     errMessage = "Error Node: " .. ffi.string(ptrNode.name) .. ", "
   end
   
-  if xmlError.ctxt == ffi.NULL then
-    ngx.log(ngx.NOTICE, "*** xmlError.ctxt is null***")
-    else
-      ngx.log(ngx.NOTICE, "*** xmlError.ctxt is not null***")
-    end
-    
   errMessage =  errMessage .. 
                 "Error code: "  .. tonumber(xmlError.code) ..
                 ", Line: "      .. tonumber(xmlError.line) ..
