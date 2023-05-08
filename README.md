@@ -140,7 +140,7 @@ HTTP/1.1 500 Internal Server Error
 Request - XSD validation failed: Error Node: EnvelopeKong, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.
 </faultstring>
 ```
-Use request defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
+Use command defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
@@ -194,7 +194,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-**With XSLT**: Use request defined at Example #3, the expected result is ```13```:
+**With XSLT**: Use command defined at Example #3, the expected result is ```13```:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
@@ -392,7 +392,7 @@ Content-Length: 213
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use request defined at step #3, the expected result is zipped with ```Content-Encoding: gzip``` header and we get ```<KongResult>five hundred </KongResult>```
+Use command defined at step #3, the expected result is zipped with ```Content-Encoding: gzip``` header and we get ```<KongResult>five hundred </KongResult>```
 ```xml
 Connection: keep-alive
 Content-Encoding: gzip
