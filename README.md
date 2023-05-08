@@ -46,7 +46,7 @@ This simple backend Web Service adds or subtracts 2 numbers.
 2) Create a Route on the Service ```calcWebService``` with the ```path``` value ```/calcWebService```
 
 3) Call the ```calcWebService``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
-```. It adds two numbers ```5``` and ```7```
+```
 http POST http://localhost:8000/calcWebService \
 Content-Type:"text/xml; charset=utf-8" \
 --raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
