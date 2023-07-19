@@ -94,23 +94,34 @@ function plugin:header_filter(plugin_conf)
   local soapDeflated
   local err
   
-  -- In case of error set by previous plugin, we don't do anything to avoid an issue.
+  -- In case of error set SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
   -- are called (and the 'access' is not called which enables the enable_buffering())
   if kong.ctx.shared.xmlSoapHandlingFault and 
      kong.ctx.shared.xmlSoapHandlingFault.error then
-    kong.log. debug("A pending error has been set by previous plugin: we do nothing in this plugin")
+    kong.log.debug("A pending error has been set by SOAP/XML plugin: we do nothing in this plugin")
     return
+  end
+  
+  -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
+  -- In case where the 'soap-xml-request-handling' plugin is not enabled
+  -- we reformat the JSON message to SOAP/XML Fault
+  if kong.response.get_source() == "exit" or kong.response.get_source() == "error" then
+    kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
+    soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseResponse)
+    kong.response.clear_header("Content-Length")
+    kong.response.set_header("Content-Type", "text/xml; charset=utf-8")
+  else
+    -- Get SOAP Envolope from the Body
+    soapEnvelope = kong.service.response.get_raw_body()
+    -- There is no SOAP envelope (or Body content) so we don't do anything
+    if not soapEnvelope then
+      kong.log.debug("The Body is 'nil': nothing to do")
+      return
+    end
   end
 
-  -- Get SOAP Envolope from the Body
-  soapEnvelope = kong.service.response.get_raw_body()
-  -- There is no SOAP envelope (or Body content) so we don't do anything
-  if not soapEnvelope then
-    kong.log. debug("The Body is 'nil': nothing to do")
-    return
-  end
   local kongUtils = require("kong.tools.utils")
   
   -- If the Body is deflated/zipped, we inflate/unzip it
@@ -140,8 +151,14 @@ function plugin:header_filter(plugin_conf)
     if kong.response.get_header("Content-Encoding") == "gzip" then
       kong.response.clear_header("Content-Encoding")
     end
-    -- Return a Fault code to Client
-    kong.response.set_status(xmlgeneral.HTTPCodeSOAPFault)
+    -- When the response was originated by successfully contacting the proxied Service
+    if kong.response.get_source() == "service" then
+      -- Change the HTTP Status and Return a Fault code to Client
+      kong.response.set_status(xmlgeneral.HTTPCodeSOAPFault)
+    else
+      -- When other plugin (like Rate Limiting) or 
+      -- the Service itself (timeout) have already raised an error: we don't change the HTTP Error code
+    end
     kong.response.set_header("Content-Length", #soapFaultBody)
 
     -- Set the Global Fault Code to Request and Response XLM/SOAP plugins 
@@ -186,11 +203,11 @@ end
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)
 
-  -- If there is a pending error we don't do anything except for the Plugin itself
-  if  kong.ctx.shared.xmlSoapHandlingFault        and
-      kong.ctx.shared.xmlSoapHandlingFault.error  and 
-      kong.ctx.shared.xmlSoapHandlingFault.priority ~= plugin.PRIORITY then
-    kong.log. debug("A pending error has been set by previous plugin: we do nothing in this plugin")
+  -- If there is a pending error set by SOAP/XML plugin we don't do anything except for the Plugin itself
+  if  kong.ctx.shared.xmlSoapHandlingFault      and
+    kong.ctx.shared.xmlSoapHandlingFault.error  and 
+    kong.ctx.shared.xmlSoapHandlingFault.priority ~= plugin.PRIORITY then
+    kong.log.debug("A pending error has been set by SOAP/XML plugin: we do nothing in this plugin")
     return
   end
 

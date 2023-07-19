@@ -23,8 +23,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
     detailErrMsg = ErrMsg
   end
 
-  local soapErrMsg = "\
-<?xml version=\"1.0\" encoding=\"utf-8\"?> \
+  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
 <soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"> \
   <soap:Body> \
     <soap:Fault>\
@@ -37,6 +36,30 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
 "
   kong.log.err ("formatSoapFault, soapErrMsg:" .. soapErrMsg)
   return soapErrMsg
+end
+
+------------------------------------------------------
+-- Re-Format a JSON message to the SOAP Fault message
+------------------------------------------------------
+function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
+  local soapFaultBody
+  -- Authorization issue
+  if kong.response.get_status() == 401 then
+    soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, 
+                                              "You are not authorized to consume this service", 
+                                              "HTTP Error code: " .. tostring(kong.response.get_status()))
+  -- Rate Limiting
+  elseif kong.response.get_status() == 429 then
+    soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, 
+                                              "API rate limit exceeded",
+                                              "HTTP Error code: " .. tostring(kong.response.get_status()))
+  -- HTTP Error code not specifically managed
+  else
+    soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, 
+                                              "Error",
+                                              "HTTP Error code: " .. tostring(kong.response.get_status()))
+  end
+  return soapFaultBody
 end
 
 ---------------------------------------
