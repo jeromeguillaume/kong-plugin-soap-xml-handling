@@ -75,7 +75,6 @@ function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
     return ffi.gc(validation_context, libxml2.xmlSchemaFreeValidCtxt)
 end
 
--- *** DOESN'T WORK ***
 -- Parse an XML in-memory document and build a tree.
 -- buffer:	a pointer to a char array
 -- size:	the size of the array
@@ -89,6 +88,7 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
   
   local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
       errMessage = libxml2ex.formatErrMsg(xmlError)
+      ngx.log(ngx.ERR, "xmlReadMemory, errMessage: " .. errMessage)
     end)
   xml2.xmlSetStructuredErrorFunc(nil, error_handler)
   ffi.gc(error_handler, error_handler.free)
@@ -153,17 +153,18 @@ function libxml2ex.formatErrMsg(xmlError)
     -- Remove the Return Line
     xmlErrorMsg = xmlErrorMsg:sub(1, -2)
   end
-  
+
   -- If there is a node information
   if xmlError.node ~= ffi.NULL then
     local ptrNode = ffi.cast("xmlNode *", xmlError.node)
     errMessage = "Error Node: " .. ffi.string(ptrNode.name) .. ", "
   end
-  
+
   errMessage =  errMessage .. 
                 "Error code: "  .. tonumber(xmlError.code) ..
                 ", Line: "      .. tonumber(xmlError.line) ..
                 ", Message: "   .. xmlErrorMsg
+
   return errMessage
 end
 

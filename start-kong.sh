@@ -16,7 +16,8 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" \
 -e "KONG_PROXY_ERROR_LOG=/dev/stderr" \
 -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" \
--e "KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl" \
+-e "KONG_PROXY_LISTEN=0.0.0.0:8000, 0.0.0.0:8443 ssl http2" \
+-e "KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl http2" \
 -e "KONG_ADMIN_GUI_URL=http://localhost:8002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \

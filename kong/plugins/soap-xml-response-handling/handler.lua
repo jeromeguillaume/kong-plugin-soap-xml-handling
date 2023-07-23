@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.1",
+    VERSION = "1.0.2",
   }
 
 -----------------------------------------------------------------------------------------
@@ -43,10 +43,10 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   end
   
   -- If there is no error and
-  -- If there is a configuration for XSD API schema validation then:
+  -- If there is a configuration for XSD or WSDL API schema validation then:
   -- => we validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then  
-    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema)    
+    local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema)    
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -77,10 +77,23 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
-  
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
-  kong.service.request.enable_buffering()
+
+  -- If http version is 'HTTP/2' the enable_buffering doesn't work so the 'soap-xml-response-handling' 
+  -- cannot work and we 'disable' it
+  if ngx.req.http_version() < 2 then
+    kong.service.request.enable_buffering()
+  else
+    local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
+                    " please use http/1.x instead. The plugin is disabled"
+    kong.log.err(errMsg)
+    kong.ctx.shared.xmlSoapHandlingFault = {
+      error = true,
+      priority = -1,
+      soapEnvelope = errMsg
+    }
+  end
 end
 
 -----------------------------------------------------------------------------------------
@@ -93,7 +106,7 @@ function plugin:header_filter(plugin_conf)
   local soapEnvelope
   local soapDeflated
   local err
-  
+
   -- In case of error set SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
@@ -121,7 +134,7 @@ function plugin:header_filter(plugin_conf)
       return
     end
   end
-
+  
   local kongUtils = require("kong.tools.utils")
   
   -- If the Body is deflated/zipped, we inflate/unzip it
@@ -136,7 +149,7 @@ function plugin:header_filter(plugin_conf)
       soapEnvelope = soapDeflated
     end
   end
-
+  
   -- If there is no error
   if soapFaultBody == nil then
     -- Handle all SOAP/XML topics of the Response: XSLT before, XSD validation and XSLT After
@@ -202,8 +215,8 @@ end
 -- This function can be called multiple times
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)
-
-  -- If there is a pending error set by SOAP/XML plugin we don't do anything except for the Plugin itself
+  
+  -- If there is a pending error set by SOAP/XML plugin we do anything except for the Plugin itself
   if  kong.ctx.shared.xmlSoapHandlingFault      and
     kong.ctx.shared.xmlSoapHandlingFault.error  and 
     kong.ctx.shared.xmlSoapHandlingFault.priority ~= plugin.PRIORITY then

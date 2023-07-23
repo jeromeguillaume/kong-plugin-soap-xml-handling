@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.1",
+    VERSION = "1.0.2",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -44,10 +44,11 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   end
   
   -- If there is no error and
-  -- If the plugin is defined with XSD API schema then:
+  -- If the plugin is defined with XSD or WSDL API schema then:
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
-    errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema)
+    -- errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema)
+    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -79,7 +80,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     if rcXpath then
       kong.service.set_upstream(plugin_conf.RouteToUpstream)
       kong.service.request.set_path(plugin_conf.RouteToPath)
-      kong.log. debug("Upstream changed successfully")
+      kong.log.debug("Upstream changed successfully")
     end
   end
 

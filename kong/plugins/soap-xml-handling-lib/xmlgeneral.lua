@@ -10,6 +10,50 @@ xmlgeneral.XSDError           = "XSD validation failed"
 xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 
+local HTTP_ERROR_MESSAGES = {
+    [400] = "Bad request",
+    [401] = "Unauthorized",
+    [402] = "Payment required",
+    [403] = "Forbidden",
+    [404] = "Not found",
+    [405] = "Method not allowed",
+    [406] = "Not acceptable",
+    [407] = "Proxy authentication required",
+    [408] = "Request timeout",
+    [409] = "Conflict",
+    [410] = "Gone",
+    [411] = "Length required",
+    [412] = "Precondition failed",
+    [413] = "Payload too large",
+    [414] = "URI too long",
+    [415] = "Unsupported media type",
+    [416] = "Range not satisfiable",
+    [417] = "Expectation failed",
+    [418] = "I'm a teapot",
+    [421] = "Misdirected request",
+    [422] = "Unprocessable entity",
+    [423] = "Locked",
+    [424] = "Failed dependency",
+    [425] = "Too early",
+    [426] = "Upgrade required",
+    [428] = "Precondition required",
+    [429] = "Too many requests",
+    [431] = "Request header fields too large",
+    [451] = "Unavailable for legal reasons",
+    [494] = "Request header or cookie too large",
+    [500] = "An unexpected error occurred",
+    [501] = "Not implemented",
+    [502] = "An invalid response was received from the upstream server",
+    [503] = "The upstream server is currently unavailable",
+    [504] = "The upstream server is timing out",
+    [505] = "HTTP version not supported",
+    [506] = "Variant also negotiates",
+    [507] = "Insufficient storage",
+    [508] = "Loop detected",
+    [510] = "Not extended",
+    [511] = "Network authentication required",
+}
+
 ---------------------------------
 -- Format the SOAP Fault message
 ---------------------------------
@@ -43,22 +87,15 @@ end
 ------------------------------------------------------
 function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
   local soapFaultBody
-  -- Authorization issue
-  if kong.response.get_status() == 401 then
-    soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, 
-                                              "You are not authorized to consume this service", 
-                                              "HTTP Error code: " .. tostring(kong.response.get_status()))
-  -- Rate Limiting
-  elseif kong.response.get_status() == 429 then
-    soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, 
-                                              "API rate limit exceeded",
-                                              "HTTP Error code: " .. tostring(kong.response.get_status()))
-  -- HTTP Error code not specifically managed
-  else
-    soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, 
-                                              "Error",
-                                              "HTTP Error code: " .. tostring(kong.response.get_status()))
+  
+  local msg = HTTP_ERROR_MESSAGES[kong.response.get_status()]
+  
+  if not msg then
+    msg = "Error"
   end
+
+  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()))
+  
   return soapFaultBody
 end
 
@@ -123,7 +160,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   local xml_transformed_dump  = ""
   local xmlNodePtrRoot        = nil
   
-  kong.log. debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
+  kong.log.debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
   
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING,
@@ -152,7 +189,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
       -- Dump into a String the canonized image of the XML transformed by XSLT
       xml_transformed_dump, errDump = libxml2ex.xmlC14NDocSaveTo (xml_transformed, nil)
       if errDump == 0 then
-        -- If needed we wppend the xml declaration
+        -- If needed we append the xml declaration
         -- Example: <?xml version="1.0" encoding="utf-8"?>
         xml_transformed_dump = xmlgeneral.XSLT_Format_XMLDeclaration (
                                             plugin_conf, 
@@ -164,7 +201,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
 
         -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
         xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
-        kong.log. debug ("XSLT transformation, END: " .. xml_transformed_dump)
+        kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
       else
         errMessage = "error calling 'xmlC14NDocSaveTo'"
       end
@@ -184,6 +221,130 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
   
 end
 
+------------------------------
+-- Validate a XML with a WSDL
+------------------------------
+function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL)
+  local ffi               = require("ffi")
+  local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+  local libxml2           = require("xmlua.libxml2")
+  local xml_doc           = nil
+  local errMessage        = nil
+  local xsdSchema         = nil
+  local currentNode       = nil
+  local wsdlNodeFound     = false
+  local typesNodeFound    = false
+  local validSchemaFound  = false
+  local nodeName          = ""
+  local index             = 0
+  
+  -- If we have a WDSL file, we retrieve the '<wsdl:types>' Node AND the '<xs:schema>' child nodes 
+  --   OR
+  -- In we have a raw XSD schema '<xs:schema>'
+  --   THEN
+  -- We do a loop for validating the 'XMLtoValidate' XML with each '<xs:schema>' until one works
+  --
+  -- Example of WSDL:
+  --  <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.microsoft.com/ws/06/2004/policy/http" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" targetNamespace="http://tempuri.org/" name="INonCacheService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  --    <wsdl:types>
+  --      <xs:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/">
+  --        <xs:import namespace="http://schemas.datacontract.org/2004/07/APIM_Dummy.Common.Models.Responses" />
+  --        <xs:element name="DeleteDummyPayload">
+  --        ....
+  --      </xs:schema>
+  --      <xs:schema attributeFormDefault="qualified" elementFormDefault="qualified" targetNamespace="http://schemas.microsoft.com/2003/10/Serialization/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.microsoft.com/2003/10/Serialization/">
+  --        ....
+  --      </xs:schema>
+  --  </wsdl:types>
+  --  <wsdl:message name="INonCacheService_DeleteDummyPayload_InputMessage">
+  --    <wsdl:part name="parameters" element="tns:DeleteDummyPayload" />
+  --  </wsdl:message>
+
+  -- Parse an XML in-memory document and build a tree
+  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, 0)
+  if errMessage then
+    errMessage = "XMLValidateWithWSDL, xmlReadMemory - Ko: ".. errMessage
+    kong.log.err (errMessage)
+    return errMessage
+  end
+  kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
+  
+  -- Retrieve the <wsdl:definitions>
+  local xmlNodePtrRoot   = libxml2.xmlDocGetRootElement(xml_doc)
+  if xmlNodePtrRoot then
+    if tonumber(xmlNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE then
+      nodeName = ffi.string(xmlNodePtrRoot.name)
+      if nodeName == "definitions" then
+        wsdlNodeFound = true
+      end
+    end
+  end
+
+  -- If we found the <wsdl:definitions>
+  if wsdlNodeFound then
+    currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
+    -- Retrieve '<wsdl:types>' Node in the WSDL
+    while currentNode ~= ffi.NULL and not typesNodeFound do
+      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+        kong.log.debug ("currentNode.name: " .. ffi.string(currentNode.name))
+        nodeName = ffi.string(currentNode.name)
+        if nodeName == "types" then
+          typesNodeFound = true
+        end
+      end
+      if not typesNodeFound then
+        currentNode = ffi.cast("xmlNode *", currentNode.next)
+      end
+    end
+    -- If we don't find <wsdl:types>
+    if not typesNodeFound then
+      errMessage = "Unable to find the 'wsdl:types'"
+      kong.log.err (errMessage)
+      return errMessage
+    end
+  else
+    kong.log.debug("Unable to find the '<wsdl:definitions>', so we consider the XSD as a raw '<xs:schema>'")
+  end
+  -- If we found the '<wsdl:types>' Node we select the first child Node which is '<xs:schema>'
+  if typesNodeFound then
+    kong.log.debug("XMLValidateWithWSDL, Found the '<wsdl:types>' Node")
+    currentNode  = libxml2.xmlFirstElementChild(currentNode)
+  -- Else it's a not a WSDL it's a raw <xs:schema>
+  else
+    currentNode = xmlNodePtrRoot
+  end
+  -- Retrieve all '<xs:schema>' Nodes until we found a valid Schema validating the XML
+  while currentNode ~= ffi.NULL and not validSchemaFound do
+    
+    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+      -- Get the node Name
+      nodeName = ffi.string(currentNode.name)
+      if nodeName == "schema" then
+        index = index + 1
+        xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, currentNode, 1, 1)
+        kong.log.debug ("schema #" .. index .. ", lentgh: " .. #xsdSchema .. ", dump: " .. xsdSchema)
+        errMessage = nil
+        -- Validate the XML with the <xs:schema>'
+        errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema)
+        -- If there is no error it means that we found the right Schema validating the SOAP/XML
+        if not errMessage then
+          kong.log.debug ("We found the right XSD Schema validating the SOAP/XML")
+          validSchemaFound = true
+        end
+      end
+    end
+    -- Go to the next '<xs:schema' Node
+    currentNode = ffi.cast("xmlNode *", currentNode.next)
+  end
+
+  -- If there is no Error and we don't retrieve a valid Schema for the XML
+  if not errMessage and not validSchemaFound then
+    errMessage = "Unable to find a suitable Schema to validate the SOAP/XML"
+  end
+
+  return errMessage
+end
+
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
@@ -191,10 +352,19 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   local ffi           = require("ffi")
   local libxml2ex     = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local libxml2       = require("xmlua.libxml2")
+  local xml_doc       = nil
   local errMessage    = nil
   local err           = nil
   local is_valid      = 0
+  local schemaType    = ""
   
+  -- Prepare the error Message
+  if child == 0 then
+    schemaType = "SOAP"
+  else
+    schemaType = "API"
+  end
+
   -- Create Parser Context
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
   
@@ -206,12 +376,15 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     
     -- Create Validation context of XSD Schema
     local validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
+
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, 0 )
     
-    local default_parse_options = bit.bor(ffi.C.XML_PARSE_RECOVER)
-    local xml_doc = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options )
-    
+    -- If there is an error on 'xmlReadMemory' call
+    if errMessage then
+      -- The Error processing is done at the End of the function, so we do nothing...
+
     -- if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
-    if child ~=0 then
+    elseif child ~=0 then
       -- Example:
       -- <soap:Envelope xmlns:xsi=....">
       --    <soap:Body>
@@ -221,7 +394,6 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       --      </Add>
       --    </soap:Body>
       --  </soap:Envelope>
-      
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot   = libxml2.xmlDocGetRootElement(xml_doc);
       -- Get Child Element, which is <soap:Body>
@@ -230,28 +402,28 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       local xmlNodePtrChildWS = libxml2.xmlFirstElementChild(xmlNodePtrChild)
 
       -- Dump in a String the WebService part
-      kong.log. debug ("XSD validation API part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
+      kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
 
       -- Check validity of One element with its XSD schema
       is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS)
     else
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
-      kong.log. debug ("XSD validation SOAP part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
+      kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
 
       -- Check validity of XML with its XSD schema
       is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc)
-      kong.log. debug ("is_valid: " .. is_valid)
+      kong.log.debug ("is_valid: " .. is_valid)
     end
   end
   
   if not errMessage and is_valid == 0 then
-    kong.log. debug ("XSD validation of SOAP schema: Ok")
+    kong.log.debug ("XSD validation of ".. schemaType .." schema: Ok")
   elseif errMessage then
-    kong.log.err ("XSD validation of SOAP schema: Ko, " .. errMessage)
+    kong.log.err ("XSD validation of "..  schemaType .." schema: Ko, " .. errMessage)
   else
     errMessage = "Ko"
-    kong.log.err ("XSD validation of SOAP schema: ")
+    kong.log.err ("XSD validation of ".. schemaType .." schema: Ko")
   end
   return errMessage
 end
@@ -265,7 +437,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local libxml2     = require("xmlua.libxml2")
   local rcXpath     = false
   
-  kong.log. debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
+  kong.log.debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
 
   local context = libxml2.xmlNewParserCtxt()
   local document = libxml2.xmlCtxtReadMemory(context, XMLtoSearch)
@@ -277,7 +449,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local context = libxml2.xmlXPathNewContext(document)
   
   -- Register NameSpace(s)
-  kong.log. debug("XPathRegisterNs length: " .. #XPathRegisterNs)
+  kong.log.debug("XPathRegisterNs length: " .. #XPathRegisterNs)
   
   -- Go on each NameSpace definition
   for i = 1, #XPathRegisterNs do
@@ -293,7 +465,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
       rc = libxml2.xmlXPathRegisterNs(context, prefix, uri)
     end
     if rc then
-      kong.log. debug("RouteByXPath, successful registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
+      kong.log.debug("RouteByXPath, successful registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
     else
       kong.log.err("RouteByXPath, failure registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
     end
@@ -305,7 +477,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
     -- If we found the XPath element
     if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then        
         local nodeContent = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
-        kong.log. debug("libxml2.xmlNodeGetContent: " .. nodeContent)
+        kong.log.debug("libxml2.xmlNodeGetContent: " .. nodeContent)
         if nodeContent == XPathCondition then
           rcXpath = true
         end
@@ -318,9 +490,9 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local msg = "with XPath=\"" .. XPath .. "\" and XPathCondition=\"" .. XPathCondition .. "\""
   
   if rcXpath then
-    kong.log. debug ("RouteByXPath: Ok " .. msg)
+    kong.log.debug ("RouteByXPath: Ok " .. msg)
   else
-    kong.log. debug ("RouteByXPath: Ko " .. msg)
+    kong.log.debug ("RouteByXPath: Ko " .. msg)
   end
   return rcXpath
 end
