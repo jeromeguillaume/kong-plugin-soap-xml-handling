@@ -415,4 +415,4 @@ Content-Length: 185
   - Improve the behavior of SOAP/XML Handling plugins in conjunction with the Kong System plugins: Rate Limiting, Auth (OIDC, basic-auth, etc.)
   - Reformat the JSON Error messages (of Kong System plugins) to a SOAP/XML `<soap:Fault>` error
 - v1.0.2:
-  - Add the capacity to provide `wsdl` content to `xsdApiSchema`. The `<xs:schema>`is still valid
+  - Add the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
