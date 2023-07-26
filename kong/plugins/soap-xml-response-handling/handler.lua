@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.2",
+    VERSION = "1.0.3",
   }
 
 -----------------------------------------------------------------------------------------
@@ -18,7 +18,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- => we apply XSL Transformation (XSLT) Before
   if plugin_conf.xsltTransformBefore then
     local errMessage
-    soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore)    
+    soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -33,7 +33,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is a configuration for XSD SOAP schema validation then:
   -- => We validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
-    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema)
+    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -46,7 +46,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is a configuration for XSD or WSDL API schema validation then:
   -- => we validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then  
-    local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema)    
+    local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -60,7 +60,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- => we apply XSL Transformation (XSLT) After
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
     local errMessage
-    soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter)
+    soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,

@@ -416,3 +416,5 @@ Content-Length: 185
   - Reformat the JSON Error messages (of Kong System plugins) to a SOAP/XML `<soap:Fault>` error
 - v1.0.2:
   - Add the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
+- v1.0.3:
+  - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer get the detailed error for the logs

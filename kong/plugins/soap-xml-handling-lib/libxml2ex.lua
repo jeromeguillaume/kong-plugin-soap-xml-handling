@@ -35,21 +35,24 @@ end
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
 -- ctxt:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
-function libxml2ex.xmlSchemaParse (xsd_context)
+function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     local errMessage
-    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-      -- The callback function can be called two times in a row
-      -- 1st time: initial message (like: "Start tag expected, '<' not found")
-      if errMessage == nil then
-        errMessage = libxml2ex.formatErrMsg(xmlError)
-      -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
-      else
-        errMessage = errMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
-      end
-    end)
 
-    xml2.xmlSetStructuredErrorFunc(xsd_context, error_handler)
-    ffi.gc(error_handler, error_handler.free)
+    if verbose then
+      local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+        -- The callback function can be called two times in a row
+        -- 1st time: initial message (like: "Start tag expected, '<' not found")
+        if errMessage == nil then
+          errMessage = libxml2ex.formatErrMsg(xmlError)
+        -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
+        else
+          errMessage = errMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
+        end
+      end)
+
+      xml2.xmlSetStructuredErrorFunc(xsd_context, error_handler)
+      ffi.gc(error_handler, error_handler.free)
+    end
     
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
 
@@ -57,7 +60,7 @@ function libxml2ex.xmlSchemaParse (xsd_context)
         ngx.log(ngx.ERR, "xmlSchemaParse returns null")
     end
     
-    return xsd_schema_doc,  errMessage
+    return xsd_schema_doc,  errMessage, error_handler
 end
 
 -- Create an XML Schemas validation context based on the given schema.
@@ -82,16 +85,18 @@ end
 -- encoding:	the document encoding, or NULL
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
-function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options)
+function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
   local libxml2 = require("xmlua.libxml2")
   local errMessage
   
-  local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-      errMessage = libxml2ex.formatErrMsg(xmlError)
-      ngx.log(ngx.ERR, "xmlReadMemory, errMessage: " .. errMessage)
-    end)
-  xml2.xmlSetStructuredErrorFunc(nil, error_handler)
-  ffi.gc(error_handler, error_handler.free)
+  if verbose == true then
+    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+        errMessage = libxml2ex.formatErrMsg(xmlError)
+        ngx.log(ngx.ERR, "xmlReadMemory, errMessage: " .. errMessage)
+      end)
+    xml2.xmlSetStructuredErrorFunc(nil, error_handler)
+    ffi.gc(error_handler, error_handler.free)
+  end
 
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
     
@@ -106,15 +111,17 @@ end
 -- ctxt:	a schema validation context
 -- doc:	a parsed document tree
 -- Returns:	0 if the document is schemas valid, a positive error code number otherwise and -1 in case of internal or API error.
-function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc)
+function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
   local errMessage
-  local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-      errMessage = libxml2ex.formatErrMsg(xmlError)
-    end)
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, error_handler, nil)
   
-  ffi.gc(error_handler, error_handler.free)
-
+  if verbose then
+    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+        errMessage = libxml2ex.formatErrMsg(xmlError)
+      end)
+    xml2.xmlSchemaSetValidStructuredErrors(validation_context, error_handler, nil)
+    
+    ffi.gc(error_handler, error_handler.free)
+  end
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
   return tonumber(is_valid), errMessage
@@ -124,15 +131,17 @@ end
 -- ctxt:	a schema validation context
 -- elem:	an element node
 -- Returns:	0 if the element and its subtree is valid, a positive error code number otherwise and -1 in case of an internal or API error.
-function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr)
+function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
   local errMessage
-  local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-      errMessage = libxml2ex.formatErrMsg(xmlError)
-    end)
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, error_handler, nil)
+  if verbose then
+    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+        errMessage = libxml2ex.formatErrMsg(xmlError)
+      end)
+    xml2.xmlSchemaSetValidStructuredErrors(validation_context, error_handler, nil)
+    
+    ffi.gc(error_handler, error_handler.free)
+  end
   
-  ffi.gc(error_handler, error_handler.free)
-
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
   return tonumber(is_valid), errMessage
 end

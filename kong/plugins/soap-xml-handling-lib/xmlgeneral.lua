@@ -147,7 +147,7 @@ end
 ------------------------------------------
 -- Transform XML with XSLT Transformation
 ------------------------------------------
-function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
+function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   local libxml2ex   = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local libxslt     = require("kong.plugins.soap-xml-handling-lib.libxslt")
   local libxml2     = require("xmlua.libxml2")
@@ -167,14 +167,14 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT)
                                         ffi.C.XML_PARSE_NONET)
                                         
   -- Load the XSLT document
-  local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options)
+  local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose)
   
   if errMessage == nil then
     -- Parse XSLT document
     style = libxslt.xsltParseStylesheetDoc (xslt_doc)
     if style ~= nil then
       -- Load the complete XML document (with <soap:Envelope>)
-      xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options)
+      xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options, verbose)
     else
       errMessage = "error calling 'xsltParseStylesheetDoc'"
     end
@@ -224,7 +224,7 @@ end
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
-function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL)
+function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL, verbose)
   local ffi               = require("ffi")
   local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local libxml2           = require("xmlua.libxml2")
@@ -261,7 +261,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   --  </wsdl:message>
 
   -- Parse an XML in-memory document and build a tree
-  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, 0)
+  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, 0, verbose)
   if errMessage then
     errMessage = "XMLValidateWithWSDL, xmlReadMemory - Ko: ".. errMessage
     kong.log.err (errMessage)
@@ -325,7 +325,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
         kong.log.debug ("schema #" .. index .. ", lentgh: " .. #xsdSchema .. ", dump: " .. xsdSchema)
         errMessage = nil
         -- Validate the XML with the <xs:schema>'
-        errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema)
+        errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema, verbose)
         -- If there is no error it means that we found the right Schema validating the SOAP/XML
         if not errMessage then
           kong.log.debug ("We found the right XSD Schema validating the SOAP/XML")
@@ -348,7 +348,7 @@ end
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
-function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema)
+function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema, verbose)
   local ffi           = require("ffi")
   local libxml2ex     = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local libxml2       = require("xmlua.libxml2")
@@ -369,7 +369,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
   
   -- Create XSD schema
-  local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context)
+  local xsd_schema_doc, errMessage, error_handler = libxml2ex.xmlSchemaParse(xsd_context, verbose)
   
   -- If there is no error loading the XSD schema
   if not errMessage then
@@ -377,7 +377,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     -- Create Validation context of XSD Schema
     local validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
 
-    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, 0 )
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, 0 , verbose)
     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
@@ -405,14 +405,14 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
 
       -- Check validity of One element with its XSD schema
-      is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS)
+      is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)
     else
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
       kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
-
+      
       -- Check validity of XML with its XSD schema
-      is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc)
+      is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
       kong.log.debug ("is_valid: " .. is_valid)
     end
   end
