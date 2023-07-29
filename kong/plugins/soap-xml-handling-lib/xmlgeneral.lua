@@ -63,6 +63,19 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   -- If verbose mode is enabled we display the detailed Error Message
   if VerboseResponse then
     detailErrMsg = ErrMsg .. ": " .. ErrEx
+    
+    -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
+    local ngx_get_phase = ngx.get_phase
+    if  ngx_get_phase() == "response"      or 
+        ngx_get_phase() == "header_filter" or 
+        ngx_get_phase() == "body_filter"   then
+      local status = kong.service.response.get_status()
+      if status ~= nil then
+        local additionalErrMsg = ''
+        additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
+        detailErrMsg = detailErrMsg .. additionalErrMsg
+      end
+    end
   else
     detailErrMsg = ErrMsg
   end
@@ -127,7 +140,7 @@ function xmlgeneral.initializeErrorHandler (plugin_conf)
         kong.ctx.shared.xmlSoapErrMessage = libxml2ex.formatErrMsg(xmlError)
       -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
       else
-        kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '.\n' .. libxml2ex.formatErrMsg(xmlError)
+        kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
       end
     end)
   else
@@ -291,7 +304,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   -- Parse an XML in-memory document and build a tree
   xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, 0, verbose)
   if errMessage then
-    errMessage = "XMLValidateWithWSDL, xmlReadMemory - Ko: ".. errMessage
+    errMessage = "WSDL validation, errMessage " .. errMessage
     kong.log.err (errMessage)
     return errMessage
   end
@@ -451,8 +464,13 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     kong.log.debug ("XSD validation of "..  schemaType .." schema: Ko, " .. errMessage)
   else
     errMessage = "Ko"
-    kong.log.debug ("XSD validation of ".. schemaType .." schema: Ko")
+    kong.log.debug ("XSD validation of ".. schemaType .." schema: " .. errMessage)
   end
+
+  if errMessage then
+    kong.log.err ("XSD validation, errMessage: " .. errMessage)
+  end
+
   return errMessage
 end
 
