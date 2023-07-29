@@ -38,7 +38,9 @@ end
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     local errMessage
 
-    if verbose then
+    -- if verbose then
+    if false then
+      kong.log.notice("******* Jerome NOT NOT NOT *******")
       local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
         -- The callback function can be called two times in a row
         -- 1st time: initial message (like: "Start tag expected, '<' not found")
@@ -54,13 +56,20 @@ function libxml2ex.xmlSchemaParse (xsd_context, verbose)
       ffi.gc(error_handler, error_handler.free)
     end
     
+    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.error_handler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
-
+    errMessage = ngx.ctx.errMessage
+    local mySleep = kong.request.get_header("X-Sleep")
+    if mySleep then
+      kong.log.notice("Sleep " .. tonumber(mySleep) .. "s")
+      ngx.sleep(tonumber(mySleep))
+    end
+    
     if xsd_schema_doc == ffi.NULL then
         ngx.log(ngx.ERR, "xmlSchemaParse returns null")
     end
     
-    return xsd_schema_doc,  errMessage, error_handler
+    return xsd_schema_doc, errMessage
 end
 
 -- Create an XML Schemas validation context based on the given schema.
@@ -89,7 +98,8 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
   local libxml2 = require("xmlua.libxml2")
   local errMessage
   
-  if verbose == true then
+  -- if verbose == true then
+  if false then
     local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
         errMessage = libxml2ex.formatErrMsg(xmlError)
         ngx.log(ngx.ERR, "xmlReadMemory, errMessage: " .. errMessage)
@@ -98,13 +108,16 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
     ffi.gc(error_handler, error_handler.free)
   end
 
+  xml2.xmlSetStructuredErrorFunc(nil, kong.error_handler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
     
   if xml_doc == ffi.NULL then
-    ngx.log(ngx.ERR, "xmlReadMemory returns null")
+    -- It returns null in case of issue on SOAP/XML posted by the consumer
+    -- We don't consider it as an Error
+    ngx.log(ngx.DEBUG, "xmlReadMemory returns null")
   end
 
-  return ffi.gc(xml_doc, libxml2.xmlFreeDoc), errMessage
+  return ffi.gc(xml_doc, libxml2.xmlFreeDoc), ngx.ctx.errMessage
 end
 
 -- Validate a document tree in memory.
@@ -114,7 +127,8 @@ end
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
   local errMessage
   
-  if verbose then
+  --if verbose then
+  if false then
     local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
         errMessage = libxml2ex.formatErrMsg(xmlError)
       end)
@@ -122,9 +136,10 @@ function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
     
     ffi.gc(error_handler, error_handler.free)
   end
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.error_handler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
-  return tonumber(is_valid), errMessage
+  return tonumber(is_valid), ngx.ctx.errMessage
 end
 
 -- Validate a branch of a tree, starting with the given @elem.
@@ -133,7 +148,9 @@ end
 -- Returns:	0 if the element and its subtree is valid, a positive error code number otherwise and -1 in case of an internal or API error.
 function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
   local errMessage
-  if verbose then
+  
+  --if verbose then
+  if false then
     local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
         errMessage = libxml2ex.formatErrMsg(xmlError)
       end)
@@ -141,9 +158,9 @@ function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, 
     
     ffi.gc(error_handler, error_handler.free)
   end
-  
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.error_handler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
-  return tonumber(is_valid), errMessage
+  return tonumber(is_valid), ngx.ctx.errMessage
 end
 
 -- Format the Error Message

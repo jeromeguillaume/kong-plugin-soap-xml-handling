@@ -418,3 +418,4 @@ Content-Length: 185
   - Add the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
 - v1.0.3:
   - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
+- v1.0.4: Improve the log error management by initializing it in the `init_worker` phase

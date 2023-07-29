@@ -369,7 +369,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
   
   -- Create XSD schema
-  local xsd_schema_doc, errMessage, error_handler = libxml2ex.xmlSchemaParse(xsd_context, verbose)
+  local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
   
   -- If there is no error loading the XSD schema
   if not errMessage then
@@ -420,10 +420,10 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   if not errMessage and is_valid == 0 then
     kong.log.debug ("XSD validation of ".. schemaType .." schema: Ok")
   elseif errMessage then
-    kong.log.err ("XSD validation of "..  schemaType .." schema: Ko, " .. errMessage)
+    kong.log.debug ("XSD validation of "..  schemaType .." schema: Ko, " .. errMessage)
   else
     errMessage = "Ko"
-    kong.log.err ("XSD validation of ".. schemaType .." schema: Ko")
+    kong.log.debug ("XSD validation of ".. schemaType .." schema: Ko")
   end
   return errMessage
 end
@@ -482,10 +482,10 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
           rcXpath = true
         end
     else
-      kong.log.err ("RouteByXPath, object.nodesetval is null")  
+      kong.log.debug ("RouteByXPath, object.nodesetval is null")  
     end
   else
-    kong.log.err ("RouteByXPath, object is null")
+    kong.log.debug ("RouteByXPath, object is null")
   end
   local msg = "with XPath=\"" .. XPath .. "\" and XPathCondition=\"" .. XPathCondition .. "\""
   

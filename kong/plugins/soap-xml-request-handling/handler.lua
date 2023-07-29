@@ -42,7 +42,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
                                                     errMessage)
     end
   end
-  
+
   -- If there is no error and
   -- If the plugin is defined with XSD or WSDL API schema then:
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
@@ -83,9 +83,33 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
       kong.log.debug("Upstream changed successfully")
     end
   end
-
+  
   return soapEnvelope_transformed, soapFaultBody
 
+end
+
+------------------------------------------------------
+-- Executed upon every Nginx worker process’s startup
+------------------------------------------------------
+function plugin:init_worker (plugin_conf)
+  
+  -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
+  -- The error message will be set contextually to the Request by using the 'ngx.ctx'
+  -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
+  -- the 'libxml2' library complains with an error message 'too many calls' (after ~100 calls)
+  local libxml2ex = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+  local ffi = require("ffi")
+  local loaded, xml2 = pcall(ffi.load, "xml2")
+  kong.error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+    -- The callback function can be called two times in a row
+    -- 1st time: initial message (like: "Start tag expected, '<' not found")
+    if ngx.ctx.errMessage == nil then
+      ngx.ctx.errMessage = libxml2ex.formatErrMsg(xmlError)
+    -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
+    else
+      ngx.ctx.errMessage = ngx.ctx.errMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
+    end
+  end)
 end
 
 ---------------------------------------------------------------------------------------------------
