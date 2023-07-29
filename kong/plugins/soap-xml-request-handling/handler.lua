@@ -103,11 +103,11 @@ function plugin:init_worker (plugin_conf)
   kong.error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
     -- The callback function can be called two times in a row
     -- 1st time: initial message (like: "Start tag expected, '<' not found")
-    if ngx.ctx.errMessage == nil then
-      ngx.ctx.errMessage = libxml2ex.formatErrMsg(xmlError)
+    if kong.ctx.shared.xmlSoapErrMessage == nil then
+      kong.ctx.shared.xmlSoapErrMessage = libxml2ex.formatErrMsg(xmlError)
     -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
     else
-      ngx.ctx.errMessage = ngx.ctx.errMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
+      kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
     end
   end)
 end

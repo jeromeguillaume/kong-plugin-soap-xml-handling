@@ -37,34 +37,11 @@ end
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     local errMessage
-
-    -- if verbose then
-    if false then
-      kong.log.notice("******* Jerome NOT NOT NOT *******")
-      local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-        -- The callback function can be called two times in a row
-        -- 1st time: initial message (like: "Start tag expected, '<' not found")
-        if errMessage == nil then
-          errMessage = libxml2ex.formatErrMsg(xmlError)
-        -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
-        else
-          errMessage = errMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
-        end
-      end)
-
-      xml2.xmlSetStructuredErrorFunc(xsd_context, error_handler)
-      ffi.gc(error_handler, error_handler.free)
-    end
     
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.error_handler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
-    errMessage = ngx.ctx.errMessage
-    local mySleep = kong.request.get_header("X-Sleep")
-    if mySleep then
-      kong.log.notice("Sleep " .. tonumber(mySleep) .. "s")
-      ngx.sleep(tonumber(mySleep))
-    end
-    
+    errMessage = kong.ctx.shared.xmlSoapErrMessage
+
     if xsd_schema_doc == ffi.NULL then
         ngx.log(ngx.ERR, "xmlSchemaParse returns null")
     end
@@ -98,16 +75,6 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
   local libxml2 = require("xmlua.libxml2")
   local errMessage
   
-  -- if verbose == true then
-  if false then
-    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-        errMessage = libxml2ex.formatErrMsg(xmlError)
-        ngx.log(ngx.ERR, "xmlReadMemory, errMessage: " .. errMessage)
-      end)
-    xml2.xmlSetStructuredErrorFunc(nil, error_handler)
-    ffi.gc(error_handler, error_handler.free)
-  end
-
   xml2.xmlSetStructuredErrorFunc(nil, kong.error_handler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
     
@@ -117,7 +84,7 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
     ngx.log(ngx.DEBUG, "xmlReadMemory returns null")
   end
 
-  return ffi.gc(xml_doc, libxml2.xmlFreeDoc), ngx.ctx.errMessage
+  return ffi.gc(xml_doc, libxml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
 end
 
 -- Validate a document tree in memory.
@@ -127,19 +94,10 @@ end
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
   local errMessage
   
-  --if verbose then
-  if false then
-    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-        errMessage = libxml2ex.formatErrMsg(xmlError)
-      end)
-    xml2.xmlSchemaSetValidStructuredErrors(validation_context, error_handler, nil)
-    
-    ffi.gc(error_handler, error_handler.free)
-  end
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.error_handler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
-  return tonumber(is_valid), ngx.ctx.errMessage
+  return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end
 
 -- Validate a branch of a tree, starting with the given @elem.
@@ -149,18 +107,9 @@ end
 function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
   local errMessage
   
-  --if verbose then
-  if false then
-    local error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-        errMessage = libxml2ex.formatErrMsg(xmlError)
-      end)
-    xml2.xmlSchemaSetValidStructuredErrors(validation_context, error_handler, nil)
-    
-    ffi.gc(error_handler, error_handler.free)
-  end
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.error_handler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
-  return tonumber(is_valid), ngx.ctx.errMessage
+  return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end
 
 -- Format the Error Message
