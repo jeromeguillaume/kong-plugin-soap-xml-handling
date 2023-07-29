@@ -112,9 +112,9 @@ end
 --------------------------------
 function xmlgeneral.initializeErrorHandler (plugin_conf)
   -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
-  -- The error message will be set contextually to the Request by using the 'ngx.ctx'
+  -- The error message will be set contextually to the Request by using the 'kong.ctx'
   -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
-  -- the 'libxml2' library complains with an error message 'too many calls' (after ~100 calls)
+  -- the 'libxml2' library complains with an error message: 'too many calls' (after ~100 calls)
   local libxml2ex = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
   local ffi = require("ffi")
   local loaded, xml2 = pcall(ffi.load, "xml2")
