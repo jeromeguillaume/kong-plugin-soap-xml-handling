@@ -107,27 +107,32 @@ function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = "text/xml; charset=utf-8"})
 end
 
---------------------------------
--- Initialize the Error handler
---------------------------------
+------------------------------------------
+-- Initialize the 'libxml2' Error handler
+------------------------------------------
 function xmlgeneral.initializeErrorHandler (plugin_conf)
   -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
   -- The error message will be set contextually to the Request by using the 'kong.ctx'
   -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
   -- the 'libxml2' library complains with an error message: 'too many calls' (after ~100 calls)
-  local libxml2ex = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-  local ffi = require("ffi")
-  local loaded, xml2 = pcall(ffi.load, "xml2")
-  kong.xmlSoapErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-    -- The callback function can be called two times in a row
-    -- 1st time: initial message (like: "Start tag expected, '<' not found")
-    if kong.ctx.shared.xmlSoapErrMessage == nil then
-      kong.ctx.shared.xmlSoapErrMessage = libxml2ex.formatErrMsg(xmlError)
-    -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
-    else
-      kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '.\n' .. libxml2ex.formatErrMsg(xmlError)
-    end
-  end)
+  if not kong.xmlSoapErrorHandler then
+    kong.log.debug ("initializeErrorHandler: it's the 1st time the function is called => initialize the 'libxml2' Error Handler")
+    local libxml2ex = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+    local ffi = require("ffi")
+    local loaded, xml2 = pcall(ffi.load, "xml2")
+    kong.xmlSoapErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+      -- The callback function can be called two times in a row
+      -- 1st time: initial message (like: "Start tag expected, '<' not found")
+      if kong.ctx.shared.xmlSoapErrMessage == nil then
+        kong.ctx.shared.xmlSoapErrMessage = libxml2ex.formatErrMsg(xmlError)
+      -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
+      else
+        kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '.\n' .. libxml2ex.formatErrMsg(xmlError)
+      end
+    end)
+  else
+    kong.log.debug ("initializeErrorHandler: 'libxml2' Error Handler is already initialized => nothing to do")
+  end
 end
 
 ----------------------------------------------------------------------------------------
