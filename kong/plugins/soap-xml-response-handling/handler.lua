@@ -78,23 +78,10 @@ end
 ------------------------------------------------------
 function plugin:init_worker (plugin_conf)
   
-  -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
-  -- The error message will be set contextually to the Request by using the 'ngx.ctx'
-  -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
-  -- the 'libxml2' library complains with an error message 'too many calls' (after ~100 calls)
-  local libxml2ex = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-  local ffi = require("ffi")
-  local loaded, xml2 = pcall(ffi.load, "xml2")
-  kong.error_handler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-    -- The callback function can be called two times in a row
-    -- 1st time: initial message (like: "Start tag expected, '<' not found")
-    if kong.ctx.shared.xmlSoapErrMessage == nil then
-      kong.ctx.shared.xmlSoapErrMessage = libxml2ex.formatErrMsg(xmlError)
-    -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
-    else
-      kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '. ' .. libxml2ex.formatErrMsg(xmlError)
-    end
-  end)
+  -- Initialize the Error handler at the initialization plugin
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  xmlgeneral.initializeErrorHandler (plugin_conf)
+  
 end
 
 -----------------------------------------------------------------------------------------

@@ -38,7 +38,7 @@ end
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     local errMessage
     
-    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.error_handler)
+    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
     errMessage = kong.ctx.shared.xmlSoapErrMessage
 
@@ -75,7 +75,7 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
   local libxml2 = require("xmlua.libxml2")
   local errMessage
   
-  xml2.xmlSetStructuredErrorFunc(nil, kong.error_handler)
+  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
     
   if xml_doc == ffi.NULL then
@@ -94,7 +94,7 @@ end
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
   local errMessage
   
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.error_handler, nil)
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
@@ -107,7 +107,7 @@ end
 function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
   local errMessage
   
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.error_handler, nil)
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end
