@@ -2,7 +2,9 @@ local libxslt = {}
 
 require("kong.plugins.soap-xml-handling-lib.libxslt.internals")
 
-local ffi = require("ffi")
+local libxml2   = require("xmlua.libxml2")
+local ffi       = require("ffi")
+
 local loaded, xslt = pcall(ffi.load, "xslt")
 
 -- Parse an XSLT stylesheet, building the associated structures. doc is kept as a reference within the returned stylesheet, so changes to doc after the parsing will be reflected when the stylesheet is applied, and the doc is automatically freed when the stylesheet is closed.
@@ -30,7 +32,6 @@ function libxslt.xsltApplyStylesheet (style, doc)
     if doc_transformed == ffi.NULL then
         ngx.log(ngx.ERR, "xsltApplyStylesheet returns null")
     end
-    local libxml2     = require("xmlua.libxml2")
     
     return ffi.gc(doc_transformed, libxml2.xmlFreeDoc)
 end
