@@ -52,8 +52,8 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- Calculate a cache key based on the URL using the hash_key function.
   local url_cache_key = hash_key(entities_url)
   
-  -- Try to retrieve the response_body from cache, with a TTL of 10 seconds, using the retrieveEntities function.
-  local response_body, err = kong.cache:get(url_cache_key, { ttl = 10 }, retrieveEntities, entities_url)
+  -- Try to retrieve the response_body from cache, with a TTL of 300 seconds, using the retrieveEntities function.
+  local response_body, err = kong.cache:get(url_cache_key, { ttl = 300 }, retrieveEntities, entities_url)
 
   if err then
     kong.log.err("Error while retrieving entities from cache: ", err)
