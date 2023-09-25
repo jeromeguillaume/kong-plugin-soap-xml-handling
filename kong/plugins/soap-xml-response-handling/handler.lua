@@ -1,3 +1,6 @@
+local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+local kongUtils = require("kong.tools.utils")
+
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
@@ -10,7 +13,6 @@ local plugin = {
 -- XSLT TRANSFORMATION - AFTER XSD: Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelopeTransformed
   local soapFaultBody
   
@@ -79,8 +81,7 @@ end
 function plugin:init_worker (plugin_conf)
   
   -- Initialize the Error handler at the initialization plugin
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  xmlgeneral.initializeErrorHandler (plugin_conf)
+  xmlgeneral.initializeHandlerLoader (plugin_conf)
   
 end
 
@@ -111,7 +112,6 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelopeTransformed
   local soapFaultBody
   local soapEnvelope
@@ -145,8 +145,6 @@ function plugin:header_filter(plugin_conf)
       return
     end
   end
-  
-  local kongUtils = require("kong.tools.utils")
   
   -- If the Body is deflated/zipped, we inflate/unzip it
   if kong.response.get_header("Content-Encoding") == "gzip" then
@@ -234,8 +232,6 @@ function plugin:body_filter(plugin_conf)
     kong.log.debug("A pending error has been set by SOAP/XML plugin: we do nothing in this plugin")
     return
   end
-
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
   -- Get modified SOAP envelope set by the plugin itself on 'header_filter'
   if  kong.ctx.shared.xmlSoapHandlingFault  and

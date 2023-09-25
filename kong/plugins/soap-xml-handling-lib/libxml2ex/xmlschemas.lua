@@ -11,6 +11,7 @@ ffi.cdef[[
     typedef struct _xmlSchemaParserCtxt* xmlSchemaParserCtxtPtr;
     typedef struct _xmlSchemaValidCtxt* xmlSchemaValidCtxtPtr;
     
+    typedef xmlParserInputPtr (*xmlExternalEntityLoader) (const char *URL, const char *ID, xmlParserCtxtPtr context);
     
     typedef xmlDoc * xmlDocPtr;
     typedef struct xmlParserCtxt {} * xmlParserCtxtPtr;
@@ -25,6 +26,13 @@ ffi.cdef[[
                                                         const char * encoding, 
                                                         int options);
     int	                    xmlSchemaValidateDoc		(xmlSchemaValidCtxtPtr ctxt, xmlDocPtr doc);
+    xmlExternalEntityLoader	xmlGetExternalEntityLoader	(void);
+    xmlParserInputPtr	    xmlNewStringInputStream	    (xmlParserCtxtPtr ctxt, 
+						                                const xmlChar * buffer);
+    xmlParserInputPtr	    xmlNewInputFromFile	        (xmlParserCtxtPtr ctxt, 
+						                                const char * filename);
+    void	                xmlSetExternalEntityLoader	(xmlExternalEntityLoader f);
+    int                     xmlSubstituteEntitiesDefault        (int val);
     int                     xmlSchemaValidateOneElement	(xmlSchemaValidCtxtPtr ctxt, 
 					                                    xmlNodePtr elem);
     int	                    xmlSchemaGetValidErrors		(xmlSchemaValidCtxtPtr ctxt, 

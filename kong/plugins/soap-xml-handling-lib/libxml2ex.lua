@@ -6,7 +6,13 @@ require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlerror")
 require("kong.plugins.soap-xml-handling-lib.libxml2ex.xmlwriter")
 require("xmlua.libxml2.xmlerror")
 
-local ffi = require("ffi")
+local libxml2         = require("xmlua.libxml2")
+local resty_sha256    = require "resty.sha256"
+local resty_str       = require "resty.string"
+local http            = require("socket.http")
+local ffi             = require("ffi")
+
+-- load xml2 library
 local loaded, xml2 = pcall(ffi.load, "xml2")
 if not loaded then
   if _G.jit.os == "Windows" then
@@ -14,6 +20,65 @@ if not loaded then
   else
     xml2 = ffi.load("libxml2.so.2")
   end
+end
+
+-- Initialize the defaultLoader to nil.
+local defaultLoader = nil
+
+-- Function to hash a given key using SHA256 and return it as a hexadecimal string.
+local function hash_key(key)
+  local sha256 = resty_sha256:new()
+  sha256:update(key)
+  return resty_str.to_hex(sha256:final())
+end
+
+-- Function to retrieve entities from a given URL.
+local function retrieveEntities(url)
+  local response_body, response_code, response_headers, response_status, err = http.request(url)
+
+  if err then
+    kong.log.err("Error while retrieving entities: ", err)
+    return nil, err
+  end
+
+  return response_body
+end
+
+-- Custom XML entity loader function.
+function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
+  local ret = nil;
+  local entities_url = ffi.string(URL);
+
+  -- Calculate a cache key based on the URL using the hash_key function.
+  local url_cache_key = hash_key(entities_url)
+  
+  -- Try to retrieve the response_body from cache, with a TTL of 300 seconds, using the retrieveEntities function.
+  local response_body, err = kong.cache:get(url_cache_key, { ttl = 300 }, retrieveEntities, entities_url)
+
+  if err then
+    kong.log.err("Error while retrieving entities from cache: ", err)
+    return nil, err
+  end
+
+  -- Create a new XML string input stream using the retrieved response_body.
+  ret = xml2.xmlNewStringInputStream(ctxt, response_body);
+  if ret ~= ffi.NULL then
+    return ret;
+  end
+
+  -- If the ret is still ffi.NULL and there is a defaultLoader, call the defaultLoader function.
+  if defaultLoader ~= ffi.NULL then
+    ret = defaultLoader(URL, ID, ctxt);
+    return ret;
+  end
+end
+
+-- Function to set the custom XML entity loader as the external entity loader.
+function libxml2ex.initializeExternalEntityLoader()
+  -- Get the current default external entity loader.
+  defaultLoader = xml2.xmlGetExternalEntityLoader();
+  -- Set the custom XML entity loader as the new external entity loader.
+  xml2.xmlSetExternalEntityLoader(libxml2ex.xmlMyExternalEntityLoader);
 end
 
 -- Create an XML Schemas parse context for that memory buffer expected to contain an XML Schemas file.
@@ -53,7 +118,6 @@ end
 -- schema:	a precompiled XML Schemas
 -- Returns:	the validation context or NULL in case of error
 function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
-    local libxml2 = require("xmlua.libxml2")  
     local validation_context = xml2.xmlSchemaNewValidCtxt(xsd_schema_doc)
     
     if validation_context == ffi.NULL then
@@ -72,7 +136,6 @@ end
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
 function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
-  local libxml2 = require("xmlua.libxml2")
   local errMessage
   
   xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
@@ -210,7 +273,6 @@ function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodePtr)
   local xmlBuffer = xml2.xmlBufferCreate();
   
   if xmlBuffer ~= ffi.NULL then
-    local libxml2       = require("xmlua.libxml2")
     
     local output_buffer = xmlOutputBufferCreate(xmlBuffer)
     if output_buffer ~= ffi.NULL then

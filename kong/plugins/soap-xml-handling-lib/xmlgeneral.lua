@@ -1,5 +1,12 @@
 local xmlgeneral = {}
 
+local ffi               = require("ffi")
+local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+local libxml2           = require("xmlua.libxml2")
+local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
+
+local loaded, xml2 = pcall(ffi.load, "xml2")
+
 xmlgeneral.HTTPCodeSOAPFault = 500
 
 xmlgeneral.RequestTextError   = "Request"
@@ -123,16 +130,13 @@ end
 ------------------------------------------
 -- Initialize the 'libxml2' Error handler
 ------------------------------------------
-function xmlgeneral.initializeErrorHandler (plugin_conf)
+function xmlgeneral.initializeHandlerLoader (plugin_conf)
   -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
   -- The error message will be set contextually to the Request by using the 'kong.ctx'
   -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
   -- the 'libxml2' library complains with an error message: 'too many calls' (after ~100 calls)
   if not kong.xmlSoapErrorHandler then
     kong.log.debug ("initializeErrorHandler: it's the 1st time the function is called => initialize the 'libxml2' Error Handler")
-    local libxml2ex = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-    local ffi = require("ffi")
-    local loaded, xml2 = pcall(ffi.load, "xml2")
     kong.xmlSoapErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
       -- The callback function can be called two times in a row
       -- 1st time: initial message (like: "Start tag expected, '<' not found")
@@ -146,6 +150,13 @@ function xmlgeneral.initializeErrorHandler (plugin_conf)
   else
     kong.log.debug ("initializeErrorHandler: 'libxml2' Error Handler is already initialized => nothing to do")
   end
+
+  if not kong.initializeExternalEntityLoader then
+    libxml2ex.initializeExternalEntityLoader()
+    kong.initializeExternalEntityLoader = true
+  else
+    kong.log.debug ("initializeExternalEntityLoader: 'libxml2' External Load is already initialized => nothing to do")
+  end
 end
 
 ----------------------------------------------------------------------------------------
@@ -157,7 +168,6 @@ end
 ----------------------------------------------------------------------------------------
 function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, omitXmlDeclaration, standalone, indent)
   local xmlDeclaration = ""
-  local ffi = require("ffi")
   
   -- If we have to Format and Add (to SOAP/XML content) the XML declaration
   if omitXmlDeclaration == 0 then
@@ -189,10 +199,6 @@ end
 -- Transform XML with XSLT Transformation
 ------------------------------------------
 function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
-  local libxml2ex   = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-  local libxslt     = require("kong.plugins.soap-xml-handling-lib.libxslt")
-  local libxml2     = require("xmlua.libxml2")
-  local ffi         = require("ffi")
   local errMessage  = ""
   local err         = nil
   local style       = nil
@@ -202,11 +208,10 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   local xmlNodePtrRoot        = nil
   
   kong.log.debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
-  
+
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                        ffi.C.XML_PARSE_NOWARNING,
-                                        ffi.C.XML_PARSE_NONET)
-                                        
+                                      ffi.C.XML_PARSE_NOWARNING)
+
   -- Load the XSLT document
   local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose)
   
@@ -266,9 +271,6 @@ end
 -- Validate a XML with a WSDL
 ------------------------------
 function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL, verbose)
-  local ffi               = require("ffi")
-  local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-  local libxml2           = require("xmlua.libxml2")
   local xml_doc           = nil
   local errMessage        = nil
   local xsdSchema         = nil
@@ -301,8 +303,11 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   --    <wsdl:part name="parameters" element="tns:DeleteDummyPayload" />
   --  </wsdl:message>
 
+  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
+                                      ffi.C.XML_PARSE_NOWARNING)
+
   -- Parse an XML in-memory document and build a tree
-  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, 0, verbose)
+  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose)
   if errMessage then
     errMessage = "WSDL validation, errMessage " .. errMessage
     kong.log.err (errMessage)
@@ -371,6 +376,8 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
         if not errMessage then
           kong.log.debug ("We found the right XSD Schema validating the SOAP/XML")
           validSchemaFound = true
+          errMessage = nil
+          break
         end
       end
     end
@@ -390,14 +397,14 @@ end
 -- Validate a XML with its XSD schema
 --------------------------------------
 function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema, verbose)
-  local ffi           = require("ffi")
-  local libxml2ex     = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-  local libxml2       = require("xmlua.libxml2")
   local xml_doc       = nil
   local errMessage    = nil
   local err           = nil
   local is_valid      = 0
   local schemaType    = ""
+  local bodyNodeFound = nil
+  local currentNode   = nil
+  local nodeName      = ""
   
   -- Prepare the error Message
   if child == 0 then
@@ -405,6 +412,9 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   else
     schemaType = "API"
   end
+
+  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
+                                      ffi.C.XML_PARSE_NOWARNING)
 
   -- Create Parser Context
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
@@ -418,7 +428,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     -- Create Validation context of XSD Schema
     local validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
 
-    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, 0 , verbose)
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options, verbose)
     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
@@ -437,10 +447,31 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       --  </soap:Envelope>
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot   = libxml2.xmlDocGetRootElement(xml_doc);
-      -- Get Child Element, which is <soap:Body>
-      local xmlNodePtrChild  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
+
+      currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
+       -- Retrieve '<soap:Body>' Node in the XML
+      while currentNode ~= ffi.NULL and not bodyNodeFound do
+        if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+          kong.log.debug ("currentNode.name: " .. ffi.string(currentNode.name))
+          nodeName = ffi.string(currentNode.name)
+          if nodeName == "Body" then
+            bodyNodeFound = true
+            break
+          end
+        end
+        if not bodyNodeFound then
+          currentNode = ffi.cast("xmlNode *", currentNode.next)
+        end
+      end
+      -- If we don't find <wsdl:types>
+      if not bodyNodeFound then
+        errMessage = "Unable to find the 'soap:Body'"
+        kong.log.err (errMessage)
+        return errMessage
+      end
+
       -- Get WebService Child Element, which is, for instance, <Add xmlns="http://tempuri.org/">
-      local xmlNodePtrChildWS = libxml2.xmlFirstElementChild(xmlNodePtrChild)
+      local xmlNodePtrChildWS = libxml2.xmlFirstElementChild(currentNode)
 
       -- Dump in a String the WebService part
       kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
@@ -478,9 +509,6 @@ end
 -- Search a XPath and Compares it to a value
 ---------------------------------------------
 function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPathRegisterNs)
-  local ffi         = require("ffi")
-  local libxml2ex   = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
-  local libxml2     = require("xmlua.libxml2")
   local rcXpath     = false
   
   kong.log.debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
