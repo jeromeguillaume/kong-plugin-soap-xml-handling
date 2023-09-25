@@ -419,3 +419,4 @@ Content-Length: 185
 - v1.0.3:
   - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
 - v1.0.4: Improve the log error management by initializing it in the `init_worker` phase
+- v1.0.5: Add an external loader (http)

@@ -3,7 +3,7 @@ local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.4",
+    VERSION = "1.0.5",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
