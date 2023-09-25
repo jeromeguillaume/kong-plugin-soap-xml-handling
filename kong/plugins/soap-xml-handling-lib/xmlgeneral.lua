@@ -1,12 +1,11 @@
 local xmlgeneral = {}
 
 local ffi               = require("ffi")
-
-local loaded, xml2 = pcall(ffi.load, "xml2")
-
 local libxml2           = require("xmlua.libxml2")
 local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
+
+local loaded, xml2 = pcall(ffi.load, "xml2")
 
 xmlgeneral.HTTPCodeSOAPFault = 500
 
