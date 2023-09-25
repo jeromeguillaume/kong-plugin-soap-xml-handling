@@ -1,4 +1,3 @@
-local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 local kongUtils = require("kong.tools.utils")
 
 -- handler.lua
@@ -13,6 +12,7 @@ local plugin = {
 -- XSLT TRANSFORMATION - AFTER XSD: Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelopeTransformed
   local soapFaultBody
   
@@ -79,7 +79,7 @@ end
 -- Executed upon every Nginx worker process’s startup
 ------------------------------------------------------
 function plugin:init_worker (plugin_conf)
-  
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   -- Initialize the Error handler at the initialization plugin
   xmlgeneral.initializeHandlerLoader (plugin_conf)
   
@@ -112,6 +112,7 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelopeTransformed
   local soapFaultBody
   local soapEnvelope
