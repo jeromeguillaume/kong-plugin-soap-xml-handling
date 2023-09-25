@@ -63,14 +63,15 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- Create a new XML string input stream using the retrieved response_body.
   ret = xml2.xmlNewStringInputStream(ctxt, response_body);
   if ret ~= ffi.NULL then
-    return ret;
+    return ret
   end
 
   -- If the ret is still ffi.NULL and there is a defaultLoader, call the defaultLoader function.
   if defaultLoader ~= ffi.NULL then
     ret = defaultLoader(URL, ID, ctxt);
-    return ret;
   end
+
+  return ret
 end
 
 -- Function to set the custom XML entity loader as the external entity loader.
@@ -101,17 +102,15 @@ end
 -- ctxt:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
-    local errMessage
     
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
-    errMessage = kong.ctx.shared.xmlSoapErrMessage
 
     if xsd_schema_doc == ffi.NULL then
         ngx.log(ngx.ERR, "xmlSchemaParse returns null")
     end
     
-    return xsd_schema_doc, errMessage
+    return ffi.gc(xsd_schema_doc, xml2.xmlSchemaFree), kong.ctx.shared.xmlSoapErrMessage
 end
 
 -- Create an XML Schemas validation context based on the given schema.
@@ -125,7 +124,7 @@ function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
         return nil
     end
 
-    return ffi.gc(validation_context, libxml2.xmlSchemaFreeValidCtxt)
+    return ffi.gc(validation_context, xml2.xmlSchemaFreeValidCtxt)
 end
 
 -- Parse an XML in-memory document and build a tree.
@@ -136,7 +135,6 @@ end
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
 function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
-  local errMessage
   
   xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
@@ -147,7 +145,7 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
     ngx.log(ngx.DEBUG, "xmlReadMemory returns null")
   end
 
-  return ffi.gc(xml_doc, libxml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+  return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
 end
 
 -- Validate a document tree in memory.
@@ -155,7 +153,6 @@ end
 -- doc:	a parsed document tree
 -- Returns:	0 if the document is schemas valid, a positive error code number otherwise and -1 in case of internal or API error.
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
-  local errMessage
   
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
@@ -168,7 +165,6 @@ end
 -- elem:	an element node
 -- Returns:	0 if the element and its subtree is valid, a positive error code number otherwise and -1 in case of an internal or API error.
 function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
-  local errMessage
   
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
@@ -288,6 +284,7 @@ function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodePtr)
     end
     -- free Buffer
     xml2.xmlBufferFree(xmlBuffer)
+    xml2.xmlOutputBufferClose(output_buffer)
   else
     ngx.log(ngx.ERR, "Error calling 'xmlBufferCreate'")
   end

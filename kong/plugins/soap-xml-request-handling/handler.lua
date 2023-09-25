@@ -1,5 +1,3 @@
-local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
@@ -13,6 +11,7 @@ local plugin = {
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------
 function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelope_transformed
   local errMessage
   local soapFaultBody
@@ -93,7 +92,8 @@ end
 -- Executed upon every Nginx worker process’s startup
 ------------------------------------------------------
 function plugin:init_worker (plugin_conf)
-  
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+
   -- Initialize the Error handler at the initialization plugin
   xmlgeneral.initializeHandlerLoader (plugin_conf)
 
@@ -103,7 +103,8 @@ end
 -- Executed for every request from a client and before it is being proxied to the upstream service
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
-  
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+
   -- Get SOAP envelope from the request
   local soapEnvelope = kong.request.get_raw_body()
 
@@ -140,7 +141,8 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
-  
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   -- we reformat the JSON message to SOAP/XML Fault
   if kong.ctx.shared.xmlSoapHandlingFault == nil and
