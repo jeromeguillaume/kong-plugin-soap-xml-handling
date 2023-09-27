@@ -34,13 +34,22 @@ end
 
 -- Function to retrieve entities from a given URL.
 local function retrieveEntities(url)
-  local response_body, response_code, response_headers, response_status, err = http.request(url)
+  http.TIMEOUT = 5
+  -- http.PROXY
+  -- this feature could be added in future by moving initializeExternalEntityLoader in access phase
 
-  if err then
-    kong.log.err("Error while retrieving entities: ", err)
-    return nil, err
+  local response_body, response_code, response_headers = http.request(url)
+
+  if response_code ~= 200 then
+    kong.log.err("Error while retrieving entities - error: ", response_code)
+    return nil, response_code
   end
 
+  if response_body == nil then
+    kong.log.err("Error while retrieving entities response body is nul")
+    return nil, response_code, "Error while retrieving entities response body is nul"
+  end
+ 
   return response_body
 end
 
