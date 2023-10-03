@@ -55,55 +55,29 @@ end
 
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
-  local ret = nil
-  local entities_url = ffi.string(URL)
+  local ret = nil;
+  local entities_url = ffi.string(URL);
 
   -- Calculate a cache key based on the URL using the hash_key function.
   local url_cache_key = hash_key(entities_url)
+  
+  -- Try to retrieve the response_body from cache, with a TTL of 300 seconds, using the retrieveEntities function.
+  local response_body, err = kong.cache:get(url_cache_key, { ttl = 300 }, retrieveEntities, entities_url)
 
-  -- Check if the response is available in the cache.
-  local response_body = kong.cache:get(url_cache_key)
-
-  if response_body == nil then
-    -- The response is not in the cache, so we need to fetch it asynchronously.
-
-    -- Start an asynchronous task to retrieve the response_body.
-    local async_task = ngx.thread.spawn(function()
-      local http = require("socket.http")
-      http.TIMEOUT = 5
-
-      local _, _, response_headers, response_code = http.request{
-        url = entities_url,
-        method = "GET",
-      }
-
-      if response_code == 200 then
-        return response_headers, response_code
-      else
-        return nil, response_code
-      end
-    end)
-
-    -- Yield and wait for the asynchronous task to complete.
-    local _, result = ngx.thread.wait(async_task)
-
-    local response_headers, response_code = unpack(result)
-
-    if response_headers and response_code == 200 then
-      -- The request was successful; store the response in the cache.
-      response_body = result[1].body
-      kong.cache:set(url_cache_key, response_body, 300)  -- Cache the response for 300 seconds.
-    else
-      kong.log.err("Error while retrieving entities - error: ", response_code)
-      return nil, response_code
-    end
+  if err then
+    kong.log.err("Error while retrieving entities from cache: ", err)
+    return nil, err
   end
 
   -- Create a new XML string input stream using the retrieved response_body.
-  ret = xml2.xmlNewStringInputStream(ctxt, response_body)
+  ret = xml2.xmlNewStringInputStream(ctxt, response_body);
+  if ret ~= ffi.NULL then
+    return ret
+  end
 
-  if ret == ffi.NULL and defaultLoader ~= ffi.NULL then
-    ret = defaultLoader(URL, ID, ctxt)
+  -- If the ret is still ffi.NULL and there is a defaultLoader, call the defaultLoader function.
+  if defaultLoader ~= ffi.NULL then
+    ret = defaultLoader(URL, ID, ctxt);
   end
 
   return ret
