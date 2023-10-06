@@ -409,17 +409,17 @@ Content-Length: 185
 </soap:Envelope>
 ```
 
-### Example #9: Request | ```WSDL/XSD VALIDATION```: use a WSDL definition which import an XSD schema from an external entity (i.e: http(s)://)
-Calling incorrectly ```calcWebService``` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
+### Example #9: Request | `WSDL/XSD VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e: http(s)://)
+Calling incorrectly `calcWebService` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
 <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
 ```
 
-1) Create a Kong Route named ```tempui.org.request-response.xsd``` with the ```path``` value ```/tempui.org.request-response.xsd```
+1) Create a Kong Route named `tempui.org.request-response.xsd` with the `path` value `/tempui.org.request-response.xsd`
 
-2) Add ```Request Termination``` plugin to this Route and configure the plugin with:
-- ```body``` property with this ```XSD``` value:
+2) Add `Request Termination` plugin to this Route and configure the plugin with:
+- `body` property with this `XSD` value:
 ```xml
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
@@ -447,11 +447,11 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 - `content_type` property with the value `text/xml`
 - `status_code` property with the value `200`
 
-3) 'Reset' the configuration of ```calcWebService```: remove the ```soap-xml-request-handling``` and ```soap-xml-response-handling``` plugins 
+3) 'Reset' the configuration of `calcWebService`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
-4) Add ```soap-xml-request-handling``` plugin to ```calcWebService``` and configure the plugin with:
-- ```VerboseRequest``` enabled
-- ```XsdApiSchema``` property with this ```WSDL``` value:
+4) Add `soap-xml-request-handling` plugin to `calcWebService` and configure the plugin with:
+- `VerboseRequest` enabled
+- `XsdApiSchema` property with this `WSDL` value:
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -484,7 +484,7 @@ KONG_NGINX_WORKER_PROCESSES=2
 ```
 Note: the non-blocking `resty.http` library cannot be use because it's raised a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
 
-6) Call the ```calcWebService``` through the Kong Gateway Route
+6) Call the `calcWebService` through the Kong Gateway Route
 ```
 http POST http://localhost:8000/calcWebService \
 Content-Type:"text/xml; charset=utf-8" \
@@ -506,8 +506,8 @@ The expected result is:
 ...
 ```
 For testing purposes only: inject an error in the `XSD`schema and the `WSDL/XSD` validation fails.
-1) Open ```Request Termination``` plugin and configure the plugin with:
-- ```body``` property: remove the first character `<`
+1) Open `Request Termination` plugin and configure the plugin with:
+- `body` property: remove the first character `<`
 
 Use command defined at step #6,
 The expected result is: 
