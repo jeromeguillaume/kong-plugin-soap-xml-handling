@@ -478,7 +478,7 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 - `ExternalEntityLoader_CacheTTL` property with the value `15` seconds
 - `ExternalEntityLoader_Timeout` property with the value `5` seconds
 
-5) check prerequisite: have at least 2 Nginx worker processes because the External Entity loader uses the `socket.http` library which is a blocking library.
+5) check prerequisite: **have at least 2 Nginx worker processes** because the External Entity loader uses the `socket.http` library which is a blocking library.
 ```
 KONG_NGINX_WORKER_PROCESSES=2
 ```
