@@ -533,5 +533,5 @@ The expected result is:
 - v1.0.5: Add an external loader (http)
 - v1.0.6: 
   - Add the `Timeout` and `Cache_TTL` parameters related to the external loader (http)
-  - Put the verbose error message in `<detail>` of `<soap:Fault>` message
+  - Put the detailed error message in `<detail>` of `<soap:Fault>` message in case `VerboseRequest` or `VerboseResponse`is enabled
   - Adapt the `schema.lua` to be Konnect compatible
