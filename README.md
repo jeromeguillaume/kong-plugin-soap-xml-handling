@@ -409,7 +409,7 @@ Content-Length: 185
 </soap:Envelope>
 ```
 
-### Example #9: Request | ```WSDL/XSD VALIDATION```: use a WSDL definition which import an XSD schema from an external entity (i.e: http(s)://)
+### Example #9: Request | ```WSDL/XSD VALIDATION```: use a WSDL definition which import an XSD schema from an external entity (i.e: http(s))
 Calling incorrectly ```calcWebService``` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
@@ -533,5 +533,5 @@ The expected result is:
 - v1.0.5: Add an external loader (http)
 - v1.0.6: 
   - Add `Timeout` and `Cache_TTL` parameters related to the external loader (http)
-  - Put the detailed error message in `<detail>` of `<soap:Fault>` message in case `VerboseRequest` or `VerboseResponse`is enabled
+  - Put the detailed error message in `<detail>` of `<soap:Fault>` message in case `VerboseRequest` or `VerboseResponse` is enabled
   - Adapt the `schema.lua` to be Konnect compatible
