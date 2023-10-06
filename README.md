@@ -136,17 +136,18 @@ Use command defined at step #3, **change** ```<soap:Envelope>``` by **```<soap:E
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>
-Request - XSD validation failed: Error Node: EnvelopeKong, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.
-</faultstring>
+<faultstring>Request - XSD validation failed</faultstring>
+<detail>Error Node: EnvelopeKong, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.<detail/>
+</soap:Fault>
 ```
 Use command defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>
-Request - XSD validation failed: Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}a ).
-</faultstring>
+<faultstring>Request - XSD validation failed</faultstring>
+<detail>Error Node: Add, Error code: 1871, Line: 4, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}a ).<detail/>
+</soap:Fault>
+
 ```
 ### Example #3: Request | ```XSLT TRANSFORMATION - AFTER XSD```:  renaming a Tag in XML request by using XSLT
 The plugin applies a XSLT Transformation on XML request **after** the XSD Validation.
@@ -408,6 +409,116 @@ Content-Length: 185
 </soap:Envelope>
 ```
 
+### Example #9: Request | ```WSDL/XSD VALIDATION```: use a WSDL definition which import an XSD schema from an external entity (i.e: http(s)://)
+Calling incorrectly ```calcWebService``` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
+In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
+```xml
+<xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+```
+
+1) Create a Kong Route named ```tempui.org.request-response.xsd``` with the ```path``` value ```/tempui.org.request-response.xsd```
+
+2) Add ```Request Termination``` plugin to this Route and configure the plugin with:
+- ```body``` property with this ```XSD``` value:
+```xml
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddType">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="a" minOccurs="1"/>
+      <xs:element type="xs:integer" name="b" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="SubtractType">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="a" minOccurs="1"/>
+      <xs:element type="xs:integer" name="b" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddResponseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="AddResult"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+```
+- `content_type` property with the value `text/xml`
+- `status_code` property with the value `200`
+
+3) 'Reset' the configuration of ```calcWebService```: remove the ```soap-xml-request-handling``` and ```soap-xml-response-handling``` plugins 
+
+4) Add ```soap-xml-request-handling``` plugin to ```calcWebService``` and configure the plugin with:
+- ```VerboseRequest``` enabled
+- ```XsdApiSchema``` property with this ```WSDL``` value:
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="Tempui.org"
+                  targetNamespace="http://tempuri.org/">
+  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  </wsdl:documentation>
+  <wsdl:types>
+    <!-- XSD schema for the Request and the Response -->
+      <xsd:schema
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+```
+- `ExternalEntityLoader_CacheTTL` property with the value `30` seconds
+- `ExternalEntityLoader_Timeout` property with the value `5` seconds
+
+5) check prerequisite: have at least 2 Nginx worker processes because the External Entity loader uses the `socket.http` library which is a blocking library.
+```
+KONG_NGINX_WORKER_PROCESSES=2
+```
+Note: the non-blocking `resty.http` library cannot be use because it's raised a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
+
+6) Call the ```calcWebService``` through the Kong Gateway Route
+```
+http POST http://localhost:8000/calcWebService \
+Content-Type:"text/xml; charset=utf-8" \
+--raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
+<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
+  <soap:Body>
+    <Add xmlns=\"http://tempuri.org/\">
+      <a>5</a>
+      <b>7</b>
+    </Add>
+  </soap:Body>
+</soap:Envelope>"
+```
+
+The expected result is: 
+```xml
+...
+<AddResult>12</AddResult>
+...
+```
+For testing purposes only: inject an error in the `XSD`schema and the `WSDL/XSD` validation fails.
+1) Open ```Request Termination``` plugin and configure the plugin with:
+- ```body``` property: remove the first character `<`
+
+Use command defined at step #6,
+The expected result is: 
+```xml
+...
+<faultstring>Request - XSD validation failed</faultstring>
+<detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error Node: import, Error code: 3067, Line: 1, Message: Element '{http://www.w3.org/2001/XMLSchema}import': Failed to parse the XML resource 'http://localhost:8000/tempui.org.request-response.xsd'.<detail/>
+</soap:Fault>
+...
+```
+
 ## Changelog
 - v1.0.0:
   - Initial Release
@@ -420,3 +531,4 @@ Content-Length: 185
   - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
 - v1.0.4: Improve the log error management by initializing it in the `init_worker` phase
 - v1.0.5: Add an external loader (http)
+- v1.0.6: Add `Timeout` and `Cache_TTL` parameters plugin to the external loader (http), reformat the `<soap:Fault>` error and adapt the `schema.lua` to be Konnect compatible

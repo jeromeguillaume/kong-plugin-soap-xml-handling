@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.5",
+    VERSION = "1.0.6",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -91,11 +91,11 @@ end
 ------------------------------------------------------
 -- Executed upon every Nginx worker process’s startup
 ------------------------------------------------------
-function plugin:init_worker (plugin_conf)
+function plugin:init_worker ()
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
   -- Initialize the Error handler at the initialization plugin
-  xmlgeneral.initializeHandlerLoader (plugin_conf)
+  xmlgeneral.initializeHandlerLoader ()
 
 end
 
@@ -105,6 +105,9 @@ end
 function plugin:access(plugin_conf)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
+  -- Initialize the contextual data related to the External Entities
+  xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+  
   -- Get SOAP envelope from the request
   local soapEnvelope = kong.request.get_raw_body()
 

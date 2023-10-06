@@ -69,7 +69,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   
   -- If verbose mode is enabled we display the detailed Error Message
   if VerboseResponse then
-    detailErrMsg = ErrMsg .. ": " .. ErrEx
+    detailErrMsg = ErrEx
     
     -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
     local ngx_get_phase = ngx.get_phase
@@ -83,8 +83,9 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
         detailErrMsg = detailErrMsg .. additionalErrMsg
       end
     end
+    detailErrMsg ="<detail>" .. detailErrMsg .. "<detail/>"
   else
-    detailErrMsg = ErrMsg
+    detailErrMsg = ""
   end
 
   local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
@@ -92,8 +93,8 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   <soap:Body> \
     <soap:Fault>\
       <faultcode>soap:Client</faultcode>\
-      <faultstring>" .. detailErrMsg .. "</faultstring>\
-      <detail/>\
+      <faultstring>" .. ErrMsg .. "</faultstring>\
+      " .. detailErrMsg .. "\
     </soap:Fault>\
   </soap:Body>\
 </soap:Envelope>\
@@ -102,9 +103,9 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   return soapErrMsg
 end
 
-------------------------------------------------------
--- Re-Format a JSON message to the SOAP Fault message
-------------------------------------------------------
+----------------------------------------------------
+-- Re-Format a JSON message to a SOAP Fault message
+----------------------------------------------------
 function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
   local soapFaultBody
   
@@ -127,10 +128,10 @@ function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = "text/xml; charset=utf-8"})
 end
 
-------------------------------------------
--- Initialize the 'libxml2' Error handler
-------------------------------------------
-function xmlgeneral.initializeHandlerLoader (plugin_conf)
+---------------------------------------------------------------------
+-- Initialize the 'libxml2' Error handler and External Entity Loader
+---------------------------------------------------------------------
+function xmlgeneral.initializeHandlerLoader ()
   -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
   -- The error message will be set contextually to the Request by using the 'kong.ctx'
   -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
@@ -151,12 +152,25 @@ function xmlgeneral.initializeHandlerLoader (plugin_conf)
     kong.log.debug ("initializeErrorHandler: 'libxml2' Error Handler is already initialized => nothing to do")
   end
 
-  if not kong.initializeExternalEntityLoader then
+  -- Initialize the External Entity Loader for downloading XSD that are imported on 'http(s)://'
+  -- Example: <xsd:import namespace="http://tempuri.org/" schemaLocation="https://mytempui.com/tempui.org.xsd"/>
+  if not kong.xmlSoapInitializeExternalEntityLoader then
     libxml2ex.initializeExternalEntityLoader()
-    kong.initializeExternalEntityLoader = true
+    kong.xmlSoapInitializeExternalEntityLoader = true
   else
     kong.log.debug ("initializeExternalEntityLoader: 'libxml2' External Load is already initialized => nothing to do")
   end
+end
+
+-------------------------------------------------------------------
+-- Initialize the Contextual Data related to the External Entities
+-------------------------------------------------------------------
+function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+  if kong.ctx.shared.xmlSoapExternalEntity == nil then
+    kong.ctx.shared.xmlSoapExternalEntity = {}
+  end
+  kong.ctx.shared.xmlSoapExternalEntity.timeout  = plugin_conf.ExternalEntityLoader_Timeout
+  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = plugin_conf.ExternalEntityLoader_CacheTTL
 end
 
 ----------------------------------------------------------------------------------------
@@ -405,7 +419,8 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   local bodyNodeFound = nil
   local currentNode   = nil
   local nodeName      = ""
-  
+  local libxml2           = require("xmlua.libxml2")
+
   -- Prepare the error Message
   if child == 0 then
     schemaType = "SOAP"
@@ -419,7 +434,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   -- Create Parser Context
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
   
-  -- Create XSD schema
+  -- Create XSD schema  
   local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
   
   -- If there is no error loading the XSD schema
@@ -499,7 +514,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   end
 
   if errMessage then
-    kong.log.err ("XSD validation, errMessage: " .. errMessage)
+    kong.log.debug ("XSD validation, errMessage: " .. errMessage)
   end
 
   return errMessage

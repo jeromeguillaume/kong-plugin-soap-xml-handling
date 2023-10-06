@@ -35,21 +35,24 @@ end
 -- Function to retrieve entities from a given URL.
 local function retrieveEntities(url)
   http.TIMEOUT = 5
-  -- http.PROXY
-  -- this feature could be added in future by moving initializeExternalEntityLoader in access phase
-
+  if tonumber(kong.ctx.shared.xmlSoapExternalEntity.timeout) > 0 then
+    http.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
+  end
+  
+  kong.log.debug ("retrieveEntities Request: " .. url .. " timeout: " .. tostring(http.TIMEOUT))
   local response_body, response_code, response_headers = http.request(url)
+  
+  local debug_body = response_body or ''
+  kong.log.debug ("retrieveEntities Response: " .. response_code .. " body: " .. debug_body)
 
   if response_code ~= 200 then
-    kong.log.err("Error while retrieving entities - error: ", response_code)
     return nil, response_code
   end
 
   if response_body == nil then
-    kong.log.err("Error while retrieving entities response body is nul")
     return nil, response_code, "Error while retrieving entities response body is nul"
   end
- 
+  
   return response_body
 end
 
@@ -61,8 +64,13 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- Calculate a cache key based on the URL using the hash_key function.
   local url_cache_key = hash_key(entities_url)
   
-  -- Try to retrieve the response_body from cache, with a TTL of 300 seconds, using the retrieveEntities function.
-  local response_body, err = kong.cache:get(url_cache_key, { ttl = 300 }, retrieveEntities, entities_url)
+  local cacheTTL = 3600
+  if tonumber(kong.ctx.shared.xmlSoapExternalEntity.cacheTTL) > 0 then
+    cacheTTL = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
+  end
+
+  -- Retrieve the response_body from cache, with a TTL (in seconds), using the retrieveEntities function.
+  local response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, retrieveEntities, entities_url)
 
   if err then
     kong.log.err("Error while retrieving entities from cache: ", err)
@@ -112,6 +120,8 @@ end
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     
+    kong.ctx.shared.xmlSoapErrMessage = nil
+
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
 
@@ -145,6 +155,7 @@ end
 -- Returns:	the resulting document tree
 function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
   
+  kong.ctx.shared.xmlSoapErrMessage = nil
   xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
     
@@ -163,6 +174,8 @@ end
 -- Returns:	0 if the document is schemas valid, a positive error code number otherwise and -1 in case of internal or API error.
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
   
+  kong.ctx.shared.xmlSoapErrMessage = nil
+
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
@@ -175,6 +188,8 @@ end
 -- Returns:	0 if the element and its subtree is valid, a positive error code number otherwise and -1 in case of an internal or API error.
 function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
   
+  kong.ctx.shared.xmlSoapErrMessage = nil
+
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
@@ -214,7 +229,7 @@ end
 -- Get the last parsing error registered
 -- ctx:	an XML parser context
 -- Returns:	NULL if no error occurred or a pointer to the error
--- **** DON'T USE THIS FUNCTION: it returns a global variable Error and it's for the nginx multi-treaded processing 
+-- **** DON'T USE THIS FUNCTION: it returns a global variable Error and it's for the nginx processing 
 function libxml2ex.xmlGetLastError ()
   local errMessage = ""
   local xmlError = xml2.xmlGetLastError()

@@ -3,7 +3,7 @@ local kongUtils = require("kong.tools.utils")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.5",
+    VERSION = "1.0.6",
   }
 
 -----------------------------------------------------------------------------------------
@@ -78,10 +78,10 @@ end
 ------------------------------------------------------
 -- Executed upon every Nginx worker process’s startup
 ------------------------------------------------------
-function plugin:init_worker (plugin_conf)
+function plugin:init_worker ()
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   -- Initialize the Error handler at the initialization plugin
-  xmlgeneral.initializeHandlerLoader (plugin_conf)
+  xmlgeneral.initializeHandlerLoader ()
   
 end
 
@@ -89,6 +89,12 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
+  
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+
+  -- Initialize the contextual data related to the External Entities
+  xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+  
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
 
