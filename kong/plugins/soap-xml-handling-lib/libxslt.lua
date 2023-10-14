@@ -14,7 +14,7 @@ function libxslt.xsltParseStylesheetDoc (styledoc)
     local style = xslt.xsltParseStylesheetDoc(styledoc)
     
     if style == ffi.NULL then
-        ngx.log(ngx.ERR, "xsltParseStylesheetDoc returns null")
+      kong.log.err("xsltParseStylesheetDoc returns null")
     end
     -- No need to free memory, it's already done (and it avoids the msg 'free(): double free detected in tcache 2')
     -- return ffi.gc(style, xslt.xsltFreeStylesheet)
@@ -30,7 +30,7 @@ function libxslt.xsltApplyStylesheet (style, doc)
     local doc_transformed = xslt.xsltApplyStylesheet (style, doc, nil)
 
     if doc_transformed == ffi.NULL then
-        ngx.log(ngx.ERR, "xsltApplyStylesheet returns null")
+      kong.log.err("xsltApplyStylesheet returns null")
     end
     
     return ffi.gc(doc_transformed, libxml2.xmlFreeDoc)

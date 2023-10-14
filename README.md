@@ -7,18 +7,18 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 **soap-xml-request-handling** plugin to handle Request:
 
-1) ```XSLT TRANSFORMATION - BEFORE XSD```: Transform the XML request with XSLT (XSLTransformation) before XSD Validation (step #2)
-2) ```XSD VALIDATION```: Validate XML request with its XSD schema
-3) ```XSLT TRANSFORMATION - AFTER XSD```: Transform the XML request with XSLT (XSLTransformation) after XSD Validation (step #2)
-4) ```ROUTING BY XPATH```: change the Route of the request to a different hostname and path depending of XPath condition
+1) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML request with XSLT (XSLTransformation) before XSD Validation (step #2)
+2) `XSD VALIDATION`: Validate XML request with its XSD schema
+3) `XSLT TRANSFORMATION - AFTER XSD`: Transform the XML request with XSLT (XSLTransformation) after XSD Validation (step #2)
+4) `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 
 **soap-xml-response-handling** plugin to handle Reponse:
 
-5) ```XSLT TRANSFORMATION - BEFORE XSD```: Transform the XML response before step #6
-6) ```XSD VALIDATION```: Validate the XML response with its XSD schema
-7) ```XSLT TRANSFORMATION - AFTER XSD```:  Transform the XML response after step #6
+5) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML response before step #6
+6) `XSD VALIDATION`: Validate the XML response with its XSD schema
+7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
-Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error ```<soap:Fault>``` (with the error detailed message)
+Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message)
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -39,28 +39,28 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 ./start-kong.sh
 ```
 
-## How configure and test ```calcWebService/Calc.asmx``` Service in Kong
-1) Create a Kong Service named ```calcWebService``` with this URL: https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx.
+## How configure and test `calculator` Web Service in Kong
+1) Create a Kong Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
-2) Create a Route on the Service ```calcWebService``` with the ```path``` value ```/calcWebService```
+2) Create a Route on the Service `calculator` with the `path` value `/calculator`
 
-3) Call the ```calcWebService``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
+3) Call the `calculator` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
-http POST http://localhost:8000/calcWebService \
+http POST http://localhost:8000/calculator \
 Content-Type:"text/xml; charset=utf-8" \
 --raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
   <soap:Body>
     <Add xmlns=\"http://tempuri.org/\">
-      <a>5</a>
-      <b>7</b>
+      <intA>5</intA>
+      <intB>7</intB>
     </Add>
   </soap:Body>
 </soap:Envelope>"
 ```
 
-The expected result is ```12```:
+The expected result is `12`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
@@ -72,14 +72,14 @@ The expected result is ```12```:
 </soap:Envelope>
 ```
 
-## How test XML Handling plugins with ```calcWebService/Calc.asmx```
-### Example #1: Request | ```XSLT TRANSFORMATION - BEFORE XSD```: adding a Tag in XML request by using XSLT 
+## How test XML Handling plugins with `calculator`
+### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
 
 The plugin applies a XSLT Transformation on XML request **before** the XSD Validation.
 In this example the XSLT **adds the value ```<b>8</b>```** that will not be present in the request.
 
-Add ```soap-xml-request-handling``` plugin and configure the plugin with:
-- ```XsltTransformBefore``` property with this XSLT definition:
+Add `soap-xml-request-handling` plugin and configure the plugin with:
+- `XsltTransformBefore` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
@@ -89,13 +89,13 @@ Add ```soap-xml-request-handling``` plugin and configure the plugin with:
       <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>   
-  <xsl:template match="//*[local-name()='a']">
+  <xsl:template match="//*[local-name()='intA']">
     <xsl:copy-of select="."/>
-      <b>8</b>
+      <intB>8</intB>
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use command defined at step #3, **remove ```<b>7</b>```**, the expected result is no longer ```12``` but ```13```:
+Use command defined at step #3, **remove `<b>7</b>`**, the expected result is no longer `12` but `13`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
@@ -106,33 +106,35 @@ Use command defined at step #3, **remove ```<b>7</b>```**, the expected result i
   </soap:Body>
 </soap:Envelope>
 ```
-### Example #2: Request | ```XSD VALIDATION```: calling incorrectly ```calcWebService``` and detecting issue on the Request with XSD schema
-Calling incorrectly ```calcWebService``` and detecting issue in the Request with XSD schema. 
+### Example #2: Request | `XSD VALIDATION`: calling incorrectly `calculator` and detecting issue on the Request with XSD schema
+Calling incorrectly `calculator` and detecting issue in the Request with XSD schema. 
 We call incorrectly the Service by injecting a SOAP error; the plugin detects it, sends an error message to the Consumer and Kong doesn't call the SOAP backend API.
 
-Open ```soap-xml-request-handling``` plugin and configure the plugin with:
-- ```VerboseRequest``` enabled
-- ```XsdApiSchema``` property with this value:
+Open `soap-xml-request-handling` plugin and configure the plugin with:
+- `VerboseRequest` enabled
+- `XsdApiSchema` property with this value:
 ```xml
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="AddType">
-    <xs:sequence>
-      <xs:element type="xs:integer" name="a" minOccurs="1"/>
-      <xs:element type="xs:integer" name="b" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="SubtractType">
-    <xs:sequence>
-      <xs:element type="xs:integer" name="a" minOccurs="1"/>
-      <xs:element type="xs:integer" name="b" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
-</xs:schema>
+<s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema">
+  <s:element name="Add">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
+  <s:element name="Subtract">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
+</s:schema>
 ```
 
-Use command defined at step #3, **change** ```<soap:Envelope>``` by **```<soap:EnvelopeKong>```**  and **change** ```</soap:Envelope>``` by **```</soap:EnvelopeKong>```** => Kong says: 
+Use command defined at step #3, **change** `<soap:Envelope>` by **`<soap:EnvelopeKong>`**  and **change** `</soap:Envelope>` by **`</soap:EnvelopeKong>`** => Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
@@ -145,42 +147,40 @@ Use command defined at step #3, **remove ```<a>5</a>```** => there is an error b
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Error Node: Add, Error code: 1871, Line: 4, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}a ).<detail/>
-</soap:Fault>
-
+<detail>Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
-### Example #3: Request | ```XSLT TRANSFORMATION - AFTER XSD```:  renaming a Tag in XML request by using XSLT
+### Example #3: Request | `XSLT TRANSFORMATION - AFTER XSD`:  renaming a Tag in XML request by using XSLT
 The plugin applies a XSLT Transformation on XML request **after** the XSD Validation.
-In this example we **change the Tag name from ```<Subtract>...</Subtract>```** (present in the request) **to ```<Add>...</Add>```**.
+In this example we **change the Tag name from `<Subtract>...</Subtract>`** (present in the request) **to `<Add>...</Add>`**.
 
-**Without XSLT**: Use command defined at step #3, rename the Tag ```<Add>...</Add>```, to ```<Subtract>...</Subtract>```, remove ```<b>7</b>```, so the new command is:
+**Without XSLT**: Use command defined at step #3, rename the Tag `<Add>...</Add>`, to `<Subtract>...</Subtract>`, remove `<b>7</b>`, so the new command is:
 ```
-http POST http://localhost:8000/calcWebService \
+http POST http://localhost:8000/calculator \
 Content-Type:"text/xml; charset=utf-8" \
 --raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
   <soap:Body>
     <Subtract xmlns=\"http://tempuri.org/\">
-      <a>5</a>
+      <intA>5</intA>
     </Subtract>
   </soap:Body>
 </soap:Envelope>"
 ```
 
-The expected result is ```-3```
+The expected result is `-3`
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
   <soap:Body>
-    <SubtractResponse xmlns:tempui="http://tempuri.org/">
+    <SubtractResponse xmlns="http://tempuri.org/">
       <SubtractResult>-3</SubtractResult>
     </SubtractResponse>
   </soap:Body>
 </soap:Envelope>
 ```
 
-Open ```soap-xml-request-handling``` plugin and configure the plugin with:
-- ```XsltTransformAfter``` property with this XSLT definition:
+Open `soap-xml-request-handling` plugin and configure the plugin with:
+- `XsltTransformAfter` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -195,7 +195,7 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-**With XSLT**: Use command defined at Example #3, the expected result is ```13```:
+**With XSLT**: Use command defined at Example #3, the expected result is `13`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
@@ -206,19 +206,18 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
   </soap:Body>
 </soap:Envelope>
 ```
-### Example #4: Request | ```ROUTING BY XPATH```: change the Route of the request to a different hostname and path depending of XPath condition
+### Example #4: Request | `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 The plugin searches the XPath entry and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route.
 
-This example uses a new backend Web Service (https://websrv.cs.fsu.edu/~engelen/calc.wsdl) which provides the same capabilities as ```calcWebService``` Service (https://ecs.syr.edu) defined at step #1. 
+This example uses a new backend Web Service (https://websrv.cs.fsu.edu/~engelen/calcserver.cgi) which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
 
-Add a Kong ```Upstream``` named ```websrv.cs.fsu.edu``` and defines a ```target```with ```websrv.cs.fsu.edu:443``` value. 
-Open ```soap-xml-request-handling``` plugin and configure the plugin with:
-- ```RouteToPath``` property with the value ```/~engelen/calcserver.cgi```
-- ```RouteToUpstream``` property with the value ```websrv.cs.fsu.edu```
-- ```RouteXPath``` property with the value ```/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']```
-- ```RouteXPathCondition``` property with the value ```5```
-- ```RouteXPathRegisterNs``` leave the default value; we can also register specific NameSpace with the syntax ```prefix,uri```
-- ```XsltTransformAfter``` property with the following XSLT definition (the ```websrv.cs.fsu.edu``` introduces a new XML NameSpace so we have to change the XSLT transformation to make the proper call):
+Add a Kong `Upstream` named `websrv.cs.fsu.edu` and defines a `target` with `websrv.cs.fsu.edu:443` value. 
+Open `soap-xml-request-handling` plugin and configure the plugin with:
+- `RouteToPath` property with the value `https://websrv.cs.fsu.edu/~engelen/calcserver.cgi`
+- `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']`
+- `RouteXPathCondition` property with the value `5`
+- `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
+- `XsltTransformAfter` property with the following XSLT definition (the `websrv.cs.fsu.edu` introduces a new XML NameSpace so we have to change the XSLT transformation to make the proper call):
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -226,16 +225,22 @@ Open ```soap-xml-request-handling``` plugin and configure the plugin with:
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
-        </xsl:copy>
-    </xsl:template>
-    <xsl:template match="//*[local-name()='Subtract']">
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='Subtract']">
       <urn:add xmlns:urn="urn:calc"><xsl:apply-templates select="@*|node()" /></urn:add>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intA']">
+    <a><xsl:apply-templates select="@*|node()" /></a>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+    <b><xsl:apply-templates select="@*|node()" /></b>
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use command defined at Example #3, the expected result is ```13```. The new Route (to ```websrv.cs.fsu.edu```) sends a slightly different response:
-- SOAP tags are in capital letter: ```<SOAP-ENV:Envelope>``` instead of ```<soap:Envelope>```
-- Namespace is injected: ```xmlns:ns="urn:calc"```
+Use command defined at Example #3, the expected result is `13`. The new Route (to `websrv.cs.fsu.edu`) sends a slightly different response:
+- SOAP tags are in capital letter: `<SOAP-ENV:Envelope>` instead of `<soap:Envelope>`
+- Namespace is injected: `xmlns:ns="urn:calc"`
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
@@ -246,15 +251,15 @@ Use command defined at Example #3, the expected result is ```13```. The new Rout
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ```
-### Example #5: Response | ```XSLT TRANSFORMATION - BEFORE XSD```: changing a Tag name in XML response by using XSLT
+### Example #5: Response | `XSLT TRANSFORMATION - BEFORE XSD`: changing a Tag name in XML response by using XSLT
 The plugin applies a XSLT Transformation on XML response **before** the XSD Validation.
 In this example the XSLT **changes the Tag names**:
--  from ```<ns:addResponse>...</ns:addResponse>``` (present in the response) to **```<addResponse>...</addResponse>```**
--  from ```<result>...</result>``` (present in the response) to **```<KongResult>...</KongResult>```**
+-  from `<ns:addResponse>...</ns:addResponse>` (present in the response) to **`<addResponse>...</addResponse>`**
+-  from `<result>...</result>` (present in the response) to **`<KongResult>...</KongResult>`**
 
-Add ```soap-xml-response-handling``` plugin and configure the plugin with:
-- ```VerboseResponse``` enabled
-- ```XsltTransformBefore``` property with this XSLT definition:
+Add `soap-xml-response-handling` plugin and configure the plugin with:
+- `VerboseResponse` enabled
+- `XsltTransformBefore` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -273,7 +278,7 @@ Add ```soap-xml-response-handling``` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use command defined at Example #3, the expected result is ```<KongResult>13</KongResult>```:
+Use command defined at Example #3, the expected result is `<KongResult>13</KongResult>`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
@@ -284,9 +289,9 @@ Use command defined at Example #3, the expected result is ```<KongResult>13</Kon
   </SOAP-ENV:Body>
 </SOAP-ENV:Envelope>
 ```
-### Example #6: Response | ```XSD VALIDATION```: checking validity of XML response with its XSD schema
-Open ```soap-xml-response-handling``` plugin and configure the plugin with:
-- ```XsdApiSchema``` property with this value:
+### Example #6: Response | `XSD VALIDATION`: checking validity of XML response with its XSD schema
+Open `soap-xml-response-handling` plugin and configure the plugin with:
+- `XsdApiSchema` property with this value:
 ```xml
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="addResponse" type="addResponseType"/>
@@ -297,13 +302,13 @@ Open ```soap-xml-response-handling``` plugin and configure the plugin with:
   </xs:complexType>
 </xs:schema>
 ```
-For testing purposes only: one can play with the XSD schema to raise error by temporarily replacing ```KongResult``` by ```KongResult2```
+For testing purposes only: one can play with the XSD schema to raise error by temporarily replacing `KongResult` by `KongResult2`
 
-### Example #7: Response | ```XSLT TRANSFORMATION - AFTER XSD```:  transforming the SOAP response to a XML response
+### Example #7: Response | `XSLT TRANSFORMATION - AFTER XSD`:  transforming the SOAP response to a XML response
 In this example the XSLT removes all <soap> tags and **converts the response from SOAP to XML**.
 
-Open ```soap-xml-response-handling``` plugin and configure the plugin with:
-- ```XsltTransformAfter``` property with this value:
+Open `soap-xml-response-handling` plugin and configure the plugin with:
+- `XsltTransformAfter` property with this value:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" exclude-result-prefixes="soapenv">
   <xsl:strip-space elements="*"/>
@@ -335,17 +340,17 @@ Use command defined at Example #3, the expected result is:
 </addResponse>
 ```
 
-### Example #8: Response | Use a SOAP/XML WebService with a ```Content-Encondig: gzip```
-With ```Content-Encondig: gzip``` the SOAP/XML Response body is zipped. So the ```soap-xml-response-handling``` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
+### Example #8: Response | Use a SOAP/XML WebService with a `Content-Encondig: gzip`
+With `Content-Encondig: gzip` the SOAP/XML Response body is zipped. So the `soap-xml-response-handling` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
 
 In this example the XSLT **changes the Tag names**:
--  from ```<m:NumberToWordsResult>...</m:NumberToWordsResult>``` (present in the response) to **```<KongResult>...</KongResult>```**
+-  from `<m:NumberToWordsResult>...</m:NumberToWordsResult>` (present in the response) to **`<KongResult>...</KongResult>`**
 
-1) Create a Kong Service named ```dataAccess``` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso. This simple backend Web Service converts a digit number to a number in full
+1) Create a Kong Service named `dataAccess` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso. This simple backend Web Service converts a digit number to a number in full
 
-2) Create a Route on the Service ```dataAccess``` with the ```path``` value ```/dataAccess```
+2) Create a Route on the Service `dataAccess` with the `path` value `/dataAccess`
 
-3) Call the ```dataAccess``` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
+3) Call the `dataAccess` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
 http 'http://localhost:8000/dataAccess' \
 Content-Type:'text/xml; charset=utf-8' \
@@ -360,7 +365,7 @@ Accept-Encoding:'gzip' \
 </soap:Envelope>'
 ```
 
-The expected result is zipped with ```Content-Encoding: gzip``` header and we get ```<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>```
+The expected result is zipped with `Content-Encoding: gzip` header and we get `<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>`
 ```xml
 ...
 Connection: keep-alive
@@ -376,8 +381,8 @@ Content-Length: 213
   </soap:Body>
 </soap:Envelope>
 ```
-4) Add ```soap-xml-response-handling``` plugin and and configure the plugin with:
-- ```xsltTransformBefore``` property with this value:
+4) Add `soap-xml-response-handling` plugin and and configure the plugin with:
+- `xsltTransformBefore` property with this value:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -393,7 +398,7 @@ Content-Length: 213
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use command defined at step #3, the expected result is zipped with ```Content-Encoding: gzip``` header and we get ```<KongResult>five hundred </KongResult>```
+Use command defined at step #3, the expected result is zipped with `Content-Encoding: gzip` header and we get `<KongResult>five hundred </KongResult>`
 ```xml
 Connection: keep-alive
 Content-Encoding: gzip
@@ -410,7 +415,7 @@ Content-Length: 185
 ```
 
 ### Example #9: Request | `WSDL/XSD VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e: http(s)://)
-Calling incorrectly `calcWebService` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
+Calling incorrectly `calculator` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
 <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
@@ -425,15 +430,15 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
   <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
   <xs:complexType name="AddType">
     <xs:sequence>
-      <xs:element type="xs:integer" name="a" minOccurs="1"/>
-      <xs:element type="xs:integer" name="b" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
   <xs:complexType name="SubtractType">
     <xs:sequence>
-      <xs:element type="xs:integer" name="a" minOccurs="1"/>
-      <xs:element type="xs:integer" name="b" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
   <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
@@ -447,9 +452,10 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 - `content_type` property with the value `text/xml`
 - `status_code` property with the value `200`
 
-3) 'Reset' the configuration of `calcWebService`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+3) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
-4) Add `soap-xml-request-handling` plugin to `calcWebService` and configure the plugin with:
+4) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `ExternalEntityLoader_CacheTTL` property with the value `15`
 - `VerboseRequest` enabled
 - `XsdApiSchema` property with this `WSDL` value:
 ```xml
@@ -475,25 +481,25 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
   </wsdl:types>
 </wsdl:definitions>
 ```
-- `ExternalEntityLoader_CacheTTL` property with the value `15` seconds
-- `ExternalEntityLoader_Timeout` property with the value `5` seconds
 
 5) check prerequisite: **have at least 2 Nginx worker processes** because the External Entity loader uses the `socket.http` library which is a blocking library.
 ```
 KONG_NGINX_WORKER_PROCESSES=2
 ```
-Note: the non-blocking `resty.http` library cannot be use because it's raised a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
+Note: 
+  - The non-blocking `resty.http` library cannot be use because it's raised a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
+  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property 
 
-6) Call the `calcWebService` through the Kong Gateway Route
+6) Call the `calculator` through the Kong Gateway Route
 ```
-http POST http://localhost:8000/calcWebService \
+http POST http://localhost:8000/calculator \
 Content-Type:"text/xml; charset=utf-8" \
 --raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
   <soap:Body>
     <Add xmlns=\"http://tempuri.org/\">
-      <a>5</a>
-      <b>7</b>
+      <intA>5</intA>
+      <intB>7</intB>
     </Add>
   </soap:Body>
 </soap:Envelope>"
@@ -506,7 +512,7 @@ The expected result is:
 ...
 ```
 For testing purposes only: inject an error in the `XSD`schema and the `WSDL/XSD` validation fails.
-1) Open `Request Termination` plugin and configure the plugin with:
+1) For `tempui.org.request-response.xsd` route, open `Request Termination` plugin and configure the plugin with:
 - `body` property: remove the first character `<`
 
 Use command defined at step #6,
@@ -529,9 +535,15 @@ The expected result is:
   - Add the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
 - v1.0.3:
   - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
-- v1.0.4: Improve the log error management by initializing it in the `init_worker` phase
-- v1.0.5: Add an external loader (http)
+- v1.0.4:
+  - Improve the log error management by initializing it in the `init_worker` phase
+- v1.0.5:
+  - Add an external loader (http)
 - v1.0.6: 
   - Add `Timeout` and `Cache_TTL` parameters related to the External Entity Loader (http(s))
   - Put the detailed error message in `<detail>` of `<soap:Fault>` message in case `VerboseRequest` or `VerboseResponse` is enabled
   - Adapt the `schema.lua` to be Konnect compatible
+- v1.0.7: 
+  - Change example material from `https://ecs.syr.edu` (no longer available) to `http://www.dneonline.com`
+  - Improve `Routing By XPath` by putting in one plugin property the complete routing URL and by enably the usage of Host (not only Upstream)
+  - Add experimental `ExternalEntityLoader_Async` capacity for downloading Asynchronously the XSD External Entities

@@ -25,25 +25,69 @@ end
 -- Initialize the defaultLoader to nil.
 local defaultLoader = nil
 
--- Function to hash a given key using SHA256 and return it as a hexadecimal string.
-local function hash_key(key)
+libxml2ex.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
+libxml2ex.timerStatusOk       = "Ok"
+libxml2ex.timerStatusRunning  = "Running"
+libxml2ex.timerStatusKo       = "Ko"
+
+-- Function to hash a given key using SHA256 and return it as a hexadecimal string
+function libxml2ex.hash_key(key)
   local sha256 = resty_sha256:new()
   sha256:update(key)
   return resty_str.to_hex(sha256:final())
 end
 
--- Function to retrieve entities from a given URL.
-local function retrieveEntities(url)
-  http.TIMEOUT = 5
+-- Timer function to download Asynchronously entities from a given URL.
+function libxml2ex.asyncDownloadEntities (premature, url, entityLoader_entry)
+  -- If the Nginx worker is shutting down (we can use 'ngx.worker.exiting()' too)
+  if premature then
+    -- stop the timer
+    return
+  end
+  kong.log.debug("asyncDownloadEntities url: " .. url .. " timeout: " .. entityLoader_entry.timeout)
+  
+  local http = require "resty.http"
+  local httpc = http.new()  
+
+  httpc:set_timeout(entityLoader_entry.timeout * 1000)
+  local res, err = httpc:request_uri(url, {
+    method = 'GET',
+    ssl_verify = false,
+  })
+  if not res then
+    -- We don't update the 'body' and 'httpStatus' and give the user a chance to have the cached value
+    kong.log.debug("asyncDownloadEntities: " .. url .. " err: " .. err)
+  elseif res.status ~= 200 then
+    if entityLoader_entry.httpStatus == 0 then
+      entityLoader_entry.httpStatus = res.status
+      entityLoader_entry.body       = nil
+    else
+      -- We don't update the 'body' and 'httpStatus' and give the user a chance to have the cached value
+    end
+    kong.log.debug("asyncDownloadEntities - RESPONSE Ko: " .. url .. " httpStatus: " .. res.status)
+  else
+    entityLoader_entry.body           = res.body
+    entityLoader_entry.httpStatus     = res.status
+    entityLoader_entry.timeDownloaded = ngx.time ()
+    kong.log.debug("asyncDownloadEntities - RESPONSE Ok: " .. url .. " httpStatus: " .. res.status)
+  end
+  entityLoader_entry.timerStatus = libxml2ex.timerStatusOk
+end
+
+-- Function to download Synchronously entities from a given URL.
+local function syncDownloadEntities(url)
+  
+  -- Default timeout value
+  http.TIMEOUT = 1
   if tonumber(kong.ctx.shared.xmlSoapExternalEntity.timeout) > 0 then
     http.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
   end
   
-  kong.log.debug ("retrieveEntities Request: " .. url .. " timeout: " .. tostring(http.TIMEOUT))
+  kong.log.debug ("syncDownloadEntities Request: " .. url .. " timeout: " .. tostring(http.TIMEOUT))
   local response_body, response_code, response_headers = http.request(url)
   
   local debug_body = response_body or ''
-  kong.log.debug ("retrieveEntities Response: " .. response_code .. " body: " .. debug_body)
+  kong.log.debug ("syncDownloadEntities Response: " .. response_code .. " body: " .. debug_body)
 
   if response_code ~= 200 then
     return nil, response_code
@@ -58,28 +102,81 @@ end
 
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
-  local ret = nil;
-  local entities_url = ffi.string(URL);
+  local ret = nil
+  local entities_url = ffi.string(URL)
+  local response_body
+  local err = nil
 
-  -- Calculate a cache key based on the URL using the hash_key function.
-  local url_cache_key = hash_key(entities_url)
-  
-  local cacheTTL = 3600
-  if tonumber(kong.ctx.shared.xmlSoapExternalEntity.cacheTTL) > 0 then
-    cacheTTL = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-  end
+  -- If we download Asynchronously the External Entity
+  if kong.ctx.shared.xmlSoapExternalEntity.async then
+    -- If it's the 1st time we see this url
+    if kong.xmlSoapTimer.entityLoader.urls[entities_url] == nil then
+      kong.log.debug("xmlMyExternalEntityLoader => Create a new URL Entry: '" .. entities_url .. "'")
+      kong.xmlSoapTimer.entityLoader.urls[entities_url] = { 
+        timeout         = kong.ctx.shared.xmlSoapExternalEntity.timeout,
+        cacheTTL        = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL,
+        body            = nil,
+        httpStatus      = 0,
+        timeDownloaded  = 0,
+        timerStatus     = libxml2ex.timerStatusRunning
+      }
+      -- Call the Asynchronous function downloading the External entity
+      ret, err = ngx.timer.at(0, libxml2ex.asyncDownloadEntities, entities_url, kong.xmlSoapTimer.entityLoader.urls[entities_url])
+      if not ret then
+        kong.log.err("xmlMyExternalEntityLoader: unable to start 'asyncDownloadEntities' Timer: ", err)
+        kong.xmlSoapTimer.entityLoader.urls[entities_url] = libxml2ex.timerStatusKo
+      end
+      return nil, err
+    -- Else the url is already known
+    else
+      local entityLoader_entry = kong.xmlSoapTimer.entityLoader.urls[entities_url]
+      kong.log.debug("xmlMyExternalEntityLoader => Retrieved an URL Entry: '" .. entities_url .. "' httpStatus: " .. entityLoader_entry.httpStatus .. " timerStatus: " .. entityLoader_entry.timerStatus)
+      -- If the timer is not already running 
+      -- AND
+      -- (  If we have to download the XSD Entity because previous download failed (example: 500)
+      --    OR
+      --    If we have to refresh the XSD Entity
+      -- )
+      if entityLoader_entry.timerStatus ~= libxml2ex.timerStatusRunning and
+          (entityLoader_entry.httpStatus ~= 200 or 
+          ngx.time () > entityLoader_entry.timeDownloaded + entityLoader_entry.cacheTTL) then
+          kong.log.debug( "xmlMyExternalEntityLoader - url: " .. entities_url .. " httpStatus: " .. entityLoader_entry.httpStatus .. " timeout: " .. entityLoader_entry.timeout .. " cacheTTL: " .. entityLoader_entry.cacheTTL   .. " timeDownloaded: " .. entityLoader_entry.timeDownloaded)
+        if entityLoader_entry.timeDownloaded ~=0 and ngx.time () > entityLoader_entry.timeDownloaded + entityLoader_entry.cacheTTL then
+          kong.log.debug("xmlMyExternalEntityLoader - Cache Expiration: Reload the entity")
+        end
+        kong.log.debug("xmlMyExternalEntityLoader: Start a new timer")
+        entityLoader_entry.timerStatus = libxml2ex.timerStatusRunning
+        ret, err = ngx.timer.at(0, libxml2ex.asyncDownloadEntities, entities_url, entityLoader_entry)
+        if not ret then
+          kong.log.err("xmlMyExternalEntityLoader: unable to start 'asyncDownloadEntities' Timer: ", err)
+          entityLoader_entry.timerStatus = libxml2ex.timerStatusKo
+          return nil, err
+        end
+      end
+      response_body = entityLoader_entry.body
+    end
+  -- Else we download Synchronously the External Entity
+  else
+    -- Calculate a cache key based on the URL using the hash_key function.
+    local url_cache_key = libxml2ex.hash_key(entities_url)
+    
+    local cacheTTL = 3600
+    if tonumber(kong.ctx.shared.xmlSoapExternalEntity.cacheTTL) > 0 then
+      cacheTTL = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
+    end
 
-  -- Retrieve the response_body from cache, with a TTL (in seconds), using the retrieveEntities function.
-  local response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, retrieveEntities, entities_url)
-
-  if err then
-    kong.log.err("Error while retrieving entities from cache: ", err)
-    return nil, err
+    -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
+    response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entities_url)
+    if err then
+      kong.log.err("Error while retrieving entities from cache, error: '", err .. "'")
+      return nil, err
+    end
   end
 
   -- Create a new XML string input stream using the retrieved response_body.
   ret = xml2.xmlNewStringInputStream(ctxt, response_body);
   if ret ~= ffi.NULL then
+    -- **** Do we have to free memory with 'xmlFreeInputStream'? ****
     return ret
   end
 
@@ -108,7 +205,7 @@ function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
     local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
     
     if xsd_context == ffi.NULL then
-        ngx.log(ngx.ERR, "xmlSchemaNewMemParserCtxt returns null")
+        kong.log.err("xmlSchemaNewMemParserCtxt returns null")
         return nil
     end
     
@@ -124,9 +221,10 @@ function libxml2ex.xmlSchemaParse (xsd_context, verbose)
 
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
-
+    
     if xsd_schema_doc == ffi.NULL then
-        ngx.log(ngx.ERR, "xmlSchemaParse returns null")
+      kong.log.err("xmlSchemaParse returns null")
+      return nil, kong.ctx.shared.xmlSoapErrMessage
     end
     
     return ffi.gc(xsd_schema_doc, xml2.xmlSchemaFree), kong.ctx.shared.xmlSoapErrMessage
@@ -139,8 +237,8 @@ function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
     local validation_context = xml2.xmlSchemaNewValidCtxt(xsd_schema_doc)
     
     if validation_context == ffi.NULL then
-        ngx.log(ngx.ERR, "xmlSchemaNewValidCtxt returns null")
-        return nil
+      kong.log.err("xmlSchemaNewValidCtxt returns null")
+      return nil
     end
 
     return ffi.gc(validation_context, xml2.xmlSchemaFreeValidCtxt)
@@ -158,11 +256,12 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
   kong.ctx.shared.xmlSoapErrMessage = nil
   xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
-    
+  
   if xml_doc == ffi.NULL then
     -- It returns null in case of issue on SOAP/XML posted by the consumer
     -- We don't consider it as an Error
-    ngx.log(ngx.DEBUG, "xmlReadMemory returns null")
+    kong.log.err("xmlReadMemory returns null")
+    return nil, kong.ctx.shared.xmlSoapErrMessage
   end
 
   return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
@@ -201,7 +300,7 @@ function libxml2ex.formatErrMsg(xmlError)
   local errMessage = ""
   
   if xmlError.ctxt == ffi.NULL then
-    ngx.log(ngx.ERR, "*** xmlError.ctxt is null***")
+    kong.log.err("*** xmlError.ctxt is null***")
     return errMessage
   end
 
@@ -229,7 +328,7 @@ end
 -- Get the last parsing error registered
 -- ctx:	an XML parser context
 -- Returns:	NULL if no error occurred or a pointer to the error
--- **** DON'T USE THIS FUNCTION: it returns a global variable Error and it's for the nginx processing 
+-- **** DON'T USE THIS FUNCTION: it returns a global variable Error
 function libxml2ex.xmlGetLastError ()
   local errMessage = ""
   local xmlError = xml2.xmlGetLastError()
@@ -264,12 +363,12 @@ function libxml2ex.xmlNodeDump	(xmlDocPtr, xmlNodePtr, level, format)
       -- No error
       errDump = 0
     else
-      ngx.log(ngx.ERR, "Error calling 'xmlNodeDump'")
+      kong.log.err("Error calling 'xmlNodeDump'")
     end
     -- free Buffer
     xml2.xmlBufferFree(xmlBuffer)
   else
-    ngx.log(ngx.ERR, "Error calling 'xmlBufferCreate'")
+    kong.log.err("Error calling 'xmlBufferCreate'")
   end
   return xmlDump, errDump
 end
@@ -301,16 +400,16 @@ function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodePtr)
         xmlDump = libxml2.xmlBufferGetContent(xmlBuffer)
         errDump = 0
       else
-        ngx.log(ngx.ERR, "Error calling 'xmlC14NDocSaveTo'")
+        kong.log.err("Error calling 'xmlC14NDocSaveTo'")
       end
     else
-      ngx.log(ngx.ERR, "Error calling 'xmlOutputBufferCreate'")
+      kong.log.err("Error calling 'xmlOutputBufferCreate'")
     end
     -- free Buffer
     xml2.xmlBufferFree(xmlBuffer)
     xml2.xmlOutputBufferClose(output_buffer)
   else
-    ngx.log(ngx.ERR, "Error calling 'xmlBufferCreate'")
+    kong.log.err("Error calling 'xmlBufferCreate'")
   end
   return xmlDump, errDump
 end

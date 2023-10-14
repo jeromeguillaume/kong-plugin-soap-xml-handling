@@ -15,23 +15,18 @@
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/dneonline.com.request-websrv.cs.fsu.eduresponse.xsd"/>
     </xsd:schema>
-  </wsdl:types>
-</wsdl:definitions>
-    <!-- XSD schema for the Request -->
-    <!--
+  
+    <!-- XSD schema for the Request 
       <xsd:schema
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://kong-gateway-temp:9000/tempui.org.request.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/dneonline.com.request.xsd"/>
     </xsd:schema>
-    -->
-    <!-- XSD schema for the Response -->
-    <!--
     <xsd:schema
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
@@ -40,4 +35,13 @@
         elementFormDefault="qualified">
       <xsd:import namespace="http://tempuri.org/" schemaLocation="http://kong-gateway-temp:9000/tempui.org.response.xsd"/>
     </xsd:schema>
-    -->
+    <xsd:schema
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="urn:calc" schemaLocation="http://localhost:8000/websrv.cs.fsu.edu.response.xsd"/>
+    </xsd:schema>-->
+  </wsdl:types>
+</wsdl:definitions>

@@ -10,8 +10,9 @@ return {
     { config = {
         type = "record",
         fields = {
-          { ExternalEntityLoader_Timeout = { type = "integer", default = 5, required = false }, },
+          { ExternalEntityLoader_Async = { type = "boolean", default = false, required = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
+          { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
           { VerboseResponse = { type = "boolean", required = false }, },
           { xsltTransformBefore = { type = "string", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },

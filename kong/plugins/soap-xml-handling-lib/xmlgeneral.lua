@@ -17,6 +17,11 @@ xmlgeneral.XSDError           = "XSD validation failed"
 xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 
+xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
+xmlgeneral.prefetchStatusOk       = "Ok"
+xmlgeneral.prefetchStatusRunning  = "Running"
+xmlgeneral.prefetchStatusKo       = "Ko"
+
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
     [401] = "Unauthorized",
@@ -67,24 +72,25 @@ local HTTP_ERROR_MESSAGES = {
 function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   local detailErrMsg
   
-  -- If verbose mode is enabled we display the detailed Error Message
-  if VerboseResponse then
-    detailErrMsg = ErrEx
-    
-    -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
-    local ngx_get_phase = ngx.get_phase
-    if  ngx_get_phase() == "response"      or 
-        ngx_get_phase() == "header_filter" or 
-        ngx_get_phase() == "body_filter"   then
-      local status = kong.service.response.get_status()
-      if status ~= nil then
-        local additionalErrMsg = ''
-        additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
-        detailErrMsg = detailErrMsg .. additionalErrMsg
-      end
+  detailErrMsg = ErrEx
+  
+  -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
+  local ngx_get_phase = ngx.get_phase
+  if  ngx_get_phase() == "response"      or 
+      ngx_get_phase() == "header_filter" or 
+      ngx_get_phase() == "body_filter"   then
+    local status = kong.service.response.get_status()
+    if status ~= nil then
+      local additionalErrMsg = ''
+      additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
+      detailErrMsg = detailErrMsg .. additionalErrMsg
     end
-    detailErrMsg ="<detail>" .. detailErrMsg .. "<detail/>"
-  else
+  end
+  kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "<detail/>")
+  detailErrMsg ="\n      <detail>" .. detailErrMsg .. "<detail/>"
+
+  -- If verbose mode is disabled we don't send the detailed Error Message
+  if not VerboseResponse then
     detailErrMsg = ""
   end
 
@@ -93,13 +99,12 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   <soap:Body> \
     <soap:Fault>\
       <faultcode>soap:Client</faultcode>\
-      <faultstring>" .. ErrMsg .. "</faultstring>\
-      " .. detailErrMsg .. "\
+      <faultstring>" .. ErrMsg .. "</faultstring>" .. detailErrMsg .. "\
     </soap:Fault>\
   </soap:Body>\
 </soap:Envelope>\
 "
-  kong.log.err ("formatSoapFault, soapErrMsg:" .. soapErrMsg)
+
   return soapErrMsg
 end
 
@@ -124,20 +129,92 @@ end
 -- Return a SOAP Fault to the Consumer
 ---------------------------------------
 function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)  
-  -- Sends a Fault code to client
+  -- Send a Fault code to client
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = "text/xml; charset=utf-8"})
 end
 
----------------------------------------------------------------------
--- Initialize the 'libxml2' Error handler and External Entity Loader
----------------------------------------------------------------------
-function xmlgeneral.initializeHandlerLoader ()
+-------------------------------------------------------------------
+-- Initialize the Contextual Data related to the External Entities
+-------------------------------------------------------------------
+function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+  if kong.ctx.shared.xmlSoapExternalEntity == nil then
+    kong.ctx.shared.xmlSoapExternalEntity = {}
+  end
+  kong.ctx.shared.xmlSoapExternalEntity.async    = plugin_conf.ExternalEntityLoader_Async
+  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = plugin_conf.ExternalEntityLoader_CacheTTL
+  kong.ctx.shared.xmlSoapExternalEntity.timeout  = plugin_conf.ExternalEntityLoader_Timeout
+end
+
+------------------------------------------------------------------
+-- Timer function: in charge of downloading XSD in the background
+-- for External Entities
+------------------------------------------------------------------
+function xmlgeneral.timerXmlSoap(premature)
+  -- If the Nginx worker is shutting down (we can use 'ngx.worker.exiting()' too)
+  if premature then
+    -- stop the timer
+    return
+  end
+  
+  -- Go on each XSD External Entities
+  for k, v in pairs(kong.xmlSoapTimer.entityLoader.urls) do
+    
+    -- If we have to download the XSD Entity or If we have to refresh the XSD Entity
+    if k and (v.httpStatus ~= 200 or ngx.time () > v.timeDownloaded + v.cacheTTL) then
+      
+      local debug_body = v.body or ''
+      kong.log.debug("Timer SOAP/XML - url: k: " .. k .. " body: " .. debug_body .. " httpStatus: " .. v.httpStatus .. " timeout: " .. v.timeout .. " cacheTTL: " .. v.cacheTTL .. " timeDownloaded: " .. v.timeDownloaded)
+      if tonumber(v.timeDownloaded) ~=0 and ngx.time () > v.timeDownloaded + v.cacheTTL then
+        kong.log.debug("Timer SOAP/XML - Cache Expiration: Reload the entity")
+      end
+      local http = require "resty.http"
+      local httpc = http.new()  
+  
+      kong.log.debug("Timer SOAP/XML - REQUEST: " .. k)
+      httpc:set_timeout(v.timeout * 1000)
+      local res, err = httpc:request_uri(k, {
+        method = 'GET',
+        ssl_verify = false,
+      })
+      if not res then
+        -- We don't update the 'v.body' and 'v.httpStatus' and give the user a chance to have the cached value
+        kong.log.debug("Timer SOAP/XML: " .. k .. " err: " .. err)
+      elseif res.status ~= 200 then
+        -- We don't update the 'v.body' and 'v.httpStatus' and give the user a chance to have the cached value
+        kong.log.debug("Timer SOAP/XML - RESPONSE Ko: " .. k .. " httpStatus: " .. res.status)
+      else
+        v.body           = res.body
+        v.httpStatus     = res.status
+        v.timeDownloaded = ngx.time ()
+        kong.log.debug("Timer SOAP/XML - RESPONSE Ok: " .. k .. " httpStatus: " .. res.status)
+      end
+    else
+      kong.log.debug("Timer SOAP/XML - Nothing to do for: " .. k)
+    end
+  end
+  kong.log.debug("Timer SOAP/XML - Sleep: " .. xmlgeneral.timerXmlSoapSleep .. "s")
+  ngx.sleep(xmlgeneral.timerXmlSoapSleep)
+  kong.log.debug("Timer SOAP/XML - END")
+  local ok, err = ngx.timer.at(0, xmlgeneral.timerXmlSoap)
+  if not ok then
+    ngx.log(ngx.ERR, "Failed to create SOAP/XML timer: ", err)
+    return
+  end
+end
+
+-------------------------------------------------------------------------------
+-- Initialize the SOAP/XML plugin
+-- Setup a 'libxml2' Error handler
+-- Start the SOAP/XML Timer in charge of downloading the XSD in the background
+-- Setup an External Entity Loader
+-------------------------------------------------------------------------------
+function xmlgeneral.initializeXmlSoapPlugin ()
   -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
   -- The error message will be set contextually to the Request by using the 'kong.ctx'
   -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
   -- the 'libxml2' library complains with an error message: 'too many calls' (after ~100 calls)
   if not kong.xmlSoapErrorHandler then
-    kong.log.debug ("initializeErrorHandler: it's the 1st time the function is called => initialize the 'libxml2' Error Handler")
+    kong.log.debug ("initializeXmlSoapPlugin: it's the 1st time the function is called => initialize the 'libxml2' Error Handler")
     kong.xmlSoapErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
       -- The callback function can be called two times in a row
       -- 1st time: initial message (like: "Start tag expected, '<' not found")
@@ -149,7 +226,16 @@ function xmlgeneral.initializeHandlerLoader ()
       end
     end)
   else
-    kong.log.debug ("initializeErrorHandler: 'libxml2' Error Handler is already initialized => nothing to do")
+    kong.log.debug ("initializeXmlSoapPlugin: 'libxml2' Error Handler is already initialized => nothing to do")
+  end
+  
+  -- Start the SOAP/XML Timer in charge of downloading the XSD in the background
+  if not kong.xmlSoapTimer then
+    kong.xmlSoapTimer = {entityLoader = {hashKeys = {}, urls = {} } }
+    -- local ok, err = ngx.timer.at(0, xmlgeneral.timerXmlSoap)
+    -- if not ok then
+    --  kong.log.err("initializeXmlSoapPlugin: Failed to create SOAP/XML timer: ", err)
+    -- end
   end
 
   -- Initialize the External Entity Loader for downloading XSD that are imported on 'http(s)://'
@@ -160,17 +246,6 @@ function xmlgeneral.initializeHandlerLoader ()
   else
     kong.log.debug ("initializeExternalEntityLoader: 'libxml2' External Load is already initialized => nothing to do")
   end
-end
-
--------------------------------------------------------------------
--- Initialize the Contextual Data related to the External Entities
--------------------------------------------------------------------
-function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
-  if kong.ctx.shared.xmlSoapExternalEntity == nil then
-    kong.ctx.shared.xmlSoapExternalEntity = {}
-  end
-  kong.ctx.shared.xmlSoapExternalEntity.timeout  = plugin_conf.ExternalEntityLoader_Timeout
-  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = plugin_conf.ExternalEntityLoader_CacheTTL
 end
 
 ----------------------------------------------------------------------------------------
@@ -248,6 +323,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
     if xml_transformed ~= nil then
       -- Dump into a String the canonized image of the XML transformed by XSLT
       xml_transformed_dump, errDump = libxml2ex.xmlC14NDocSaveTo (xml_transformed, nil)
+      
       if errDump == 0 then
         -- If needed we append the xml declaration
         -- Example: <?xml version="1.0" encoding="utf-8"?>
@@ -271,20 +347,83 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   end
   
   if errMessage ~= nil then
-    kong.log.err ("XSLT transformation, errMessage: " .. errMessage)
+    kong.log.debug ("XSLT transformation, errMessage: " .. errMessage)
   end
 
   -- xmlCleanupParser()
-  -- xmlMemoryDump()
   
   return xml_transformed_dump, errMessage
   
 end
 
+----------------------------------------------------------------------------------------------------
+-- Prefetch External Entities (i.e. Download XSD content) specified in WSDL
+-- Executed one time during 1st call for each 'xsdApiSchema' plugin configuration
+-- When the plugin configuration ('xsdApiSchema') has changed the prefetch is executed another time
+----------------------------------------------------------------------------------------------------
+function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
+  local errMessage
+  local i   = 1
+  local nowTime = ngx.now()
+
+  -- If Asynchronous is not enabled OR
+  -- If there is no XSD we don't do a Prefetch
+  if not plugin_conf.ExternalEntityLoader_Async or not plugin_conf.xsdApiSchema then
+    return
+  end
+
+  local xsdHashKey = libxml2ex.hash_key(plugin_conf.xsdApiSchema)
+  -- If it's the 1st time we call the Prefetch
+  if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey] == nil then
+    kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey] = {
+      prefetchStus = xmlgeneral.prefetchStatusRunning
+    }
+    kong.log.debug("prefetchExternalEntities - First execution")
+  -- Else if the Prefetch has been already called: we don't call it anymore
+  elseif kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus ~= xmlgeneral.prefetchStatusRunning then
+    kong.log.debug("prefetchExternalEntities - Prefetch was already executed, prefetchSatus: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus)
+    return  
+  end
+
+  -- Loop during a maximum of 'ExternalEntityLoader_Timeout' second to retrieve the complete list of the URL of XSD
+  while (nowTime + plugin_conf.ExternalEntityLoader_Timeout) > ngx.now() do
+    -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
+    -- The 'timerXmlSoap' function is in charge of downloading the XSD content
+    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, nil, WSDL, verbose, true)
+    
+    -- If the prefetch succeeded we stop it
+    if not errMessage then
+      kong.log.debug("prefetchExternalEntities: #" .. i .. " **Success**")
+      kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus = xmlgeneral.prefetchStatusOk
+      break
+    else
+      kong.log.debug("prefetchExternalEntities: #" .. i .. " err: " .. errMessage)
+      local j, _ = string.find(errMessage, "failed.to.load.external.entity")
+      local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+      -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
+      --    => Stop the loop
+      -- Else continue the loop
+      if j == nil and k == nil then
+        break
+      end
+    end
+    i = i + 1
+    -- Do a sleep and expect that, meanwhile, the 'timerXmlSoap' function downloads the XSD content
+    ngx.sleep (xmlgeneral.timerXmlSoapSleep / 2)
+    
+  end
+  -- If the Prefetch status is still 'Running' it means that the Prefetch failed. 
+  -- So we set a Ko status and next time it won't be executed (the Prefetch is executed 1 time)
+  if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus == xmlgeneral.prefetchStatusRunning then
+    kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus = xmlgeneral.prefetchStatusKo
+  end
+  kong.log.debug("prefetchExternalEntities - Last status: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus)
+end
+
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
-function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL, verbose)
+function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL, verbose, prefetch)
   local xml_doc           = nil
   local errMessage        = nil
   local xsdSchema         = nil
@@ -359,7 +498,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
     -- If we don't find <wsdl:types>
     if not typesNodeFound then
       errMessage = "Unable to find the 'wsdl:types'"
-      kong.log.err (errMessage)
+      kong.log.debug (errMessage)
       return errMessage
     end
   else
@@ -385,13 +524,26 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
         kong.log.debug ("schema #" .. index .. ", lentgh: " .. #xsdSchema .. ", dump: " .. xsdSchema)
         errMessage = nil
         -- Validate the XML with the <xs:schema>'
-        errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema, verbose)
+        errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema, verbose, prefetch)
         -- If there is no error it means that we found the right Schema validating the SOAP/XML
         if not errMessage then
           kong.log.debug ("We found the right XSD Schema validating the SOAP/XML")
-          validSchemaFound = true
-          errMessage = nil
-          break
+          if not prefetch then
+            validSchemaFound = true
+            errMessage = nil
+            break
+          else
+            -- Go on next schema
+            kong.log.debug ("Prefetch is enabled go on next XSD Schema")
+          end
+        else
+          local j, _ = string.find(errMessage, "failed.to.load.external.entity")
+          local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+          -- If there is an error related to a failure to 'load external entity' (HTTP Error 4XX, 5XX)
+          --    => Stop the loop
+          if j or k then
+            break
+          end
         end
       end
     end
@@ -410,7 +562,7 @@ end
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
-function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema, verbose)
+function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema, verbose, prefech)
   local xml_doc       = nil
   local errMessage    = nil
   local err           = nil
@@ -419,7 +571,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   local bodyNodeFound = nil
   local currentNode   = nil
   local nodeName      = ""
-  local libxml2           = require("xmlua.libxml2")
+  local libxml2       = require("xmlua.libxml2")
 
   -- Prepare the error Message
   if child == 0 then
@@ -437,18 +589,20 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   -- Create XSD schema  
   local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
   
+  -- If it's a Prefetch we just have to parse the XSD which downloads XSD in cascade 
+  if prefech then
+    return errMessage
+  end
+
   -- If there is no error loading the XSD schema
   if not errMessage then
-    
     -- Create Validation context of XSD Schema
     local validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
-
     xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options, verbose)
     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
       -- The Error processing is done at the End of the function, so we do nothing...
-
     -- if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
     elseif child ~=0 then
       -- Example:
@@ -513,10 +667,6 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     kong.log.debug ("XSD validation of ".. schemaType .." schema: " .. errMessage)
   end
 
-  if errMessage then
-    kong.log.debug ("XSD validation, errMessage: " .. errMessage)
-  end
-
   return errMessage
 end
 
@@ -532,7 +682,7 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
   local document = libxml2.xmlCtxtReadMemory(context, XMLtoSearch)
   
   if not document then
-    kong.log.err ("RouteByXPath, xmlCtxtReadMemory error, no document")
+    kong.log.debug ("RouteByXPath, xmlCtxtReadMemory error, no document")
   end
   
   local context = libxml2.xmlXPathNewContext(document)

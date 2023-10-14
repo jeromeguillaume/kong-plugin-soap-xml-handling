@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.6",
+    VERSION = "1.0.7",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -32,9 +32,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
 
   -- If there is no error and
   -- If the plugin is defined with XSD SOAP schema then:
-  -- => we validate the SOAP with its schema
+  -- => we validate the SOAP envelope with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
-    errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest)
+    errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -47,8 +47,16 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If the plugin is defined with XSD or WSDL API schema then:
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
-    -- errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema)
-    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
+    
+    -- Initialize the contextual data related to the External Entities
+    xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+ 
+    -- Prefetch External Entities (i.e. Download XSD content)
+    xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
+    
+    -- Validate the API XML with its schema
+    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
+
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -72,15 +80,45 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is no error and
   -- If the plugin is defined with Routing XPath properties then:
   -- => we change the Route By XPath and if the condition is satisfied
-  if soapFaultBody == nil and plugin_conf.RouteXPath and plugin_conf.RouteXPathCondition and plugin_conf.RouteToUpstream and plugin_conf.RouteToPath then
+    if soapFaultBody == nil and plugin_conf.RouteXPath and plugin_conf.RouteXPathCondition and plugin_conf.RouteToPath then
     -- Get Route By XPath and check if the condition is satisfied
     local rcXpath = xmlgeneral.RouteByXPath (kong, soapEnvelope_transformed, 
                                             plugin_conf.RouteXPath, plugin_conf.RouteXPathCondition, plugin_conf.RouteXPathRegisterNs)
     -- If the condition is statsfied we change the Upstream
     if rcXpath then
-      kong.service.set_upstream(plugin_conf.RouteToUpstream)
-      kong.service.request.set_path(plugin_conf.RouteToPath)
-      kong.log.debug("Upstream changed successfully")
+      local parse_url = require("socket.url").parse
+      local parsed    = parse_url(plugin_conf.RouteToPath)
+      local port
+      local path
+      if (parsed.scheme and parsed.host) then
+        kong.service.request.set_scheme(parsed.scheme)
+        -- kong.service.set_upstream(plugin_conf.RouteToUpstream)
+        if (not parsed.path) then
+          path = '/'
+        else
+          path = parsed.path
+        end
+        kong.service.request.set_path(path)
+        if (not parsed.port) then
+          if parsed.scheme == 'https' then
+              port = 443
+          else 
+              port = 80
+          end
+        else
+            port = parsed.port
+        end
+        -- First, consider that the Host is a Kong Upstream 
+        local ok, err = kong.service.set_upstream(parsed.host)
+        -- If there is an error which means that the Host is not a Kong Upstream
+        if not ok then
+          -- Change Hostname and port
+          kong.service.set_target(parsed.host, tonumber(port))          
+        end
+        kong.log.debug("Upstream changed successfully to " .. parsed.scheme .. "://" .. parsed.host .. ":" .. tonumber(port) .. path)
+      else
+        kong.log.err("RouteByXPath: Unable to get scheme or host")
+      end
     end
   end
   
@@ -94,8 +132,8 @@ end
 function plugin:init_worker ()
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
-  -- Initialize the Error handler at the initialization plugin
-  xmlgeneral.initializeHandlerLoader ()
+  -- Initialize the SOAP/XML plugin
+  xmlgeneral.initializeXmlSoapPlugin ()
 
 end
 
@@ -105,15 +143,12 @@ end
 function plugin:access(plugin_conf)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
-  -- Initialize the contextual data related to the External Entities
-  xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
-  
   -- Get SOAP envelope from the request
   local soapEnvelope = kong.request.get_raw_body()
 
   -- Handle all SOAP/XML topics of the Request: XSLT before, XSD validation, XSLT After and Routing by XPath
   local soapEnvelope_transformed, soapFaultBody = plugin:requestSOAPXMLhandling (plugin_conf, soapEnvelope)
-  
+
   -- If there is an error during SOAP/XML we change the HTTP staus code and
   -- the Body content (with the detailed error message) will be changed by 'body_filter' phase
   if soapFaultBody ~= nil then    
@@ -138,6 +173,7 @@ function plugin:access(plugin_conf)
     -- We did a successful SOAP/XML handling, so we change the SOAP body request
     kong.service.request.set_raw_body(soapEnvelope_transformed)
   end
+
 end
 
 -----------------------------------------------------------------------------------------

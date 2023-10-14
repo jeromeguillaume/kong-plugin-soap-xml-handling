@@ -10,10 +10,10 @@ return {
     { config = {
         type = "record",
         fields = {
-          { ExternalEntityLoader_Timeout = { type = "integer", default = 5, required = false }, },
+          { ExternalEntityLoader_Async = { type = "boolean", default = false, required = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
+          { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
           { RouteToPath = { type = "string", required = false }, },
-          { RouteToUpstream = { type = "string", required = false }, },
           { RouteXPath = { type = "string", required = false }, },
           { RouteXPathCondition = { type = "string", required = false }, },
           { RouteXPathRegisterNs = { type = "array",  required = false, elements = {type = "string"}, default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"}},},

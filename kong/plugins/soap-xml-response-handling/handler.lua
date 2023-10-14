@@ -3,7 +3,7 @@ local kongUtils = require("kong.tools.utils")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.6",
+    VERSION = "1.0.7",
   }
 
 -----------------------------------------------------------------------------------------
@@ -35,7 +35,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is a configuration for XSD SOAP schema validation then:
   -- => We validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
-    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse)
+        
+    -- Validate the API XML with its schema
+    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -48,7 +50,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is a configuration for XSD or WSDL API schema validation then:
   -- => we validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then  
-    local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse)
+    local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -80,8 +82,9 @@ end
 ------------------------------------------------------
 function plugin:init_worker ()
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  -- Initialize the Error handler at the initialization plugin
-  xmlgeneral.initializeHandlerLoader ()
+  
+  -- Initialize the SOAP/XML plugin
+  xmlgeneral.initializeXmlSoapPlugin ()
   
 end
 
@@ -94,6 +97,9 @@ function plugin:access(plugin_conf)
 
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+ 
+  -- Prefetch External Entities (i.e. Download XSD content)
+  xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse)
   
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
@@ -136,7 +142,6 @@ function plugin:header_filter(plugin_conf)
   end
   
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
-  -- In case where the 'soap-xml-request-handling' plugin is not enabled
   -- we reformat the JSON message to SOAP/XML Fault
   if kong.response.get_source() == "exit" or kong.response.get_source() == "error" then
     kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
