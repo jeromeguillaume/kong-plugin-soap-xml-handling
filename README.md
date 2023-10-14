@@ -95,7 +95,7 @@ Add `soap-xml-request-handling` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use command defined at step #3, **remove `<b>7</b>`**, the expected result is no longer `12` but `13`:
+Use command defined at step #3, **remove `<intB>7</intB>`**, the expected result is no longer `12` but `13`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>
