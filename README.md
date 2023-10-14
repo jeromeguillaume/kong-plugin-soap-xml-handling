@@ -487,8 +487,8 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 KONG_NGINX_WORKER_PROCESSES=2
 ```
 Note: 
-  - The non-blocking `resty.http` library cannot be use because it's raised a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
-  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property 
+  - The non-blocking `resty.http` library cannot be use because it raises a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
+  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which use `resty.http`)
 
 6) Call the `calculator` through the Kong Gateway Route
 ```
