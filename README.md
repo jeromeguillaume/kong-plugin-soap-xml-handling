@@ -455,7 +455,7 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 3) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
 4) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
-- `ExternalEntityLoader_CacheTTL` property with the value `15`
+- `ExternalEntityLoader_CacheTTL` property with the value `15` seconds
 - `VerboseRequest` enabled
 - `XsdApiSchema` property with this `WSDL` value:
 ```xml
