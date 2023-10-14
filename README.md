@@ -544,5 +544,5 @@ Use command defined at step #6 (Wait at least the TTL duration defined by `Exter
   - Adapt the `schema.lua` to be Konnect compatible
 - v1.0.7: 
   - Change example material from `https://ecs.syr.edu` (no longer available) to `http://www.dneonline.com`
-  - Improve `Routing By XPath` by putting in one plugin property the complete routing URL and by enably the usage of Host (not only Upstream)
+  - Improve `Routing By XPath` by putting in one plugin property the complete routing URL and by enabling the usage of a Host (not only a Kong Upstream)
   - Add experimental `ExternalEntityLoader_Async` capacity for downloading Asynchronously the XSD External Entities
