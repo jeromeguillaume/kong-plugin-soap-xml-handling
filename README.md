@@ -76,7 +76,7 @@ The expected result is `12`:
 ### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
 
 The plugin applies a XSLT Transformation on XML request **before** the XSD Validation.
-In this example the XSLT **adds the value ```int<B>8</intB>```** that will not be present in the request.
+In this example the XSLT **adds the value ```<intB>8</intB>```** that will not be present in the request.
 
 Add `soap-xml-request-handling` plugin and configure the plugin with:
 - `XsltTransformBefore` property with this XSLT definition:
