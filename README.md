@@ -515,7 +515,7 @@ For testing purposes only: inject an error in the `XSD`schema and the `WSDL/XSD`
 1) For `tempui.org.request-response.xsd` route, open `Request Termination` plugin and configure the plugin with:
 - `body` property: remove the first character `<`
 
-Use command defined at step #6 (Wait at least the TTL duration defined by `ExternalEntityLoader_CacheTTL`), and the expected result is: 
+Use command defined at step #6 (Wait at least the TTL duration defined by `ExternalEntityLoader_CacheTTL`) and the expected result is: 
 ```xml
 ...
 <faultstring>Request - XSD validation failed</faultstring>
