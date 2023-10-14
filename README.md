@@ -142,7 +142,7 @@ HTTP/1.1 500 Internal Server Error
 <detail>Error Node: EnvelopeKong, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.<detail/>
 </soap:Fault>
 ```
-Use command defined at step #3, **remove ```<a>5</a>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
+Use command defined at step #3, **remove ```<intA>5</intA>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
