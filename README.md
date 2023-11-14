@@ -414,7 +414,7 @@ Content-Length: 185
 </soap:Envelope>
 ```
 
-### Example #9: Request | `WSDL/XSD VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e: http(s)://)
+### Example #9: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e: http(s)://)
 Calling incorrectly `calculator` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
