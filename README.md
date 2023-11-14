@@ -515,7 +515,7 @@ Use previous command defined, **remove ```<intA>5</intA>```** => there is an err
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}intA ).<detail/>
+<detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
 ## Changelog
