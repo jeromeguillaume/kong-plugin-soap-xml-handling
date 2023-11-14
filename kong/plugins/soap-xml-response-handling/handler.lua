@@ -3,7 +3,7 @@ local kongUtils = require("kong.tools.utils")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.7",
+    VERSION = "1.0.8",
   }
 
 -----------------------------------------------------------------------------------------

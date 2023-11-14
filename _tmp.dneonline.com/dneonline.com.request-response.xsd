@@ -1,22 +1,22 @@
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="AddType">
-    <xs:sequence>
-      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
-      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="SubtractType">
-    <xs:sequence>
-      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
-      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="AddResponseType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="AddResult"/>
-    </xs:sequence>
-  </xs:complexType>
-</xs:schema>
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="AddType">
+    <xsd:sequence>
+      <xsd:element type="xsd:integer" name="intA" minOccurs="1"/>
+      <xsd:element type="xsd:integer" name="intB" minOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="SubtractType">
+    <xsd:sequence>
+      <xsd:element type="xsd:integer" name="intA" minOccurs="1"/>
+      <xsd:element type="xsd:integer" name="intB" minOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="AddResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="AddResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

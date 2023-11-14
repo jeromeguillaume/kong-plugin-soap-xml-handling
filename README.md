@@ -7,15 +7,15 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 **soap-xml-request-handling** plugin to handle Request:
 
-1) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML request with XSLT (XSLTransformation) before XSD Validation (step #2)
-2) `XSD VALIDATION`: Validate XML request with its XSD schema
-3) `XSLT TRANSFORMATION - AFTER XSD`: Transform the XML request with XSLT (XSLTransformation) after XSD Validation (step #2)
+1) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML request with XSLT (XSLTransformation) before step #2
+2) `WSDL/XSD VALIDATION`: Validate XML request with its XSD schema
+3) `XSLT TRANSFORMATION - AFTER XSD`: Transform the XML request with XSLT (XSLTransformation) after step #2
 4) `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 
 **soap-xml-response-handling** plugin to handle Reponse:
 
 5) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML response before step #6
-6) `XSD VALIDATION`: Validate the XML response with its XSD schema
+6) `WSDL/XSD VALIDATION`: Validate the XML response with its XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
 Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message)
@@ -471,7 +471,6 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
   <wsdl:types>
     <!-- XSD schema for the Request and the Response -->
       <xsd:schema
-        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
@@ -487,7 +486,7 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 KONG_NGINX_WORKER_PROCESSES=2
 ```
 Note: 
-  - The non-blocking `resty.http` library cannot be use because it raises a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
+  - The non-blocking `resty.http` library cannot be used because it raises a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
   - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
 
 6) Call the `calculator` through the Kong Gateway Route
@@ -546,3 +545,6 @@ Use command defined at step #6 (Wait at least the TTL duration defined by `Exter
   - Change example material from `https://ecs.syr.edu` (no longer available) to `http://www.dneonline.com`
   - Improve `Routing By XPath` by putting in one plugin property the complete routing URL and by enabling the usage of a Host (not only a Kong Upstream)
   - Add experimental `ExternalEntityLoader_Async` capacity for downloading Asynchronously the XSD External Entities
+- v1.0.8: 
+  - Add https support to Synchronous external loader (https)
+  - WSDL validation: Get the Namespace definitons found in <wsdl:definitions> and add them in <xsd:schema> (if they don't exist)

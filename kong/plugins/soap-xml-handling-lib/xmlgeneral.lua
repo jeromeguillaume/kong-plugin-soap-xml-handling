@@ -16,6 +16,8 @@ xmlgeneral.XSLTError          = "XSLT transformation failed"
 xmlgeneral.XSDError           = "XSD validation failed"
 xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
+xmlgeneral.xmlnsXsdHref       = "http://www.w3.org/2001/XMLSchema"
+xmlgeneral.xsdSchema          = "schema"
 
 xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
 xmlgeneral.prefetchStatusOk       = "Ok"
@@ -81,8 +83,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
       ngx_get_phase() == "body_filter"   then
     local status = kong.service.response.get_status()
     if status ~= nil then
-      local additionalErrMsg = ''
-      additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
+      local additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
       detailErrMsg = detailErrMsg .. additionalErrMsg
     end
   end
@@ -143,69 +144,18 @@ function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   kong.ctx.shared.xmlSoapExternalEntity.async    = plugin_conf.ExternalEntityLoader_Async
   kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = plugin_conf.ExternalEntityLoader_CacheTTL
   kong.ctx.shared.xmlSoapExternalEntity.timeout  = plugin_conf.ExternalEntityLoader_Timeout
-end
-
-------------------------------------------------------------------
--- Timer function: in charge of downloading XSD in the background
--- for External Entities
-------------------------------------------------------------------
-function xmlgeneral.timerXmlSoap(premature)
-  -- If the Nginx worker is shutting down (we can use 'ngx.worker.exiting()' too)
-  if premature then
-    -- stop the timer
-    return
+  if not kong.ctx.shared.xmlSoapExternalEntity.cacheTTL then
+    kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = 1
   end
-  
-  -- Go on each XSD External Entities
-  for k, v in pairs(kong.xmlSoapTimer.entityLoader.urls) do
-    
-    -- If we have to download the XSD Entity or If we have to refresh the XSD Entity
-    if k and (v.httpStatus ~= 200 or ngx.time () > v.timeDownloaded + v.cacheTTL) then
-      
-      local debug_body = v.body or ''
-      kong.log.debug("Timer SOAP/XML - url: k: " .. k .. " body: " .. debug_body .. " httpStatus: " .. v.httpStatus .. " timeout: " .. v.timeout .. " cacheTTL: " .. v.cacheTTL .. " timeDownloaded: " .. v.timeDownloaded)
-      if tonumber(v.timeDownloaded) ~=0 and ngx.time () > v.timeDownloaded + v.cacheTTL then
-        kong.log.debug("Timer SOAP/XML - Cache Expiration: Reload the entity")
-      end
-      local http = require "resty.http"
-      local httpc = http.new()  
-  
-      kong.log.debug("Timer SOAP/XML - REQUEST: " .. k)
-      httpc:set_timeout(v.timeout * 1000)
-      local res, err = httpc:request_uri(k, {
-        method = 'GET',
-        ssl_verify = false,
-      })
-      if not res then
-        -- We don't update the 'v.body' and 'v.httpStatus' and give the user a chance to have the cached value
-        kong.log.debug("Timer SOAP/XML: " .. k .. " err: " .. err)
-      elseif res.status ~= 200 then
-        -- We don't update the 'v.body' and 'v.httpStatus' and give the user a chance to have the cached value
-        kong.log.debug("Timer SOAP/XML - RESPONSE Ko: " .. k .. " httpStatus: " .. res.status)
-      else
-        v.body           = res.body
-        v.httpStatus     = res.status
-        v.timeDownloaded = ngx.time ()
-        kong.log.debug("Timer SOAP/XML - RESPONSE Ok: " .. k .. " httpStatus: " .. res.status)
-      end
-    else
-      kong.log.debug("Timer SOAP/XML - Nothing to do for: " .. k)
-    end
-  end
-  kong.log.debug("Timer SOAP/XML - Sleep: " .. xmlgeneral.timerXmlSoapSleep .. "s")
-  ngx.sleep(xmlgeneral.timerXmlSoapSleep)
-  kong.log.debug("Timer SOAP/XML - END")
-  local ok, err = ngx.timer.at(0, xmlgeneral.timerXmlSoap)
-  if not ok then
-    ngx.log(ngx.ERR, "Failed to create SOAP/XML timer: ", err)
-    return
+  if not kong.ctx.shared.xmlSoapExternalEntity.timeout then
+    kong.ctx.shared.xmlSoapExternalEntity.timeout = 3600
   end
 end
 
 -------------------------------------------------------------------------------
 -- Initialize the SOAP/XML plugin
 -- Setup a 'libxml2' Error handler
--- Start the SOAP/XML Timer in charge of downloading the XSD in the background
+-- Setup the SOAP/XML Timer context in charge of downloading the XSD in the background
 -- Setup an External Entity Loader
 -------------------------------------------------------------------------------
 function xmlgeneral.initializeXmlSoapPlugin ()
@@ -229,13 +179,9 @@ function xmlgeneral.initializeXmlSoapPlugin ()
     kong.log.debug ("initializeXmlSoapPlugin: 'libxml2' Error Handler is already initialized => nothing to do")
   end
   
-  -- Start the SOAP/XML Timer in charge of downloading the XSD in the background
+  -- Initialize the SOAP/XML context in charge of downloading Asynchronously the XSD content
   if not kong.xmlSoapTimer then
     kong.xmlSoapTimer = {entityLoader = {hashKeys = {}, urls = {} } }
-    -- local ok, err = ngx.timer.at(0, xmlgeneral.timerXmlSoap)
-    -- if not ok then
-    --  kong.log.err("initializeXmlSoapPlugin: Failed to create SOAP/XML timer: ", err)
-    -- end
   end
 
   -- Initialize the External Entity Loader for downloading XSD that are imported on 'http(s)://'
@@ -357,7 +303,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
 end
 
 ----------------------------------------------------------------------------------------------------
--- Prefetch External Entities (i.e. Download XSD content) specified in WSDL
+-- Prefetch External Entities (i.e. Download Asynchronously XSD content) specified in WSDL
 -- Executed one time during 1st call for each 'xsdApiSchema' plugin configuration
 -- When the plugin configuration ('xsdApiSchema') has changed the prefetch is executed another time
 ----------------------------------------------------------------------------------------------------
@@ -385,10 +331,10 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
     return  
   end
 
-  -- Loop during a maximum of 'ExternalEntityLoader_Timeout' second to retrieve the complete list of the URL of XSD
-  while (nowTime + plugin_conf.ExternalEntityLoader_Timeout) > ngx.now() do
+  -- Loop during a maximum of 'timeout' second to retrieve the complete list of the URL of XSD
+  while (nowTime + kong.ctx.shared.xmlSoapExternalEntity.timeout) > ngx.now() do
     -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
-    -- The 'timerXmlSoap' function is in charge of downloading the XSD content
+    -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
     errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, nil, WSDL, verbose, true)
     
     -- If the prefetch succeeded we stop it
@@ -420,19 +366,90 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
   kong.log.debug("prefetchExternalEntities - Last status: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus)
 end
 
+
+--------------------------
+-- Dump a document to XML
+--------------------------
+function xmlgeneral.to_xml(document)
+  local buffer = libxml2.xmlBufferCreate()
+  local context = libxml2.xmlSaveToBuffer(buffer,
+                                          "UTF-8",
+                                          bit.bor(ffi.C.XML_SAVE_FORMAT,
+                                                  ffi.C.XML_SAVE_NO_DECL,
+                                                  ffi.C.XML_SAVE_AS_XML))
+  libxml2.xmlSaveDoc(context, document)
+  libxml2.xmlSaveClose(context)
+  return libxml2.xmlBufferGetContent(buffer)
+end
+
+------------------------------------------------------------------------
+-- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
+------------------------------------------------------------------------
+function xmlgeneral.addNamespaces(xsdSchema, document, node)
+
+  local xsdSchemaTag
+  local xmlNsXsdPrefix
+  local raw_namespaces
+  local beginSchema
+  local endSchema
+
+  -- Retrieve the Schema NameSpace prefix of 'xmlns:prefix' regarding hRef: 'http://www.w3.org/2001/XMLSchema'
+  -- Example of prefix: xsd (xmlns:xsd), xs (xmlns:xs), myxsd (xmlns:myxsd), etc.
+  local xmlNsPtr = libxml2.xmlSearchNsByHref(document, node, xmlgeneral.xmlnsXsdHref)
+  if xmlNsPtr ~= ffi.NULL then
+    xmlNsXsdPrefix = ffi.string(xmlNsPtr.prefix)
+  end
+  
+  -- Get the List of all NameSpaces
+  raw_namespaces = libxml2.xmlGetNsList(document, node)
+
+  -- Search the begin and end of '<xsd:schema'
+  if xmlNsXsdPrefix then
+    xsdSchemaTag = "<" .. xmlNsXsdPrefix .. ":" .. xmlgeneral.xsdSchema
+    beginSchema = xsdSchema:find (xsdSchemaTag, 1)
+    endSchema   = xsdSchema:find (">", 2)
+  end
+
+  if not xmlNsXsdPrefix or not raw_namespaces or not beginSchema or not endSchema then
+    kong.log.err("WSDL validation - Unable to add Namespaces from <wsdl:definition>")
+    return xsdSchema
+  end
+
+  local xsdSchemaTmp = xsdSchema:sub(beginSchema, endSchema)
+
+  local i = 0
+  local xmlns = ''
+  -- Add each Namespace definition defined at <wsdl> level in <xsd:schema>
+  while raw_namespaces[i] ~= ffi.NULL do
+    if not xsdSchemaTmp:find("xmlns:" .. ffi.string(raw_namespaces[i].prefix) .. "=\"") then
+      xmlns = "xmlns:" .. ffi.string(raw_namespaces[i].prefix) .. "=\"" .. ffi.string(raw_namespaces[i].href) .. "\" " .. xmlns
+    end
+    i = i + 1
+  end
+  
+  if #xmlns > 1 then
+    xsdSchema = xsdSchemaTag .. " " .. xmlns .. xsdSchema:sub(beginSchema + #xsdSchemaTag, -1)
+  end
+  
+  return xsdSchema
+end
+
+
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
 function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL, verbose, prefetch)
-  local xml_doc           = nil
-  local errMessage        = nil
-  local xsdSchema         = nil
-  local currentNode       = nil
-  local wsdlNodeFound     = false
-  local typesNodeFound    = false
-  local validSchemaFound  = false
-  local nodeName          = ""
-  local index             = 0
+  local xml_doc          = nil
+  local errMessage       = nil
+  local firstErrMessage  = nil
+  local xsdSchema        = nil
+  local currentNode      = nil
+  local xmlNsXsdPrefix   = nil
+  local wsdlNodeFound    = false
+  local typesNodeFound   = false
+  local validSchemaFound = false
+  local nodeName         = ""
+  local index            = 0
   
   -- If we have a WDSL file, we retrieve the '<wsdl:types>' Node AND the '<xs:schema>' child nodes 
   --   OR
@@ -462,7 +479,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   -- Parse an XML in-memory document and build a tree
   xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose)
   if errMessage then
-    errMessage = "WSDL validation, errMessage " .. errMessage
+    errMessage = "WSDL validation - errMessage " .. errMessage
     kong.log.err (errMessage)
     return errMessage
   end
@@ -504,6 +521,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   else
     kong.log.debug("Unable to find the '<wsdl:definitions>', so we consider the XSD as a raw '<xs:schema>'")
   end
+
   -- If we found the '<wsdl:types>' Node we select the first child Node which is '<xs:schema>'
   if typesNodeFound then
     kong.log.debug("XMLValidateWithWSDL, Found the '<wsdl:types>' Node")
@@ -512,8 +530,11 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   else
     currentNode = xmlNodePtrRoot
   end
-  -- Retrieve all '<xs:schema>' Nodes until we found a valid Schema validating the XML
-  while currentNode ~= ffi.NULL and not validSchemaFound do
+  -- Retrieve all '<xs:schema>' Nodes until 
+  --   We found a valid Schema validating the XML 
+  --     OR
+  --   If prefetch is enabled
+  while currentNode ~= ffi.NULL and (not validSchemaFound or prefetch) do
     
     if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
       -- Get the node Name
@@ -522,28 +543,33 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
         index = index + 1
         xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, currentNode, 1, 1)
         kong.log.debug ("schema #" .. index .. ", lentgh: " .. #xsdSchema .. ", dump: " .. xsdSchema)
+        
+        -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
+        xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)
+
         errMessage = nil
         -- Validate the XML with the <xs:schema>'
         errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema, verbose, prefetch)
+        
+        local msgDebug = errMessage or "Ok"
+        kong.log.debug ("Validation for schema #" .. index .. " Message: '" .. msgDebug .. "'")
+        
+        -- If prefetch is enabled
+        if prefetch then
+          -- If there is an error, Keep only the 1st Error message and 
+          -- avoid, for instance, that the correct validation of schema#2 overwrites the error of schema#1
+          if errMessage and not firstErrMessage then
+            firstErrMessage = errMessage
+          end
+          -- Go on next schema
+          kong.log.debug ("Prefetch is enabled: go on next XSD Schema")
+          
         -- If there is no error it means that we found the right Schema validating the SOAP/XML
-        if not errMessage then
-          kong.log.debug ("We found the right XSD Schema validating the SOAP/XML")
-          if not prefetch then
-            validSchemaFound = true
-            errMessage = nil
-            break
-          else
-            -- Go on next schema
-            kong.log.debug ("Prefetch is enabled go on next XSD Schema")
-          end
-        else
-          local j, _ = string.find(errMessage, "failed.to.load.external.entity")
-          local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
-          -- If there is an error related to a failure to 'load external entity' (HTTP Error 4XX, 5XX)
-          --    => Stop the loop
-          if j or k then
-            break
-          end
+        elseif not errMessage then
+          kong.log.debug ("Found the right XSD Schema validating the SOAP/XML")
+          validSchemaFound = true
+          errMessage = nil
+          break
         end
       end
     end
@@ -551,8 +577,12 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
     currentNode = ffi.cast("xmlNode *", currentNode.next)
   end
 
-  -- If there is no Error and we don't retrieve a valid Schema for the XML
-  if not errMessage and not validSchemaFound then
+  -- If prefetch is enabled 
+  if prefetch then
+    -- Get the 1st Error message
+    errMessage = firstErrMessage
+  -- Else If there is no Error and we don't retrieve a valid Schema for the XML
+  elseif not errMessage and not validSchemaFound then
     errMessage = "Unable to find a suitable Schema to validate the SOAP/XML"
   end
 
@@ -588,7 +618,6 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   
   -- Create XSD schema  
   local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
-  
   -- If it's a Prefetch we just have to parse the XSD which downloads XSD in cascade 
   if prefech then
     return errMessage
@@ -602,7 +631,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
-      -- The Error processing is done at the End of the function, so we do nothing...
+    -- The Error processing is done at the End of the function, so we do nothing...
     -- if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
     elseif child ~=0 then
       -- Example:
@@ -621,7 +650,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
        -- Retrieve '<soap:Body>' Node in the XML
       while currentNode ~= ffi.NULL and not bodyNodeFound do
         if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
-          kong.log.debug ("currentNode.name: " .. ffi.string(currentNode.name))
+          kong.log.debug ("XSD validation - CurrentNode.name: " .. ffi.string(currentNode.name))
           nodeName = ffi.string(currentNode.name)
           if nodeName == "Body" then
             bodyNodeFound = true
@@ -634,7 +663,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       end
       -- If we don't find <wsdl:types>
       if not bodyNodeFound then
-        errMessage = "Unable to find the 'soap:Body'"
+        errMessage = "XSD validation - Unable to find the 'soap:Body'"
         kong.log.err (errMessage)
         return errMessage
       end
@@ -654,10 +683,10 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       
       -- Check validity of XML with its XSD schema
       is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
-      kong.log.debug ("is_valid: " .. is_valid)
+      kong.log.debug ("XSD validation - is_valid: " .. is_valid)
     end
   end
-  
+
   if not errMessage and is_valid == 0 then
     kong.log.debug ("XSD validation of ".. schemaType .." schema: Ok")
   elseif errMessage then
