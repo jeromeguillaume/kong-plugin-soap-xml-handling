@@ -547,4 +547,4 @@ Use command defined at step #6 (Wait at least the TTL duration defined by `Exter
   - Add experimental `ExternalEntityLoader_Async` capacity for downloading Asynchronously the XSD External Entities
 - v1.0.8: 
   - Add https support to Synchronous external loader (https)
-  - WSDL validation: Get the Namespace definitons found in <wsdl:definitions> and add them in <xsd:schema> (if they don't exist)
+  - WSDL validation: Get the Namespace definitons found in `<wsdl:definitions>` and add them in `<xsd:schema>` (if they don't exist)
