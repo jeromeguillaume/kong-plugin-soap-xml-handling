@@ -510,17 +510,12 @@ The expected result is:
 <AddResult>12</AddResult>
 ...
 ```
-For testing purposes only: inject an error in the `XSD`schema and the `WSDL/XSD` validation fails.
-1) For `tempui.org.request-response.xsd` route, open `Request Termination` plugin and configure the plugin with:
-- `body` property: remove the first character `<`
-
-Use command defined at step #6 (Wait at least the TTL duration defined by `ExternalEntityLoader_CacheTTL`) and the expected result is: 
+Use previous command defined, **remove ```<intA>5</intA>```** => there is an error because the ```<a>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
 ```xml
+HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error Node: import, Error code: 3067, Line: 1, Message: Element '{http://www.w3.org/2001/XMLSchema}import': Failed to parse the XML resource 'http://localhost:8000/tempui.org.request-response.xsd'.<detail/>
-</soap:Fault>
-...
+<detail>Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
 ## Changelog
