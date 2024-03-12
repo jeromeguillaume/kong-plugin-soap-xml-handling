@@ -28,7 +28,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 8001:8001 \
 -p 8002:8002 \
 -p 8444:8444 \
-kong/kong-gateway:3.3.1.0
+kong/kong-gateway:3.5.0.3
 
 # Disable gzip support
 # -e "KONG_NGINX_PROXY_GZIP=off" \
