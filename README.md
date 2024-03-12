@@ -54,7 +54,7 @@ Content-Type:"text/xml; charset=utf-8" \
   <soap:Body>
     <Add xmlns="http://tempuri.org/">
       <intA>5</intA>
-      <intC>7</intC>
+      <intB>7</intB>
     </Add>
   </soap:Body>
 </soap:Envelope>'
