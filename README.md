@@ -38,7 +38,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.VerboseRequest|false|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|false|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|false|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
-|config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It avoids downloading content from external entity (i.e.: http(s)://)|
+|config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://)|
 |config.xsdSoapSchema|Pre-defined|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
