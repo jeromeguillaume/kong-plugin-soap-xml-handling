@@ -34,12 +34,12 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: <scheme>://<kong_upstream>/<path>|
 |config.RouteXPath|N/A|XPath request to extract from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
-|config.RouteXPathRegisterNs|`soap,http://schemas.xmlsoap.org/soap/envelope/`|Register Namespace to enable XPath request. The syntax is <name>,<namespace>. Mulitple namespaces are allowed|
+|config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is <name>,<namespace>. Mulitple namespaces are allowed|
 |config.VerboseRequest|false|Enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|false|see above|
 |config.xsdApiSchema|false|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
 |config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It avoids downloading content from external entity (i.e.: http(s)://)|
-|config.xsdSoapSchema|See `https://schemas.xmlsoap.org/soap/envelope/`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
+|config.xsdSoapSchema|Pre-defined|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
