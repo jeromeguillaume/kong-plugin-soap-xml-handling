@@ -523,7 +523,6 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
-- `ExternalEntityLoader_CacheTTL` property with the value `15` seconds
 - `VerboseRequest` enabled
 - `XsdApiSchema` property with this `WSDL` value:
 ```xml
