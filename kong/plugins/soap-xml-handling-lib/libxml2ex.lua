@@ -26,7 +26,7 @@ end
 -- Initialize the defaultLoader to nil.
 local defaultLoader = nil
 
-libxml2ex.timerXmlSoapSleep   = 0.250  -- Dduration sleep (in second) of the timer to downalod Asynchronously XSD content
+libxml2ex.timerXmlSoapSleep   = 0.250  -- Duration sleep (in second) of the timer to download Asynchronously XSD content
 libxml2ex.timerStatusOk       = "Ok"
 libxml2ex.timerStatusRunning  = "Running"
 libxml2ex.timerStatusKo       = "Ko"
@@ -46,7 +46,7 @@ function libxml2ex.asyncDownloadEntities (premature, url, entityLoader_entry)
     return
   end
   
-  kong.log.debug("asyncDownloadEntities url: " .. url .. " timeout: " .. entityLoader_entry.timeout)
+  kong.log.debug("asyncDownloadEntities url: " .. url .. " timeout (sec): " .. entityLoader_entry.timeout)
   
   local http = require "resty.http"
   local httpc = http.new()  
@@ -84,6 +84,7 @@ local function syncDownloadEntities(url)
   https.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
   
   local i, _ = string.find(url, "https://")
+  kong.log.debug("syncDownloadEntities url: " .. url .. " timeout (sec): " .. kong.ctx.shared.xmlSoapExternalEntity.timeout)
 
   -- https:// request
   if i == 1 then
@@ -114,8 +115,21 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local response_body
   local err = nil
 
+  -- if the XSD content is included in the plugin configuration
+  if kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude then
+    for k,v in pairs(kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude) do
+      if k == entities_url then
+        response_body = v
+        break
+      end
+    end
+  end
+
+  -- If the XSD content is found in the plugin configuration
+  if response_body then
+    kong.log.debug("xmlMyExternalEntityLoader: found the XSD content of '" .. entities_url .. "' in the plugin configuration")
   -- If we download Asynchronously the External Entity
-  if kong.ctx.shared.xmlSoapExternalEntity.async then
+  elseif kong.ctx.shared.xmlSoapExternalEntity.async then
     -- If it's the 1st time we see this url
     if kong.xmlSoapTimer.entityLoader.urls[entities_url] == nil then
       kong.log.debug("xmlMyExternalEntityLoader => Create a new URL Entry: '" .. entities_url .. "'")
@@ -148,7 +162,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
           (entityLoader_entry.httpStatus ~= 200 or 
           ngx.time () > entityLoader_entry.timeDownloaded + entityLoader_entry.cacheTTL) then
           
-            kong.log.debug( "xmlMyExternalEntityLoader - url: " .. entities_url .. " httpStatus: " .. entityLoader_entry.httpStatus .. " timeout: " .. entityLoader_entry.timeout .. " cacheTTL: " .. entityLoader_entry.cacheTTL   .. " timeDownloaded: " .. entityLoader_entry.timeDownloaded)
+            kong.log.debug("xmlMyExternalEntityLoader - url: " .. entities_url .. " httpStatus: " .. entityLoader_entry.httpStatus .. " timeout: " .. entityLoader_entry.timeout .. " cacheTTL: " .. entityLoader_entry.cacheTTL   .. " timeDownloaded: " .. entityLoader_entry.timeDownloaded)
 
         if entityLoader_entry.timeDownloaded ~=0 and ngx.time () > entityLoader_entry.timeDownloaded + entityLoader_entry.cacheTTL then
           kong.log.debug("xmlMyExternalEntityLoader - Cache Expiration: Reload the entity")

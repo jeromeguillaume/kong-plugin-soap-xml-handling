@@ -65,6 +65,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     end
   end
 
+  -- If there is no error and
   -- If there is 'XSLT Transformation After XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) After XSD
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then
@@ -183,9 +184,12 @@ function plugin:header_filter(plugin_conf)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
+  --    we don't consider as an error the 'request-termination' plugin (get_source()="exit" and get_status()=200)
   -- we reformat the JSON message to SOAP/XML Fault
   if kong.ctx.shared.xmlSoapHandlingFault == nil and
-    (kong.response.get_source() == "exit" or kong.response.get_source() == "error") then
+    ( (kong.response.get_source() == "exit" and kong.response.get_status() ~= 200) 
+        or 
+       kong.response.get_source() == "error") then
 
     kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
     

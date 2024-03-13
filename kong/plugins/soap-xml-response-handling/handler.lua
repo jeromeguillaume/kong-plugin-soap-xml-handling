@@ -141,9 +141,12 @@ function plugin:header_filter(plugin_conf)
     return
   end
   
+  --  In case of 'request-termination' plugin (get_source()="exit" and get_status()=200
+  if (kong.response.get_source() == "exit" and kong.response.get_status() == 200) then
+    return
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   -- we reformat the JSON message to SOAP/XML Fault
-  if kong.response.get_source() == "exit" or kong.response.get_source() == "error" then
+  elseif kong.response.get_source() == "exit" or kong.response.get_source() == "error" then
     kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
     soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseResponse)
     kong.response.clear_header("Content-Length")

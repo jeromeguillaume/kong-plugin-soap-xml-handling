@@ -1,7 +1,7 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
-This repository concerns Kong plugins developed in Lua and use the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
+This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
-These plugins don't apply to Kong OSS.
+These plugins don't apply to Kong OSS. It works for Konnect too.
 
 The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in this order:
 
@@ -518,6 +518,68 @@ HTTP/1.1 500 Internal Server Error
 <detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
+### Example #10: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from the plugin configuration (no download)
+Calling incorrectly `calculator` and detecting issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
+1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+
+2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `ExternalEntityLoader_CacheTTL` property with the value `15` seconds
+- `VerboseRequest` enabled
+- `XsdApiSchema` property with this `WSDL` value:
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="Tempui.org"
+                  targetNamespace="http://tempuri.org/">
+  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  </wsdl:documentation>
+  <wsdl:types>
+    <!-- XSD schema for the Request and the Response -->
+      <xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+```
+- `xsdApiSchemaInclude` property with this value:
+  - key: `http://localhost:8000/tempui.org.request-response.xsd`
+  - value: 
+```xml
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddType">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="SubtractType">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddResponseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="AddResult"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+```
+  - Note: `xsdApiSchemaInclude` is type of `map`. You can add all the `XSD` entries required
+
+3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
+
+
 ## Changelog
 - v1.0.0:
   - Initial Release
@@ -543,3 +605,6 @@ HTTP/1.1 500 Internal Server Error
 - v1.0.8: 
   - Add https support to Synchronous external loader (https)
   - `WSDL validation`: Get the Namespace definitons found in `<wsdl:definitions>` and add them in `<xsd:schema>` (if they don't exist)
+- v1.0.9: 
+  - In case of `request-termination` plugin there is no longer error
+  - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas from the plugin configuration (without download)

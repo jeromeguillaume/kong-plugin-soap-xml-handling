@@ -141,9 +141,11 @@ function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   if kong.ctx.shared.xmlSoapExternalEntity == nil then
     kong.ctx.shared.xmlSoapExternalEntity = {}
   end
-  kong.ctx.shared.xmlSoapExternalEntity.async    = plugin_conf.ExternalEntityLoader_Async
-  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = plugin_conf.ExternalEntityLoader_CacheTTL
-  kong.ctx.shared.xmlSoapExternalEntity.timeout  = plugin_conf.ExternalEntityLoader_Timeout
+  kong.ctx.shared.xmlSoapExternalEntity.async               = plugin_conf.ExternalEntityLoader_Async
+  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL            = plugin_conf.ExternalEntityLoader_CacheTTL
+  kong.ctx.shared.xmlSoapExternalEntity.timeout             = plugin_conf.ExternalEntityLoader_Timeout
+  kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude = plugin_conf.xsdApiSchemaInclude
+  
   if not kong.ctx.shared.xmlSoapExternalEntity.cacheTTL then
     kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = 1
   end
