@@ -8,14 +8,14 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 **soap-xml-request-handling** plugin to handle Request:
 
 1) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML request with XSLT (XSLTransformation) before step #2
-2) `WSDL/XSD VALIDATION`: Validate XML request with its XSD schema
+2) `WSDL/XSD VALIDATION`: Validate XML request with its WSDL/XSD schema
 3) `XSLT TRANSFORMATION - AFTER XSD`: Transform the XML request with XSLT (XSLTransformation) after step #2
 4) `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 
 **soap-xml-response-handling** plugin to handle Reponse:
 
 5) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML response before step #6
-6) `WSDL/XSD VALIDATION`: Validate the XML response with its XSD schema
+6) `WSDL/XSD VALIDATION`: Validate the XML response with its WSDL/XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
 Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message)
@@ -24,6 +24,24 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 
 ![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
 
+
+## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference
+|FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
+|:------------------------------|:----------------|:-----------------------------------------------------------|
+|config.ExternalEntityLoader_Async|false|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://)|
+|config.ExternalEntityLoader_CacheTTL|3600|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
+|config.ExternalEntityLoader_Timeout|1|Tiemout in second for XSD schema downloading.It applies for synchronous and asynchronous XSD download|
+|config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: <scheme>://<kong_upstream>/<path>|
+|config.RouteXPath|N/A|XPath request to extract from the request body and to compare it with `RouteXPathCondition`|
+|config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
+|config.RouteXPathRegisterNs|`soap,http://schemas.xmlsoap.org/soap/envelope/`|Register Namespace to enable XPath request. The syntax is <name>,<namespace>. Mulitple namespaces are allowed|
+|config.VerboseRequest|false|Enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
+|config.VerboseResponse|false|see above|
+|config.xsdApiSchema|false|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
+|config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It avoids downloading content from external entity (i.e.: http(s)://)|
+|config.xsdSoapSchema|See `https://schemas.xmlsoap.org/soap/envelope/`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
+|config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
+|config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
 ## How deploy SOAP/XML Handling plugins
 1) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
@@ -605,5 +623,5 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
   - Add https support to Synchronous external loader (https)
   - `WSDL validation`: Get the Namespace definitons found in `<wsdl:definitions>` and add them in `<xsd:schema>` (if they don't exist)
 - v1.0.9: 
-  - In case of `request-termination` plugin there is no longer error
+  - In case of `request-termination` plugin there is no longer SOAP/XML - 200 error
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas from the plugin configuration (without download)
