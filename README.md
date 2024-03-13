@@ -32,7 +32,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.ExternalEntityLoader_CacheTTL|3600|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
 |config.ExternalEntityLoader_Timeout|1|Tiemout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: `scheme://kong_upstream/path`|
-|config.RouteXPath|N/A|XPath request to extract from the request body and to compare it with `RouteXPathCondition`|
+|config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is <name>,<namespace>. Mulitple namespaces are allowed|
 |config.VerboseRequest|false|Enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
