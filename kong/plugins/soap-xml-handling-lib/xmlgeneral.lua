@@ -88,7 +88,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
     end
   end
   kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "<detail/>")
-  detailErrMsg ="\n      <detail>" .. detailErrMsg .. "<detail/>"
+  detailErrMsg ="\n      <detail>" .. detailErrMsg .. "</detail>"
 
   -- If verbose mode is disabled we don't send the detailed Error Message
   if not VerboseResponse then
