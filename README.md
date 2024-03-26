@@ -127,13 +127,12 @@ Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-han
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
 2) Login to Konnect
-3) Create a System Account. [See documentation](https://docs.konghq.com/konnect/org-management/system-accounts/)
-4) Create a System Account Access Token. The value starts by `spat_`. [See documentation](https://docs.konghq.com/konnect/org-management/system-accounts/#generate-a-system-account-access-token)
-5) From the `Overview` page of KIC-Gateway manager page, get the KIC `id`
-6) Upload the custom plugin schema of `soap-xml-request-handling` by using the Konnect API:
+3) Create a Personal Access Token (starting by `kpat_`) or System Account Access Token (starting by `spat_`). [See documentation](https://docs.konghq.com/konnect/gateway-manager/declarative-config/#generate-a-personal-access-token)
+4) From the `Overview` page of KIC-Gateway manager page, get the KIC `id`
+5) Upload the custom plugin schema of `soap-xml-request-handling` by using the Konnect API:
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-request-handling
-https -A bearer -a <**REPLACE_BY_SPAT_TOKEN_VALUE**> eu.api.konghq.com/v2/control-planes/<**REPLACE_BY_KIC_ID**>/core-entities/plugin-schemas lua_schema=@schema.lua
+https -A bearer -a <**REPLACE_BY_AT_TOKEN_VALUE**> eu.api.konghq.com/v2/control-planes/<**REPLACE_BY_KIC_ID**>/core-entities/plugin-schemas lua_schema=@schema.lua
 cd -
 ```
 The expected response is:
