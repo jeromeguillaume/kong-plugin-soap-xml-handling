@@ -181,8 +181,7 @@ The expected result is `12`:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
-2) Call the `calculator` through the Kong Ingress
-See example in topic above (How configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
+2) Call the `calculator` through the Kong Ingress. See example in topic above (How configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 ## How test XML Handling plugins with `calculator`
 ### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
