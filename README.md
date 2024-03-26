@@ -177,7 +177,7 @@ The expected result is `12`:
 ```
 
 ## How configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
-1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and an Ingress kind:
+1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and a related Ingress kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
@@ -690,15 +690,16 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with Kong Ingress Controller (KIC)
-1) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
+1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
+2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
 ```sh
 kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```
-2) Annotate the Ingress with `KongPlugin`
+3) Annotate the Ingress with `KongPlugin`
 ```sh
 kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-xml-request-handling
 ```
-3) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
+4) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 ## Changelog
 - v1.0.0:
