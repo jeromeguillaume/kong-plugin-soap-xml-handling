@@ -74,7 +74,7 @@ cd ./kong-plugin-soap-xml-handling/kong/plugins
 kubectl -n kong create configmap soap-xml-request-handling --from-file=./soap-xml-request-handling
 kubectl -n kong create configmap soap-xml-response-handling --from-file=./soap-xml-response-handling
 ```
-- Create a `configMap`for the shared library
+- Create a `configMap` for the shared library
 ```sh
 kubectl -n kong create configmap soap-xml-handling-lib --from-file=./soap-xml-handling-lib
 ```
