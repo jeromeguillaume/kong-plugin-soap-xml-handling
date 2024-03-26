@@ -50,9 +50,9 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
 
 2) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
-[See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database).
+[See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database)
 
-3) Provision a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content.
+3) Provision a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content
 ```sh
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
@@ -63,7 +63,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
 
 ## How deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes
-1) Do a Git Clone of this repo
+1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
@@ -105,20 +105,41 @@ gateway:
       - name: libxslt
         path: libxslt
 ```
-## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) | Kong Gateway
-1) Login to Konnect
-2) Select the `Kong Gateway` in the Gateway Manager
-3) Click on `Plugins`
-4) Click on `+ New Plugin`
-5) Click on `Custom Plugins`
-6) Click on `Create` Custom Plugin
-7) Click on `Select file` and open the [schema.lua](kong/plugins/soap-xml-request-handling/schema.lua) of `soap-xml-request-handling`
-8) Click on `Save`
+## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) for Kong Gateway
+1) Do a Git Clone of this repo (if it’s not done yet):
+```sh
+git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
+```
+2) Login to Konnect
+3) Select the `Kong Gateway` in the Gateway Manager
+4) Click on `Plugins`
+5) Click on `+ New Plugin`
+6) Click on `Custom Plugins`
+7) Click on `Create` Custom Plugin
+8) Click on `Select file` and open the [schema.lua](kong/plugins/soap-xml-request-handling/schema.lua) of `soap-xml-request-handling`
+9) Click on `Save`
 
-Repeat from step #5 and open the [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua) of `soap-xml-response-handling`
+Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua) of `soap-xml-response-handling`
 
-## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) | Kong Ingress Controller
-
+## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)
+1) Do a Git Clone of this repo (if it’s not done yet):
+```sh
+git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
+```
+2) Login to Konnect
+3) Create a System Account. [See documentation](https://docs.konghq.com/konnect/org-management/system-accounts/)
+4) Create a System Account Access Token. The value starts by `spat_`. [See documentation](https://docs.konghq.com/konnect/org-management/system-accounts/#generate-a-system-account-access-token)
+5) From the `Overview` page of KIC Gateway mananger page, get the KIC `id`
+6) Upload the custom plugin schema of `soap-xml-request-handling` by using the Konnect API:
+```sh
+cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-request-handling
+https -A bearer -a <**REPLACE_BY_SPAT_TOKEN_VALUE**> eu.api.konghq.com/v2/control-planes/<**REPLACE_BY_KIC_ID**>/core-entities/plugin-schemas lua_schema=@schema.lua
+cd -
+```
+Repeat step #6 with the schema.lua of `soap-xml-response-handling` by changing the directory:
+```sh 
+cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling
+```
 ## How configure and test `calculator` Web Service in Kong
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
