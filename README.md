@@ -698,7 +698,7 @@ kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```sh
 kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-xml-request-handling
 ```
-3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
+3) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 ## Changelog
 - v1.0.0:
