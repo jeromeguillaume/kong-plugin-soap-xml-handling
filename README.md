@@ -107,7 +107,7 @@ gateway:
       - name: libxslt
         path: libxslt
 ```
-## How deploy SOAP/XML Handling schema plugins in Konnect Control Plane | Kong Gateway
+## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) | Kong Gateway
 1) Login to Konnect
 2) Select the `Kong Gateway` in the Gateway Manager
 3) Click on `Plugins`
@@ -118,7 +118,7 @@ gateway:
 8) Click on `Save`
 Repeat the from step #5 and open `soap-xml-response-handling` (schema.lua)[kong/plugins/soap-xml-response-handling/schema.lua]
 
-## How deploy SOAP/XML Handling schema plugins in Konnect Control Plane | Kong Ingress Controller
+## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) | Kong Ingress Controller
 
 ## How configure and test `calculator` Web Service in Kong
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
