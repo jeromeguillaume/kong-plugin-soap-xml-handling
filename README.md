@@ -112,9 +112,10 @@ gateway:
 4) Click on `+ New Plugin`
 5) Click on `Custom Plugins`
 6) Click on `Create` Custom Plugin
-7) Click on `Select file` and open `soap-xml-request-handling` (schema.lua)[kong/plugins/soap-xml-request-handling/schema.lua]
+7) Click on `Select file` and open `soap-xml-request-handling` [schema.lua](kong/plugins/soap-xml-request-handling/schema.lua)
 8) Click on `Save`
-Repeat the from step #5 and open `soap-xml-response-handling` (schema.lua)[kong/plugins/soap-xml-response-handling/schema.lua]
+
+Repeat from step #5 and open `soap-xml-response-handling` [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua)
 
 ## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) | Kong Ingress Controller
 
