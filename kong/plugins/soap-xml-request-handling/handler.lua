@@ -1,12 +1,12 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.8",
+    VERSION = "1.0.9",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML request with XSLT (XSLTransformation) before XSD Validation
--- XSD VALIDATION                  : Validate XML request with its XSD schema
+-- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML request with XSLT (XSLTransformation) after XSD Validation
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------

@@ -3,13 +3,13 @@ local kongUtils = require("kong.tools.utils")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.8",
+    VERSION = "1.0.9",
   }
 
 -----------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML response Before (XSD VALIDATION)
--- XSD VALIDATION: Validate the XML response with its XSD schema
--- XSLT TRANSFORMATION - AFTER XSD: Transform the XML response After (XSD VALIDATION)
+-- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
+-- XSLT TRANSFORMATION - AFTER XSD : Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")

@@ -38,27 +38,90 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.VerboseRequest|false|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|false|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|false|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
-|config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://)|
+|config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
 |config.xsdSoapSchema|Pre-defined|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
-## How deploy SOAP/XML Handling plugins
-1) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
+## How deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+1) Do a Git Clone of this repo
+```sh
+git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
+```
+
+2) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
 [See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database).
 
-2) Provision a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content.
-```
+3) Provision a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content.
+```sh
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
 
-3) Start the Kong Gateway
-```
+4) Start the standalone Kong Gateway
+```sh
 ./start-kong.sh
 ```
 
+## How deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes
+1) Do a Git Clone of this repo
+```sh
+git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
+```
+2) [See Kong documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/)
+
+3) Create configMaps
+- configMaps for the custom plugins (Request and Response)
+```sh
+cd ./kong-plugin-soap-xml-handling/kong/plugins
+kubectl -n kong create configmap soap-xml-request-handling --from-file=./soap-xml-request-handling
+kubectl -n kong create configmap soap-xml-response-handling --from-file=./soap-xml-response-handling
+```
+- Create a configMap for the shared library
+```sh
+kubectl -n kong create configmap soap-xml-handling-lib --from-file=./soap-xml-handling-lib
+```
+- Include subdirectories of the library
+```sh
+cd soap-xml-handling-lib
+
+kubectl -n kong create configmap libxml2ex --from-file=./libxml2ex
+kubectl -n kong create configmap libxslt --from-file=./libxslt
+```
+4) Add the following properties to the Helm values.yaml:
+```yaml
+gateway:
+  env:
+    plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
+  ...
+  plugins:
+    configMaps:
+    - pluginName: soap-xml-request-handling
+      name: soap-xml-request-handling
+    - pluginName: soap-xml-response-handling
+      name: soap-xml-response-handling
+    - pluginName: soap-xml-handling-lib
+      name: soap-xml-handling-lib
+      subdirectories:
+      - name: libxml2ex
+        path: libxml2ex
+      - name: libxslt
+        path: libxslt
+```
+## How deploy SOAP/XML Handling schema plugins in Konnect Control Plane | Kong Gateway
+1) Login to Konnect
+2) Select the `Kong Gateway` in the Gateway Manager
+3) Click on `Plugins`
+4) Click on `+ New Plugin`
+5) Click on `Custom Plugins`
+6) Click on `Create` Custom Plugin
+7) Click on `Select file` and open `soap-xml-request-handling` (schema.lua)[kong/plugins/soap-xml-request-handling/schema.lua]
+8) Click on `Save`
+Repeat the from step #5 and open `soap-xml-response-handling` (schema.lua)[kong/plugins/soap-xml-response-handling/schema.lua]
+
+## How deploy SOAP/XML Handling schema plugins in Konnect Control Plane | Kong Ingress Controller
+
 ## How configure and test `calculator` Web Service in Kong
-1) Create a Kong Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
+1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
 2) Create a Route on the Service `calculator` with the `path` value `/calculator`
@@ -592,7 +655,7 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
   </xs:complexType>
 </xs:schema>
 ```
-  - Note: `xsdApiSchemaInclude` is type of `map`. You can add all the `XSD` entries required
+  - Note: `xsdApiSchemaInclude` is type of `map`. You can add all the `XSD` entries required. There is no limit of XSD files.
 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
@@ -625,3 +688,4 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
 - v1.0.9: 
   - In case of `request-termination` plugin there is no longer SOAP/XML - 200 error
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas from the plugin configuration (without download)
+  - Enhance the documentation for Kubernetes, Konnect and KIC
