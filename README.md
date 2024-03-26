@@ -105,7 +105,7 @@ gateway:
       - name: libxslt
         path: libxslt
 ```
-## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) for Kong Gateway
+## How deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -121,7 +121,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 
 Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua) of `soap-xml-response-handling`
 
-## How deploy SOAP/XML Handling schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)
+## How deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -144,7 +144,7 @@ Repeat step #6 with the schema.lua of `soap-xml-response-handling` by changing t
 ```sh 
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling
 ```
-## How configure and test `calculator` Web Service in Kong
+## How configure and test `calculator` Web Service in Kong Gateway
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
@@ -176,6 +176,14 @@ The expected result is `12`:
   </soap:Body>
 </soap:Envelope>
 ```
+
+## How configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
+1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and an Ingress
+```sh
+kubectl apply -f kic/extService-Calculator-Ingress.yaml
+```
+2) Call the `calculator` through the Kong Ingress
+See example in topic above (How configure and test `calculator` Web Service in Kong Gateway)
 
 ## How test XML Handling plugins with `calculator`
 ### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
@@ -623,7 +631,7 @@ HTTP/1.1 500 Internal Server Error
 <detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
-### Example #10: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from the plugin configuration (no download)
+### Example #10-a: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from the plugin configuration (no download)
 Calling incorrectly `calculator` and detecting issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
@@ -683,6 +691,16 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
+### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with **Kong Ingress Controller (KIC)**
+1) Create the Kubernetes KongPlugin of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
+```sh
+kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
+```
+2) Annotate the Ingress with KongPlugin
+```sh
+kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-xml-request-handling
+```
+3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
 ## Changelog
 - v1.0.0:
