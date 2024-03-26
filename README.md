@@ -691,12 +691,12 @@ Calling incorrectly `calculator` and detecting issue in the Request with a WSDL 
 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
-### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with **Kong Ingress Controller (KIC)**
-1) Create the Kubernetes KongPlugin of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
+### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with Kong Ingress Controller (KIC)
+1) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
 ```sh
 kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```
-2) Annotate the Ingress with KongPlugin
+2) Annotate the Ingress with `KongPlugin`
 ```sh
 kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-xml-request-handling
 ```
