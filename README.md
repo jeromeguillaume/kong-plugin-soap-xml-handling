@@ -728,5 +728,5 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
   - `WSDL validation`: Get the Namespace definitons found in `<wsdl:definitions>` and add them in `<xsd:schema>` (if they don't exist)
 - v1.0.9: 
   - In case of `request-termination` plugin there is no longer SOAP/XML - 200 error
-  - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas from the plugin configuration (without download)
+  - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas in the plugin configuration (without download external entity)
   - Enhance the documentation for Kubernetes, Konnect and KIC
