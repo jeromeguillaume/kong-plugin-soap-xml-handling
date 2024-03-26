@@ -177,7 +177,7 @@ The expected result is `12`:
 ```
 
 ## How configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
-1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and an Ingress
+1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and an Ingress kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
