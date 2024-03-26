@@ -67,9 +67,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
-2) [See Kong documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/)
-
-3) Create configMaps
+2) Create configMaps
 - configMaps for the custom plugins (Request and Response)
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/plugins
@@ -87,7 +85,7 @@ cd soap-xml-handling-lib
 kubectl -n kong create configmap libxml2ex --from-file=./libxml2ex
 kubectl -n kong create configmap libxslt --from-file=./libxslt
 ```
-4) Add the following properties to the Helm values.yaml:
+3) [See Kong documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the Helm values.yaml:
 ```yaml
 gateway:
   env:
