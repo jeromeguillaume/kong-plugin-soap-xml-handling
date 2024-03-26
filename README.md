@@ -133,7 +133,6 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-request-handling
 https -A bearer -a <**REPLACE_BY_ACCESS_TOKEN_VALUE**> eu.api.konghq.com/v2/control-planes/<**REPLACE_BY_KIC_ID**>/core-entities/plugin-schemas lua_schema=@schema.lua
-cd -
 ```
 The expected response is:
 ```
@@ -141,6 +140,7 @@ HTTP/1.1 201 Created
 ```
 Repeat step #6 with the schema.lua of `soap-xml-response-handling` by changing the directory:
 ```sh 
+cd -
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling
 ```
 ## How configure and test `calculator` Web Service in Kong Gateway
