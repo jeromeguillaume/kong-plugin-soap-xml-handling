@@ -132,7 +132,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 5) Upload the custom plugin schema of `soap-xml-request-handling` by using the Konnect API:
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-request-handling
-https -A bearer -a <**REPLACE_BY_AT_TOKEN_VALUE**> eu.api.konghq.com/v2/control-planes/<**REPLACE_BY_KIC_ID**>/core-entities/plugin-schemas lua_schema=@schema.lua
+https -A bearer -a <**REPLACE_BY_ACCESS_TOKEN_VALUE**> eu.api.konghq.com/v2/control-planes/<**REPLACE_BY_KIC_ID**>/core-entities/plugin-schemas lua_schema=@schema.lua
 cd -
 ```
 The expected response is:
