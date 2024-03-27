@@ -88,9 +88,9 @@ function plugin:init_worker ()
   
 end
 
------------------------------------------------------------------------------------------
--- Executed when all response headers bytes have been received from the upstream service
------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------
+-- Executed for every request from a client and before it is being proxied to the upstream service
+---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
   
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
@@ -131,7 +131,7 @@ function plugin:header_filter(plugin_conf)
   local soapDeflated
   local err
 
-  -- In case of error set SOAP/XML plugin, we don't do anything to avoid an issue.
+  -- In case of error set by SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
   -- are called (and the 'access' is not called which enables the enable_buffering())
