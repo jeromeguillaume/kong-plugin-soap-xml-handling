@@ -138,7 +138,7 @@ The expected response is:
 ```
 HTTP/1.1 201 Created
 ```
-Repeat step #6 with the schema.lua of `soap-xml-response-handling` by changing the directory:
+Repeat step #5 with the schema.lua of `soap-xml-response-handling` by changing the directory:
 ```sh 
 cd -
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling
