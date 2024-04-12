@@ -87,23 +87,25 @@ kubectl -n kong create configmap libxslt --from-file=./libxslt
 ```
 3) [See Kong Gateway on Kubernetes documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the Helm `values.yaml`:
 ```yaml
-gateway:
-  env:
-    plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
+image:
+  repository: kong/kong-gateway
   ...
-  plugins:
-    configMaps:
-    - pluginName: soap-xml-request-handling
-      name: soap-xml-request-handling
-    - pluginName: soap-xml-response-handling
-      name: soap-xml-response-handling
-    - pluginName: soap-xml-handling-lib
-      name: soap-xml-handling-lib
-      subdirectories:
-      - name: libxml2ex
-        path: libxml2ex
-      - name: libxslt
-        path: libxslt
+env:
+  plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
+...
+plugins:
+  configMaps:
+  - pluginName: soap-xml-request-handling
+    name: soap-xml-request-handling
+  - pluginName: soap-xml-response-handling
+    name: soap-xml-response-handling
+  - pluginName: soap-xml-handling-lib
+    name: soap-xml-handling-lib
+    subdirectories:
+    - name: libxml2ex
+      path: libxml2ex
+    - name: libxslt
+      path: libxslt
 ```
 ## How deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
