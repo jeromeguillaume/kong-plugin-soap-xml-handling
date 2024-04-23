@@ -1,7 +1,9 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
-This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
+This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
-These plugins don't apply to Kong OSS. It works for Konnect too.
+Add the SaxonC support for XSLT 3.0.
+
+These plugins don't apply to Kong OSS. They work for Kong EE and Konnect.
 
 The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in this order:
 
