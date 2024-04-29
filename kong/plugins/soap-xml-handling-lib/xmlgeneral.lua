@@ -4,6 +4,7 @@ local ffi               = require("ffi")
 local libxml2           = require("xmlua.libxml2")
 local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
+local libsaxon          = require("kong.plugins.soap-xml-handling-lib.libsaxon")
 
 local loaded, xml2 = pcall(ffi.load, "xml2")
 
@@ -232,10 +233,19 @@ function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, o
   return xmlDeclaration
 end
 
-------------------------------------------
--- Transform XML with XSLT Transformation
-------------------------------------------
-function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
+---------------------------------------------------
+-- libsaxon: Transform XML with XSLT Transformation
+---------------------------------------------------
+function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
+  kong.log.notice("** Jerome: Before compile_stylesheet")
+  libsaxon.compile_stylesheet(XSLT)
+  kong.log.notice("** Jerome: After compile_stylesheet")
+end
+
+---------------------------------------------------
+-- libxslt: Transform XML with XSLT Transformation
+---------------------------------------------------
+function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
   local errMessage  = ""
   local err         = nil
   local style       = nil
@@ -245,7 +255,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   local xmlNodePtrRoot        = nil
   
   kong.log.debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
-
+  
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                       ffi.C.XML_PARSE_NOWARNING)
 
@@ -302,6 +312,21 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   
   return xml_transformed_dump, errMessage
   
+end
+
+---------------------------------------------------
+-- Transform XML with XSLT Transformation
+---------------------------------------------------
+function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
+  local errMessage
+  local xml_transformed_dump
+  
+  if plugin_conf.xsltLibrary == 'libxslt' then
+    xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
+  else
+    xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
+  end
+  return xml_transformed_dump, errMessage
 end
 
 ----------------------------------------------------------------------------------------------------

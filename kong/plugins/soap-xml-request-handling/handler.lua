@@ -21,7 +21,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) Before XSD
   if plugin_conf.xsltTransformBefore then
-    soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore)
+    soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseRequest)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -80,7 +80,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
 
   -- If there is no error and
   -- If the plugin is defined with Routing XPath properties then:
-  -- => we change the Route By XPath and if the condition is satisfied
+  -- => we change the Route By XPath if the condition is satisfied
     if soapFaultBody == nil and plugin_conf.RouteXPath and plugin_conf.RouteXPathCondition and plugin_conf.RouteToPath then
     -- Get Route By XPath and check if the condition is satisfied
     local rcXpath = xmlgeneral.RouteByXPath (kong, soapEnvelope_transformed, 

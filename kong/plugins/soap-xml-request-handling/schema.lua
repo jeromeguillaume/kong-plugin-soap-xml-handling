@@ -24,6 +24,12 @@ return {
               values = {type = "string", required = true},
           }},
           { xsdSoapSchema = { type = "string", required = false, default = XSD_SOAP }, },
+          { xsltLibrary = {required = true, type = "string", default = "libxslt",
+            one_of = {
+              "libxslt",
+              "libsaxon",
+            },
+          },},
           { xsltTransformAfter = { type = "string", required = false }, },
           { xsltTransformBefore = { type = "string", required = false }, },
         },
