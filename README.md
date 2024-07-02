@@ -30,7 +30,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.ExternalEntityLoader_Async|false|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://)|
 |config.ExternalEntityLoader_CacheTTL|3600|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
-|config.ExternalEntityLoader_Timeout|1|Tiemout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
+|config.ExternalEntityLoader_Timeout|1|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: `scheme://kong_upstream/path`|
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
@@ -732,3 +732,5 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
   - In case of `request-termination` plugin there is no longer SOAP/XML - 200 error
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas in the plugin configuration (without download external entity)
   - Enhance the documentation for Kubernetes, Konnect and KIC
+- v1.0.10:
+  - Due to Kong v3.7+, update the Kong's library used for `gzip` compression (from `kong.tools.utils` to `kong.tools.gzip`)

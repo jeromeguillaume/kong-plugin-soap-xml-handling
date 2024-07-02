@@ -12,6 +12,7 @@ xmlgeneral.HTTPCodeSOAPFault = 500
 xmlgeneral.RequestTextError   = "Request"
 xmlgeneral.ResponseTextError  = "Response"
 xmlgeneral.SepTextError       = " - "
+xmlgeneral.GeneralError       = "General process failed"
 xmlgeneral.XSLTError          = "XSLT transformation failed"
 xmlgeneral.XSDError           = "XSD validation failed"
 xmlgeneral.BeforeXSD          = " (before XSD validation)"
