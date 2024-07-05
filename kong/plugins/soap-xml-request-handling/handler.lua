@@ -136,6 +136,31 @@ function plugin:init_worker ()
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
 
+  -- Initialize the Saxon library
+  xmlgeneral.initializeSaxon()
+
+  -- Create the Saxon Processor
+  xmlgeneral.createSaxonProcessor()
+
+end
+
+------------------------------------------------------------------------------------------------
+-- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
+------------------------------------------------------------------------------------------------
+function plugin:configure (configs)
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  if configs then
+    for _, config in ipairs(configs) do
+      local plugin_id = config.__plugin_id
+      -- Compile the XSLT style sheet
+      if config.xsltTransformBefore then
+        xmlgeneral.compileStyleSheet (plugin_id, config.xsltTransformBefore)
+      end
+      if config.xsltTransformAfter then
+        xmlgeneral.compileStyleSheet (plugin_id, config.xsltTransformAfter)
+      end
+    end
+  end
 end
 
 ---------------------------------------------------------------------------------------------------

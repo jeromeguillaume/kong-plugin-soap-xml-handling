@@ -233,13 +233,74 @@ function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, o
   return xmlDeclaration
 end
 
+----------------------------
+-- libsaxon: Initialization
+----------------------------
+function xmlgeneral.initializeSaxon()
+  local errMessage
+
+  if not kong.xmlSoapSaxon then
+    kong.log.notice ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
+    kong.xmlSoapSaxon = {}
+    kong.xmlSoapSaxon.saxonProcessor = nil
+    kong.xmlSoapSaxon.contextPlugin = {}
+    errMessage = libsaxon.initializeSaxon ()
+    if errMessage then
+      kong.log.err ("**Jerome** Saxon Initialization, errMessage: " .. errMessage)
+    end
+  end
+end
+
+------------------------------
+-- libsaxon: Create Processor
+------------------------------
+function xmlgeneral.createSaxonProcessor()
+  local errMessage
+  kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon.createSaxonProcessorKong ()
+  if errMessage then
+    kong.log.err ("Saxon Create processor, errMessage: " .. errMessage)
+  end
+end
+
+---------------------------------
+-- libsaxon: Compile Style Sheet
+---------------------------------
+function xmlgeneral.compileStyleSheet (plugin_id, XSLT)
+  local errMessage
+  local context
+  -- If the Context is already created
+  if kong.xmlSoapSaxon.contextPlugin[plugin_id] then
+    -- Free the context
+    -- ***TO DO***
+  end
+  kong.xmlSoapSaxon.contextPlugin[plugin_id], errMessage = libsaxon.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, XSLT)
+  if errMessage then
+    kong.log.err ("Saxon Compile Style Sheet, errMessage: " .. errMessage)
+  end
+end
+
 ---------------------------------------------------
 -- libsaxon: Transform XML with XSLT Transformation
 ---------------------------------------------------
 function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
-  kong.log.notice("** Jerome: Before compile_stylesheet")
-  libsaxon.compile_stylesheet(XSLT)
-  kong.log.notice("** Jerome: After compile_stylesheet")
+  local errMessage
+  local xml_transformed_dump
+  local plugin_id = kong.plugin.get_id()
+  kong.log.notice("XSLT transformation, BEGIN: " .. XMLtoTransform)
+  xml_transformed_dump, errMessage = libsaxon.stylesheetInvokeTemplate ( 
+                                      kong.xmlSoapSaxon.saxonProcessor,
+                                      kong.xmlSoapSaxon.contextPlugin[plugin_id],
+                                      "main", 
+                                      "request-body",
+                                      XMLtoTransform
+                                    )
+   if errMessage == nil then
+     kong.log.notice ("XSLT transformation, END: " .. xml_transformed_dump)
+   else
+     kong.log.debug ("XSLT transformation, errMessage: " .. errMessage)
+    end
+   kong.service.request.set_header("Content-Type", "text/xml")
+   return xml_transformed_dump, errMessage
 end
 
 ---------------------------------------------------
@@ -323,8 +384,10 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   
   if plugin_conf.xsltLibrary == 'libxslt' then
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
-  else
+  elseif plugin_conf.xsltLibrary == 'libsaxon' then
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
+  else
+    kong.log.err("XSLTransform: unknown library " .. plugin_conf.xsltLibrary)
   end
   return xml_transformed_dump, errMessage
 end

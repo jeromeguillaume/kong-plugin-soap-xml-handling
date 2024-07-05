@@ -8,7 +8,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-request-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-response-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-handling-lib,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib \
---mount type=bind,source="$(pwd)"/kong/saxonc/lib/libsaxon-hec-12.4.2.so,destination=/usr/local/kong/lib/libsaxon-hec-12.4.2.so \
+--mount type=bind,source="$(pwd)"/kong/saxon/so,destination=/usr/local/lib/kongsaxon \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database-soap-xml-handling" \
 -e "KONG_PG_USER=kong" \
@@ -22,14 +22,22 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_GUI_LISTEN=0.0.0.0:7002, 0.0.0.0:7445 ssl" \
 -e "KONG_ADMIN_GUI_URL=http://localhost:7002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
--e "KONG_NGINX_WORKER_PROCESSES=2" \
+-e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e KONG_LICENSE_DATA \
+-e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 -p 7000:7000 \
 -p 7443:7443 \
 -p 7001:7001 \
 -p 7002:7002 \
 -p 7444:7444 \
 kong/kong-gateway:3.6.1.3
+
+#kong-saxon:3.6.1.3
+#kong/kong-gateway:3.6.1.3
+# -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
+#--mount type=bind,source="$(pwd)"/kong/saxon/so,destination=/usr/local/lib/kongsaxon \
+
+#kong-saxon:3.6.1.3
 
 # Disable gzip support
 # -e "KONG_NGINX_PROXY_GZIP=off" \
