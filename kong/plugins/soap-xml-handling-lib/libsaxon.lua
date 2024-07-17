@@ -13,6 +13,9 @@ ffi.cdef [[
                                             const char *template_name,
                                             const char *param_name,
                                             const char *param_value);
+  const char* stylesheetTransformXmlKong  ( const void *saxonProcessor_void,
+                                            const void *context_void,
+                                            const char *xml_string);
   const char *getErrMessage               ( const void *context_void );
   void deleteContext                      ( const void *context_void );
   void free(void*);
@@ -117,9 +120,9 @@ function libsaxon.compileStylesheet(saxonProcessor, xslt30Processor, XSLT)
   return context, err
 end
 
-------------------------------
--- Stylesheet invoke template
-------------------------------
+--------------------------------------------------------------------------
+-- Transform the XML document with XSLT Stylesheet by invoking a template
+--------------------------------------------------------------------------
 function libsaxon.stylesheetInvokeTemplate (saxonProcessor, context, templateName, paramName, XMLtoTransform)
   local err
   local xml_transformed
@@ -134,9 +137,32 @@ function libsaxon.stylesheetInvokeTemplate (saxonProcessor, context, templateNam
   elseif context then
     err = libsaxon.getErrorMessage(context)
   else
-    err = "Unable to invoke XLST template"
+    err = "Unable to invoke XLST transformation with a template"
   end
   
+  return xml_transformed, err
+end
+
+---------------------------------------------------
+-- Transform the XML document with XSLT Stylesheet
+---------------------------------------------------
+function libsaxon.stylesheetTransformXml(saxonProcessor, context, XMLtoTransform)
+  local err
+  local xml_transformed
+  local xml_ptr
+  
+  if saxonClib and saxonProcessor and context then
+    xml_ptr = saxonClib.stylesheetTransformXmlKong (saxonProcessor, context, XMLtoTransform)
+  end
+  
+  if xml_ptr ~= ffi.NULL then
+    xml_transformed = ffi.string(xml_ptr)
+    saxonClib.free(ffi.cast("char*", xml_ptr))
+  elseif context then
+    err = libsaxon.getErrorMessage(context)
+  else
+    err = "Unable to invoke XLST transformation"
+  end
   return xml_transformed, err
 end
 

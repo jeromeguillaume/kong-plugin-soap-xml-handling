@@ -19,6 +19,9 @@ xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 xmlgeneral.xmlnsXsdHref       = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema          = "schema"
+xmlgeneral.ContentType        = "text/xml; charset=utf-8"
+xmlgeneral.xsltJsonToXML      = "json%-to%-xml%(.+%)"
+xmlgeneral.xsltJXMLToJson     = "xml%-to%-json%(.+%)"
 
 xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
 xmlgeneral.prefetchStatusOk       = "Ok"
@@ -132,7 +135,7 @@ end
 ---------------------------------------
 function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)  
   -- Send a Fault code to client
-  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = "text/xml; charset=utf-8"})
+  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = xmlgeneral.ContentType})
 end
 
 -------------------------------------------------------------------
@@ -242,35 +245,17 @@ function xmlgeneral.initializeSaxon()
   if not kong.xmlSoapSaxon then
     kong.log.notice ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
     kong.xmlSoapSaxon = {}
-    kong.xmlSoapSaxon.saxonProcessor  = nil
-    kong.xmlSoapSaxon.xslt30Processor = nil
-    kong.xmlSoapSaxon.contextPlugin   = {}
+    kong.xmlSoapSaxon.saxonProcessor    = nil
+    kong.xmlSoapSaxon.xslt30Processor   = nil
     
     errMessage = libsaxon.initializeSaxon ()
     if errMessage then
       kong.log.err ("Saxon Initialization, errMessage: " .. errMessage)
     end
+  else
+    kong.log.notice ("initializeSaxon: the 'saxon' library is already initialized")
   end
 end
-
---------------------------------------------------
--- libsaxon: Free the Saxon 'contextPlugin' Table
---------------------------------------------------
-function xmlgeneral.freeSaxonContextPlugin()
-  if kong.xmlSoapSaxon.contextPlugin then
-    
-    for keyPlugin, contextPlugin in pairs(kong.xmlSoapSaxon.contextPlugin) do
-      kong.log.notice("Found Existing contextPlugin: " .. keyPlugin)
-      for keyHash, xsltHashKey in pairs(contextPlugin.xsltHashKeys) do
-        kong.log.notice("Found Existing xsltHashKey: " .. keyHash)
-        libsaxon.deleteContext(xsltHashKey.context)
-      end
-    end
-
-  end
-  kong.xmlSoapSaxon.contextPlugin = {}
-end
-
 
 ------------------------------------
 -- libsaxon: Create Saxon Processor
@@ -294,71 +279,54 @@ function xmlgeneral.createXslt30ProcessorKong()
   end
 end
 
----------------------------------
--- libsaxon: Compile Style Sheet
----------------------------------
-function xmlgeneral.compileStyleSheet (plugin_id, XSLT)
-  
-  local xsltHashKey = libxml2ex.hash_key(XSLT)
-  kong.log.notice("xsltHashKey: " .. xsltHashKey)
-  
-  if kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey] == nil then
-    kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey] = {}
-  end
-  kong.log.notice("**Jerome** Before compileStylesheet")
-  kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].context, 
-  kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].compileStylesheetErr = 
-        libsaxon.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, kong.xmlSoapSaxon.xslt30Processor, XSLT)
-  kong.log.notice("**Jerome** After compileStylesheet")
-  
-  if kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].compileStylesheetErr then
-    kong.log.err ("Saxon Compile Style Sheet: " .. 
-                  kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].compileStylesheetErr)
-  end
-end
-
-local function dump(o)
-  if type(o) == 'table' then
-     local s = '{ '
-     for k,v in pairs(o) do
-        if type(k) ~= 'number' then k = '"'..k..'"' end
-        s = s .. '['..k..'] = ' .. dump(v) .. ','
-     end
-     return s .. '} '
-  else
-     return tostring(o)
-  end
-end
-
 ---------------------------------------------------
 -- libsaxon: Transform XML with XSLT Transformation
 ---------------------------------------------------
 function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
   local errMessage
   local xml_transformed_dump
-  local plugin_id = kong.plugin.get_id()
-  local xsltHashKey = libxml2ex.hash_key(XSLT)
-  kong.log.notice("** Jerome plugin_id: " .. plugin_id .. " xsltHashKey: " .. xsltHashKey .. " dump: " .. dump(kong.xmlSoapSaxon.contextPlugin[plugin_id]))
-
+  local context
+  
   kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
-  if kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].compileStylesheetErr == nil then
-    xml_transformed_dump, errMessage = libsaxon.stylesheetInvokeTemplate ( 
-                                        kong.xmlSoapSaxon.saxonProcessor,
-                                        kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].context,
-                                        "main", 
-                                        "request-body",
-                                        XMLtoTransform
-                                      )
-  else
-    errMessage = kong.xmlSoapSaxon.contextPlugin[plugin_id].xsltHashKeys[xsltHashKey].compileStylesheetErr
+
+  -- Compile the XSLT document
+  context, errMessage = libsaxon.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, 
+                                                    kong.xmlSoapSaxon.xslt30Processor, 
+                                                    XSLT)
+
+  if not errMessage then
+    -- If the XSLT Transformation is configured with a Template (example: <xsl:template name="main">)
+    if plugin_conf.xsltSaxonTemplate and plugin_conf.xsltSaxonTemplateParam then
+      -- Transform the XML doc with XSLT transformation by invoking a template
+      xml_transformed_dump, errMessage = libsaxon.stylesheetInvokeTemplate ( 
+                                            kong.xmlSoapSaxon.saxonProcessor,
+                                            context,
+                                            plugin_conf.xsltSaxonTemplate, 
+                                            plugin_conf.xsltSaxonTemplateParam,
+                                            XMLtoTransform
+                                          )
+    else
+      -- Transform the XML doc with XSLT transformation
+      xml_transformed_dump, errMessage = libsaxon.stylesheetTransformXml ( 
+                                            kong.xmlSoapSaxon.saxonProcessor,
+                                            context,
+                                            XMLtoTransform
+                                          )
+    end
   end
-                                      
+  
+  -- Free memory
+  if context then
+    -- Delete the Saxon Context and the compiled XSLT
+    libsaxon.deleteContext(context)
+  end
+
   if errMessage == nil then
     kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
   else
     kong.log.debug ("XSLT transformation, errMessage: " .. errMessage)
   end
-  kong.service.request.set_header("Content-Type", "text/xml")
+  
   return xml_transformed_dump, errMessage
 end
 
@@ -443,7 +411,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   
   if plugin_conf.xsltLibrary == 'libxslt' then
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
-  elseif plugin_conf.xsltLibrary == 'libsaxon' then
+  elseif plugin_conf.xsltLibrary == 'saxon' then
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
   else
     kong.log.err("XSLTransform: unknown library " .. plugin_conf.xsltLibrary)

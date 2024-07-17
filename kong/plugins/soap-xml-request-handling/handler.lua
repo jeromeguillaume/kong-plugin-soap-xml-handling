@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.9",
+    VERSION = "1.0.11",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- => we apply XSL Transformation (XSLT) Before XSD
   if plugin_conf.xsltTransformBefore then
     soapEnvelope_transformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseRequest)
+    
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -48,9 +49,6 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
     
-    -- Initialize the contextual data related to the External Entities
-    xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
- 
     -- Prefetch External Entities (i.e. Download XSD content)
     xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
     
@@ -123,6 +121,20 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     end
   end
   
+  -- if there is a JSON To XML transformation (by setting per example: <xsl: ... select=json-to-xml(...) )
+  local _, eB,eA 
+  if plugin_conf.xsltTransformBefore then
+    _, eB = string.find(plugin_conf.xsltTransformBefore, xmlgeneral.xsltJsonToXML)
+  end
+  if plugin_conf.xsltTransformAfter then
+    _, eA = string.find(plugin_conf.xsltTransformAfter , xmlgeneral.xsltJsonToXML)
+  end
+  
+  if (eB or eA) and (kong.request.get_header ("Content-Type") == "application/json") then
+    -- Change the Content-Type from 'application/json' to 'text/xml'
+    kong.service.request.set_header("Content-Type", xmlgeneral.ContentType)
+  end
+  
   return soapEnvelope_transformed, soapFaultBody
 
 end
@@ -151,28 +163,7 @@ end
 -- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  if configs then
-    
-    -- Free the Saxon 'contextPlugin' Table
-    xmlgeneral.freeSaxonContextPlugin()
-
-    -- Compile the Saxon XSLT style sheet for each Plugin
-    for _, config in ipairs(configs) do
-      local plugin_id = config.__plugin_id
-      
-      -- Initialize the structure to manage XSLT Saxon
-      kong.xmlSoapSaxon.contextPlugin[plugin_id] = { xsltHashKeys = {}  }
-      
-      -- Compile the Saxon XSLT style sheet
-      if config.xsltTransformBefore then
-        xmlgeneral.compileStyleSheet (plugin_id, config.xsltTransformBefore)
-      end
-      if config.xsltTransformAfter then
-        xmlgeneral.compileStyleSheet (plugin_id, config.xsltTransformAfter)
-      end
-    end
-  end
+  
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -180,7 +171,10 @@ end
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-
+  
+  -- Initialize the contextual data related to the External Entities
+  xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
+ 
   -- Get SOAP envelope from the request
   local soapEnvelope = kong.request.get_raw_body()
 

@@ -1,9 +1,9 @@
-local kongUtils = require("kong.tools.utils")
+local KongGzip = require("kong.tools.gzip")
 
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.0.9",
+    VERSION = "1.0.11",
   }
 
 -----------------------------------------------------------------------------------------
@@ -97,16 +97,46 @@ function plugin:init_worker ()
 
 end
 
+------------------------------------------------------------------------------------------------
+-- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
+------------------------------------------------------------------------------------------------
+function plugin:configure (configs)
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  if configs then
+    
+    -- Free the Saxon 'contextPluginsRes' Table
+    xmlgeneral.freeSaxonContextPlugins(kong.xmlSoapSaxon.contextPluginsRes)
+
+    -- Compile the Saxon XSLT style sheet for each Plugin
+    for _, config in ipairs(configs) do
+      local plugin_id = config.__plugin_id
+      
+      kong.log.notice("**Jerome plugin:configure | plugin_id: " .. plugin_id)
+
+      -- Initialize the structure to manage XSLT Saxon
+      kong.xmlSoapSaxon.contextPluginsRes[plugin_id] = { xsltHashKeys = {}  }
+      
+      -- Compile the Saxon XSLT style sheet
+      if config.xsltTransformBefore then
+        xmlgeneral.compileStyleSheet (kong.xmlSoapSaxon.contextPluginsRes, plugin_id, config.xsltTransformBefore)
+      end
+      if config.xsltTransformAfter then
+        xmlgeneral.compileStyleSheet (kong.xmlSoapSaxon.contextPluginsRes, config.xsltTransformAfter)
+      end
+    end
+  end
+end
+
 ---------------------------------------------------------------------------------------------------
 -- Executed for every request from a client and before it is being proxied to the upstream service
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
   
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-
+  
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
- 
+  
   -- Prefetch External Entities (i.e. Download XSD content)
   xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse)
   
@@ -172,15 +202,21 @@ function plugin:header_filter(plugin_conf)
   
   -- If the Body is deflated/zipped, we inflate/unzip it
   if kong.response.get_header("Content-Encoding") == "gzip" then
-    local soapDeflated, err = kongUtils.inflate_gzip(soapEnvelope)
-    
+    local soapDeflated, err = KongGzip.inflate_gzip(soapEnvelope)
     if err then
       err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
-      soapFaultBody = xmlgeneral.formatSoapFault(plugin_conf.VerboseResponse, "soap-xml-response-handling - Internal Error", err)
-      kong.log.err(err)
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                  err)
     else
       soapEnvelope = soapDeflated
     end
+  -- If there is a not supported 'Content-Encoding'
+  elseif kong.response.get_header("Content-Encoding") then
+    err = "Content-encoding of type '" .. kong.response.get_header("Content-Encoding") .. "' is not supported"
+    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                err)
   end
   
   -- If there is no error
@@ -194,7 +230,7 @@ function plugin:header_filter(plugin_conf)
   if soapFaultBody ~= nil then
     -- If the Body is zipped we removed it
     -- We don't have to deflate/zip it because there will have an error message with a few number of characters
-    if kong.response.get_header("Content-Encoding") == "gzip" then
+    if kong.response.get_header("Content-Encoding") then
       kong.response.clear_header("Content-Encoding")
     end
     -- When the response was originated by successfully contacting the proxied Service
@@ -202,8 +238,8 @@ function plugin:header_filter(plugin_conf)
       -- Change the HTTP Status and Return a Fault code to Client
       kong.response.set_status(xmlgeneral.HTTPCodeSOAPFault)
     else
-      -- When other plugin (like Rate Limiting) or 
-      -- the Service itself (timeout) have already raised an error: we don't change the HTTP Error code
+      -- When another plugin (like Rate Limiting) or 
+      -- the Service itself (timeout) has already raised an error: we don't change the HTTP Error code
     end
     kong.response.set_header("Content-Length", #soapFaultBody)
 
@@ -218,10 +254,12 @@ function plugin:header_filter(plugin_conf)
   elseif soapEnvelopeTransformed then
     -- If the Backend API Body is deflated/zipped, we deflate/zip the new transformed SOAP/XML Body
     if kong.response.get_header("Content-Encoding") == "gzip" then
-      local soapInflated, err = kongUtils.deflate_gzip(soapEnvelopeTransformed)
+      local soapInflated, err = KongGzip.deflate_gzip(soapEnvelopeTransformed)
+      
       if err then
         kong.log.err("Failed to deflate the gzipped SOAP/XML Body: " .. err)
         -- We are unable to deflate/zip new transformed SOAP/XML Body, so we remove the 'Content-Encoding' header
+        -- and we return the non delated/zipped content
         kong.response.clear_header("Content-Encoding")
       else
         soapEnvelopeTransformed = soapInflated

@@ -53,8 +53,7 @@ extern "C" void deleteContext( const void* context_void )
          cerr << "** Saxon C++: delete _xsltExecutable:" << context->_xsltExecutable << endl;
         delete context->_xsltExecutable;
       }
-      cerr << "** Saxon C++: delete context" << endl;
-      delete context;
+      // DON'T DO 'delete context': il will be achieved by LuaJIT
     }
   }
   catch (...) {
@@ -153,5 +152,46 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
     context->errMessage = e.what();
   }
   
+  return retval;
+}
+
+
+extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_void,
+                                                   const void *context_void,
+                                                   const char *xml_string)
+{
+  SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
+  Context *context = nullptr;
+  XdmNode *input = nullptr;
+  const char* output_string = nullptr;
+  const char* retval = nullptr;
+  try{
+    context = (Context*) context_void;
+    XdmNode* input = saxonProcessor->parseXmlFromString(xml_string);
+    if (input == nullptr) {
+      cerr << "** Saxon C++: parsing input XML failed" << endl;
+      throw std::runtime_error("** Saxon C++: parsing input XML failed");
+    }
+    output_string = context->_xsltExecutable->transformToString(input);
+    delete input;
+    if (output_string == nullptr) {
+      cerr << "** Saxon C++: XSLT transformation failed" << endl;
+      throw std::runtime_error("** Saxon C++: parsing input XML failed");
+    }
+    retval = strdup(output_string);
+  }
+  catch (SaxonApiException& e) {
+    cerr << "** Saxon C++: Error in stylesheetTransformXmlKong " << e.getMessage() << endl;
+    context->errMessage = e.getMessage();
+  }
+  catch (const std::exception& e) {
+    cerr << "** Saxon C++: Error in stylesheetTransformXmlKong " << e.what() << endl;
+    context->errMessage = e.what();
+  }
+  
+  if (output_string != nullptr){
+    delete output_string;
+  }
+  // return free()able memory
   return retval;
 }

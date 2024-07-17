@@ -187,7 +187,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     local url_cache_key = libxml2ex.hash_key(entities_url)
   
     local cacheTTL = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-      
+    
     -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
     response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entities_url)
     if err then
