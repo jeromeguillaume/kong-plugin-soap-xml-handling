@@ -86,6 +86,15 @@ function plugin:init_worker ()
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
   
+  -- Initialize the Saxon library
+  xmlgeneral.initializeSaxon()
+
+  -- Create the Saxon Processor
+  xmlgeneral.createSaxonProcessor()
+
+  -- Create the XSLT 3.0 processor
+  xmlgeneral.createXslt30ProcessorKong()
+
 end
 
 ---------------------------------------------------------------------------------------------------

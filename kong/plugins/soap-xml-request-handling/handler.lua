@@ -142,6 +142,9 @@ function plugin:init_worker ()
   -- Create the Saxon Processor
   xmlgeneral.createSaxonProcessor()
 
+  -- Create the XSLT 3.0 processor
+  xmlgeneral.createXslt30ProcessorKong()
+
 end
 
 ------------------------------------------------------------------------------------------------
@@ -150,9 +153,18 @@ end
 function plugin:configure (configs)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   if configs then
+    
+    -- Free the Saxon 'contextPlugin' Table
+    xmlgeneral.freeSaxonContextPlugin()
+
+    -- Compile the Saxon XSLT style sheet for each Plugin
     for _, config in ipairs(configs) do
       local plugin_id = config.__plugin_id
-      -- Compile the XSLT style sheet
+      
+      -- Initialize the structure to manage XSLT Saxon
+      kong.xmlSoapSaxon.contextPlugin[plugin_id] = { xsltHashKeys = {}  }
+      
+      -- Compile the Saxon XSLT style sheet
       if config.xsltTransformBefore then
         xmlgeneral.compileStyleSheet (plugin_id, config.xsltTransformBefore)
       end

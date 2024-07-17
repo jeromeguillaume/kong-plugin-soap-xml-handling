@@ -20,9 +20,47 @@ using namespace std;
 
 typedef struct Context
 {
-  Xslt30Processor *_xslt30Processor;
-  XsltExecutable *_xsltExecutable;    
+  XsltExecutable *_xsltExecutable;
+  std::string errMessage;
 } Context;
+
+extern "C" const char *getErrMessage( const void* context_void )
+{
+  const char *errMessage = nullptr;
+  const Context *context = reinterpret_cast<const Context*>(context_void);
+  
+  if ( context != nullptr )
+  {
+    if ( context->errMessage.length()){
+      errMessage = new char [context->errMessage.length() + 1];
+      errMessage = context->errMessage.c_str();
+    }
+  }
+  else{
+    errMessage = strdup("The saxon Context is null");
+  }
+
+  return errMessage;
+}
+
+extern "C" void deleteContext( const void* context_void )
+{
+  const Context *context = reinterpret_cast<const Context*>(context_void);
+
+  try {
+    if (context != nullptr) {
+      if (context->_xsltExecutable != nullptr){
+         cerr << "** Saxon C++: delete _xsltExecutable:" << context->_xsltExecutable << endl;
+        delete context->_xsltExecutable;
+      }
+      cerr << "** Saxon C++: delete context" << endl;
+      delete context;
+    }
+  }
+  catch (...) {
+    cerr << "** Saxon C++: Error deleting Context" << endl;
+  }
+}
 
 extern "C" void *createSaxonProcessorKong ()
 {
@@ -32,26 +70,47 @@ extern "C" void *createSaxonProcessorKong ()
     pSaxonProcessor = new SaxonProcessor(true);
   }
   catch (...) {
-    cerr << "** Saxon C++: Error in initialize_saxon" << endl;
+    cerr << "** Saxon C++: Error in createSaxonProcessorKong" << endl;
   }
   return pSaxonProcessor;
 }
 
-extern "C" void *compileStylesheet( const void * saxonProcessor_void, 
+extern "C" void *createXslt30ProcessorKong (const void * saxonProcessor_void)
+{
+  Xslt30Processor *pXslt30Processor  = nullptr;
+  try
+  {
+    SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
+    pXslt30Processor = saxonProcessor->newXslt30Processor();
+  }
+  catch (SaxonApiException& e) {
+    cerr << "** Saxon C++: Error in createXslt30ProcessorKong " << e.getMessage() << endl;
+  }
+  catch (const std::exception& e) {
+    cerr << "** Saxon C++: Error in createXslt30ProcessorKong " << e.what() << endl;
+  }
+  return pXslt30Processor;
+}
+
+extern "C" void *compileStylesheet( const void *saxonProcessor_void, 
+                                    const void *xslt30Processor_void,
                                     const char *stylesheet_string)
 {
   Context *context = nullptr;
+  
   try {
+    Xslt30Processor *pxslt30Processor = (Xslt30Processor *) xslt30Processor_void;
     context = new Context();
-    SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
-    context->_xslt30Processor = saxonProcessor->newXslt30Processor();
-    context->_xsltExecutable = context->_xslt30Processor->compileFromString(stylesheet_string);
+    context->_xsltExecutable = pxslt30Processor->compileFromString(stylesheet_string);
+    cerr << "** Saxon C++: _xsltExecutable: " << context->_xsltExecutable << endl;
   }
   catch (SaxonApiException& e) {
     cerr << "** Saxon C++: Error in compile_stylesheet " << e.getMessage() << endl;
+    context->errMessage = e.getMessage();
   }
-  catch (...) {
-    cerr << "** Saxon C++: Error in compile_stylesheet" << endl;
+  catch (const std::exception& e) {
+    cerr << "** Saxon C++: Error in compile_stylesheet" << e.what() << endl;
+    context->errMessage = e.what();
   }
 
   return context;
@@ -64,30 +123,34 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
                                                     const char* param_value)
 {
   const char* retval = nullptr;
+  Context *context = nullptr;
   try
   {
     SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
-    const Context *context = reinterpret_cast<const Context*>(context_void);
-
+    context = (Context*) context_void;
     map<string, XdmValue*> parameterValues;
     parameterValues[param_name] = saxonProcessor->makeStringValue(param_value);
-
-    context->_xsltExecutable->setInitialTemplateParameters(parameterValues, false);
-
-    const char* output_string = context->_xsltExecutable->callTemplateReturningString(template_name);
-    if (output_string != nullptr) {
-      // return free()able memory
-      cerr << "** Saxon C++: " << output_string << endl;
-      retval = strdup(output_string);
-      delete output_string;
-      cerr << "** Saxon C++: " << retval << endl;
+    if ( context->_xsltExecutable !=nullptr ){
+      cerr << "** Saxon C++: _xsltExecutable: " << context->_xsltExecutable << endl;
+      context->_xsltExecutable->setInitialTemplateParameters(parameterValues, false);
+      const char* output_string = context->_xsltExecutable->callTemplateReturningString(template_name);
+      if (output_string != nullptr) {
+        // return free()able memory
+        retval = strdup(output_string);
+        delete output_string;
+      }
+    }
+    else{
+      throw std::runtime_error("The XSLT 3.0 Processor is null");
     }
   }
   catch (SaxonApiException& e) {
     cerr << "** Saxon C++: Error in stylesheetInvokeTemplateKong " << e.getMessage() << endl;
+    context->errMessage = e.getMessage();
   }
-  catch (...) {
-    cerr << "** Saxon C++: Error in stylesheetInvokeTemplateKong" << endl;
+  catch (const std::exception& e) {
+    cerr << "** Saxon C++: Error in stylesheetInvokeTemplateKong " << e.what() << endl;
+    context->errMessage = e.what();
   }
   
   return retval;
