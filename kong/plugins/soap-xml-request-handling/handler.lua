@@ -121,18 +121,13 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     end
   end
   
-  -- if there is a JSON To XML transformation (by setting per example: <xsl: ... select=json-to-xml(...) )
-  local _, eB,eA 
-  if plugin_conf.xsltTransformBefore then
-    _, eB = string.find(plugin_conf.xsltTransformBefore, xmlgeneral.xsltJsonToXML)
-  end
-  if plugin_conf.xsltTransformAfter then
-    _, eA = string.find(plugin_conf.xsltTransformAfter , xmlgeneral.xsltJsonToXML)
-  end
-  
-  if (eB or eA) and (kong.request.get_header ("Content-Type") == "application/json") then
-    -- Change the Content-Type from 'application/json' to 'text/xml'
-    kong.service.request.set_header("Content-Type", xmlgeneral.ContentType)
+  -- If there is a JSON <-> XML transformation on the Request: change the 'Content-Type' header of the Request
+  if plugin_conf.xsltLibrary == "saxon" then
+    if plugin_conf.xsltSaxonTransformType == "xml-to-json" then
+      kong.service.request.set_header("Content-Type", xmlgeneral.JsonContentType)
+    elseif plugin_conf.xsltSaxonTransformType == "json-to-xml" then
+      kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
+    end
   end
   
   return soapEnvelope_transformed, soapFaultBody
@@ -213,6 +208,7 @@ end
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  local soapFaultBody
 
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --    we don't consider as an error the 'request-termination' plugin (get_source()="exit" and get_status()=200)
@@ -221,16 +217,17 @@ function plugin:header_filter(plugin_conf)
     ( (kong.response.get_source() == "exit" and kong.response.get_status() ~= 200) 
         or 
        kong.response.get_source() == "error") then
-
-    kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
     
-    local soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseRequest)
-    -- We aren't able to call 'kong.response.set_raw_body()' at this stage to change the body content
-    -- but it will be done by 'body_filter' phase
-    kong.response.set_header("Content-Length", #soapFaultBody)
+    if plugin_conf.xsltSaxonTransformType ~= "json-to-xml" then
+      kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
+      
+      soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseRequest)
+      -- We aren't able to call 'kong.response.set_raw_body()' at this stage to change the body content
+      -- but it will be done by 'body_filter' phase
+      kong.response.set_header("Content-Length", #soapFaultBody)
+      kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
+    end
 
-    kong.response.set_header("Content-Type", "text/xml; charset=utf-8")
-    
     -- Set the Global Fault Code to the "Request and Response SOAP/XML handling" plugins 
     -- It prevents to apply other XML/SOAP handling whereas there is already an error
     kong.ctx.shared.xmlSoapHandlingFault = {
@@ -239,6 +236,7 @@ function plugin:header_filter(plugin_conf)
       priority = plugin.PRIORITY,
       soapEnvelope = soapFaultBody
     }
+    
   end
 
 end
@@ -252,7 +250,9 @@ function plugin:body_filter(plugin_conf)
 
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   -- we reformat the JSON message to SOAP/XML Fault
-  if kong.ctx.shared.xmlSoapHandlingFault and kong.ctx.shared.xmlSoapHandlingFault.otherPlugin == true then
+  if  kong.ctx.shared.xmlSoapHandlingFault and 
+      kong.ctx.shared.xmlSoapHandlingFault.otherPlugin == true and
+      plugin_conf.xsltSaxonTransformType ~= "json-to-xml" then
       kong.response.set_raw_body(kong.ctx.shared.xmlSoapHandlingFault.soapEnvelope)
   end
 end

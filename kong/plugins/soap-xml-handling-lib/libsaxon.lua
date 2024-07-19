@@ -35,6 +35,7 @@ function libsaxon.initializeSaxon()
   if not loaded then
     err = "Unable to load the shared object '" .. kongLibSaxonName .. "'"
     kong.log.err(err)
+    saxonClib = nil
   end
   return err
 end
@@ -64,7 +65,7 @@ end
 -- Delete Context
 ------------------
 function libsaxon.deleteContext(context)
-  if saxonClib and context then
+  if saxonClib and context ~= ffi.NULL then
     saxonClib.deleteContext (context)
   end
 end
@@ -80,7 +81,7 @@ function libsaxon.createSaxonProcessorKong()
   if saxonClib then
     -- Initialize the Saxon Processor
     saxonProcessor = saxonClib.createSaxonProcessorKong ()
-    if saxonProcessor then
+    if saxonProcessor ~= ffi.NULL then
       err = nil
     end
   end
@@ -93,10 +94,10 @@ end
 function libsaxon.createXslt30ProcessorKong(saxonProcessor)
   local xslt30Processor
   local err = "Unable to initialize the XSLT 3.0 Processor"
-  if saxonClib and saxonProcessor then
+  if saxonClib and saxonProcessor ~= ffi.NULL then
     -- Initialize the XSLT 3.0 Processor
     xslt30Processor = saxonClib.createXslt30ProcessorKong (saxonProcessor)
-    if xslt30Processor then
+    if xslt30Processor ~= ffi.NULL then
       err = nil
     end
   end
@@ -109,10 +110,10 @@ end
 function libsaxon.compileStylesheet(saxonProcessor, xslt30Processor, XSLT)
   local context
   local err
-  if saxonClib and saxonProcessor and xslt30Processor then
+  if saxonClib and saxonProcessor ~= ffi.NULL and xslt30Processor ~= ffi.NULL then
     context = saxonClib.compileStylesheet (saxonProcessor, xslt30Processor, XSLT)
   end
-  if not context then
+  if context == ffi.NULL then
     err = "Unable to compile XSLT"
   else
     err = libsaxon.getErrorMessage(context)
@@ -127,14 +128,14 @@ function libsaxon.stylesheetInvokeTemplate (saxonProcessor, context, templateNam
   local err
   local xml_transformed
   local xml_ptr
-  if saxonClib and saxonProcessor and context then
+  if saxonClib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
     xml_ptr = saxonClib.stylesheetInvokeTemplateKong (saxonProcessor, context, templateName, paramName, XMLtoTransform)
   end
 
   if xml_ptr ~= ffi.NULL then
     xml_transformed = ffi.string(xml_ptr)
     saxonClib.free(ffi.cast("char*", xml_ptr))
-  elseif context then
+  elseif context ~= ffi.NULL then
     err = libsaxon.getErrorMessage(context)
   else
     err = "Unable to invoke XLST transformation with a template"
@@ -151,14 +152,14 @@ function libsaxon.stylesheetTransformXml(saxonProcessor, context, XMLtoTransform
   local xml_transformed
   local xml_ptr
   
-  if saxonClib and saxonProcessor and context then
+  if saxonClib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
     xml_ptr = saxonClib.stylesheetTransformXmlKong (saxonProcessor, context, XMLtoTransform)
   end
   
   if xml_ptr ~= ffi.NULL then
     xml_transformed = ffi.string(xml_ptr)
     saxonClib.free(ffi.cast("char*", xml_ptr))
-  elseif context then
+  elseif context ~= ffi.NULL then
     err = libsaxon.getErrorMessage(context)
   else
     err = "Unable to invoke XLST transformation"

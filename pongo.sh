@@ -1,0 +1,1 @@
+KONG_IMAGE=kong/kong-gateway pongo run

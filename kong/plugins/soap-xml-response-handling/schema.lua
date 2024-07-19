@@ -28,6 +28,13 @@ return {
           },},
           { xsltTransformAfter = { type = "string", required = false }, },
           { xsltTransformBefore = { type = "string", required = false }, },
+          { xsltSaxonTransformType = {required = true, type = "string", default = "xml-to-xml",
+          one_of = {
+            "xml-to-xml",
+            "xml-to-json",
+            "json-to-xml",
+            },
+          },},
           { xsltSaxonTemplate = { type = "string", required = false }, },
           { xsltSaxonTemplateParam = { type = "string", required = false }, },
         },

@@ -101,30 +101,7 @@ end
 -- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  if configs then
-    
-    -- Free the Saxon 'contextPluginsRes' Table
-    xmlgeneral.freeSaxonContextPlugins(kong.xmlSoapSaxon.contextPluginsRes)
 
-    -- Compile the Saxon XSLT style sheet for each Plugin
-    for _, config in ipairs(configs) do
-      local plugin_id = config.__plugin_id
-      
-      kong.log.notice("**Jerome plugin:configure | plugin_id: " .. plugin_id)
-
-      -- Initialize the structure to manage XSLT Saxon
-      kong.xmlSoapSaxon.contextPluginsRes[plugin_id] = { xsltHashKeys = {}  }
-      
-      -- Compile the Saxon XSLT style sheet
-      if config.xsltTransformBefore then
-        xmlgeneral.compileStyleSheet (kong.xmlSoapSaxon.contextPluginsRes, plugin_id, config.xsltTransformBefore)
-      end
-      if config.xsltTransformAfter then
-        xmlgeneral.compileStyleSheet (kong.xmlSoapSaxon.contextPluginsRes, config.xsltTransformAfter)
-      end
-    end
-  end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -169,7 +146,16 @@ function plugin:header_filter(plugin_conf)
   local soapEnvelope
   local soapDeflated
   local err
-
+  
+  -- If there is a JSON <-> XML transformation on the Response: change the 'Content-Type' header of the Response
+  if plugin_conf.xsltLibrary == "saxon" then
+    if plugin_conf.xsltSaxonTransformType == "xml-to-json" then
+      kong.response.set_header("Content-Type", xmlgeneral.JsonContentType)
+    elseif plugin_conf.xsltSaxonTransformType == "json-to-xml" then
+      kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
+    end
+  end
+  
   -- In case of error set by SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
@@ -180,16 +166,21 @@ function plugin:header_filter(plugin_conf)
     return
   end
   
-  --  In case of 'request-termination' plugin (get_source()="exit" and get_status()=200
+  --  In case of 'request-termination' plugin
   if (kong.response.get_source() == "exit" and kong.response.get_status() == 200) then
     return
-  -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
+  -- 
+  -- If an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout) 
+  --   and
+  -- If there is no XML to JSON transformation (i.e. we have to send a XML message)
   -- we reformat the JSON message to SOAP/XML Fault
-  elseif kong.response.get_source() == "exit" or kong.response.get_source() == "error" then
+  elseif  (kong.response.get_source() == "exit" or 
+          kong.response.get_source()  == "error") and
+          plugin_conf.xsltSaxonTransformType ~= "xml-to-json" then
     kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
     soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseResponse)
     kong.response.clear_header("Content-Length")
-    kong.response.set_header("Content-Type", "text/xml; charset=utf-8")
+    kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
   else
     -- Get SOAP Envolope from the Body
     soapEnvelope = kong.service.response.get_raw_body()
@@ -200,23 +191,26 @@ function plugin:header_filter(plugin_conf)
     end
   end
   
-  -- If the Body is deflated/zipped, we inflate/unzip it
-  if kong.response.get_header("Content-Encoding") == "gzip" then
-    local soapDeflated, err = KongGzip.inflate_gzip(soapEnvelope)
-    if err then
-      err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
+  -- If there is no error
+  if soapFaultBody == nil then
+    -- If the Body is deflated/zipped, we inflate/unzip it
+    if kong.response.get_header("Content-Encoding") == "gzip" then
+      local soapDeflated, err = KongGzip.inflate_gzip(soapEnvelope)
+      if err then
+        err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
+        soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                    xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                    err)
+      else
+        soapEnvelope = soapDeflated
+      end
+    -- If there is a not supported 'Content-Encoding'
+    elseif kong.response.get_header("Content-Encoding") then
+      err = "Content-encoding of type '" .. kong.response.get_header("Content-Encoding") .. "' is not supported"
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   err)
-    else
-      soapEnvelope = soapDeflated
     end
-  -- If there is a not supported 'Content-Encoding'
-  elseif kong.response.get_header("Content-Encoding") then
-    err = "Content-encoding of type '" .. kong.response.get_header("Content-Encoding") .. "' is not supported"
-    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
-                                                xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
-                                                err)
   end
   
   -- If there is no error
@@ -287,7 +281,7 @@ end
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)
   
-  -- If there is a pending error set by SOAP/XML plugin we do anything except for the Plugin itself
+  -- If there is a pending error set by SOAP/XML plugin we do nothing except for the Plugin itself
   if  kong.ctx.shared.xmlSoapHandlingFault      and
     kong.ctx.shared.xmlSoapHandlingFault.error  and 
     kong.ctx.shared.xmlSoapHandlingFault.priority ~= plugin.PRIORITY then

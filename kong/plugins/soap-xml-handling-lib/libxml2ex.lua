@@ -283,7 +283,6 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
   if xml_doc == ffi.NULL then
     -- It returns null in case of issue on SOAP/XML posted by the consumer
     -- We don't consider it as an Error
-    kong.log.err("xmlReadMemory returns null")
     return nil, kong.ctx.shared.xmlSoapErrMessage
   end
 

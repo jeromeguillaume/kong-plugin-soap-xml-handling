@@ -19,9 +19,8 @@ xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 xmlgeneral.xmlnsXsdHref       = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema          = "schema"
-xmlgeneral.ContentType        = "text/xml; charset=utf-8"
-xmlgeneral.xsltJsonToXML      = "json%-to%-xml%(.+%)"
-xmlgeneral.xsltJXMLToJson     = "xml%-to%-json%(.+%)"
+xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
+xmlgeneral.JsonContentType    = "application/json"
 
 xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
 xmlgeneral.prefetchStatusOk       = "Ok"
@@ -99,9 +98,9 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
     detailErrMsg = ""
   end
 
-  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
-<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"> \
-  <soap:Body> \
+  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
+<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\
+  <soap:Body>\
     <soap:Fault>\
       <faultcode>soap:Client</faultcode>\
       <faultstring>" .. ErrMsg .. "</faultstring>" .. detailErrMsg .. "\
@@ -135,7 +134,7 @@ end
 ---------------------------------------
 function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)  
   -- Send a Fault code to client
-  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = xmlgeneral.ContentType})
+  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = xmlgeneral.XMLContentType})
 end
 
 -------------------------------------------------------------------
