@@ -41,7 +41,7 @@ local calculator_XSLT_Before_Failed = [[
   </soap:Body>
 </soap:Envelope>]]
 
-local calculator_XSLT_Before_Failed_Verbose = [[
+local calculator_XSLT_Before_Failed_XSLT_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <soap:Body>
@@ -53,11 +53,36 @@ local calculator_XSLT_Before_Failed_Verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
-local function calculator_Request_xsltTransformBefore(blue_print, calculator_route)
+local calculator_XSLT_Before_Failed_401_Error_Verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Unauthorized</faultstring>
+      <detail>HTTP Error code is 401</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_XSLT_Before_Failed_502_Error_Verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>An invalid response was received from the upstream server</faultstring>
+      <detail>HTTP Error code is 502. SOAP/XML Web Service %- HTTP code: 502</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local function calculator_Request_xsltTransformBefore(blue_print, calculator_route, debug)
 	return blue_print.plugins:insert {
 		name = PLUGIN_NAME,
 		route = calculator_route,
 		config = {
+			VerboseRequest = debug,
 			xsltTransformBefore = [[
 				<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				<xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
@@ -124,13 +149,12 @@ for _, strategy in helpers.all_strategies() do
 					service = calculator_service,
 					paths = { "/calculator" }
 					}
-				local req_plugin = calculator_Request_xsltTransformBefore(blue_print, calculator_route)
+				local req_plugin = calculator_Request_xsltTransformBefore(blue_print, calculator_route, false)
 				
 				local calculator_route_ko = blue_print.routes:insert{
 					service = calculator_service,
 					paths = { "/calculator_ko" }
 				}
-
 				blue_print.plugins:insert {
 					name = PLUGIN_NAME,
 					route = calculator_route_ko,
@@ -147,7 +171,6 @@ for _, strategy in helpers.all_strategies() do
 					service = calculator_service,
 					paths = { "/calculator_ko_verbose" }
 				}
-
 				blue_print.plugins:insert {
 					name = PLUGIN_NAME,
 					route = calculator_route_ko_verbose,
@@ -160,11 +183,10 @@ for _, strategy in helpers.all_strategies() do
 						]]
 					}	
 				}
-				
+
 				local calculator_route_local_req_termination = blue_print.routes:insert{
 					paths = { "/local_calculator_req_termination" }
 				}
-
 				blue_print.plugins:insert {
 					name = "request-termination",
 					route = calculator_route_local_req_termination,
@@ -185,8 +207,32 @@ for _, strategy in helpers.all_strategies() do
 					service = calculator_service_local,
 					paths = { "/x_local_calculator" }
 				}
-				
 				local req_plugin = calculator_Request_xsltTransformBefore(blue_print, calculator_route_local)
+				
+				local calculator_basic_auth_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculator_basic_auth" }
+					}
+				local req_plugin = calculator_Request_xsltTransformBefore(blue_print, calculator_basic_auth_route, true)
+				blue_print.plugins:insert {
+					name = "basic-auth",
+					route = calculator_basic_auth_route,
+					config = {
+					}	
+				}
+
+				local calculator_invalid_host_service = blue_print.services:insert({
+					protocol = "http",
+					host = "127.0.0.2",
+					port = 80,
+					path = "/calculator.asmx",
+			})			
+			local calculator_invalid_host_route = blue_print.routes:insert{
+				service = calculator_invalid_host_service,
+				paths = { "/calculator_invalid_host" }
+				}
+			local req_plugin = calculator_Request_xsltTransformBefore(blue_print, calculator_invalid_host_route, true)
+
 
 				-- start kong
 				assert(helpers.start_kong({
@@ -195,6 +241,7 @@ for _, strategy in helpers.all_strategies() do
 					-- make sure our plugin gets loaded
 					plugins = "bundled," .. PLUGIN_NAME
 				}))
+				
 
     	end)
 			it("XSLT (Before XSD) - Valid transformation", function()
@@ -245,10 +292,10 @@ for _, strategy in helpers.all_strategies() do
 				local body = assert.response(r).has.status(500)
 				local content_type = assert.response(r).has.header("Content-Type")
 				assert.equal("text/xml; charset=utf-8", content_type)
-				assert.matches(calculator_XSLT_Before_Failed_Verbose, body)
+				assert.matches(calculator_XSLT_Before_Failed_XSLT_Error_Verbose, body)
 			end)
 
-			it("XSLT (Before XSD) - Valid transformation wih 'request-termination' plugin", function()
+			it("XSLT (Before XSD) - Valid transformation with 'request-termination' plugin (200)", function()
 
 				-- invoke a test request
 				local r = client:post("/x_local_calculator", {
@@ -263,6 +310,40 @@ for _, strategy in helpers.all_strategies() do
 				local content_type = assert.response(r).has.header("Content-Type")
 				assert.equal("text/xml; charset=utf-8", content_type)
 				assert.matches('<AddResult>13</AddResult>', body)
+			end)
+
+			it("XSLT (Before XSD) - Valid transformation with 'basic_auth' plugin (401) with Verbose", function()
+
+				-- invoke a test request
+				local r = client:post("/calculator_basic_auth", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Request,
+				})
+				
+				-- validate that the request succeeded: response status 401, Content-Type and right Match
+				local body = assert.response(r).has.status(401)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_XSLT_Before_Failed_401_Error_Verbose, body)
+			end)
+
+			it("XSLT (Before XSD) - Invalid Hostname service (502) with Verbose ", function()
+
+				-- invoke a test request
+				local r = client:post("/calculator_invalid_host", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Request,
+				})
+				
+				-- validate that the request succeeded: response status 502, Content-Type and right Match
+				local body = assert.response(r).has.status(502)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_XSLT_Before_Failed_502_Error_Verbose, body)
 			end)
 
   	end)

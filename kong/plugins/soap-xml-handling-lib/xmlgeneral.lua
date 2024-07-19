@@ -78,7 +78,6 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   local detailErrMsg
   
   detailErrMsg = ErrEx
-  
   -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
   local ngx_get_phase = ngx.get_phase
   if  ngx_get_phase() == "response"      or 
@@ -92,7 +91,6 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   end
   kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
   detailErrMsg ="\n      <detail>" .. detailErrMsg .. "</detail>"
-
   -- If verbose mode is disabled we don't send the detailed Error Message
   if not VerboseResponse then
     detailErrMsg = ""
@@ -119,7 +117,6 @@ function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
   local soapFaultBody
   
   local msg = HTTP_ERROR_MESSAGES[kong.response.get_status()]
-  
   if not msg then
     msg = "Error"
   end
