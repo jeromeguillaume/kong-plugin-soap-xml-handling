@@ -196,16 +196,16 @@ local calculator_Request_XSLT_AFTER_Failed_verbose = [[
 </soap:Envelope>]]
 
 local calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH = [[
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
+  <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
   <xsl:template match="//*[local-name()='Subtract']">
-      <urn:add xmlns:urn="urn:calc"><xsl:apply-templates select="@*|node()" /></urn:add>
+    <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
   </xsl:template>
   <xsl:template match="//*[local-name()='intA']">
     <a><xsl:apply-templates select="@*|node()" /></a>
@@ -215,6 +215,30 @@ local calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH = [[
   </xsl:template>
 </xsl:stylesheet>
 ]]
+
+local calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503 = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>The upstream server is currently unavailable</faultstring>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>The upstream server is currently unavailable</faultstring>
+      <detail>HTTP Error code is 503</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
 
 for _, strategy in helpers.all_strategies() do
 	if strategy == "off" then
@@ -469,20 +493,74 @@ for _, strategy in helpers.all_strategies() do
 					target = "ecs.syr.edu:443",
 				})
 
-				local calculatorRoutingByXPath_route = blue_print.routes:insert{
+				local calculatorRoutingByXPath_upstream_route = blue_print.routes:insert{
 					service = calculator_service,
-					paths = { "/calculatorRoutingByXPath_ok" }
+					paths = { "/calculatorRoutingByXPath_upstream_entity_ok" }
 					}
 				blue_print.plugins:insert {
 					name = PLUGIN_NAME,
-					route = calculatorRoutingByXPath_route,
+					route = calculatorRoutingByXPath_upstream_route,
 					config = {
 						VerboseRequest = false,
 						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
 						xsdApiSchema = calculator_Request_XSD_VALIDATION,
 						xsltTransformAfter = calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-						RouteToPath = "https://" .. upstream_ecs_syr_edu.name .. "/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx?op=Add",
-						RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']",
+						RouteToPath = "https://" .. upstream_ecs_syr_edu.name .. "/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
+						RouteXPathCondition = "5",
+					}
+				}
+
+				local calculatorRoutingByXPath_hostname_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorRoutingByXPath_hostname_ok" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorRoutingByXPath_hostname_route,
+					config = {
+						VerboseRequest = false,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
+						RouteToPath = "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
+						RouteXPathCondition = "5",
+					}
+				}
+
+				local calculatorRoutingByXPath_hostname_invalid_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorRoutingByXPath_hostname_invalid" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorRoutingByXPath_hostname_invalid_route,
+					config = {
+						VerboseRequest = false,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
+						RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
+						RouteXPathCondition = "5",
+					}
+				}
+
+				local calculatorRoutingByXPath_hostname_invalid_verbose_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorRoutingByXPath_hostname_invalid_verbose" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorRoutingByXPath_hostname_invalid_verbose_route,
+					config = {
+						VerboseRequest = true,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
+						RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
 						RouteXPathCondition = "5",
 					}
 				}
@@ -701,23 +779,74 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches(calculator_Request_XSLT_AFTER_Failed_verbose, body)
 			end)
 
-			it("1+2+3+4|ROUTING BY XPATH - Ok", function()
+			it("1+2+3+4|ROUTING BY XPATH with 'upstream' entity - Ok", function()
 			
 				-- invoke a test request
-				local r = client:post("/calculatorRoutingByXPath_ok", {
+				local r = client:post("/calculatorRoutingByXPath_upstream_entity_ok", {
 					headers = {
 						["Content-Type"] = "text/xml; charset=utf-8",
 					},
 					body = calculator_Subtract_Request,
 				})
 
-				-- validate that the request succeeded: response status 500, Content-Type and right match
-				local body = assert.response(r).has.status(500)
+				-- validate that the request succeeded: response status 200, Content-Type and right match
+				local body = assert.response(r).has.status(200)
 				local content_type = assert.response(r).has.header("Content-Type")
 				assert.equal("text/xml; charset=utf-8", content_type)
-				assert.matches(calculator_Request_XSLT_AFTER_Failed_verbose, body)
+				assert.matches('<AddResult>13</AddResult>', body)
+			end)
+			
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Ok", function()
+			
+				-- invoke a test request
+				local r = client:post("/calculatorRoutingByXPath_hostname_ok", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 200, Content-Type and right match
+				local body = assert.response(r).has.status(200)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches('<AddResult>13</AddResult>', body)
 			end)
 
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503)", function()
+			
+				-- invoke a test request
+				local r = client:post("/calculatorRoutingByXPath_hostname_invalid", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 503, Content-Type and right match
+				local body = assert.response(r).has.status(503)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503, body)
+			end)
+			
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503) with verbose", function()
+			
+				-- invoke a test request
+				local r = client:post("/calculatorRoutingByXPath_hostname_invalid_verbose", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 503, Content-Type and right match
+				local body = assert.response(r).has.status(503)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose, body)
+			end)
+			
   	end)
 
 	end)
