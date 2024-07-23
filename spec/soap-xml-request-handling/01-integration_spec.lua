@@ -19,6 +19,16 @@ local calculator_Request = [[
 </soap:Envelope>
 ]]
 
+local calculator_Subtract_Request = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<Subtract xmlns="http://tempuri.org/">
+			<intA>5</intA>
+		</Subtract>
+	</soap:Body>
+</soap:Envelope>
+]]
 local calculator_Response = [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -142,6 +152,70 @@ local calculator_Request_XSD_VALIDATION_Failed_verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+local calculator_Request_XSLT_AFTER = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='Subtract']">
+    <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+local calculator_Request_XSLT_AFTER_invalid = [[
+xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+</xsl:stylesheet>
+]]
+
+local calculator_Request_XSLT_AFTER_Failed = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_Request_XSLT_AFTER_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
+      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='Subtract']">
+      <urn:add xmlns:urn="urn:calc"><xsl:apply-templates select="@*|node()" /></urn:add>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intA']">
+    <a><xsl:apply-templates select="@*|node()" /></a>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+    <b><xsl:apply-templates select="@*|node()" /></b>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
 for _, strategy in helpers.all_strategies() do
 	if strategy == "off" then
     goto continue
@@ -170,7 +244,7 @@ for _, strategy in helpers.all_strategies() do
     end)
 
     -- a nested describe defines an actual test on the plugin behavior
-    describe("libxml", function()
+    describe("libxml |", function()
 			lazy_setup(function()
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
@@ -343,7 +417,76 @@ for _, strategy in helpers.all_strategies() do
 						xsdApiSchema = calculator_Request_XSD_VALIDATION_invalid
 					}
 				}
+
+				local calculatorXSLT_afterXSD_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorXSLT_afterXSD_ok" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorXSLT_afterXSD_route,
+					config = {
+						VerboseRequest = false,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER
+					}
+				}
 				
+				local calculatorXSLT_afterXSD_invalid_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorXSLT_afterXSD_invalid" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorXSLT_afterXSD_invalid_route,
+					config = {
+						VerboseRequest = false,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER_invalid
+					}
+				}
+
+				local calculatorXSLT_afterXSD_invalid_verbose_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorXSLT_afterXSD_invalid_verbose" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorXSLT_afterXSD_invalid_verbose_route,
+					config = {
+						VerboseRequest = true,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER_invalid
+					}
+				}
+
+				local upstream_ecs_syr_edu = blue_print.upstreams:insert()
+				blue_print.targets:insert({
+					upstream = upstream_ecs_syr_edu,
+					target = "ecs.syr.edu:443",
+				})
+
+				local calculatorRoutingByXPath_route = blue_print.routes:insert{
+					service = calculator_service,
+					paths = { "/calculatorRoutingByXPath_ok" }
+					}
+				blue_print.plugins:insert {
+					name = PLUGIN_NAME,
+					route = calculatorRoutingByXPath_route,
+					config = {
+						VerboseRequest = false,
+						xsltTransformBefore = calculator_Request_XSLT_BEFORE,
+						xsdApiSchema = calculator_Request_XSD_VALIDATION,
+						xsltTransformAfter = calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
+						RouteToPath = "https://" .. upstream_ecs_syr_edu.name .. "/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx?op=Add",
+						RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']",
+						RouteXPathCondition = "5",
+					}
+				}
+
 				-- start kong
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
@@ -354,7 +497,7 @@ for _, strategy in helpers.all_strategies() do
 				
 
     	end)
-			it("XSLT (BEFORE XSD) - Valid transformation", function()
+			it("1|XSLT (BEFORE XSD) - Valid transformation", function()
 
 				-- invoke a test request
 				local r = client:post("/calculator", {
@@ -371,7 +514,7 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches('<AddResult>13</AddResult>', body)
 			end)
 
-			it("XSLT (BEFORE XSD) - Invalid XSLT input", function()
+			it("1|XSLT (BEFORE XSD) - Invalid XSLT input", function()
 
 				-- invoke a test request
 				local r = client:post("/calculator_ko", {
@@ -388,7 +531,7 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches(calculator_Request_XSLT_BEFORE_Failed, body)
 			end)
 
-			it("XSLT (BEFORE XSD) - Invalid XSLT with Verbose", function()
+			it("1|XSLT (BEFORE XSD) - Invalid XSLT with Verbose", function()
 
 				-- invoke a test request
 				local r = client:post("/calculator_ko_verbose", {
@@ -405,7 +548,7 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches(calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
 			end)
 
-			it("XSLT (BEFORE XSD) - Valid transformation with 'request-termination' plugin (200)", function()
+			it("1|XSLT (BEFORE XSD) - Valid transformation with 'request-termination' plugin (200)", function()
 
 				-- invoke a test request
 				local r = client:post("/x_local_calculator", {
@@ -422,7 +565,7 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches('<AddResult>13</AddResult>', body)
 			end)
 
-			it("XSLT (BEFORE XSD) - Valid transformation with 'basic_auth' plugin (401) with Verbose", function()
+			it("1|XSLT (BEFORE XSD) - Valid transformation with 'basic_auth' plugin (401) with Verbose", function()
 
 				-- invoke a test request
 				local r = client:post("/calculator_basic_auth", {
@@ -439,7 +582,7 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches(calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose, body)
 			end)
 
-			it("XSLT (BEFORE XSD) - Invalid Hostname service (502) with Verbose ", function()
+			it("1|XSLT (BEFORE XSD) - Invalid Hostname service (502) with Verbose ", function()
 
 				-- invoke a test request
 				local r = client:post("/calculator_invalid_host", {
@@ -449,17 +592,17 @@ for _, strategy in helpers.all_strategies() do
 					body = calculator_Request,
 				})
 				
-				-- validate that the request succeeded: response status 502, Content-Type and right Match
+				-- validate that the request succeeded: response status 502, Content-Type and right match
 				local body = assert.response(r).has.status(502)
 				local content_type = assert.response(r).has.header("Content-Type")
 				assert.equal("text/xml; charset=utf-8", content_type)
 				assert.matches(calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose, body)
 			end)
 
-			it("XSD Validation - Ok", function()
+			it("1+2|XSD Validation - Ok", function()
 
 				-- invoke a test request
-				local r = client:post("//calculatorXSD_ok", {
+				local r = client:post("/calculatorXSD_ok", {
 					headers = {
 						["Content-Type"] = "text/xml; charset=utf-8",
 					},
@@ -473,7 +616,7 @@ for _, strategy in helpers.all_strategies() do
 				assert.matches('<AddResult>13</AddResult>', body)
 			end)
 
-			it("XSD Validation - Invalid XSD input", function()
+			it("1+2|XSD Validation - Invalid XSD input", function()
 
 				-- invoke a test request
 				local r = client:post("/calculatorXSD_invalid", {
@@ -483,14 +626,14 @@ for _, strategy in helpers.all_strategies() do
 					body = calculator_Request,
 				})
 
-				-- validate that the request succeeded: response status 500, Content-Type and right math
+				-- validate that the request succeeded: response status 500, Content-Type and right match
 				local body = assert.response(r).has.status(500)
 				local content_type = assert.response(r).has.header("Content-Type")
 				assert.equal("text/xml; charset=utf-8", content_type)
 				assert.matches(calculator_Request_XSD_VALIDATION_Failed, body)
 			end)
 
-			it("XSD Validation - Invalid XSD input with verbose", function()
+			it("1+2|XSD Validation - Invalid XSD input with verbose", function()
 
 				-- invoke a test request
 				local r = client:post("/calculatorXSD_invalid_verbose", {
@@ -500,11 +643,79 @@ for _, strategy in helpers.all_strategies() do
 					body = calculator_Request,
 				})
 
-				-- validate that the request succeeded: response status 500, Content-Type and right math
+				-- validate that the request succeeded: response status 500, Content-Type and right match
 				local body = assert.response(r).has.status(500)
 				local content_type = assert.response(r).has.header("Content-Type")
 				assert.equal("text/xml; charset=utf-8", content_type)
 				assert.matches(calculator_Request_XSD_VALIDATION_Failed_verbose, body)
+			end)
+
+			it("1+2+3|XSLT (AFTER XSD) - Ok", function()
+
+				-- invoke a test request
+				local r = client:post("/calculatorXSLT_afterXSD_ok", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 200, Content-Type and right math
+				local body = assert.response(r).has.status(200)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches('<AddResult>13</AddResult>', body)
+			end)
+
+			it("1+2+3|XSD Validation - Invalid XSD input", function()
+			
+				-- invoke a test request
+				local r = client:post("/calculatorXSLT_afterXSD_invalid", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 500, Content-Type and right math
+				local body = assert.response(r).has.status(500)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_Request_XSLT_AFTER_Failed, body)
+			end)
+
+			it("1+2+3|XSD Validation - Invalid XSD input with verbose", function()
+			
+				-- invoke a test request
+				local r = client:post("/calculatorXSLT_afterXSD_invalid_verbose", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 500, Content-Type and right match
+				local body = assert.response(r).has.status(500)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_Request_XSLT_AFTER_Failed_verbose, body)
+			end)
+
+			it("1+2+3+4|ROUTING BY XPATH - Ok", function()
+			
+				-- invoke a test request
+				local r = client:post("/calculatorRoutingByXPath_ok", {
+					headers = {
+						["Content-Type"] = "text/xml; charset=utf-8",
+					},
+					body = calculator_Subtract_Request,
+				})
+
+				-- validate that the request succeeded: response status 500, Content-Type and right match
+				local body = assert.response(r).has.status(500)
+				local content_type = assert.response(r).has.header("Content-Type")
+				assert.equal("text/xml; charset=utf-8", content_type)
+				assert.matches(calculator_Request_XSLT_AFTER_Failed_verbose, body)
 			end)
 
   	end)

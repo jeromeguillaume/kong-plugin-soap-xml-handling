@@ -89,9 +89,10 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
       local parsed    = parse_url(plugin_conf.RouteToPath)
       local port
       local path
-      if (parsed.scheme and parsed.host) then
-        kong.service.request.set_scheme(parsed.scheme)
-        -- kong.service.set_upstream(plugin_conf.RouteToUpstream)
+      local query
+
+      if (parsed.scheme and parsed.host) then        
+        kong.service.request.set_scheme(parsed.scheme)        
         if (not parsed.path) then
           path = '/'
         else
@@ -109,12 +110,18 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
         end
         -- First, consider that the Host is a Kong Upstream 
         local ok, err = kong.service.set_upstream(parsed.host)
-        -- If there is an error which means that the Host is not a Kong Upstream
+        -- If there is an error it means that the Host is not a Kong Upstream
         if not ok then
           -- Change Hostname and port
           kong.service.set_target(parsed.host, tonumber(port))          
         end
-        kong.log.debug("Upstream changed successfully to " .. parsed.scheme .. "://" .. parsed.host .. ":" .. tonumber(port) .. path)
+        if parsed.query then
+          kong.service.request.set_raw_query(parsed.query)
+          query = '?' .. parsed.query
+        else
+          query = ''
+        end
+        kong.log.debug("Upstream changed successfully to " .. parsed.scheme .. "://" .. parsed.host .. ":" .. tonumber(port) .. path .. query)
       else
         kong.log.err("RouteByXPath: Unable to get scheme or host")
       end
