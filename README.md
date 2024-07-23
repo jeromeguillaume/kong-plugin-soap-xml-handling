@@ -364,7 +364,7 @@ Use command defined at Example #3, the expected result is `13`:
   </soap:Body>
 </soap:Envelope>
 ```
-For testing purposes only: one can play with the `RouteToPath` to raise a 404 error by temporarily replacing `Calc.asmx` by `Calc.asmxWXYZ`
+For testing purposes only: one can play with the `RouteToPath` to raise a 503 error by temporarily replacing `ecs.syr.edu` by `ecs.syr.edu.WXYZ`
 ### Example #5: Response | `XSLT TRANSFORMATION - BEFORE XSD`: changing a Tag name in XML response by using XSLT
 The plugin applies a XSLT Transformation on XML response **before** the XSD Validation.
 In this example the XSLT **changes the Tag names**:
