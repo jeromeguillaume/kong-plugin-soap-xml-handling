@@ -364,6 +364,7 @@ Use command defined at Example #3, the expected result is `13`:
   </soap:Body>
 </soap:Envelope>
 ```
+For testing purposes only: one can play with the `RouteToPath` to raise a 404 error by temporarily replacing `Calc.asmx` by `Calc.asmxWXYZ`
 ### Example #5: Response | `XSLT TRANSFORMATION - BEFORE XSD`: changing a Tag name in XML response by using XSLT
 The plugin applies a XSLT Transformation on XML response **before** the XSD Validation.
 In this example the XSLT **changes the Tag names**:
@@ -388,13 +389,13 @@ Add `soap-xml-response-handling` plugin and configure the plugin with:
 Use command defined at Example #3, the expected result is `<KongResult>13</KongResult>`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
-  <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-    <addResponse>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <AddResponse xmlns="http://tempuri.org/">
       <KongResult>13</KongResult>
-    </addResponse>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
+    </AddResponse>
+  </soap:Body>
+</soap:Envelope>
 ```
 ### Example #6: Response | `XSD VALIDATION`: checking validity of XML response with its XSD schema
 Open `soap-xml-response-handling` plugin and configure the plugin with:
