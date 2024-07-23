@@ -335,22 +335,22 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `XsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
-	<xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-	<xsl:strip-space elements="*"/>
-	<xsl:template match="node()|@*">
-		<xsl:copy>
-	<xsl:apply-templates select="node()|@*"/>
-		</xsl:copy>
-	</xsl:template>
-	<xsl:template match="//*[local-name()='Subtract']">
-		<Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
-	</xsl:template>
-	<xsl:template match="//*[local-name()='intA']">
-		<a><xsl:apply-templates select="@*|node()" /></a>
-	</xsl:template>
-	<xsl:template match="//*[local-name()='intB']">
-		<b><xsl:apply-templates select="@*|node()" /></b>
-	</xsl:template>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+  <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='Subtract']">
+    <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intA']">
+    <a><xsl:apply-templates select="@*|node()" /></a>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+    <b><xsl:apply-templates select="@*|node()" /></b>
+  </xsl:template>
 </xsl:stylesheet>
 ```
 Use command defined at Example #3, the expected result is `13`:
