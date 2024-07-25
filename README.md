@@ -401,9 +401,10 @@ Use command defined at Example #3, the expected result is `<KongResult>13</KongR
 Open `soap-xml-response-handling` plugin and configure the plugin with:
 - `XsdApiSchema` property with this value:
 ```xml
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="addResponse" type="addResponseType"/>
-  <xs:complexType name="addResponseType">
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddResponseType">
     <xs:sequence>
       <xs:element type="xs:string" name="KongResult"/>
     </xs:sequence>
