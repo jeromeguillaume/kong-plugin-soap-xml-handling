@@ -34,7 +34,7 @@ for _, strategy in helpers.all_strategies() do
     end)
 
     -- a nested describe defines an actual test on the plugin behavior
-    describe("libxml |", function()
+    describe("libxml+libxslt |", function()
 			lazy_setup(function()
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.

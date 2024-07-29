@@ -34,7 +34,7 @@ for _, strategy in helpers.all_strategies() do
     end)
 
     -- a nested describe defines an actual test on the plugin behavior
-    describe("libxml |", function()
+    describe("libxml+libxslt |", function()
 			lazy_setup(function()
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
@@ -82,12 +82,36 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_XSD_Validation_Ok (assert, client)
 			end)
 
-			it("1+2|XSD Validation - Invalid XSD input", function()
-				request_common._1_2_XSD_Validation_Invalid_XSD_input (assert, client)
+			it("1+2|XSD Validation - Invalid SOAP XSD input", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input (assert, client)
 			end)
 
-			it("1+2|XSD Validation - Invalid XSD input with verbose", function()
-				request_common._1_2_XSD_Validation_Invalid_XSD_input_with_verbose (assert, client)
+			it("1+2|XSD Validation - Invalid SOAP XSD input with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid API XSD input", function()
+				request_common._1_2_XSD_Validation_Invalid_API_XSD_input (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid API XSD input with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_API_XSD_input_with_verbose (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid SOAP request", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid SOAP request with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid API request", function()
+				request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid API request with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (assert, client)
 			end)
 
 			it("1+2+3|XSLT (AFTER XSD) - Ok", function()
@@ -117,7 +141,23 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503) with verbose", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503_with_verbose (assert, client)
 			end)
+
+			it("2|WSDL Validation with async download - Ok", function()
+				request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
+			end)
 			
+			it("2|WSDL Validation with async download - Invalid Import", function()
+				request_common._2_WSDL_Validation_with_async_download_Invalid_Import (assert, client)
+			end)
+
+			it("2|WSDL Validation with async download - Invalid Import with verbose", function()
+				request_common._2_WSDL_Validation_with_async_download_Invalid_Import_with_verbose (assert, client)
+			end)
+			
+			it("2|WSDL Validation with import no download - Ok", function()
+				request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)
+			end)
+
   	end)
 
 	end)
