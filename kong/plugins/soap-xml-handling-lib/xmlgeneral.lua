@@ -96,9 +96,9 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
     detailErrMsg = ""
   end
 
-  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?> \
-<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"> \
-  <soap:Body> \
+  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
+<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\
+  <soap:Body>\
     <soap:Fault>\
       <faultcode>soap:Client</faultcode>\
       <faultstring>" .. ErrMsg .. "</faultstring>" .. detailErrMsg .. "\

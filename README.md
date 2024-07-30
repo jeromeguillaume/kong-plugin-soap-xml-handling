@@ -1,7 +1,8 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
-This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
+This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
-These plugins don't apply to Kong OSS. It works for Konnect too.
+
+These plugins don't apply to Kong OSS. They work for Kong EE and Konnect.
 
 The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in this order:
 
@@ -30,7 +31,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.ExternalEntityLoader_Async|false|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://)|
 |config.ExternalEntityLoader_CacheTTL|3600|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
-|config.ExternalEntityLoader_Timeout|1|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
+|config.ExternalEntityLoader_Timeout|1|Tiemout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: `scheme://kong_upstream/path`|
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
@@ -183,7 +184,7 @@ The expected result is `12`:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
-2) Call the `calculator` through the Kong Ingress. See example in topic above (How configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kubernetes
+2) Call the `calculator` through the Kong Ingress. See example in topic above (How configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 ## How test XML Handling plugins with `calculator`
 ### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
@@ -322,26 +323,26 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 ### Example #4: Request | `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 The plugin searches the XPath entry and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route.
 
-This example uses a new backend Web Service (https://websrv.cs.fsu.edu/~engelen/calcserver.cgi) which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
+This example uses a new backend Web Service (https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx) which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
 
-Add a Kong `Upstream` named `websrv.cs.fsu.edu` and defines a `target` with `websrv.cs.fsu.edu:443` value. 
+Add a Kong `Upstream` named `ecs.syr.edu` and defines a `target` with `ecs.syr.edu:443` value. 
 Open `soap-xml-request-handling` plugin and configure the plugin with:
-- `RouteToPath` property with the value `https://websrv.cs.fsu.edu/~engelen/calcserver.cgi`
-- `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'add']/*[local-name() = 'a']`
+- `RouteToPath` property with the value `https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx`
+- `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']`
 - `RouteXPathCondition` property with the value `5`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
-- `XsltTransformAfter` property with the following XSLT definition (the `websrv.cs.fsu.edu` introduces a new XML NameSpace so we have to change the XSLT transformation to make the proper call):
+- `XsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
 ```xml
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
-      <xsl:apply-templates select="node()|@*"/>
+  <xsl:apply-templates select="node()|@*"/>
     </xsl:copy>
   </xsl:template>
   <xsl:template match="//*[local-name()='Subtract']">
-      <urn:add xmlns:urn="urn:calc"><xsl:apply-templates select="@*|node()" /></urn:add>
+    <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
   </xsl:template>
   <xsl:template match="//*[local-name()='intA']">
     <a><xsl:apply-templates select="@*|node()" /></a>
@@ -351,24 +352,22 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-Use command defined at Example #3, the expected result is `13`. The new Route (to `websrv.cs.fsu.edu`) sends a slightly different response:
-- SOAP tags are in capital letter: `<SOAP-ENV:Envelope>` instead of `<soap:Envelope>`
-- Namespace is injected: `xmlns:ns="urn:calc"`
+Use command defined at Example #3, the expected result is `13`:
 ```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
-  <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-    <ns:addResponse>
-      <result>13</result>
-    </ns:addResponse>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <AddResponse xmlns="http://tempuri.org/">
+      <AddResult>13</AddResult>
+    </AddResponse>
+  </soap:Body>
+</soap:Envelope>
 ```
+For testing purposes only: one can play with the `RouteToPath` to raise a 503 error by temporarily replacing `ecs.syr.edu` by `ecs.syr.edu.WXYZ`
 ### Example #5: Response | `XSLT TRANSFORMATION - BEFORE XSD`: changing a Tag name in XML response by using XSLT
 The plugin applies a XSLT Transformation on XML response **before** the XSD Validation.
 In this example the XSLT **changes the Tag names**:
--  from `<ns:addResponse>...</ns:addResponse>` (present in the response) to **`<addResponse>...</addResponse>`**
--  from `<result>...</result>` (present in the response) to **`<KongResult>...</KongResult>`**
+-  from `<AddResult>...</AddResult>` (present in the response) to **`<KongResult>...</KongResult>`**
 
 Add `soap-xml-response-handling` plugin and configure the plugin with:
 - `VerboseResponse` enabled
@@ -381,12 +380,7 @@ Add `soap-xml-response-handling` plugin and configure the plugin with:
       <xsl:apply-templates select="@*|node()" />
     </xsl:copy>
   </xsl:template>
-  <xsl:template match="//*[local-name()='addResponse']">
-    <addResponse>
-      <xsl:apply-templates select="@*|node()" />
-    </addResponse>
-  </xsl:template>
-  <xsl:template match="//*[local-name()='result']">
+  <xsl:template match="//*[local-name()='AddResult']">
     <KongResult><xsl:apply-templates select="@*|node()" /></KongResult>
   </xsl:template>
 </xsl:stylesheet>
@@ -394,21 +388,22 @@ Add `soap-xml-response-handling` plugin and configure the plugin with:
 Use command defined at Example #3, the expected result is `<KongResult>13</KongResult>`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" ... xmlns:ns="urn:calc">
-  <SOAP-ENV:Body SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
-    <addResponse>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soap:Body>
+    <AddResponse xmlns="http://tempuri.org/">
       <KongResult>13</KongResult>
-    </addResponse>
-  </SOAP-ENV:Body>
-</SOAP-ENV:Envelope>
+    </AddResponse>
+  </soap:Body>
+</soap:Envelope>
 ```
 ### Example #6: Response | `XSD VALIDATION`: checking validity of XML response with its XSD schema
 Open `soap-xml-response-handling` plugin and configure the plugin with:
 - `XsdApiSchema` property with this value:
 ```xml
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="addResponse" type="addResponseType"/>
-  <xs:complexType name="addResponseType">
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddResponseType">
     <xs:sequence>
       <xs:element type="xs:string" name="KongResult"/>
     </xs:sequence>
@@ -528,7 +523,7 @@ Content-Length: 185
 ```
 
 ### Example #9: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e.: http(s)://)
-Calling incorrectly `calculator` and detecting issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
+Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
 <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
@@ -632,7 +627,7 @@ HTTP/1.1 500 Internal Server Error
 ```
 
 ### Example #10-a: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from the plugin configuration (no download)
-Calling incorrectly `calculator` and detecting issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
+Call incorrectly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -701,7 +696,7 @@ kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```sh
 kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-xml-request-handling
 ```
-4) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kubernetes
+4) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 ## Changelog
 - v1.0.0:
@@ -733,4 +728,6 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas in the plugin configuration (without download external entity)
   - Enhance the documentation for Kubernetes, Konnect and KIC
 - v1.0.10:
-  - Due to Kong v3.7+, update the Kong's library used for `gzip` compression (from `kong.tools.utils` to `kong.tools.gzip`)
+  - Due to Kong v3.7+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
+- v1.0.11:
+  - Add `pongo` tests
