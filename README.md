@@ -728,3 +728,7 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
   - In case of `request-termination` plugin there is no longer SOAP/XML - 200 error
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas in the plugin configuration (without download external entity)
   - Enhance the documentation for Kubernetes, Konnect and KIC
+- v1.0.10:
+  - Due to Kong v3.7+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
+- v1.0.11:
+  - Add `pongo` tests
