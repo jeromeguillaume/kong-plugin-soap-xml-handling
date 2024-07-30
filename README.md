@@ -45,7 +45,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
-## How deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+## How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -64,7 +64,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ./start-kong.sh
 ```
 
-## How deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes
+## How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -109,7 +109,7 @@ plugins:
     - name: libxslt
       path: libxslt
 ```
-## How deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
+## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -125,7 +125,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 
 Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua) of `soap-xml-response-handling`
 
-## How deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
+## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -147,7 +147,7 @@ Repeat step #5 with the schema.lua of `soap-xml-response-handling` by changing t
 cd -
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling
 ```
-## How configure and test `calculator` Web Service in Kong Gateway
+## How to configure and test `calculator` Web Service in Kong Gateway
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
@@ -180,14 +180,14 @@ The expected result is `12`:
 </soap:Envelope>
 ```
 
-## How configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
+## How to configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
 1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and a related Ingress kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
-2) Call the `calculator` through the Kong Ingress. See example in topic above (How configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
+2) Call the `calculator` through the Kong Ingress. See example in topic above (How to configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
-## How test XML Handling plugins with `calculator`
+## How to test XML Handling plugins with `calculator`
 ### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
 
 The plugin applies a XSLT Transformation on XML request **before** the XSD Validation.
@@ -688,7 +688,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with Kong Ingress Controller (KIC)
-1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
+1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
 2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
 ```sh
 kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
