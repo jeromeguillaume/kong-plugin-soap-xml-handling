@@ -1,7 +1,26 @@
 
 all:
-	docker build -t kong-saxon:3.6.1.3 .
-	docker rm -f kong-saxon-make
-	docker create --name kong-saxon-make kong-saxon:3.6.1.3
-	docker cp kong-saxon-make:/usr/local/lib/libsaxon-4-kong.so ./so/.
-	docker cp kong-saxon-make:/usr/local/lib/libsaxon-hec-12.5.0.so ./so/.
+	# Build on multiplatform (arm64 and amd64) and push on Docker Hub registry
+	docker buildx build --platform=linux/arm64,linux/amd64 -t jeromeguillaume/kong-saxon:3.7.1.1 --push .
+	
+	# Load images on (local) Docker for test
+	docker buildx build --load --platform=linux/amd64 -t jeromeguillaume/kong-saxon:3.7.1.1-amd64 .
+	docker buildx build --load --platform=linux/arm64 -t jeromeguillaume/kong-saxon:3.7.1.1-arm64 .
+	
+	# Create directories (and ignore the error if the directories exist)
+	-mkdir so
+	-mkdir so/amd64
+	-mkdir so/arm64
+
+	# Get libsaxon SO (AMD 64)
+	docker rm -f kong-saxon-make-amd64
+	docker create --name kong-saxon-make-amd64 jeromeguillaume/kong-saxon:3.7.1.1-amd64
+	docker cp kong-saxon-make-amd64:/usr/local/lib/libsaxon-4-kong.so ./so/amd64/.
+	docker cp kong-saxon-make-amd64:/usr/local/lib/libsaxon-hec-12.5.0.so ./so/amd64/.
+	
+	# Get libsaxon SO (ARM 64)
+	docker rm -f kong-saxon-make-arm64
+	docker create --name kong-saxon-make-arm64 jeromeguillaume/kong-saxon:3.7.1.1-arm64
+	docker cp kong-saxon-make-arm64:/usr/local/lib/libsaxon-4-kong.so ./so/arm64/.
+	docker cp kong-saxon-make-arm64:/usr/local/lib/libsaxon-hec-12.5.0.so ./so/arm64/.
+	
