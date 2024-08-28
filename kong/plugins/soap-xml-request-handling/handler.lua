@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.0.11",
+    VERSION = "1.0.12",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -10,7 +10,7 @@ local plugin = {
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML request with XSLT (XSLTransformation) after XSD Validation
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------
-function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
+function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSON)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelope_transformed
   local errMessage
@@ -27,7 +27,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
-                                                  errMessage)
+                                                  errMessage,
+                                                  contentTypeJSON)
     end
   end
 
@@ -40,7 +41,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
-                                                    errMessage)
+                                                    errMessage,
+                                                    contentTypeJSON)
     end
   end
 
@@ -59,7 +61,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
-                                                    errMessage)
+                                                    errMessage,
+                                                    contentTypeJSON)
     end
   end
 
@@ -72,7 +75,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
-                                                  errMessage)
+                                                  errMessage,
+                                                  contentTypeJSON)
     end
   end
 
@@ -83,7 +87,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     -- Get Route By XPath and check if the condition is satisfied
     local rcXpath = xmlgeneral.RouteByXPath (kong, soapEnvelope_transformed, 
                                             plugin_conf.RouteXPath, plugin_conf.RouteXPathCondition, plugin_conf.RouteXPathRegisterNs)
-    -- If the condition is statsfied we change the Upstream
+    -- If the condition is statisfied we change the Upstream
     if rcXpath then
       local parse_url = require("socket.url").parse
       local parsed    = parse_url(plugin_conf.RouteToPath)
@@ -128,13 +132,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     end
   end
   
-  -- If there is a JSON <-> XML transformation on the Request: change the 'Content-Type' header of the Request
-  if plugin_conf.xsltLibrary == "saxon" then
-    if plugin_conf.xsltSaxonTransformType == "xml-to-json" then
-      kong.service.request.set_header("Content-Type", xmlgeneral.JsonContentType)
-    elseif plugin_conf.xsltSaxonTransformType == "json-to-xml" then
-      kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
-    end
+  -- If there is a JSON -> XML transformation on the Request: change the 'Content-Type' header of the Request
+  if kong.ctx.shared.xmlSoapSaxon.contentTypeJSON == true then
+    kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
   end
   
   return soapEnvelope_transformed, soapFaultBody
@@ -176,12 +176,15 @@ function plugin:access(plugin_conf)
   
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
- 
+  
+  -- Initialize the Saxon Data
+  xmlgeneral.initializeSaxonData ()
+
   -- Get SOAP envelope from the request
   local soapEnvelope = kong.request.get_raw_body()
 
   -- Handle all SOAP/XML topics of the Request: XSLT before, XSD validation, XSLT After and Routing by XPath
-  local soapEnvelope_transformed, soapFaultBody = plugin:requestSOAPXMLhandling (plugin_conf, soapEnvelope)
+  local soapEnvelope_transformed, soapFaultBody = plugin:requestSOAPXMLhandling (plugin_conf, soapEnvelope, kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
 
   -- If there is an error during SOAP/XML we change the HTTP staus code and
   -- the Body content (with the detailed error message) will be changed by 'body_filter' phase
@@ -199,7 +202,8 @@ function plugin:access(plugin_conf)
       -- Return a Fault code to Client
       return xmlgeneral.returnSoapFault (plugin_conf,
                                         xmlgeneral.HTTPCodeSOAPFault,
-                                        soapFaultBody)
+                                        soapFaultBody,
+                                        kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
   end
 
   -- If the SOAP Body request has been changed (for instance, the XPath Routing alone doesn't change it)
@@ -217,6 +221,9 @@ function plugin:header_filter(plugin_conf)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapFaultBody
 
+  -- If needed: initialize the Saxon Data
+  xmlgeneral.initializeSaxonData ()
+
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --    we don't consider as an error the 'request-termination' plugin (get_source()="exit" and get_status()=200)
   -- we reformat the JSON message to SOAP/XML Fault
@@ -225,10 +232,11 @@ function plugin:header_filter(plugin_conf)
         or 
        kong.response.get_source() == "error") then
     
-    if plugin_conf.xsltSaxonTransformType ~= "json-to-xml" then
+    -- if plugin_conf.xsltSaxonTransformType ~= "json-to-xml" then
+    if kong.ctx.shared.xmlSoapSaxon.contentTypeJSON == false then
       kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
       
-      soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseRequest)
+      soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseRequest, kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
       -- We aren't able to call 'kong.response.set_raw_body()' at this stage to change the body content
       -- but it will be done by 'body_filter' phase
       kong.response.set_header("Content-Length", #soapFaultBody)
@@ -259,7 +267,7 @@ function plugin:body_filter(plugin_conf)
   -- we reformat the JSON message to SOAP/XML Fault
   if  kong.ctx.shared.xmlSoapHandlingFault and 
       kong.ctx.shared.xmlSoapHandlingFault.otherPlugin == true and
-      plugin_conf.xsltSaxonTransformType ~= "json-to-xml" then
+      kong.ctx.shared.xmlSoapSaxon.contentTypeJSON == false   then
       kong.response.set_raw_body(kong.ctx.shared.xmlSoapHandlingFault.soapEnvelope)
   end
 end

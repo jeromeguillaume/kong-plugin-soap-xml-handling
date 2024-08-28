@@ -75,7 +75,8 @@ local HTTP_ERROR_MESSAGES = {
 ---------------------------------
 -- Format the SOAP Fault message
 ---------------------------------
-function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
+function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJSON)
+  local soapErrMsg
   local detailErrMsg
   
   detailErrMsg = ErrEx
@@ -90,14 +91,16 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
       detailErrMsg = detailErrMsg .. additionalErrMsg
     end
   end
-  kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
-  detailErrMsg ="\n      <detail>" .. detailErrMsg .. "</detail>"
-  -- If verbose mode is disabled we don't send the detailed Error Message
-  if not VerboseResponse then
-    detailErrMsg = ""
-  end
-
-  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
+  
+  -- If the Fault Message is SOAP/XML type
+  if contentTypeJSON == false then
+    kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
+    if VerboseResponse then
+      detailErrMsg = "\n      <detail>" .. detailErrMsg .. "</detail>"
+    else
+      detailErrMsg = ''
+    end
+    soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
 <soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\
   <soap:Body>\
     <soap:Fault>\
@@ -107,6 +110,15 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   </soap:Body>\
 </soap:Envelope>\
 "
+  -- else the Fault Message is JSON type
+  else
+    soapErrMsg = {}
+    kong.log.err ("error: '" .. ErrMsg .. "' error_detail: '".. detailErrMsg .. "'")
+    soapErrMsg.error = ErrMsg
+    if VerboseResponse then
+      soapErrMsg.error_detail = detailErrMsg
+    end
+  end
 
   return soapErrMsg
 end
@@ -114,7 +126,7 @@ end
 ----------------------------------------------------
 -- Re-Format a JSON message to a SOAP Fault message
 ----------------------------------------------------
-function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
+function xmlgeneral.reformatJsonToSoapFault(VerboseResponse, contentTypeJSON)
   local soapFaultBody
   
   local msg = HTTP_ERROR_MESSAGES[kong.response.get_status()]
@@ -122,7 +134,7 @@ function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
     msg = "Error"
   end
 
-  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()))
+  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()),contentTypeJSON)
   
   return soapFaultBody
 end
@@ -130,9 +142,32 @@ end
 ---------------------------------------
 -- Return a SOAP Fault to the Consumer
 ---------------------------------------
-function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)  
+function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentTypeJSON) 
+  local contentType
+  if contentTypeJSON == false then
+    contentType = xmlgeneral.XMLContentType
+  else
+    contentType = xmlgeneral.JsonContentType
+  end
   -- Send a Fault code to client
-  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = xmlgeneral.XMLContentType})
+  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentType})
+end
+
+-----------------------------
+-- Initialize the Saxon Data
+-----------------------------
+function xmlgeneral.initializeSaxonData ()
+  -- If the 'kong.ctx.shared.xmlSoapSaxon' is not already created (by the Request plugin)
+  if not kong.ctx.shared.xmlSoapSaxon then
+    kong.ctx.shared.xmlSoapSaxon = {}
+    -- Get the 'Content-Type' to define the type of a potential Error message (sent by the plugin): SOAP/XML or JSON
+    local contentType = kong.request.get_header("Content-Type")
+    if contentType == 'application/json' or contentType == 'application/vnd.api+json' then
+      kong.ctx.shared.xmlSoapSaxon.contentTypeJSON = true
+    else
+      kong.ctx.shared.xmlSoapSaxon.contentTypeJSON = false
+    end
+  end
 end
 
 -------------------------------------------------------------------
