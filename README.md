@@ -732,3 +732,6 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
   - Due to Kong v3.7+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
 - v1.0.11:
   - Add `pongo` tests
+- v1.0.12:
+  - Add `Saxon` XSLT support
+  - Fix a free memory management for libxslt (and avoid `[alert] 1#0: worker process **** exited on signal 11)` during Nginx shutdown)

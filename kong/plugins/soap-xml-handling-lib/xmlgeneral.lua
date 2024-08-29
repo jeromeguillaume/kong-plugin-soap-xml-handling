@@ -87,12 +87,15 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
       ngx_get_phase() == "body_filter"   then
     local status = kong.service.response.get_status()
     if status ~= nil then
-      local additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
-      detailErrMsg = detailErrMsg .. additionalErrMsg
+      local additionalErrMsg = "SOAP/XML Web Service - HTTP code: " .. tostring(status)
+      if detailErrMsg:sub(-1) ~= '.' then
+        detailErrMsg = detailErrMsg .. '.'
+      end
+      detailErrMsg = detailErrMsg .. " " .. additionalErrMsg
     end
   end
   
-  -- If the Fault Message is SOAP/XML type
+  -- If it's a JSON Request then the Fault Message is SOAP/XML text
   if contentTypeJSON == false then
     kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
     if VerboseResponse then
@@ -110,14 +113,16 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
   </soap:Body>\
 </soap:Envelope>\
 "
-  -- else the Fault Message is JSON type
+  -- else the Fault Message is a JSON text
   else
-    soapErrMsg = {}
     kong.log.err ("error: '" .. ErrMsg .. "' error_detail: '".. detailErrMsg .. "'")
-    soapErrMsg.error = ErrMsg
+    soapErrMsg = "{\n    \"error\": \"" .. ErrMsg .. "\""
     if VerboseResponse then
-      soapErrMsg.error_detail = detailErrMsg
+      soapErrMsg = soapErrMsg .. ",\n    \"error_detail\": \"" .. detailErrMsg .. "\""
+    else
+      soapErrMsg = soapErrMsg .. "\n"
     end
+    soapErrMsg = soapErrMsg .. "\n}"
   end
 
   return soapErrMsg
@@ -134,7 +139,7 @@ function xmlgeneral.reformatJsonToSoapFault(VerboseResponse, contentTypeJSON)
     msg = "Error"
   end
 
-  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()),contentTypeJSON)
+  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()), contentTypeJSON)
   
   return soapFaultBody
 end
@@ -153,19 +158,19 @@ function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentTy
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentType})
 end
 
------------------------------
--- Initialize the Saxon Data
------------------------------
-function xmlgeneral.initializeSaxonData ()
-  -- If the 'kong.ctx.shared.xmlSoapSaxon' is not already created (by the Request plugin)
-  if not kong.ctx.shared.xmlSoapSaxon then
-    kong.ctx.shared.xmlSoapSaxon = {}
+-----------------------------------------------------------------------
+-- Initialize the ContentTypeJSON table for keeping the 'Content-Type'
+-----------------------------------------------------------------------
+function xmlgeneral.initializeContentTypeJSON ()
+  -- If the 'kong.ctx.shared.contentTypeJSON' is not already created (by the Request plugin)
+  if not kong.ctx.shared.contentTypeJSON then
+    kong.ctx.shared.contentTypeJSON = {}
     -- Get the 'Content-Type' to define the type of a potential Error message (sent by the plugin): SOAP/XML or JSON
     local contentType = kong.request.get_header("Content-Type")
     if contentType == 'application/json' or contentType == 'application/vnd.api+json' then
-      kong.ctx.shared.xmlSoapSaxon.contentTypeJSON = true
+      kong.ctx.shared.contentTypeJSON.request = true
     else
-      kong.ctx.shared.xmlSoapSaxon.contentTypeJSON = false
+      kong.ctx.shared.contentTypeJSON.request = false
     end
   end
 end
@@ -215,6 +220,15 @@ function xmlgeneral.initializeXmlSoapPlugin ()
     end)
   else
     kong.log.debug ("initializeXmlSoapPlugin: 'libxml2' Error Handler is already initialized => nothing to do")
+  end
+
+  if not kong.xmlSoapLibxsltErrorHandler then
+    kong.log.debug ("initializeXmlSoapPlugin: it's the 1st time the function is called => initialize the 'libxslt' Error Handler")
+    kong.xmlSoapLibxsltErrorHandler = true
+    libxslt.xsltSetGenericErrorFunc()
+
+  else
+    kong.log.debug ("initializeXmlSoapPlugin: 'libxslt' Error Handler is already initialized => nothing to do")
   end
   
   -- Initialize the SOAP/XML context in charge of downloading Asynchronously the XSD content
@@ -385,7 +399,8 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
   if errMessage == nil then
     -- Parse XSLT document
     style = libxslt.xsltParseStylesheetDoc (xslt_doc)
-    if style ~= nil then
+    
+    if style ~= ffi.NULL then
       -- Load the complete XML document (with <soap:Envelope>)
       xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options, verbose)
     else
@@ -397,7 +412,7 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
     local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
-    
+
     if xml_transformed ~= nil then
       -- Dump into a String the canonized image of the XML transformed by XSLT
       xml_transformed_dump, errDump = libxml2ex.xmlC14NDocSaveTo (xml_transformed, nil)

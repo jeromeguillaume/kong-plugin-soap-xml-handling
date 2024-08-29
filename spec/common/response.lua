@@ -114,7 +114,7 @@ response_common.calculator_Response_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -140,7 +140,7 @@ response_common.calculator_Response_XSD_SOAP_invalid_definition_Failed_verbose =
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-      <detail>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': No matching global declaration available for the validation root.. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': No matching global declaration available for the validation root. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -164,7 +164,7 @@ response_common.calculator_Response_XSD_API_invalid_definition_Failed_verbose = 
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-      <detail>Error Node: AddResponse, Error code: 1845, Line: 2, Message: Element '{http://tempuri.org/}AddResponse': No matching global declaration available for the validation root.. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Error Node: AddResponse, Error code: 1845, Line: 2, Message: Element '{http://tempuri.org/}AddResponse': No matching global declaration available for the validation root. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]

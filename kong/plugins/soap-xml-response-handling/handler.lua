@@ -115,8 +115,9 @@ function plugin:access(plugin_conf)
   
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   
-  -- Initialize the Saxon Data
-  xmlgeneral.initializeSaxonData ()
+  -- initialize the ContentTypeJSON table
+  xmlgeneral.initializeContentTypeJSON ()
+  kong.log.notice("Jerome : access | Content-Type=" .. kong.request.get_header("Content-Type"))
 
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
@@ -154,6 +155,10 @@ function plugin:header_filter(plugin_conf)
   local soapDeflated
   local err
   
+  -- If needed: initialize the ContentTypeJSON table
+  xmlgeneral.initializeContentTypeJSON ()
+
+  kong.log.notice("Jerome : header_filter | Content-Type=" .. kong.request.get_header("Content-Type"))
   -- In case of error set by SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
@@ -173,14 +178,19 @@ function plugin:header_filter(plugin_conf)
   -- If there is no XML to JSON transformation (i.e. we have to send a XML message)
   -- we reformat the JSON message to SOAP/XML Fault
   elseif  (kong.response.get_source() == "exit" or 
-          kong.response.get_source()  == "error") and
-          kong.ctx.shared.xmlSoapSaxon.contentTypeJSON == false then
-    kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
-    soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseResponse, kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
-    kong.response.clear_header("Content-Length")
-    kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
+          kong.response.get_source()  == "error") then
+    if kong.ctx.shared.contentTypeJSON.request == true then
+      kong.log.debug("A pending error has been set by other plugin or by the Service itself")
+      kong.response.set_header("Content-Type", xmlgeneral.JsonContentType)
+      return
+    else
+      kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
+      soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseResponse, kong.ctx.shared.contentTypeJSON.request)
+      kong.response.clear_header("Content-Length")
+      kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
+    end
   else
-    -- Get SOAP Envolope from the Body
+    -- Get SOAP Envelope from the Body
     soapEnvelope = kong.service.response.get_raw_body()
     -- There is no SOAP envelope (or Body content) so we don't do anything
     if not soapEnvelope then
@@ -199,7 +209,7 @@ function plugin:header_filter(plugin_conf)
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                     xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                     err,
-                                                    kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
+                                                    kong.ctx.shared.contentTypeJSON.request)
       else
         soapEnvelope = soapDeflated
       end
@@ -209,19 +219,19 @@ function plugin:header_filter(plugin_conf)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   err,
-                                                  kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
+                                                  kong.ctx.shared.contentTypeJSON.request)
     end
   end
   
   -- If there is a XML -> JSON transformation on the Response: change the 'Content-Type' header of the Response
-  if kong.ctx.shared.xmlSoapSaxon.contentTypeJSON == true then
+  if kong.ctx.shared.contentTypeJSON.request == true then
     kong.response.set_header("Content-Type", xmlgeneral.JsonContentType)
   end
 
   -- If there is no error
   if soapFaultBody == nil then
     -- Handle all SOAP/XML topics of the Response: XSLT before, XSD validation and XSLT After
-    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope, kong.ctx.shared.xmlSoapSaxon.contentTypeJSON)
+    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope, kong.ctx.shared.contentTypeJSON.request)
   end
   
   -- If there is an error during SOAP/XML we change the HTTP staus code and

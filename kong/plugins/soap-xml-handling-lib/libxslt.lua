@@ -15,6 +15,10 @@ function libxslt.xsltParseStylesheetDoc (styledoc)
     
     if style == ffi.NULL then
       kong.log.err("xsltParseStylesheetDoc returns null")
+    else
+      if style.compCtxt == ffi.NULL then
+        kong.log.err("xsltParseStylesheetDoc style.compCtxt is null")
+      end
     end
     -- No need to free memory, it's already done (and it avoids the msg 'free(): double free detected in tcache 2')
     -- return ffi.gc(style, xslt.xsltFreeStylesheet)
@@ -82,6 +86,24 @@ function libxslt.xsltApplyStylesheetUser(stylesheet, doc, params)
     end
     ffi.gc(result, xml2.xmlFreeDoc)
 
+end
+
+function libxslt.xsltSetGenericErrorFunc ()
+  xslt.xsltSetGenericErrorFunc (nil, function(ctx, msg)
+    -- The callback function can be called two times in a row
+    -- 1st time: initial message (like: "Start tag expected, '<' not found")
+    local errMsg = ffi.string(msg)
+    kong.log.notice("Jerome ** xsltSetGenericErrorFunc | msg: " .. errMsg)
+    --kong.log.notice("Jerome ** xsltSetGenericErrorFunc | before ctx")
+    --kong.log.notice("Jerome ** xsltSetGenericErrorFunc | ctx=" .. ctx)
+    
+    if kong.ctx.shared.xmlSoapErrMessage == nil then
+      kong.ctx.shared.xmlSoapErrMessage = errMsg
+    -- 2nd time: cascading error message (like: "Failed to parse the XML resource", because the '<' not found in XSD")
+    else
+      kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '. ' .. errMsg
+    end
+  end)
 end
 
 return libxslt

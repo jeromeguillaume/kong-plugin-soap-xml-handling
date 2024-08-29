@@ -430,7 +430,7 @@ function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodeSet)
     end
     -- free Buffer
     xml2.xmlBufferFree(xmlBuffer)
-    xml2.xmlOutputBufferClose(output_buffer)
+    -- The 'output_buffer' is freed by a ffi.gc configured in 'xmlOutputBufferCreate' function
   else
     kong.log.err("Error calling 'xmlBufferCreate'")
   end

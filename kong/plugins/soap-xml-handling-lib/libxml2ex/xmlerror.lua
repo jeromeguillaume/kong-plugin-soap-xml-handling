@@ -1,6 +1,7 @@
 local ffi = require("ffi")
 
 ffi.cdef[[
+typedef xmlError * xmlErrorPtr;
 xmlErrorPtr             xmlGetLastError		        (void);
 void	                xmlResetLastError		    (void);
 typedef void            xmlStructuredErrorFunc      (void* userData, xmlErrorPtr error);
