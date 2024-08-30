@@ -239,11 +239,13 @@ end
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
 -- ctxt:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
-function libxml2ex.xmlSchemaParse (xsd_context, verbose)
-    
+function libxml2ex.xmlSchemaParse (xsd_context, verbose) 
+    -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+    jit.off()
+
     kong.ctx.shared.xmlSoapErrMessage = nil
 
-    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapErrorHandler)
+    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
     
     if xsd_schema_doc == ffi.NULL then
@@ -276,8 +278,12 @@ end
 -- Returns:	the resulting document tree
 function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
   
+  -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+  jit.off()
+
   kong.ctx.shared.xmlSoapErrMessage = nil
-  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
+  
+  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
   
   if xml_doc == ffi.NULL then
@@ -295,10 +301,12 @@ end
 -- doc:	a parsed document tree
 -- Returns:	0 if the document is schemas valid, a positive error code number otherwise and -1 in case of internal or API error.
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
-  
+  -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+  jit.off()
+
   kong.ctx.shared.xmlSoapErrMessage = nil
 
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
@@ -308,11 +316,13 @@ end
 -- ctxt:	a schema validation context
 -- elem:	an element node
 -- Returns:	0 if the element and its subtree is valid, a positive error code number otherwise and -1 in case of an internal or API error.
-function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
-  
+function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)  
+  -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+  jit.off()
+
   kong.ctx.shared.xmlSoapErrMessage = nil
 
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end

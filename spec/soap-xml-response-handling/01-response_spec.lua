@@ -66,6 +66,14 @@ for _, strategy in helpers.all_strategies() do
 				response_common._5_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (assert, client)
 			end)
 
+			it("5|XSLT (BEFORE XSD) - XSLT 2.0 input - Not supported by libxslt", function()
+				response_common._5_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported (assert, client)
+			end)
+			
+			it("5|XSLT (BEFORE XSD) - XSLT 2.0 input - Not supported by libxslt with Verbose", function()
+				response_common._5_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Verbose (assert, client)
+			end)
+
       it ("5|XSLT (BEFORE XSD) - 'gzip' Content-encoding - Ok", function()
 				response_common._5_XSLT_BEFORE_XSD_gzip_Content_Encoding_Ok (assert, client)
 			end)

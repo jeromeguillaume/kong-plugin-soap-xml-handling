@@ -95,6 +95,18 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <detail>compilation error. xsl:version: only 1.1 features are supported</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
 request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -442,6 +454,35 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 				xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				</xsl:stylesheet>
 			]]
+		}	
+	}
+
+	local calculatorXSLT_beforeXSD_xslt2_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_xslt2" }
+	}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_beforeXSD_xslt2_route,
+		-- XSLT 2.0 (or more) not supported by libxslt
+		config = {
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = [[<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn"> <xsl:output method="xml" indent="yes"/> <xsl:template name="main"> <xsl:param name="request-body" required="yes"/> <xsl:variable name="json" select="fn:json-to-xml($request-body)"/> <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"> <soap12:Body> <CelsiusToFahrenheit xmlns="https://www.w3schools.com/xml/"> <Celsius><xsl:value-of select="$json/map/number[@key='degree-celsius']"/></Celsius> </CelsiusToFahrenheit> </soap12:Body> </soap12:Envelope> </xsl:template> </xsl:stylesheet>]]
+		}	
+	}
+	
+	local calculatorXSLT_beforeXSD_xslt2_verbose_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_xslt2_verbose" }
+	}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_beforeXSD_xslt2_verbose_route,
+		-- XSLT 2.0 (or more) not supported by libxslt
+		config = {
+			VerboseRequest = true,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = [[<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn"> <xsl:output method="xml" indent="yes"/> <xsl:template name="main"> <xsl:param name="request-body" required="yes"/> <xsl:variable name="json" select="fn:json-to-xml($request-body)"/> <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"> <soap12:Body> <CelsiusToFahrenheit xmlns="https://www.w3schools.com/xml/"> <Celsius><xsl:value-of select="$json/map/number[@key='degree-celsius']"/></Celsius> </CelsiusToFahrenheit> </soap12:Body> </soap12:Envelope> </xsl:template> </xsl:stylesheet>]]
 		}	
 	}
 
@@ -860,6 +901,38 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_with_Verbose (assert, cl
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
+end
+
+function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported(assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_beforeXSD_xslt2", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed, body)
+end
+
+function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Verbose(assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_beforeXSD_xslt2_verbose", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose, body)
 end
 
 function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_request_termination_plugin_200 (assert, client)

@@ -734,4 +734,7 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
   - Add `pongo` tests
 - v1.0.12:
   - Add `Saxon` XSLT support
-  - Fix a free memory management for libxslt (and avoid `[alert] 1#0: worker process **** exited on signal 11)` during Nginx shutdown)
+  - Fix a free memory management for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11)` during Nginx shutdown)
+  - Add an `Error Handler` for `libxslt` for detecting correctly unsupported XLST 2/3
+  - Add `jit.off()` for avoiding `nginx: lua atpanic: Lua VM crashed, reason: bad callback`
+    
