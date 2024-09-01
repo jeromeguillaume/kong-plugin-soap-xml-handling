@@ -702,7 +702,7 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 
 ### Example #11: Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library: JSON to SOAP/XML transformation
 Call the `calculator` web service by sending a JSON request.
-The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 trasformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the SOAP/XML response to JSON.
+The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the SOAP/XML response to JSON.
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
@@ -737,7 +737,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 - `XsltLibrary` property with the value `saxon`
 - `XsltTransformAfter` property with this `XSLT 3.0` definition:
 ```xml
-<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xpath-default-namespace="http://tempuri.org/" exclude-result-prefixes="fn">
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xpath-default-namespace="http://tempuri.org/" exclude-result-prefixes="fn">
   <xsl:mode on-no-match="shallow-skip"/>
   <xsl:output method="text"/>
   
