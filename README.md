@@ -741,7 +741,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
   <xsl:mode on-no-match="shallow-skip"/>
   <xsl:output method="text"/>
   
-  <xsl:template match="/soap:Envelope/soap:Body/AddResponse/AddResult">
+  <xsl:template match="/soap:Envelope/soap:Body/*[ends-with(name(), 'Response')]/*[ends-with(name(), 'Result')]">
     <xsl:variable name="json-result">
       <map xmlns="http://www.w3.org/2005/xpath-functions">
         <number key="result">
