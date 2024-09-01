@@ -86,6 +86,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
   if detailErrMsg:sub(-1) == '\n' then
     detailErrMsg = string.sub(detailErrMsg, 1, -2)
   end
+
   -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
   local ngx_get_phase = ngx.get_phase
   if  ngx_get_phase() == "response"      or 
@@ -122,6 +123,8 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
 "
   -- Else the Fault Message is a JSON text
   else
+    -- Replace " by '
+    detailErrMsg = string.gsub(detailErrMsg, "\"", "'")
     kong.log.err ("message: '" .. ErrMsg .. "' message_verbose: '".. detailErrMsg .. "'")
     soapErrMsg = "{\n    \"message\": \"" .. ErrMsg .. "\""
     if VerboseResponse then
@@ -217,8 +220,6 @@ function xmlgeneral.initializeXmlSoapPlugin ()
   if not kong.xmlSoapLibxmlErrorHandler then
     kong.log.debug ("initializeXmlSoapPlugin: it's the 1st time the function is called => initialize the 'libxml2' Error Handler")
     kong.xmlSoapLibxmlErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
-      -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
-      jit.off()
       -- The callback function can be called two times in a row
       -- 1st time: initial message (like: "Start tag expected, '<' not found")
       if kong.ctx.shared.xmlSoapErrMessage == nil then
@@ -235,13 +236,12 @@ function xmlgeneral.initializeXmlSoapPlugin ()
   -- LIBXSLT Error Handler
   if not kong.xmlSoapLibxsltErrorHandler then
     kong.log.debug ("initializeXmlSoapPlugin: it's the 1st time the function is called => initialize the 'libxslt' Error Handler")
-    -- LuaJit's FFI cannot manage a variable number of arguments of C function
-    -- There is up to 6 variables in function(ctx, msg, type, file, line, name);
+    -- LuaJit's FFI cannot manage a variable number of arguments of C function and
+    -- there is up to 6 variables in the callback function(ctx, msg, type, file, line, name)
+    -- Only 'ctx', 'msg', 'type' are set on each call; so we remove the others ('file', 'line', 'name')
     -- See: https://android.googlesource.com/platform/external/libxslt/+/7d1dabff1598661db0018d89d16cca02f7c31ae2/libxslt/xsltutils.c#650
     --      https://luajit.org/ext_ffi_semantics.html#callback
     xslt.xsltSetGenericErrorFunc (nil, function(ctx, msg, type)
-      -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
-      jit.off()
       -- The callback function can be called two times in a row
       if kong.ctx.shared.xmlSoapErrMessage == nil then
         kong.ctx.shared.xmlSoapErrMessage = ffi.string(type)

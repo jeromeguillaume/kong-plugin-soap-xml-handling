@@ -1,5 +1,6 @@
 kong/plugins/.DS_Store
 .DS_Store
+kong/saxon/notes.txt
 .pongo/
 servroot/
 .busted

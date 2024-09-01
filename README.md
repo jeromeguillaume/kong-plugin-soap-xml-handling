@@ -333,6 +333,7 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `RouteXPathCondition` property with the value `5`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
 - `XsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
+
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -699,6 +700,72 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 ```
 4) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
+### Example #11: Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library: JSON to SOAP/XML transformation
+Call the `calculator` web service by sending a JSON request.
+The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 trasformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the SOAP/XML response to JSON.
+1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseRequest` enabled
+- `XsltLibrary` property with the value `saxon`
+- `XsltSaxonTemplate` property with the value `main`
+- `XsltSaxonTemplateParam` property with the value `request-body`
+- `XsltTransformBefore` property with this `XSLT 3.0` definition:
+```xml
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
+  <xsl:output method="xml" indent="yes"/>
+  <xsl:template name="main">
+    <xsl:param name="request-body" required="yes"/>
+    <xsl:variable name="json" select="fn:json-to-xml($request-body)"/>    
+    <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+      <soap:Body>
+        <xsl:variable name="operation" select="$json/map/string[@key='operation']"/>    
+        <xsl:element name="{$operation}" xmlns="http://tempuri.org/">
+          <intA>
+            <xsl:value-of select="$json/map/number[@key='intA']"/>
+          </intA>
+          <intB>
+            <xsl:value-of select="$json/map/number[@key='intB']"/>
+          </intB>              
+        </xsl:element>
+      </soap:Body>
+    </soap:Envelope>
+  </xsl:template>
+</xsl:stylesheet>
+```
+3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseResponse` enabled
+- `XsltLibrary` property with the value `saxon`
+- `XsltTransformAfter` property with this `XSLT 3.0` definition:
+```xml
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xpath-default-namespace="http://tempuri.org/" exclude-result-prefixes="fn">
+  <xsl:mode on-no-match="shallow-skip"/>
+  <xsl:output method="text"/>
+  
+  <xsl:template match="/soap:Envelope/soap:Body/AddResponse/AddResult">
+    <xsl:variable name="json-result">
+      <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <number key="result">
+          <xsl:value-of select="text()"/>
+        </number>
+      </map>
+    </xsl:variable>
+    <xsl:value-of select="fn:xml-to-json($json-result)"/>
+  </xsl:template>
+</xsl:stylesheet>
+```
+4) Call the `calculator` through the Kong Gateway Route and with a JSON request
+```sh
+http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
+```
+
+The expected JSON response is `60`:
+```
+```
+You can change operation to following values:
+- `Subtract`
+- `Divide`
+- `Multiply`
+
 ## Changelog
 - v1.0.0:
   - Initial Release
@@ -733,8 +800,8 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 - v1.0.11:
   - Add `pongo` tests
 - v1.0.12:
-  - Add `Saxon` XSLT support
+  - Add `saxon` library for supporting XSLT 2.0 or 3.0
   - Fix a free memory management for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11)` during Nginx shutdown)
-  - Add an `Error Handler` for `libxslt` for detecting correctly unsupported XLST 2/3
-  - Add `jit.off()` for avoiding `nginx: lua atpanic: Lua VM crashed, reason: bad callback`
+  - Add an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2/3
+  - Add `jit.off()` for avoiding `nginx: lua atpanic: Lua VM crashed, reason: bad callback` (`libxml`)
     

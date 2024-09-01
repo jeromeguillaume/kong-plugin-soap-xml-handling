@@ -35,7 +35,8 @@ for _, strategy in helpers.all_strategies() do
 
     -- a nested describe defines an actual test on the plugin behavior
     describe("libxml+libxslt |", function()
-			lazy_setup(function()
+			
+			lazy_setup(function()			
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
         -- This function also truncates any existing data in an existing db.
@@ -51,8 +52,7 @@ for _, strategy in helpers.all_strategies() do
 					-- make sure our plugin gets loaded
 					plugins = "bundled," .. PLUGIN_NAME
 				}))
-				
-
+		
     	end)
 			it ("1|XSLT (BEFORE XSD) - Valid transformation", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
@@ -165,9 +165,8 @@ for _, strategy in helpers.all_strategies() do
 			it("2|WSDL Validation with import no download - Ok", function()
 				request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)
 			end)
-
-  	end)
-
+		end)
+		
 	end)
  ::continue::
 
