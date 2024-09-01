@@ -759,7 +759,10 @@ http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```
 
 The expected JSON response is `60`:
-```
+```json
+{
+    "result": 60
+}
 ```
 You can change operation to following values:
 - `Subtract`
