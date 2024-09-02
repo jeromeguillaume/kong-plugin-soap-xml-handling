@@ -51,12 +51,15 @@ make
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
-2) Run `Kong` with `Saxon` in Docker with the customized image: `jeromeguillaume/kong-saxon`
+2) Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
+- Docker
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
 ...
 jeromeguillaume/kong-saxon:3.7.1.1
 ```
+- Kubernetes
+See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set `imagerepository` to `jeromeguillaume/kong-saxon:3.7.1.1`
 
 3) Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
