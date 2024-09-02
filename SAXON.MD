@@ -28,15 +28,15 @@ make
 
 ## Run Kong with Saxon
 1) Run Saxon locally with Docker and the official image: `kong/kong-gateway`
-    - Include in your `docker run` command:
-      ```sh
-      docker run -d --name kong-gateway-soap-xml-handling \
-      ...
-      --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
-      -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
-      kong/kong-gateway:3.7.1.1
-      ```
-    - Full example here: [./start-kong.sh](start-kong.sh)
+- Include in your `docker run` command:
+  ```sh
+  docker run -d --name kong-gateway-soap-xml-handling \
+  ...
+  --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
+  -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
+  kong/kong-gateway:3.7.1.1
+  ```
+- Full example here: [./start-kong.sh](start-kong.sh)
 
 2) Run Saxon with the customized Docker image: `jeromeguillaume/kong-saxon`
   ```sh
