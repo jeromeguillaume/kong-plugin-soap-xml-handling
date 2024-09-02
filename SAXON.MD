@@ -25,11 +25,11 @@ cd saxon
   ```sh
   make local_lib_amd64
   ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and includes the `saxon` libraries
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
 ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and includes the `saxon` libraries
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_docker_hub
 ```
