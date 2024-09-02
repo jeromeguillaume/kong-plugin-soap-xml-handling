@@ -2,11 +2,11 @@
 
 ## Prerequisite: download the SaxonC-HE v12 - Zip package
 - Linux AArch64
-https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip
+[https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip)
 - Linux Intel x86_64
-https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip
+[https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip)
 - General download page
-https://www.saxonica.com/html/download/c.html
+[https://www.saxonica.com/html/download/c.html](https://www.saxonica.com/html/download/c.html)
 
 ## Build the C library (`libsaxon-4-kong.so`) and the Docker images
 - Build all
@@ -46,6 +46,7 @@ jeromeguillaume/kong-saxon:3.7.1.1
 ```
 
 3) Run `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
+- See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
 - Prepare a `values.yaml`
 ```yaml
 image:
@@ -68,7 +69,7 @@ plugins:
     - name: libxslt
       path: libxslt
 ...
-# *** Specific properties for Kong with Saxon ***
+# *** Specific properties for Saxon ***
 customEnv:
   LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
 
@@ -91,4 +92,4 @@ deployment:
 ```sh
 helm install my-kong kong/kong -n kong --values ./valuess.yaml
 ```
-For Kubernetes: the `initContainer` is the preferred method instead of using the customized image (`jeromeguillaume/kong-saxon`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doens't have to be rebuilt for each new release of `kong/kong-gateway`.
+For Kubernetes: **the `initContainer` is the preferred method** instead of using the customized image (`jeromeguillaume/kong-saxon`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doens't have to be rebuilt for each new release of `kong/kong-gateway`.
