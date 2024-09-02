@@ -36,7 +36,7 @@ make
   -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
   kong/kong-gateway:3.7.1.1
   ```
-- Full example here: [./start-kong.sh](start-kong.sh)
+- Full example here: [start-kong.sh](start-kong.sh)
 
 2) Run Saxon with the customized Docker image: `jeromeguillaume/kong-saxon`
   ```sh
