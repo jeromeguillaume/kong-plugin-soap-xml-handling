@@ -1,0 +1,15 @@
+FROM kong/kong-gateway:3.7.1.1 as base
+
+#########################
+# AMD64
+#########################
+FROM --platform=linux/amd64 base as build_amd64
+COPY ../so/amd64 /usr/local/lib/kongsaxon
+
+#########################
+# ARM64
+#########################
+FROM --platform=linux/arm64 base as build_arm64
+COPY ../so/arm64 /usr/local/lib/kongsaxon
+
+ENV LD_LIBRARY_PATH=/usr/local/lib/kongsaxon

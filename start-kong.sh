@@ -35,6 +35,8 @@ docker run -d --name kong-gateway-soap-xml-handling \
 --platform linux/$ARCHITECTURE \
 kong/kong-gateway:3.7.1.1
 
+#jeromeguillaume/kong-saxon:3.7.1.1
+
 #kong-saxon:3.6.1.3
 #kong/kong-gateway:3.6.1.3
 # -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \

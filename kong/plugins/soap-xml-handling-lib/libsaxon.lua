@@ -93,7 +93,7 @@ end
 -----------------------------
 function libsaxon.createXslt30ProcessorKong(saxonProcessor)
   local xslt30Processor
-  local err = "Unable to initialize the XSLT 3.0 Processor"
+  local err = "Unable to initialize the Saxon XSLT Processor"
   if saxonClib and saxonProcessor ~= ffi.NULL then
     -- Initialize the XSLT 3.0 Processor
     xslt30Processor = saxonClib.createXslt30ProcessorKong (saxonProcessor)
