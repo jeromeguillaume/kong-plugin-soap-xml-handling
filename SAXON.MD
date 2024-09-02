@@ -23,7 +23,7 @@ make
   ```
   - `amd64`
   ```sh
-  make local_lib_arm64
+  make local_lib_amd64
   ```
 
 ## Run Kong with Saxon
