@@ -9,14 +9,11 @@
 [https://www.saxonica.com/html/download/c.html](https://www.saxonica.com/html/download/c.html)
 
 ## Build the C library (`libsaxon-4-kong.so`) and the Docker images
-- Build all
-
-It pushes on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and includes the `saxon` libraries.
+- Prerequisite
 ```sh
 cd saxon
-make
 ```
-- Build only the `Saxon` libraries for Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
+- Build and Extract the `saxon` libraries for Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
   - `arm64`
   ```sh
   make local_lib_arm64
@@ -25,6 +22,19 @@ make
   ```sh
   make local_lib_amd64
   ```
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and includes the `saxon` libraries.
+```sh
+make kong_saxon_initcontainer_docker_hub
+```
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and includes the `saxon` libraries.
+```sh
+make kong_saxon_docker_hub
+```
+- Build all
+```sh
+cd saxon
+make
+```
 
 ## Run Kong with Saxon
 1) Run `Saxon` in Docker and the official image: `kong/kong-gateway`
