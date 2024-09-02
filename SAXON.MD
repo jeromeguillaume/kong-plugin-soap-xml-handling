@@ -16,7 +16,7 @@
 ```sh
 cd saxon
 ```
-- Build and Extract the `saxon` libraries for Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
+- Extract and Build the `saxon` libraries for Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
   - `arm64`
   ```sh
   make local_lib_arm64
