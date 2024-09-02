@@ -8,7 +8,7 @@ https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zi
 - General download page
 https://www.saxonica.com/html/download/c.html
 
-## Build the C library (`libsaxon-4-kong.so`) and the Docker image
+## Build the C library (`libsaxon-4-kong.so`) and the Docker images
 - Build all
 
 It pushes on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and includes the `saxon` libraries.
@@ -16,7 +16,7 @@ It pushes on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kon
 cd saxon
 make
 ```
-- Build the libraries for local Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
+- Build only the `Saxon` libraries for local Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
   - `arm64`
   ```sh
   make local_lib_arm64
