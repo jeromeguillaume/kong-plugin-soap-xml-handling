@@ -181,7 +181,7 @@ The expected result is `12`:
 ```
 
 ## How to configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
-1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and a related Ingress kind:
+1) Configure a Kubernetes `External Service` (to http://www.dneonline.com:80/calculator.asmx) with [kic/extService-Calculator-Ingress.yaml](kic/extService-Calculator-Ingress.yaml) and a related `Ingress` kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
@@ -690,7 +690,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
-2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
+2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file ([kic/kongPlugin-SOAP-XML-request.yaml](kic/kongPlugin-SOAP-XML-request.yaml)) is already configured in regards of `example #10-a`: `wsdl` in `XsdApiSchema` and `XSD` import in `xsdApiSchemaInclude`
 ```sh
 kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```
