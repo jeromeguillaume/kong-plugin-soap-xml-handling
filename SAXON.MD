@@ -8,7 +8,10 @@
 - General download page:
 [https://www.saxonica.com/html/download/c.html](https://www.saxonica.com/html/download/c.html)
 
-## Build the C library (`libsaxon-4-kong.so`) and the Docker images
+## Extract/Build the `Saxon` Shared Objects and the Docker images
+- The `Saxon - Kong` integration requires 2 Shared Objects that are extracted and built with the `make` command
+  - `libsaxon-hec-12.5.0.so`: C++ shared object extracted from `libsaxon-HEC-linux-<arch>-v12.5.0.zip`
+  - `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
 - Prerequisite
 ```sh
 cd saxon
@@ -22,11 +25,11 @@ cd saxon
   ```sh
   make local_lib_amd64
   ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and includes the `saxon` libraries.
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
 ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and includes the `saxon` libraries.
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and includes the `saxon` libraries
 ```sh
 make kong_saxon_docker_hub
 ```
@@ -57,7 +60,7 @@ jeromeguillaume/kong-saxon:3.7.1.1
 
 3) Run `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
-- Prepare a `values.yaml`
+- Prepare a `values.yaml`. Pay attention to `customEnv.LD_LIBRARY_PATH`, `deployment.initContainers`
 ```yaml
 image:
   repository: kong/kong-gateway
