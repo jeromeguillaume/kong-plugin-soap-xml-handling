@@ -753,7 +753,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
   </xsl:template>
 </xsl:stylesheet>
 ```
-4) Call the `calculator` through the Kong Gateway Route and with a JSON request
+4) Call the `calculator` through the Kong Gateway Route,  with a JSON request and by setting the operation to `Add`
 ```sh
 http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```
