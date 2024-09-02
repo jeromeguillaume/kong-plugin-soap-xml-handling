@@ -1,0 +1,70 @@
+image:
+  repository: kong/kong-gateway
+  tag: "3.7.0.0"
+
+secretVolumes:
+- kong-cluster-cert
+
+admin:
+  enabled: false
+
+env:
+  role: data_plane
+  database: "off"
+  cluster_mtls: pki
+  cluster_control_plane: 179cd6a456.eu.cp0.konghq.com:443
+  cluster_server_name: 179cd6a456.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: 179cd6a456.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: 179cd6a456.eu.tp0.konghq.com
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+  lua_ssl_trusted_certificate: system
+  konnect_mode: "on"
+  vitals: "off"
+  nginx_worker_processes: "4"
+  upstream_keepalive_max_requests: "100000"
+  nginx_http_keepalive_requests: "100000"
+  proxy_access_log: "off"
+  dns_stale_ttl: "3600"
+  plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
+
+plugins:
+  configMaps:
+  - pluginName: soap-xml-request-handling
+    name: soap-xml-request-handling
+  - pluginName: soap-xml-response-handling
+    name: soap-xml-response-handling
+  - pluginName: soap-xml-handling-lib
+    name: soap-xml-handling-lib
+    subdirectories:
+    - name: libxml2ex
+      path: libxml2ex
+    - name: libxslt
+      path: libxslt
+
+customEnv:
+  LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
+
+deployment:
+  initContainers:
+  - name: kongsaxon
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0
+    command: ["/bin/sh", "-c", "cp /kongsaxon/* /usr/local/lib/kongsaxon"]
+    volumeMounts:
+    - name: kongsaxon-vol
+      mountPath: /usr/local/lib/kongsaxon
+  userDefinedVolumes:
+  - name: kongsaxon-vol
+    emptyDir: {}
+  userDefinedVolumeMounts:
+  - name: kongsaxon-vol
+    mountPath: /usr/local/lib/kongsaxon
+
+ingressController:
+  enabled: false
+  installCRDs: false
+
+resources:
+  requests:
+    cpu: 1
+    memory: "2Gi"

@@ -16,7 +16,7 @@ It pushes on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kon
 cd saxon
 make
 ```
-- Build only the `Saxon` libraries for local Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
+- Build only the `Saxon` libraries for Docker test. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
   - `arm64`
   ```sh
   make local_lib_arm64
@@ -27,7 +27,7 @@ make
   ```
 
 ## Run Kong with Saxon
-1) Run `Saxon` locally with Docker and the official image: `kong/kong-gateway`
+1) Run `Saxon` in Docker and the official image: `kong/kong-gateway`
 - Include in your `docker run` command:
   ```sh
   docker run -d --name kong-gateway-soap-xml-handling \
@@ -38,9 +38,57 @@ make
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
-2) Run Saxon with the customized Docker image: `jeromeguillaume/kong-saxon`
-  ```sh
-  docker run -d --name kong-gateway-soap-xml-handling \
+2) Run `Saxon` in Docker with the customized image: `jeromeguillaume/kong-saxon`
+```sh
+docker run -d --name kong-gateway-soap-xml-handling \
+...
+jeromeguillaume/kong-saxon:3.7.1.1
+```
+
+3) Run `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
+- Prepare a `values.yaml`
+```yaml
+image:
+  repository: kong/kong-gateway
   ...
-  jeromeguillaume/kong-saxon:3.7.1.1
-  ```
+env:
+  plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
+...
+plugins:
+  configMaps:
+  - pluginName: soap-xml-request-handling
+    name: soap-xml-request-handling
+  - pluginName: soap-xml-response-handling
+    name: soap-xml-response-handling
+  - pluginName: soap-xml-handling-lib
+    name: soap-xml-handling-lib
+    subdirectories:
+    - name: libxml2ex
+      path: libxml2ex
+    - name: libxslt
+      path: libxslt
+...
+# *** Specific properties for Kong with Saxon ***
+customEnv:
+  LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
+
+deployment:
+  initContainers:
+  - name: kongsaxon
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0
+    command: ["/bin/sh", "-c", "cp /kongsaxon/* /usr/local/lib/kongsaxon"]
+    volumeMounts:
+    - name: kongsaxon-vol
+      mountPath: /usr/local/lib/kongsaxon
+  userDefinedVolumes:
+  - name: kongsaxon-vol
+    emptyDir: {}
+  userDefinedVolumeMounts:
+  - name: kongsaxon-vol
+    mountPath: /usr/local/lib/kongsaxon
+```
+- Execute the Helm command
+```sh
+helm install my-kong kong/kong -n kong --values ./valuess.yaml
+```
+For Kubernetes: the `initContainer` is the preferred method instead of using the customized image (`jeromeguillaume/kong-saxon`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doens't have to be rebuilt for each new release of `kong/kong-gateway`.
