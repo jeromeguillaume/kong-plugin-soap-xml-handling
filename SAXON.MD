@@ -40,7 +40,7 @@ make
 ```
 
 ## Run Kong with Saxon
-1) Run `Kong` with `Saxon` in Docker with image: `kong/kong-gateway`
+1) Run `Kong` with `Saxon` in Docker with the standard image: `kong/kong-gateway`
 - Include in your `docker run` command:
   ```sh
   docker run -d --name kong-gateway-soap-xml-handling \
