@@ -1,11 +1,11 @@
 # Saxon and Kong
 
 ## Prerequisite: download the SaxonC-HE v12 - Zip package
-- Linux AArch64
+- Linux AArch64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip)
-- Linux Intel x86_64
+- Linux Intel x86_64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip)
-- General download page
+- General download page:
 [https://www.saxonica.com/html/download/c.html](https://www.saxonica.com/html/download/c.html)
 
 ## Build the C library (`libsaxon-4-kong.so`) and the Docker images
