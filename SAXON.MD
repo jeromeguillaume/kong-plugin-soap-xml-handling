@@ -10,8 +10,8 @@
 
 ## Extract/Build the `Saxon` Shared Objects and the Docker images
 - The `Saxon - Kong` integration requires 2 Shared Objects that are extracted and built with the `make` command:
-  1) `libsaxon-hec-12.5.0.so`: C++ shared object extracted from `libsaxon-HEC-linux-<arch>-v12.5.0.zip`
-  2) `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
+  - `libsaxon-hec-12.5.0.so`: C++ shared object extracted from `libsaxon-HEC-linux-<arch>-v12.5.0.zip`
+  - `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
 - Prerequisite
 ```sh
 cd saxon
