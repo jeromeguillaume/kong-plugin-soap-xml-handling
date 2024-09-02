@@ -27,7 +27,7 @@ make
   ```
 
 ## Run Kong with Saxon
-1) Run Saxon locally with Docker and the official image: `kong/kong-gateway`
+1) Run `Saxon` locally with Docker and the official image: `kong/kong-gateway`
 - Include in your `docker run` command:
   ```sh
   docker run -d --name kong-gateway-soap-xml-handling \
