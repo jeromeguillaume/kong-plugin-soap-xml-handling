@@ -8,7 +8,7 @@ https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zi
 - General download page
 https://www.saxonica.com/html/download/c.html
 
-## Build the binary and the Docker image
+## Build the C library (`libsaxon-4-kong.so`) and the Docker image
 - Build all
 
 It pushes on Docker Hub a `jeromeguillaume/kong-saxon` image; it's based on `kong/kong-gateway` and includes the `saxon` libraries.
@@ -27,7 +27,7 @@ make
   ```
 
 ## Run Kong with Saxon
-1) Run locally with Docker and the official `kong/kong-gateway` image
+1) Run Saxon locally with Docker and the official image: `kong/kong-gateway`
     - Include in your `docker run` command:
       ```sh
       docker run -d --name kong-gateway-soap-xml-handling \
@@ -38,7 +38,7 @@ make
       ```
     - Full example here: [./start-kong.sh](start-kong.sh)
 
-2) Run with the customized Docker image: `jeromeguillaume/kong-saxon`
+2) Run Saxon with the customized Docker image: `jeromeguillaume/kong-saxon`
   ```sh
   docker run -d --name kong-gateway-soap-xml-handling \
   ...
