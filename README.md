@@ -51,10 +51,10 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
 
-2) Create and prepare a PostgreDB called ```kong-gateway-soap-xml-handling```.
+2) Create and prepare a PostgreDB called `kong-gateway-soap-xml-handling`.
 [See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database)
 
-3) Provision a license of Kong Enterprise Edition and put the content in ```KONG_LICENSE_DATA``` environment variable. The following license is only an example. You must use the following format, but provide your own content
+3) Provision a license of Kong Enterprise Edition and put the content in `KONG_LICENSE_DATA` environment variable. The following license is only an example. You must use the following format, but provide your own content
 ```sh
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
@@ -686,7 +686,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 ```
   - Note: `xsdApiSchemaInclude` is type of `map`. You can add all the `XSD` entries required. There is no limit of XSD files.
 
-3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
+3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of [Use case #9](#example-9-request--wsdl-validation-use-a-wsdl-definition-that-imports-an-xsd-schema-from-an-external-entity-ie-https)
 
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition that imports an XSD schema with Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
