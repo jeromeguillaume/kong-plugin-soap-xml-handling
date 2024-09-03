@@ -701,7 +701,7 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 4) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Use case #9. Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 ### Example #11: Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library: JSON to SOAP/XML transformation
-Call the `calculator` web service by sending a JSON request.
+Call the `calculator` web service by sending a `JSON` request.
 The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the SOAP/XML response to JSON.
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -753,12 +753,12 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
   </xsl:template>
 </xsl:stylesheet>
 ```
-4) Call the `calculator` through the Kong Gateway Route,  with a JSON request and by setting the operation to `Add`
+4) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
 ```sh
 http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```
 
-The expected JSON response is `60`:
+The expected `JSON` response is `60`:
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json
