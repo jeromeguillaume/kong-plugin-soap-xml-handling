@@ -757,7 +757,16 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 ```sh
 http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```
-
+```
+Content-Type: application/json
+```
+```json
+{
+    "intA": 50,
+    "intB": 10,
+    "operation": "Add"
+}
+```
 The expected `JSON` response is `60`:
 ```
 HTTP/1.1 200 OK
