@@ -686,7 +686,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 ```
   - Note: `xsdApiSchemaInclude` is type of `map`. You can add all the `XSD` entries required. There is no limit of XSD files.
 
-3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of [Use case #9](#example-9-request--wsdl-validation-use-a-wsdl-definition-that-imports-an-xsd-schema-from-an-external-entity-ie-https)
+3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition that imports an XSD schema with Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
