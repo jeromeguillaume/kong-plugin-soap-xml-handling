@@ -24,7 +24,7 @@ xmlgeneral.xsdSchema          = "schema"
 xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
 xmlgeneral.JsonContentType    = "application/json"
 
-xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
+xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to download XSD content
 xmlgeneral.prefetchStatusOk       = "Ok"
 xmlgeneral.prefetchStatusRunning  = "Running"
 xmlgeneral.prefetchStatusKo       = "Ko"
@@ -138,17 +138,16 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
   return soapErrMsg
 end
 
-----------------------------------------------------
--- Re-Format a JSON message to a SOAP Fault message
-----------------------------------------------------
-function xmlgeneral.reformatJsonToSoapFault(VerboseResponse, contentTypeJSON)
+-----------------------------------------------------
+-- Add the HTTP Error code to the SOAP Fault message
+-----------------------------------------------------
+function xmlgeneral.addHttpErorCodeToSoapFault(VerboseResponse, contentTypeJSON)
   local soapFaultBody
   
   local msg = HTTP_ERROR_MESSAGES[kong.response.get_status()]
   if not msg then
     msg = "Error"
   end
-
   soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()), contentTypeJSON)
   
   return soapFaultBody
@@ -177,11 +176,8 @@ function xmlgeneral.initializeContentTypeJSON ()
     kong.ctx.shared.contentTypeJSON = {}
     -- Get the 'Content-Type' to define the type of a potential Error message (sent by the plugin): SOAP/XML or JSON
     local contentType = kong.request.get_header("Content-Type")
-    if contentType == 'application/json' or contentType == 'application/vnd.api+json' then
-      kong.ctx.shared.contentTypeJSON.request = true
-    else
-      kong.ctx.shared.contentTypeJSON.request = false
-    end
+    kong.ctx.shared.contentTypeJSON.request = contentType == 'application/json' or 
+                                              contentType == 'application/vnd.api+json'
   end
 end
 
@@ -422,11 +418,7 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
   if errMessage == nil then
     -- Parse XSLT document
     style, errMessage = libxslt.xsltParseStylesheetDoc (xslt_doc)
-    if errMessage then
-      kong.log.notice("Jerome ** errMessage=" .. errMessage)
-    else
-      kong.log.notice("Jerome ** errMessage is nil")
-    end
+    
     if style == ffi.NULL then
       errMessage = "error calling 'xsltParseStylesheetDoc'"
     elseif errMessage == nil then

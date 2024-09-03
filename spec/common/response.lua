@@ -932,7 +932,7 @@ function response_common._5_6_7_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, clien
 		body = response_common.calculator_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right math
+	-- validate that the request failed: response status 500, Content-Type and right math
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -948,7 +948,7 @@ function response_common._5_6_7_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (
 		body = response_common.calculator_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right math
+	-- validate that the request failed: response status 500, Content-Type and right math
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -996,7 +996,7 @@ function response_common._6_WSDL_Validation_with_async_download_Invalid_Import_w
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right match
+	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)

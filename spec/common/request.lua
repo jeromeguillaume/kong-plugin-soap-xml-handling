@@ -401,12 +401,6 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		path = "/calculator.asmx",
 	})
 
-	--blue_print.plugins:insert {
-	--	name = "soap-xml-response-handling",
-	--	config = {
-	--	}
-	--}
-
 	local calculatorXSLT_beforeXSD_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_ok" }
@@ -1216,7 +1210,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 		body = request_common.calculator_Subtract_Request,
 	})
 
-	-- validate that the request succeeded: response status 503, Content-Type and right match
+	-- validate that the request failed: response status 503, Content-Type and right match
 	local body = assert.response(r).has.status(503)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1248,7 +1242,7 @@ function request_common._2_WSDL_Validation_with_async_download_Ok (assert, clien
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right match
+	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1280,7 +1274,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right match
+	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)

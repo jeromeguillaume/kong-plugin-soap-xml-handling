@@ -324,7 +324,7 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 ### Example #4: Request | `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 The plugin searches the XPath entry and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route.
 
-This example uses a new backend Web Service (https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx) which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
+This example uses a new backend Web Service (https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx), which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
 
 Add a Kong `Upstream` named `ecs.syr.edu` and defines a `target` with `ecs.syr.edu:443` value. 
 Open `soap-xml-request-handling` plugin and configure the plugin with:
@@ -524,7 +524,7 @@ Content-Length: 185
 </soap:Envelope>
 ```
 
-### Example #9: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e.: http(s)://)
+### Example #9: Request | `WSDL VALIDATION`: use a WSDL definition that imports an XSD schema from an external entity (i.e.: http(s)://)
 Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
@@ -591,13 +591,13 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 </wsdl:definitions>
 ```
 
-5) check prerequisite: **have at least 2 Nginx worker processes** because the External Entity loader uses the `socket.http` library which is a blocking library.
+5) check prerequisite: **have at least 2 Nginx worker processes** because the External Entity loader uses the `socket.http` library that is a blocking library.
 ```
 KONG_NGINX_WORKER_PROCESSES=2
 ```
 Note: 
   - The non-blocking `resty.http` library cannot be used because it raises a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
-  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
+  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (that uses `resty.http`)
 
 6) Call the `calculator` through the Kong Gateway Route
 ```
@@ -628,7 +628,7 @@ HTTP/1.1 500 Internal Server Error
 <detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
-### Example #10-a: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from the plugin configuration (no download)
+### Example #10-a: Request | `WSDL VALIDATION`: use a WSDL definition that imports an XSD schema from the plugin configuration (no download)
 Call incorrectly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
@@ -688,7 +688,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
-### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with Kong Ingress Controller (KIC)
+### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition that imports an XSD schema with Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
 2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file ([kic/kongPlugin-SOAP-XML-request.yaml](kic/kongPlugin-SOAP-XML-request.yaml)) is already configured in regards of `example #10-a`: `wsdl` in `XsdApiSchema` and `XSD` import in `xsdApiSchemaInclude`
 ```sh
@@ -759,6 +759,11 @@ http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```
 
 The expected JSON response is `60`:
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+...
+```
 ```json
 {
     "result": 60

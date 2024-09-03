@@ -115,10 +115,9 @@ function plugin:access(plugin_conf)
   
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   
-  -- initialize the ContentTypeJSON table
+  -- Initialize the ContentTypeJSON table for storing the Content-Type of the Request
   xmlgeneral.initializeContentTypeJSON ()
-  kong.log.notice("Jerome : access | Content-Type=" .. kong.request.get_header("Content-Type"))
-
+  
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
@@ -155,10 +154,9 @@ function plugin:header_filter(plugin_conf)
   local soapDeflated
   local err
   
-  -- If needed: initialize the ContentTypeJSON table
+  -- If needed: initialize the ContentTypeJSON table for storing the Content-Type of the Request
   xmlgeneral.initializeContentTypeJSON ()
 
-  kong.log.notice("Jerome : header_filter | Content-Type=" .. kong.request.get_header("Content-Type"))
   -- In case of error set by SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
@@ -185,7 +183,7 @@ function plugin:header_filter(plugin_conf)
       return
     else
       kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
-      soapFaultBody = xmlgeneral.reformatJsonToSoapFault(plugin_conf.VerboseResponse, kong.ctx.shared.contentTypeJSON.request)
+      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(plugin_conf.VerboseResponse, kong.ctx.shared.contentTypeJSON.request)
       kong.response.clear_header("Content-Length")
       kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
     end
