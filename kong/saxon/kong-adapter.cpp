@@ -25,7 +25,7 @@ typedef struct Context
 } Context;
 
 // Format the Error message and Send it to stderr (ie. Kong Log)
-void formatCerr(const char *msg, string detailedMsg)
+void formatCerr(string msg, string detailedMsg)
 {
   std::string tempStr;
   time_t timestamp = time(&timestamp);
@@ -79,7 +79,7 @@ extern "C" void deleteContext( const void* context_void )
     }
   }
   catch (...) {
-    formatCerr ("Error deleting Context", nullptr);
+    formatCerr ("Error deleting Context", "");
   }
 }
 
@@ -88,10 +88,10 @@ extern "C" void *createSaxonProcessorKong ()
   SaxonProcessor *pSaxonProcessor = nullptr;
   try {
     // Initialize the SaxonC processor
-    pSaxonProcessor = new SaxonProcessor(true);
+    pSaxonProcessor = new SaxonProcessor(true);    
   }
   catch (...) {
-    formatCerr ("Error in createSaxonProcessorKong", nullptr);
+    formatCerr ("Error in createSaxonProcessorKong", "");
   }
 
   return pSaxonProcessor;
