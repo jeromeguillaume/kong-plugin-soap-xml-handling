@@ -194,7 +194,7 @@ The plugin applies a XSLT Transformation on XML request **before** the XSD Valid
 In this example the XSLT **adds the value ```<intB>8</intB>```** that will not be present in the request.
 
 Add `soap-xml-request-handling` plugin and configure the plugin with:
-- `XsltTransformBefore` property with this XSLT definition:
+- `xsltTransformBefore` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
@@ -295,7 +295,7 @@ The expected result is `-3`
 ```
 
 Open `soap-xml-request-handling` plugin and configure the plugin with:
-- `XsltTransformAfter` property with this XSLT definition:
+- `xsltTransformAfter` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -332,7 +332,7 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']`
 - `RouteXPathCondition` property with the value `5`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
-- `XsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
+- `xsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
 
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
@@ -373,7 +373,7 @@ In this example the XSLT **changes the Tag names**:
 
 Add `soap-xml-response-handling` plugin and configure the plugin with:
 - `VerboseResponse` enabled
-- `XsltTransformBefore` property with this XSLT definition:
+- `xsltTransformBefore` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -418,7 +418,7 @@ For testing purposes only: one can play with the XSD schema to raise error by te
 In this example the XSLT removes all <soap> tags and **converts the response from SOAP to XML**.
 
 Open `soap-xml-response-handling` plugin and configure the plugin with:
-- `XsltTransformAfter` property with this value:
+- `xsltTransformAfter` property with this value:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" exclude-result-prefixes="soapenv">
   <xsl:strip-space elements="*"/>
@@ -709,7 +709,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 - `XsltLibrary` property with the value `saxon`
 - `XsltSaxonTemplate` property with the value `main`
 - `XsltSaxonTemplateParam` property with the value `request-body`
-- `XsltTransformBefore` property with this `XSLT 3.0` definition:
+- `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
@@ -735,7 +735,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
 - `XsltLibrary` property with the value `saxon`
-- `XsltTransformAfter` property with this `XSLT 3.0` definition:
+- `xsltTransformAfter` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xpath-default-namespace="http://tempuri.org/" exclude-result-prefixes="fn">
   <xsl:mode on-no-match="shallow-skip"/>
