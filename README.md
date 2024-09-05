@@ -819,7 +819,7 @@ You can change operation to the following values:
   - Add `pongo` tests
 - v1.0.12:
   - Add `saxon` library for supporting XSLT 2.0 or 3.0
-  - Fix a free memory issue for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11)` error during Nginx shutdown)
+  - Fix a free memory issue for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11` error during Nginx shutdown)
   - Add an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2.0 or 3.0
   - Add `jit.off()` for `libxml` to avoid `nginx: lua atpanic: Lua VM crashed, reason: bad callback` error
     

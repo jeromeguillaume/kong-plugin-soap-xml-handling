@@ -24,6 +24,29 @@ typedef struct Context
   std::string errMessage;
 } Context;
 
+// Format the Error message and Send it to stderr (ie. Kong Log)
+void formatCerr(const char *msg, string detailedMsg)
+{
+  std::string tempStr;
+  time_t timestamp = time(&timestamp);
+  struct tm datetime = *localtime(&timestamp);
+  char dateStr [64];
+
+  sprintf (dateStr, "%d/%.2d/%.2d %.2d:%.2d:%.2d", datetime.tm_year + 1900, datetime.tm_mon + 1, datetime.tm_mday, datetime.tm_hour, datetime.tm_min, datetime.tm_sec);
+  cerr << dateStr << " [error] " << "[libsaxon-4-kong.so]: " << msg;
+  if (detailedMsg.size ())
+  {
+    if (detailedMsg.back () == '\n') {
+      tempStr = detailedMsg.substr(0, detailedMsg.size () - 1);
+    }
+    else{
+      tempStr = detailedMsg;
+    }
+    cerr << " " << tempStr;
+  }
+  cerr << endl;
+}
+
 extern "C" const char *getErrMessage( const void* context_void )
 {
   const char *errMessage = nullptr;
@@ -50,14 +73,13 @@ extern "C" void deleteContext( const void* context_void )
   try {
     if (context != nullptr) {
       if (context->_xsltExecutable != nullptr){
-         cerr << "** Saxon C++: delete _xsltExecutable:" << context->_xsltExecutable << endl;
         delete context->_xsltExecutable;
       }
       // DON'T DO 'delete context': il will be achieved by LuaJIT
     }
   }
   catch (...) {
-    cerr << "** Saxon C++: Error deleting Context" << endl;
+    formatCerr ("Error deleting Context", nullptr);
   }
 }
 
@@ -69,24 +91,28 @@ extern "C" void *createSaxonProcessorKong ()
     pSaxonProcessor = new SaxonProcessor(true);
   }
   catch (...) {
-    cerr << "** Saxon C++: Error in createSaxonProcessorKong" << endl;
+    formatCerr ("Error in createSaxonProcessorKong", nullptr);
   }
+
   return pSaxonProcessor;
 }
 
-extern "C" void *createXslt30ProcessorKong (const void * saxonProcessor_void)
+extern "C" void *createXslt30ProcessorKong (const void * saxonProcessor_void, char **errMessage)
 {
   Xslt30Processor *pXslt30Processor  = nullptr;
   try
   {
     SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
     pXslt30Processor = saxonProcessor->newXslt30Processor();
+    *errMessage = nullptr;
   }
   catch (SaxonApiException& e) {
-    cerr << "** Saxon C++: Error in createXslt30ProcessorKong " << e.getMessage() << endl;
+    formatCerr ("Error in createXslt30ProcessorKong", e.getMessage());
+    *errMessage = strdup(e.getMessage());
   }
   catch (const std::exception& e) {
-    cerr << "** Saxon C++: Error in createXslt30ProcessorKong " << e.what() << endl;
+    formatCerr ("Error in createXslt30ProcessorKong", e.what());
+    *errMessage = strdup(e.what());
   }
   return pXslt30Processor;
 }
@@ -101,14 +127,13 @@ extern "C" void *compileStylesheet( const void *saxonProcessor_void,
     Xslt30Processor *pxslt30Processor = (Xslt30Processor *) xslt30Processor_void;
     context = new Context();
     context->_xsltExecutable = pxslt30Processor->compileFromString(stylesheet_string);
-    cerr << "** Saxon C++: _xsltExecutable: " << context->_xsltExecutable << endl;
   }
   catch (SaxonApiException& e) {
-    cerr << "** Saxon C++: Error in compile_stylesheet " << e.getMessage() << endl;
+    formatCerr ("Error in compile_stylesheet", e.getMessage());
     context->errMessage = e.getMessage();
   }
   catch (const std::exception& e) {
-    cerr << "** Saxon C++: Error in compile_stylesheet" << e.what() << endl;
+    formatCerr ("Error in compile_stylesheet", e.what());
     context->errMessage = e.what();
   }
 
@@ -129,8 +154,7 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
     context = (Context*) context_void;
     map<string, XdmValue*> parameterValues;
     parameterValues[param_name] = saxonProcessor->makeStringValue(param_value);
-    if ( context->_xsltExecutable !=nullptr ){
-      cerr << "** Saxon C++: _xsltExecutable: " << context->_xsltExecutable << endl;
+    if ( context->_xsltExecutable != nullptr ){
       context->_xsltExecutable->setInitialTemplateParameters(parameterValues, false);
       const char* output_string = context->_xsltExecutable->callTemplateReturningString(template_name);
       if (output_string != nullptr) {
@@ -144,11 +168,11 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
     }
   }
   catch (SaxonApiException& e) {
-    cerr << "** Saxon C++: Error in stylesheetInvokeTemplateKong " << e.getMessage() << endl;
+    formatCerr ("Error in stylesheetInvokeTemplateKong", e.getMessage());
     context->errMessage = e.getMessage();
   }
   catch (const std::exception& e) {
-    cerr << "** Saxon C++: Error in stylesheetInvokeTemplateKong " << e.what() << endl;
+    formatCerr ("Error in stylesheetInvokeTemplateKong", e.what());
     context->errMessage = e.what();
   }
   
@@ -169,23 +193,21 @@ extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_vo
     context = (Context*) context_void;
     XdmNode* input = saxonProcessor->parseXmlFromString(xml_string);
     if (input == nullptr) {
-      cerr << "** Saxon C++: parsing input XML failed" << endl;
-      throw std::runtime_error("** Saxon C++: parsing input XML failed");
+      throw std::runtime_error("parsing input XML failed");
     }
     output_string = context->_xsltExecutable->transformToString(input);
     delete input;
     if (output_string == nullptr) {
-      cerr << "** Saxon C++: XSLT transformation failed" << endl;
-      throw std::runtime_error("** Saxon C++: parsing input XML failed");
+      throw std::runtime_error("parsing input XML failed");
     }
     retval = strdup(output_string);
   }
   catch (SaxonApiException& e) {
-    cerr << "** Saxon C++: Error in stylesheetTransformXmlKong " << e.getMessage() << endl;
+    formatCerr ("Error in stylesheetTransformXmlKong", e.getMessage());
     context->errMessage = e.getMessage();
   }
   catch (const std::exception& e) {
-    cerr << "** Saxon C++: Error in stylesheetTransformXmlKong " << e.what() << endl;
+    formatCerr ("Error in stylesheetTransformXmlKong", e.what());
     context->errMessage = e.what();
   }
   

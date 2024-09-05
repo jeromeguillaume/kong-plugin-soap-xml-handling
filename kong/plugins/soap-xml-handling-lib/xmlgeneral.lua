@@ -4,7 +4,7 @@ local ffi               = require("ffi")
 local libxml2           = require("xmlua.libxml2")
 local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
-local libsaxon          = require("kong.plugins.soap-xml-handling-lib.libsaxon")
+local libsaxon4kong     = require("kong.plugins.soap-xml-handling-lib.libsaxon4kong")
 
 local loaded, xml2 = pcall(ffi.load, "xml2")
 local loaded, xslt = pcall(ffi.load, "xslt")
@@ -308,39 +308,35 @@ function xmlgeneral.initializeSaxon()
   local errMessage
 
   if not kong.xmlSoapSaxon then
-    kong.log.notice ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
+    kong.log.debug ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
     kong.xmlSoapSaxon = {}
     kong.xmlSoapSaxon.saxonProcessor    = nil
     kong.xmlSoapSaxon.xslt30Processor   = nil
     
-    errMessage = libsaxon.initializeSaxon ()
-    if errMessage then
-      kong.log.err ("Saxon Initialization, errMessage: " .. errMessage)
+    -- Load the Saxon for kong Shared Object
+    errMessage = libsaxon4kong.loadSaxonforKongLibrary ()
+
+    if not errMessage then
+      -- Create Saxon Processor
+      kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon4kong.createSaxonProcessorKong ()
+      
+      if not errMessage then
+        -- Create XSLT 3.0 processor
+        kong.xmlSoapSaxon.xslt30Processor, errMessage = libsaxon4kong.createXslt30ProcessorKong (kong.xmlSoapSaxon.saxonProcessor)
+        if not errMessage then
+          kong.log.debug ("initializeSaxon: the 'saxon' library is successfully initialized")
+        end
+      end
+
+      if errMessage then
+        kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
+      end
+
+    else
+      kong.log.debug ("initializeSaxon: errMessage: " .. errMessage)
     end
   else
-    kong.log.notice ("initializeSaxon: the 'saxon' library is already initialized")
-  end
-end
-
-------------------------------------
--- libsaxon: Create Saxon Processor
-------------------------------------
-function xmlgeneral.createSaxonProcessor()
-  local errMessage
-  kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon.createSaxonProcessorKong ()
-  if errMessage then
-    kong.log.err ("Saxon Create Saxon processor, errMessage: " .. errMessage)
-  end
-end
-
----------------------------------------
--- libsaxon: Create XSLT 3.0 processor
----------------------------------------
-function xmlgeneral.createXslt30ProcessorKong()
-  local errMessage
-  kong.xmlSoapSaxon.xslt30Processor, errMessage = libsaxon.createXslt30ProcessorKong (kong.xmlSoapSaxon.saxonProcessor)
-  if errMessage then
-    kong.log.err ("Saxon Create processor, errMessage: " .. errMessage)
+    kong.log.debug ("initializeSaxon: Saxon is already initialized => nothing to do")
   end
 end
 
@@ -354,16 +350,21 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
   
   kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
 
-  -- Compile the XSLT document
-  context, errMessage = libsaxon.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, 
-                                                    kong.xmlSoapSaxon.xslt30Processor, 
-                                                    XSLT)
+  -- Check if Saxon for Kong library is correctly loaded
+  errMessage = libsaxon4kong.isSaxonforKongLoaded()
+  
+  if not errMessage then
+    -- Compile the XSLT document
+    context, errMessage = libsaxon4kong.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, 
+                                                          kong.xmlSoapSaxon.xslt30Processor, 
+                                                          XSLT)
+  end
 
   if not errMessage then
     -- If the XSLT Transformation is configured with a Template (example: <xsl:template name="main">)
     if plugin_conf.xsltSaxonTemplate and plugin_conf.xsltSaxonTemplateParam then
       -- Transform the XML doc with XSLT transformation by invoking a template
-      xml_transformed_dump, errMessage = libsaxon.stylesheetInvokeTemplate ( 
+      xml_transformed_dump, errMessage = libsaxon4kong.stylesheetInvokeTemplate ( 
                                             kong.xmlSoapSaxon.saxonProcessor,
                                             context,
                                             plugin_conf.xsltSaxonTemplate, 
@@ -372,7 +373,7 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
                                           )
     else
       -- Transform the XML doc with XSLT transformation
-      xml_transformed_dump, errMessage = libsaxon.stylesheetTransformXml ( 
+      xml_transformed_dump, errMessage = libsaxon4kong.stylesheetTransformXml ( 
                                             kong.xmlSoapSaxon.saxonProcessor,
                                             context,
                                             XMLtoTransform
@@ -383,13 +384,13 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
   -- Free memory
   if context then
     -- Delete the Saxon Context and the compiled XSLT
-    libsaxon.deleteContext(context)
+    libsaxon4kong.deleteContext(context)
   end
 
   if errMessage == nil then
     kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
   else
-    kong.log.debug ("XSLT transformation, errMessage: " .. errMessage)
+    kong.log.debug ("XSLT transformation, END with error: " .. errMessage)
   end
   
   return xml_transformed_dump, errMessage
@@ -459,7 +460,7 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
   end
   
   if errMessage ~= nil then
-    kong.log.debug ("XSLT transformation, errMessage: " .. errMessage)
+    kong.log.debug ("XSLT transformation, END with error: " .. errMessage)
   end
 
   -- xmlCleanupParser()

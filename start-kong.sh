@@ -10,6 +10,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-request-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-response-handling,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-handling-lib,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib \
+--mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database-soap-xml-handling" \
 -e "KONG_PG_USER=kong" \
@@ -24,6 +25,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_GUI_URL=http://localhost:7002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
+-e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 -e KONG_LICENSE_DATA \
 -p 7000:7000 \
 -p 7443:7443 \
@@ -31,7 +33,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 7002:7002 \
 -p 7444:7444 \
 --platform linux/$ARCHITECTURE \
-jeromeguillaume/kong-saxon:3.7.1.1
+kong/kong-gateway:3.7.1.1
 
 #kong/kong-gateway:3.7.1.1
 #-e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
