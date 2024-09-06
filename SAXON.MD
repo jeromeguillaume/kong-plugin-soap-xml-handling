@@ -53,7 +53,7 @@ make kong_saxon_initcontainer_docker_hub
 ```
 
 ## Run Kong with Saxon
-1) Run `Kong` with `Saxon` in Docker with the standard image: `kong/kong-gateway`
+### Run `Kong` with `Saxon` in Docker with the standard image: `kong/kong-gateway`
 - Include in your `docker run` command:
   ```sh
   docker run -d --name kong-gateway-soap-xml-handling \
@@ -64,7 +64,7 @@ make kong_saxon_initcontainer_docker_hub
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
-2) Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
+### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
 - Docker
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
@@ -73,7 +73,7 @@ jeromeguillaume/kong-saxon:3.7.1.1
 ```
 - Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.7.1.1`
 
-3) Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
+### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
 - Prepare a `values.yaml`. Pay attention to `customEnv.LD_LIBRARY_PATH` and `deployment.initContainers`
 ```yaml
