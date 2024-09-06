@@ -714,9 +714,9 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `XsltLibrary` property with the value `saxon`
-- `XsltSaxonTemplate` property with the value `main`
-- `XsltSaxonTemplateParam` property with the value `request-body`
+- `xsltLibrary` property with the value `saxon`
+- `xsltSaxonTemplate` property with the value `main`
+- `xsltSaxonTemplateParam` property with the value `request-body`
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
@@ -742,7 +742,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 ```
 3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
-- `XsltLibrary` property with the value `saxon`
+- `xsltLibrary` property with the value `saxon`
 - `xsltTransformAfter` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xpath-default-namespace="http://tempuri.org/" exclude-result-prefixes="fn">
