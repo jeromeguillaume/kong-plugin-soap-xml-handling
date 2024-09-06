@@ -314,14 +314,17 @@ function xmlgeneral.initializeSaxon()
     kong.xmlSoapSaxon.xslt30Processor   = nil
     
     -- Load the Saxon for kong Shared Object
+    kong.log.debug ("initializeSaxon: loadSaxonforKongLibrary")
     errMessage = libsaxon4kong.loadSaxonforKongLibrary ()
 
     if not errMessage then
       -- Create Saxon Processor
+      kong.log.debug ("initializeSaxon: createSaxonProcessorKong")
       kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon4kong.createSaxonProcessorKong ()
       
       if not errMessage then
         -- Create XSLT 3.0 processor
+        kong.log.debug ("initializeSaxon: createXslt30ProcessorKong")
         kong.xmlSoapSaxon.xslt30Processor, errMessage = libsaxon4kong.createXslt30ProcessorKong (kong.xmlSoapSaxon.saxonProcessor)
         if not errMessage then
           kong.log.debug ("initializeSaxon: the 'saxon' library is successfully initialized")
@@ -726,7 +729,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
       if nodeName == "schema" then
         index = index + 1
         xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, currentNode, 1, 1)
-        kong.log.debug ("schema #" .. index .. ", lentgh: " .. #xsdSchema .. ", dump: " .. xsdSchema)
+        kong.log.debug ("schema #" .. index .. ", length: " .. #xsdSchema .. ", dump: " .. xsdSchema)
         
         -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
         xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)

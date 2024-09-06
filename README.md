@@ -794,10 +794,10 @@ You can change operation to the following values:
 - `Multiply`
 
 ## Plugins Testing
-The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo). 
-- Download pongo
-- Initialize pongo
-- Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
+The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo)
+1) Download pongo
+2) Initialize pongo
+3) Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
 ## Changelog
 - v1.0.0:
@@ -832,7 +832,7 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
   - Due to Kong v3.7+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
 - v1.0.11:
   - Add `pongo` tests
-- v1.0.12:
+- v1.1.0:
   - Add `saxon` Home Edition (v12.5) library for supporting XSLT 2.0 or 3.0
   - Fix a free memory issue for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11` error during Nginx shutdown)
   - Add an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2.0 or 3.0

@@ -12,10 +12,10 @@ env:
   role: data_plane
   database: "off"
   cluster_mtls: pki
-  cluster_control_plane: 179cd6a456.eu.cp0.konghq.com:443
-  cluster_server_name: 179cd6a456.eu.cp0.konghq.com
-  cluster_telemetry_endpoint: 179cd6a456.eu.tp0.konghq.com:443
-  cluster_telemetry_server_name: 179cd6a456.eu.tp0.konghq.com
+  cluster_control_plane: 26af1b2a7b.eu.cp0.konghq.com:443
+  cluster_server_name: 26af1b2a7b.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: 26af1b2a7b.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: 26af1b2a7b.eu.tp0.konghq.com
   cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
   cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
   lua_ssl_trusted_certificate: system
@@ -27,7 +27,7 @@ env:
   proxy_access_log: "off"
   dns_stale_ttl: "3600"
   plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
-
+  
 plugins:
   configMaps:
   - pluginName: soap-xml-request-handling
