@@ -1,7 +1,7 @@
 # Saxon and Kong
 
 ## Overview
-[Saxonica](https://www.saxonica.com/html/welcome/welcome.html) company provides the `Saxon` processor for XSLT, XQuery, and XML Schema. The `Saxon` processor is available for Java, .NET, JavaScript, PHP, Python and C/C++. Several editions available: 
+[Saxonica](https://www.saxonica.com/html/welcome/welcome.html) company provides the `Saxon` processor for XSLT, XQuery, and XML Schema. The `Saxon` processor is available for Java, .NET, JavaScript, PHP, Python and C/C++. Several editions are available: 
 - HE: Saxon Home Edition (open source)
 - PE: Saxon Professional Edition
 - EE: Saxon Enterprise Edition
