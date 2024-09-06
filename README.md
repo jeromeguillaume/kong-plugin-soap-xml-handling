@@ -2,7 +2,7 @@
 This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
 
-The XSLT Transformation can be managed with the [Saxon](https://www.saxonica.com/html/welcome/welcome.html) library too, which supports XSLT 2.0 and 3.0. With XSLT >= 2.0 there is a way for applying JSON <-> XML transformation with [fn:json-to-xml](https://www.w3.org/TR/xslt-30/#func-json-to-xml) and [fn:xml-to-json](https://www.w3.org/TR/xslt-30/#func-xml-to-json). The Saxon library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate Saxon with Kong.
+The XSLT Transformation can also be managed with the [saxon](https://www.saxonica.com/html/welcome/welcome.html) library, which supports XSLT 2.0 and 3.0. With XSLT 2.0+ there is a way for applying JSON <-> XML transformation with [fn:json-to-xml](https://www.w3.org/TR/xslt-30/#func-json-to-xml) and [fn:xml-to-json](https://www.w3.org/TR/xslt-30/#func-xml-to-json). The saxon library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate saxon with Kong.
 
 These plugins don't apply to Kong OSS. They work for Kong EE and Konnect.
 
@@ -711,8 +711,9 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 ### Example #11: Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library: JSON to SOAP/XML transformation
 Call the `calculator` web service by sending a `JSON` request.
 The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the SOAP/XML response to JSON.
-1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
-2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See [SAXON.md](SAXON.md)
+2) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsltLibrary` property with the value `saxon`
 - `xsltSaxonTemplate` property with the value `main`
@@ -740,7 +741,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
   </xsl:template>
 </xsl:stylesheet>
 ```
-3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
+4) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
 - `xsltLibrary` property with the value `saxon`
 - `xsltTransformAfter` property with this `XSLT 3.0` definition:
@@ -761,7 +762,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
   </xsl:template>
 </xsl:stylesheet>
 ```
-4) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
+5) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
 ```sh
 http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```
@@ -832,7 +833,7 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
 - v1.0.11:
   - Add `pongo` tests
 - v1.0.12:
-  - Add `saxon` library for supporting XSLT 2.0 or 3.0
+  - Add `saxon` Home Edition (v12.5) library for supporting XSLT 2.0 or 3.0
   - Fix a free memory issue for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11` error during Nginx shutdown)
   - Add an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2.0 or 3.0
   - Add `jit.off()` for `libxml` to avoid `nginx: lua atpanic: Lua VM crashed, reason: bad callback` error
