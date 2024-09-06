@@ -799,6 +799,8 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
 2) Initialize pongo
 3) Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
+Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean` for rebuilding the Pongo image
+
 ## Changelog
 - v1.0.0:
   - Initial Release

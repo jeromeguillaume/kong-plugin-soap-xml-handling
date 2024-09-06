@@ -1,5 +1,5 @@
 image:
-  repository: kong/kong-gateway
+  repository: jeromeguillaume/kong-saxon-12-5
   tag: "3.7.1.1"
 
 secretVolumes:
@@ -41,25 +41,6 @@ plugins:
       path: libxml2ex
     - name: libxslt
       path: libxslt
-
-customEnv:
-  LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
-
-deployment:
-  initContainers:
-  - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-12-5-initcontainer:1.0.0
-    imagePullPolicy: Always
-    command: ["/bin/sh", "-c", "cp /kongsaxon/* /usr/local/lib/kongsaxon"]
-    volumeMounts:
-    - name: kongsaxon-vol
-      mountPath: /usr/local/lib/kongsaxon
-  userDefinedVolumes:
-  - name: kongsaxon-vol
-    emptyDir: {}
-  userDefinedVolumeMounts:
-  - name: kongsaxon-vol
-    mountPath: /usr/local/lib/kongsaxon
 
 ingressController:
   enabled: false
