@@ -19,7 +19,7 @@ Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships wit
 - Linux Intel x86_64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip)
 - General download page:
-[https://www.saxonica.com/html/download/c.html](https://www.saxonica.com/html/download/c.html)
+[here](https://www.saxonica.com/html/download/c.html)
 
 ## Extract/Build the `Saxon` Shared Objects and the Docker images
 - The `Saxon - Kong` integration requires 2 Shared Objects that are extracted and built with the `make` command:
