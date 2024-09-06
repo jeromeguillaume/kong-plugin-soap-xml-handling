@@ -27,14 +27,6 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 -e KONG_LICENSE_DATA \
-<<<<<<< HEAD
--p 8000:8000 \
--p 8443:8443 \
--p 8001:8001 \
--p 8002:8002 \
--p 8444:8444 \
-kong/kong-gateway:3.7.1.1
-=======
 -p 7000:7000 \
 -p 7443:7443 \
 -p 7001:7001 \
@@ -55,7 +47,6 @@ kong/kong-gateway:3.7.1.1
 #--mount type=bind,source="$(pwd)"/kong/saxon/so,destination=/usr/local/lib/kongsaxon \
 
 #kong-saxon:3.6.1.3
->>>>>>> xslt-saxonc
 
 # Disable gzip support
 # -e "KONG_NGINX_PROXY_GZIP=off" \

@@ -3,11 +3,7 @@ local KongGzip = require("kong.tools.gzip")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-<<<<<<< HEAD
-    VERSION = "1.0.11",
-=======
     VERSION = "1.0.12",
->>>>>>> xslt-saxonc
   }
 
 -----------------------------------------------------------------------------------------
@@ -195,18 +191,6 @@ function plugin:header_filter(plugin_conf)
     end
   end
   
-<<<<<<< HEAD
-  -- If the Body is deflated/zipped, we inflate/unzip it
-  if kong.response.get_header("Content-Encoding") == "gzip" then
-    local soapDeflated, err = KongGzip.inflate_gzip(soapEnvelope)
-    if err then
-      err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
-                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
-                                                  err)
-    else
-      soapEnvelope = soapDeflated
-=======
   -- If there is no error
   if soapFaultBody == nil then
     -- If the Body is deflated/zipped, we inflate/unzip it
@@ -228,7 +212,6 @@ function plugin:header_filter(plugin_conf)
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   err,
                                                   kong.ctx.shared.contentTypeJSON.request)
->>>>>>> xslt-saxonc
     end
   -- If there is a not supported 'Content-Encoding'
   elseif kong.response.get_header("Content-Encoding") then

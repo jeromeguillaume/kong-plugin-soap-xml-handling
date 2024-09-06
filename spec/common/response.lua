@@ -84,8 +84,6 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
-<<<<<<< HEAD
-=======
 response_common.calculator_Response_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -98,7 +96,6 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = 
   </soap:Body>
 </soap:Envelope>]]
 
->>>>>>> xslt-saxonc
 response_common.calculator_Response_XSD_VALIDATION = [[
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -129,11 +126,7 @@ response_common.calculator_Response_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-<<<<<<< HEAD
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.. SOAP/XML Web Service %- HTTP code: 200</detail>
-=======
       <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'. SOAP/XML Web Service %- HTTP code: 200</detail>
->>>>>>> xslt-saxonc
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -159,11 +152,7 @@ response_common.calculator_Response_XSD_SOAP_invalid_definition_Failed_verbose =
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-<<<<<<< HEAD
-      <detail>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': No matching global declaration available for the validation root.. SOAP/XML Web Service %- HTTP code: 200</detail>
-=======
       <detail>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': No matching global declaration available for the validation root. SOAP/XML Web Service %- HTTP code: 200</detail>
->>>>>>> xslt-saxonc
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -187,11 +176,7 @@ response_common.calculator_Response_XSD_API_invalid_definition_Failed_verbose = 
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-<<<<<<< HEAD
-      <detail>Error Node: AddResponse, Error code: 1845, Line: 2, Message: Element '{http://tempuri.org/}AddResponse': No matching global declaration available for the validation root.. SOAP/XML Web Service %- HTTP code: 200</detail>
-=======
       <detail>Error Node: AddResponse, Error code: 1845, Line: 2, Message: Element '{http://tempuri.org/}AddResponse': No matching global declaration available for the validation root. SOAP/XML Web Service %- HTTP code: 200</detail>
->>>>>>> xslt-saxonc
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -270,10 +255,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			route = calculatorXSLT_beforeXSD_route,
 			config = {
 				VerboseResponse = false,
-<<<<<<< HEAD
-=======
 				xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 			}
 	}
@@ -287,10 +269,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_invalid_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
 		}
 	}
@@ -304,16 +283,11 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_invalid_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
 		}
 	}
 
-<<<<<<< HEAD
-=======
 	local calculatorXSLT_beforeXSD_xslt2_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_xslt2" }
@@ -343,7 +317,6 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}	
 	}
 
->>>>>>> xslt-saxonc
   local calculatorXSLT_beforeXSD_unknown_content_type_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_unknown_content_type" }
@@ -353,10 +326,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_unknown_content_type_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 		}
 	}
@@ -380,10 +350,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_unknown_content_type_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 		}
 	}
@@ -407,10 +374,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSD_route,
 		config = {
       VerboseResponse = false,
-<<<<<<< HEAD
-=======
       xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
       xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
       xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION
     }
@@ -425,10 +389,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdSoapSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
 		}
@@ -443,10 +404,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdSoapSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
 		}
@@ -461,10 +419,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_api_invalid_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
 		}
@@ -479,10 +434,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_api_invalid_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
 		}
@@ -497,10 +449,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_response_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdSoapSchema = response_common.calculator_Response_XSD_SOAP_invalid_definition
 		}
@@ -515,10 +464,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_response_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdSoapSchema = response_common.calculator_Response_XSD_SOAP_invalid_definition
 		}
@@ -533,10 +479,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_api_invalid_response_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_API_invalid_definition
 		}
@@ -551,10 +494,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_api_invalid_response_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_API_invalid_definition
 		}
@@ -569,10 +509,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_afterXSD_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION,
 			xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER
@@ -588,10 +525,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_afterXSD_invalid_route,
 		config = {
 			VerboseResponse = false,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION,
 			xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
@@ -607,10 +541,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_afterXSD_invalid_verbose_route,
 		config = {
 			VerboseResponse = true,
-<<<<<<< HEAD
-=======
 			xsltLibrary = xsltLibrary,
->>>>>>> xslt-saxonc
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION,
 			xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
@@ -743,8 +674,6 @@ function response_common._5_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (ass
   assert.matches(response_common.calculator_Response_XSLT_BEFORE_Failed_verbose, body)
 end
 
-<<<<<<< HEAD
-=======
 function response_common._5_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported(assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_xslt2", {
@@ -777,7 +706,6 @@ function response_common._5_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Ve
 	assert.matches(response_common.calculator_Response_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose, body)
 end
 
->>>>>>> xslt-saxonc
 function response_common._5_XSLT_BEFORE_XSD_gzip_Content_Encoding_Ok (assert, client)
   -- invoke a test request
   local r = client:post("/calculatorXSLT_beforeXSD_ok", {
@@ -1004,11 +932,7 @@ function response_common._5_6_7_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, clien
 		body = response_common.calculator_Request,
 	})
 
-<<<<<<< HEAD
-	-- validate that the request succeeded: response status 500, Content-Type and right math
-=======
 	-- validate that the request failed: response status 500, Content-Type and right math
->>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1024,11 +948,7 @@ function response_common._5_6_7_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (
 		body = response_common.calculator_Request,
 	})
 
-<<<<<<< HEAD
-	-- validate that the request succeeded: response status 500, Content-Type and right math
-=======
 	-- validate that the request failed: response status 500, Content-Type and right math
->>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1076,11 +996,7 @@ function response_common._6_WSDL_Validation_with_async_download_Invalid_Import_w
 		body = request_common.calculator_Full_Request,
 	})
 
-<<<<<<< HEAD
-	-- validate that the request succeeded: response status 500, Content-Type and right match
-=======
 	-- validate that the request failed: response status 500, Content-Type and right match
->>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)

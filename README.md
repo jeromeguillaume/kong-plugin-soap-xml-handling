@@ -113,13 +113,10 @@ plugins:
     - name: libxslt
       path: libxslt
 ```
-<<<<<<< HEAD
-=======
 4) Execute the `helm` command:
 ```sh
 helm install kong kong/ingress -n kong --values ./values.yaml
 ```
->>>>>>> xslt-saxonc
 ## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
@@ -192,11 +189,7 @@ The expected result is `12`:
 ```
 
 ## How to configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
-<<<<<<< HEAD
-1) Configure a Kubernetes External Service (to http://www.dneonline.com:80/calculator.asmx) and a related Ingress kind:
-=======
 1) Configure a Kubernetes `External Service` (to http://www.dneonline.com:80/calculator.asmx) with [kic/extService-Calculator-Ingress.yaml](kic/extService-Calculator-Ingress.yaml) and a related `Ingress` kind:
->>>>>>> xslt-saxonc
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
@@ -339,11 +332,7 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 ### Example #4: Request | `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 The plugin searches the XPath entry and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route.
 
-<<<<<<< HEAD
-This example uses a new backend Web Service (https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx) which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
-=======
 This example uses a new backend Web Service (https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx), which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
->>>>>>> xslt-saxonc
 
 Add a Kong `Upstream` named `ecs.syr.edu` and defines a `target` with `ecs.syr.edu:443` value. 
 Open `soap-xml-request-handling` plugin and configure the plugin with:
@@ -351,12 +340,8 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']`
 - `RouteXPathCondition` property with the value `5`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
-<<<<<<< HEAD
-- `XsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
-=======
 - `xsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
 
->>>>>>> xslt-saxonc
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -547,11 +532,7 @@ Content-Length: 185
 </soap:Envelope>
 ```
 
-<<<<<<< HEAD
-### Example #9: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from an external entity (i.e.: http(s)://)
-=======
 ### Example #9: Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from an external entity (i.e.: http(s)://)
->>>>>>> xslt-saxonc
 Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
@@ -655,11 +636,7 @@ HTTP/1.1 500 Internal Server Error
 <detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
-<<<<<<< HEAD
-### Example #10-a: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema from the plugin configuration (no download)
-=======
 ### Example #10-a: Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from the plugin configuration (no download)
->>>>>>> xslt-saxonc
 Call incorrectly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
@@ -719,15 +696,9 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Use case #9
 
-<<<<<<< HEAD
-### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition which imports an XSD schema with Kong Ingress Controller (KIC)
-1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
-2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file is already configured in regards of `èxample #10-a`: `wsdl` in `XsdApiSchema` and XSD import in `xsdApiSchemaInclude`
-=======
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema with Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
 2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file ([kic/kongPlugin-SOAP-XML-request.yaml](kic/kongPlugin-SOAP-XML-request.yaml)) is already configured in regards of `example #10-a`: `wsdl` in `XsdApiSchema` and `XSD` import in `xsdApiSchemaInclude`
->>>>>>> xslt-saxonc
 ```sh
 kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```
@@ -859,9 +830,6 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
 - v1.0.10:
   - Due to Kong v3.7+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
 - v1.0.11:
-<<<<<<< HEAD
-  - Add `pongo` tests
-=======
   - Add `pongo` tests
 - v1.0.12:
   - Add `saxon` library for supporting XSLT 2.0 or 3.0
@@ -869,4 +837,3 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
   - Add an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2.0 or 3.0
   - Add `jit.off()` for `libxml` to avoid `nginx: lua atpanic: Lua VM crashed, reason: bad callback` error
     
->>>>>>> xslt-saxonc

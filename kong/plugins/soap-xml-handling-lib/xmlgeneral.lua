@@ -103,17 +103,6 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
       detailErrMsg = detailErrMsg .. " " .. additionalErrMsg
     end
   end
-<<<<<<< HEAD
-  kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
-  detailErrMsg ="\n      <detail>" .. detailErrMsg .. "</detail>"
-
-  -- If verbose mode is disabled we don't send the detailed Error Message
-  if not VerboseResponse then
-    detailErrMsg = ""
-  end
-
-  local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
-=======
   
   -- If it's a SOAP/XML Request then the Fault Message is SOAP/XML text
   if contentTypeJSON == false then
@@ -124,7 +113,6 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
       detailErrMsg = ''
     end
     soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
->>>>>>> xslt-saxonc
 <soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\
   <soap:Body>\
     <soap:Fault>\
