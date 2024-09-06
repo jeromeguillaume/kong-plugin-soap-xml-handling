@@ -9,7 +9,7 @@
 The HE edition provides XSLT 2.0 and 3.0 support but the XML validation is only included in EE edition. See the [Feature Matrix](https://www.saxonica.com/html/products/feature-matrix-12.html).
 So the purpose is to integrate `Saxon HE` to Kong for XSLT Transformation only. It enables JSON <-> XML transformation with [fn:json-to-xml](https://www.saxonica.com/html/documentation10/functions/fn/json-to-xml.html) and [fn:xml-to-json](https://www.saxonica.com/html/documentation12/functions/fn/xml-to-json.html) that [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) doesn't provide. 
 
-The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/saxon-c/doc12/html/index.html)) library is not included in the [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image. For that: build your own Kong Docker images or use a Kubernetes initContainer.
+The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/html/download/c.html)) library is not included in the [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image. For that: build your own Kong Docker images or use a Kubernetes initContainer.
 
 Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
 
