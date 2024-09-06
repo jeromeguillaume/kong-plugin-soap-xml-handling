@@ -91,7 +91,7 @@ cd soap-xml-handling-lib
 kubectl -n kong create configmap libxml2ex --from-file=./libxml2ex
 kubectl -n kong create configmap libxslt --from-file=./libxslt
 ```
-3) [See Kong Gateway on Kubernetes documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the Helm `values.yaml`:
+3) [See Kong Gateway on Kubernetes documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the helm `values.yaml`:
 ```yaml
 image:
   repository: kong/kong-gateway
