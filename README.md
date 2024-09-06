@@ -113,6 +113,10 @@ plugins:
     - name: libxslt
       path: libxslt
 ```
+4) Execute the `helm` command:
+```sh
+helm install kong kong/ingress -n kong --values ./values.yaml
+```
 ## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
