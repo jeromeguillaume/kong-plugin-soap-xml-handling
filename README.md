@@ -796,7 +796,7 @@ You can change operation to the following values:
 The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo). 
 - Download pongo
 - Initialize pongo
-- Run tests with [pongo.sh](pongo.sh)
+- Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
 ## Changelog
 - v1.0.0:
