@@ -1,6 +1,6 @@
 image:
   repository: kong/kong-gateway
-  tag: "3.7.0.0"
+  tag: "3.7.1.1"
 
 secretVolumes:
 - kong-cluster-cert
@@ -48,7 +48,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0
+    image: jeromeguillaume/kong-saxon-12-5-initcontainer:1.0.0
     command: ["/bin/sh", "-c", "cp /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol

@@ -205,7 +205,7 @@ function plugin:header_filter(plugin_conf)
       else
         soapEnvelope = soapDeflated
       end
-    -- If there is a not supported 'Content-Encoding'
+    -- If there is a 'Content-Encoding' type that is not supported (by 'KongGzip')
     elseif kong.response.get_header("Content-Encoding") then
       err = "Content-encoding of type '" .. kong.response.get_header("Content-Encoding") .. "' is not supported"
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -213,12 +213,6 @@ function plugin:header_filter(plugin_conf)
                                                   err,
                                                   kong.ctx.shared.contentTypeJSON.request)
     end
-  -- If there is a not supported 'Content-Encoding'
-  elseif kong.response.get_header("Content-Encoding") then
-    err = "Content-encoding of type '" .. kong.response.get_header("Content-Encoding") .. "' is not supported"
-    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
-                                                xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
-                                                err)
   end
   
   -- If there is a XML -> JSON transformation on the Response: change the 'Content-Type' header of the Response

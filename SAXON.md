@@ -13,7 +13,7 @@ The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/html/download
 
 Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
 
-## Prerequisite: download the SaxonC-HE v12 - Zip package
+## Prerequisite: download the SaxonC-HE v12.5 - Zip package
 - Linux AArch64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip)
 - Linux Intel x86_64:
@@ -29,7 +29,7 @@ Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships wit
 ```sh
 cd saxon
 ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-12-5` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_docker_hub
 ```
@@ -47,7 +47,7 @@ make
   ```sh
   make local_lib_amd64
   ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-12-5-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
 ```
@@ -64,16 +64,16 @@ make kong_saxon_initcontainer_docker_hub
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
-### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
+### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon-12-5`
 - Docker
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
 ...
-jeromeguillaume/kong-saxon:3.7.1.1
+jeromeguillaume/kong-saxon-12-5:3.7.1.1
 ```
-- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.7.1.1`
+- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon-12-5:3.7.1.1`
 
-### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
+### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-12-5-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
 - Prepare a `values.yaml`. Pay attention to `customEnv.LD_LIBRARY_PATH` and `deployment.initContainers`
 ```yaml
@@ -104,7 +104,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0
+    image: jeromeguillaume/kong-saxon-12-5-initcontainer:1.0.0
     command: ["/bin/sh", "-c", "cp /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
