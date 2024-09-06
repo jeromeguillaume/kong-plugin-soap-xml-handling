@@ -95,6 +95,21 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+<<<<<<< HEAD
+=======
+request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <detail>compilation error. xsl:version: only 1.1 features are supported</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+>>>>>>> xslt-saxonc
 request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -389,12 +404,15 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		path = "/calculator.asmx",
 	})
 
+<<<<<<< HEAD
 	--blue_print.plugins:insert {
 	--	name = "soap-xml-response-handling",
 	--	config = {
 	--	}
 	--}
 
+=======
+>>>>>>> xslt-saxonc
 	local calculatorXSLT_beforeXSD_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_ok" }
@@ -405,7 +423,12 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			route = calculatorXSLT_beforeXSD_route,
 			config = {
 				VerboseRequest = false,
+<<<<<<< HEAD
 					xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE
+=======
+				xsltLibrary = xsltLibrary,
+				xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE
+>>>>>>> xslt-saxonc
 			}
 	}
 
@@ -418,6 +441,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_invalid_route,
 		-- it lacks the '<' beginning tag
 		config = {
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = [[
 				xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				</xsl:stylesheet>
@@ -435,6 +462,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		-- it lacks the '<' beginning tag
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = [[
 				xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				</xsl:stylesheet>
@@ -442,6 +473,38 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}	
 	}
 
+<<<<<<< HEAD
+=======
+	local calculatorXSLT_beforeXSD_xslt2_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_xslt2" }
+	}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_beforeXSD_xslt2_route,
+		-- XSLT 2.0 (or more) not supported by libxslt
+		config = {
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = [[<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn"> <xsl:output method="xml" indent="yes"/> <xsl:template name="main"> <xsl:param name="request-body" required="yes"/> <xsl:variable name="json" select="fn:json-to-xml($request-body)"/> <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"> <soap12:Body> <CelsiusToFahrenheit xmlns="https://www.w3schools.com/xml/"> <Celsius><xsl:value-of select="$json/map/number[@key='degree-celsius']"/></Celsius> </CelsiusToFahrenheit> </soap12:Body> </soap12:Envelope> </xsl:template> </xsl:stylesheet>]]
+		}	
+	}
+	
+	local calculatorXSLT_beforeXSD_xslt2_verbose_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_xslt2_verbose" }
+	}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_beforeXSD_xslt2_verbose_route,
+		-- XSLT 2.0 (or more) not supported by libxslt
+		config = {
+			VerboseRequest = true,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = [[<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn"> <xsl:output method="xml" indent="yes"/> <xsl:template name="main"> <xsl:param name="request-body" required="yes"/> <xsl:variable name="json" select="fn:json-to-xml($request-body)"/> <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope"> <soap12:Body> <CelsiusToFahrenheit xmlns="https://www.w3schools.com/xml/"> <Celsius><xsl:value-of select="$json/map/number[@key='degree-celsius']"/></Celsius> </CelsiusToFahrenheit> </soap12:Body> </soap12:Envelope> </xsl:template> </xsl:stylesheet>]]
+		}	
+	}
+
+>>>>>>> xslt-saxonc
 	local local_req_termination_route = blue_print.routes:insert{
 		paths = { "/local_calculator_req_termination" }
 	}
@@ -470,6 +533,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_request_termination,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE
 		}
 	}
@@ -483,6 +550,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD_basic_auth_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE
 		}
 	}
@@ -508,6 +579,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_beforeXSD__invalid_host_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE
 		}
 	}
@@ -521,6 +596,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION
 		}
@@ -535,6 +614,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_verbose_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION
 		}
@@ -549,6 +632,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdSoapSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid
 		}
@@ -563,6 +650,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_verbose_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdSoapSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid
 		}
@@ -577,6 +668,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_api_invalid_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid
 		}
@@ -591,6 +686,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_api_invalid_verbose_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid
 		}
@@ -605,6 +704,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_afterXSD_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER
@@ -620,6 +723,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_afterXSD_invalid_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_invalid
@@ -635,6 +742,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorXSLT_afterXSD_invalid_verbose_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_invalid
@@ -656,6 +767,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorRoutingByXPath_upstream_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
@@ -674,6 +789,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorRoutingByXPath_hostname_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
@@ -692,6 +811,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorRoutingByXPath_hostname_invalid_route,
 		config = {
 			VerboseRequest = false,
+<<<<<<< HEAD
+=======
+			xsltLibrary = xsltLibrary,
+>>>>>>> xslt-saxonc
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
@@ -710,7 +833,12 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculatorRoutingByXPath_hostname_invalid_verbose_route,
 		config = {
 			VerboseRequest = true,
+<<<<<<< HEAD
 						xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
+=======
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
+>>>>>>> xslt-saxonc
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
 			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
@@ -843,6 +971,41 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_with_Verbose (assert, cl
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
 end
 
+<<<<<<< HEAD
+=======
+function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported(assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_beforeXSD_xslt2", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed, body)
+end
+
+function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Verbose(assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_beforeXSD_xslt2_verbose", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose, body)
+end
+
+>>>>>>> xslt-saxonc
 function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_request_termination_plugin_200 (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_request_termination", {
@@ -1124,7 +1287,11 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 		body = request_common.calculator_Subtract_Request,
 	})
 
+<<<<<<< HEAD
 	-- validate that the request succeeded: response status 503, Content-Type and right match
+=======
+	-- validate that the request failed: response status 503, Content-Type and right match
+>>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(503)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1156,7 +1323,11 @@ function request_common._2_WSDL_Validation_with_async_download_Ok (assert, clien
 		body = request_common.calculator_Full_Request,
 	})
 
+<<<<<<< HEAD
 	-- validate that the request succeeded: response status 500, Content-Type and right match
+=======
+	-- validate that the request failed: response status 500, Content-Type and right match
+>>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1188,7 +1359,11 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 		body = request_common.calculator_Full_Request,
 	})
 
+<<<<<<< HEAD
 	-- validate that the request succeeded: response status 500, Content-Type and right match
+=======
+	-- validate that the request failed: response status 500, Content-Type and right match
+>>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1204,7 +1379,11 @@ function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, c
 		body = request_common.calculator_Full_Request,
 	})
 
+<<<<<<< HEAD
 	-- validate that the request succeeded: response status 00, Content-Type and right match
+=======
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+>>>>>>> xslt-saxonc
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)

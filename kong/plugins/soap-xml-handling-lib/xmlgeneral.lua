@@ -4,13 +4,16 @@ local ffi               = require("ffi")
 local libxml2           = require("xmlua.libxml2")
 local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
+local libsaxon4kong     = require("kong.plugins.soap-xml-handling-lib.libsaxon4kong")
 
 local loaded, xml2 = pcall(ffi.load, "xml2")
+local loaded, xslt = pcall(ffi.load, "xslt")
 
 xmlgeneral.HTTPCodeSOAPFault = 500
 
 xmlgeneral.RequestTextError   = "Request"
 xmlgeneral.ResponseTextError  = "Response"
+xmlgeneral.GeneralError       = "General process failed"
 xmlgeneral.SepTextError       = " - "
 xmlgeneral.GeneralError       = "General process failed"
 xmlgeneral.XSLTError          = "XSLT transformation failed"
@@ -19,8 +22,10 @@ xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 xmlgeneral.xmlnsXsdHref       = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema          = "schema"
+xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
+xmlgeneral.JsonContentType    = "application/json"
 
-xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to downalod XSD content
+xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to download XSD content
 xmlgeneral.prefetchStatusOk       = "Ok"
 xmlgeneral.prefetchStatusRunning  = "Running"
 xmlgeneral.prefetchStatusKo       = "Ko"
@@ -72,11 +77,17 @@ local HTTP_ERROR_MESSAGES = {
 ---------------------------------
 -- Format the SOAP Fault message
 ---------------------------------
-function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
+function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJSON)
+  local soapErrMsg
   local detailErrMsg
   
   detailErrMsg = ErrEx
-  
+
+  -- if the last character is '\n' => we remove it
+  if detailErrMsg:sub(-1) == '\n' then
+    detailErrMsg = string.sub(detailErrMsg, 1, -2)
+  end
+
   -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
   local ngx_get_phase = ngx.get_phase
   if  ngx_get_phase() == "response"      or 
@@ -84,10 +95,15 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
       ngx_get_phase() == "body_filter"   then
     local status = kong.service.response.get_status()
     if status ~= nil then
-      local additionalErrMsg = ". SOAP/XML Web Service - HTTP code: " .. tostring(status)
-      detailErrMsg = detailErrMsg .. additionalErrMsg
+      -- if the last character is not '.' => we add it
+      if detailErrMsg:sub(-1) ~= '.' then
+        detailErrMsg = detailErrMsg .. '.'
+      end
+      local additionalErrMsg = "SOAP/XML Web Service - HTTP code: " .. tostring(status)      
+      detailErrMsg = detailErrMsg .. " " .. additionalErrMsg
     end
   end
+<<<<<<< HEAD
   kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
   detailErrMsg ="\n      <detail>" .. detailErrMsg .. "</detail>"
 
@@ -97,6 +113,18 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   end
 
   local soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
+=======
+  
+  -- If it's a SOAP/XML Request then the Fault Message is SOAP/XML text
+  if contentTypeJSON == false then
+    kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
+    if VerboseResponse then
+      detailErrMsg = "\n      <detail>" .. detailErrMsg .. "</detail>"
+    else
+      detailErrMsg = ''
+    end
+    soapErrMsg = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\
+>>>>>>> xslt-saxonc
 <soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\">\
   <soap:Body>\
     <soap:Fault>\
@@ -106,23 +134,34 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx)
   </soap:Body>\
 </soap:Envelope>\
 "
+  -- Else the Fault Message is a JSON text
+  else
+    -- Replace " by '
+    detailErrMsg = string.gsub(detailErrMsg, "\"", "'")
+    kong.log.err ("message: '" .. ErrMsg .. "' message_verbose: '".. detailErrMsg .. "'")
+    soapErrMsg = "{\n    \"message\": \"" .. ErrMsg .. "\""
+    if VerboseResponse then
+      soapErrMsg = soapErrMsg .. ",\n    \"message_verbose\": \"" .. detailErrMsg .. "\""
+    else
+      soapErrMsg = soapErrMsg .. "\n"
+    end
+    soapErrMsg = soapErrMsg .. "\n}"
+  end
 
   return soapErrMsg
 end
 
-----------------------------------------------------
--- Re-Format a JSON message to a SOAP Fault message
-----------------------------------------------------
-function xmlgeneral.reformatJsonToSoapFault(VerboseResponse)
+-----------------------------------------------------
+-- Add the HTTP Error code to the SOAP Fault message
+-----------------------------------------------------
+function xmlgeneral.addHttpErorCodeToSoapFault(VerboseResponse, contentTypeJSON)
   local soapFaultBody
   
   local msg = HTTP_ERROR_MESSAGES[kong.response.get_status()]
-  
   if not msg then
     msg = "Error"
   end
-
-  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()))
+  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()), contentTypeJSON)
   
   return soapFaultBody
 end
@@ -130,9 +169,29 @@ end
 ---------------------------------------
 -- Return a SOAP Fault to the Consumer
 ---------------------------------------
-function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg)  
+function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentTypeJSON) 
+  local contentType
+  if contentTypeJSON == false then
+    contentType = xmlgeneral.XMLContentType
+  else
+    contentType = xmlgeneral.JsonContentType
+  end
   -- Send a Fault code to client
-  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = "text/xml; charset=utf-8"})
+  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentType})
+end
+
+-----------------------------------------------------------------------
+-- Initialize the ContentTypeJSON table for keeping the 'Content-Type'
+-----------------------------------------------------------------------
+function xmlgeneral.initializeContentTypeJSON ()
+  -- If the 'kong.ctx.shared.contentTypeJSON' is not already created (by the Request plugin)
+  if not kong.ctx.shared.contentTypeJSON then
+    kong.ctx.shared.contentTypeJSON = {}
+    -- Get the 'Content-Type' to define the type of a potential Error message (sent by the plugin): SOAP/XML or JSON
+    local contentType = kong.request.get_header("Content-Type")
+    kong.ctx.shared.contentTypeJSON.request = contentType == 'application/json' or 
+                                              contentType == 'application/vnd.api+json'
+  end
 end
 
 -------------------------------------------------------------------
@@ -162,13 +221,14 @@ end
 -- Setup an External Entity Loader
 -------------------------------------------------------------------------------
 function xmlgeneral.initializeXmlSoapPlugin ()
-  -- We initialize the Error Handler only one time for the Nginx process and for the Plugin
+  -- We initialize the Error Handlers only one time for the Nginx process and for the Plugin
   -- The error message will be set contextually to the Request by using the 'kong.ctx'
   -- Conversely if we initialize the Error Handler on each Request (like 'access' phase)
   -- the 'libxml2' library complains with an error message: 'too many calls' (after ~100 calls)
-  if not kong.xmlSoapErrorHandler then
+  -- LIBXML Error Handler
+  if not kong.xmlSoapLibxmlErrorHandler then
     kong.log.debug ("initializeXmlSoapPlugin: it's the 1st time the function is called => initialize the 'libxml2' Error Handler")
-    kong.xmlSoapErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
+    kong.xmlSoapLibxmlErrorHandler = ffi.cast("xmlStructuredErrorFunc", function(userdata, xmlError)
       -- The callback function can be called two times in a row
       -- 1st time: initial message (like: "Start tag expected, '<' not found")
       if kong.ctx.shared.xmlSoapErrMessage == nil then
@@ -180,6 +240,27 @@ function xmlgeneral.initializeXmlSoapPlugin ()
     end)
   else
     kong.log.debug ("initializeXmlSoapPlugin: 'libxml2' Error Handler is already initialized => nothing to do")
+  end
+
+  -- LIBXSLT Error Handler
+  if not kong.xmlSoapLibxsltErrorHandler then
+    kong.log.debug ("initializeXmlSoapPlugin: it's the 1st time the function is called => initialize the 'libxslt' Error Handler")
+    -- LuaJit's FFI cannot manage a variable number of arguments of C function and
+    -- there is up to 6 variables in the callback function(ctx, msg, type, file, line, name)
+    -- Only 'ctx', 'msg', 'type' are set on each call; so we remove the others ('file', 'line', 'name')
+    -- See: https://android.googlesource.com/platform/external/libxslt/+/7d1dabff1598661db0018d89d16cca02f7c31ae2/libxslt/xsltutils.c#650
+    --      https://luajit.org/ext_ffi_semantics.html#callback
+    xslt.xsltSetGenericErrorFunc (nil, function(ctx, msg, type)
+      -- The callback function can be called two times in a row
+      if kong.ctx.shared.xmlSoapErrMessage == nil then
+        kong.ctx.shared.xmlSoapErrMessage = ffi.string(type)
+      else
+        kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '. ' .. ffi.string(type)
+      end
+    end)
+    kong.xmlSoapLibxsltErrorHandler = true
+  else
+    kong.log.debug ("initializeXmlSoapPlugin: 'libxslt' Error Handler is already initialized => nothing to do")
   end
   
   -- Initialize the SOAP/XML context in charge of downloading Asynchronously the XSD content
@@ -233,11 +314,106 @@ function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, o
   return xmlDeclaration
 end
 
-------------------------------------------
--- Transform XML with XSLT Transformation
-------------------------------------------
-function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
-  local errMessage  = ""
+----------------------------
+-- libsaxon: Initialization
+----------------------------
+function xmlgeneral.initializeSaxon()
+  local errMessage
+
+  if not kong.xmlSoapSaxon then
+    kong.log.debug ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
+    kong.xmlSoapSaxon = {}
+    kong.xmlSoapSaxon.saxonProcessor    = nil
+    kong.xmlSoapSaxon.xslt30Processor   = nil
+    
+    -- Load the Saxon for kong Shared Object
+    errMessage = libsaxon4kong.loadSaxonforKongLibrary ()
+
+    if not errMessage then
+      -- Create Saxon Processor
+      kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon4kong.createSaxonProcessorKong ()
+      
+      if not errMessage then
+        -- Create XSLT 3.0 processor
+        kong.xmlSoapSaxon.xslt30Processor, errMessage = libsaxon4kong.createXslt30ProcessorKong (kong.xmlSoapSaxon.saxonProcessor)
+        if not errMessage then
+          kong.log.debug ("initializeSaxon: the 'saxon' library is successfully initialized")
+        end
+      end
+
+      if errMessage then
+        kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
+      end
+
+    else
+      kong.log.debug ("initializeSaxon: errMessage: " .. errMessage)
+    end
+  else
+    kong.log.debug ("initializeSaxon: Saxon is already initialized => nothing to do")
+  end
+end
+
+---------------------------------------------------
+-- libsaxon: Transform XML with XSLT Transformation
+---------------------------------------------------
+function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
+  local errMessage
+  local xml_transformed_dump
+  local context
+  
+  kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
+
+  -- Check if Saxon for Kong library is correctly loaded
+  errMessage = libsaxon4kong.isSaxonforKongLoaded()
+  
+  if not errMessage then
+    -- Compile the XSLT document
+    context, errMessage = libsaxon4kong.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, 
+                                                          kong.xmlSoapSaxon.xslt30Processor, 
+                                                          XSLT)
+  end
+
+  if not errMessage then
+    -- If the XSLT Transformation is configured with a Template (example: <xsl:template name="main">)
+    if plugin_conf.xsltSaxonTemplate and plugin_conf.xsltSaxonTemplateParam then
+      -- Transform the XML doc with XSLT transformation by invoking a template
+      xml_transformed_dump, errMessage = libsaxon4kong.stylesheetInvokeTemplate ( 
+                                            kong.xmlSoapSaxon.saxonProcessor,
+                                            context,
+                                            plugin_conf.xsltSaxonTemplate, 
+                                            plugin_conf.xsltSaxonTemplateParam,
+                                            XMLtoTransform
+                                          )
+    else
+      -- Transform the XML doc with XSLT transformation
+      xml_transformed_dump, errMessage = libsaxon4kong.stylesheetTransformXml ( 
+                                            kong.xmlSoapSaxon.saxonProcessor,
+                                            context,
+                                            XMLtoTransform
+                                          )
+    end
+  end
+  
+  -- Free memory
+  if context then
+    -- Delete the Saxon Context and the compiled XSLT
+    libsaxon4kong.deleteContext(context)
+  end
+
+  if errMessage == nil then
+    kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
+  else
+    kong.log.debug ("XSLT transformation, END with error: " .. errMessage)
+  end
+  
+  return xml_transformed_dump, errMessage
+end
+
+---------------------------------------------------
+-- libxslt: Transform XML with XSLT Transformation
+---------------------------------------------------
+function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
+  local errMessage  = nil
   local err         = nil
   local style       = nil
   local xml_doc     = nil
@@ -246,21 +422,22 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   local xmlNodePtrRoot        = nil
   
   kong.log.debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
-
+  
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                       ffi.C.XML_PARSE_NOWARNING)
 
   -- Load the XSLT document
   local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose)
-  
+
   if errMessage == nil then
     -- Parse XSLT document
-    style = libxslt.xsltParseStylesheetDoc (xslt_doc)
-    if style ~= nil then
+    style, errMessage = libxslt.xsltParseStylesheetDoc (xslt_doc)
+    
+    if style == ffi.NULL then
+      errMessage = "error calling 'xsltParseStylesheetDoc'"
+    elseif errMessage == nil then
       -- Load the complete XML document (with <soap:Envelope>)
       xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options, verbose)
-    else
-      errMessage = "error calling 'xsltParseStylesheetDoc'"
     end
   end
 
@@ -268,7 +445,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
     local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
-    
+
     if xml_transformed ~= nil then
       -- Dump into a String the canonized image of the XML transformed by XSLT
       xml_transformed_dump, errDump = libxml2ex.xmlC14NDocSaveTo (xml_transformed, nil)
@@ -296,13 +473,30 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   end
   
   if errMessage ~= nil then
-    kong.log.debug ("XSLT transformation, errMessage: " .. errMessage)
+    kong.log.debug ("XSLT transformation, END with error: " .. errMessage)
   end
 
   -- xmlCleanupParser()
   
   return xml_transformed_dump, errMessage
   
+end
+
+---------------------------------------------------
+-- Transform XML with XSLT Transformation
+---------------------------------------------------
+function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
+  local errMessage
+  local xml_transformed_dump
+  
+  if plugin_conf.xsltLibrary == 'libxslt' then
+    xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
+  elseif plugin_conf.xsltLibrary == 'saxon' then
+    xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
+  else
+    kong.log.err("XSLTransform: unknown library " .. plugin_conf.xsltLibrary)
+  end
+  return xml_transformed_dump, errMessage
 end
 
 ----------------------------------------------------------------------------------------------------

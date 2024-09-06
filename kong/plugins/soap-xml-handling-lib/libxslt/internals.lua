@@ -453,6 +453,6 @@ ffi.cdef[[
     xsltTransformContextPtr xsltNewTransformContext(xsltStylesheetPtr stylesheet,
                      xmlDocPtr doc);
     void xsltFreeTransformContext(xsltTransformContextPtr ctxt);
-
+    void xsltSetGenericErrorFunc (void * ctx, xmlGenericErrorFunc handler);
 
 ]]

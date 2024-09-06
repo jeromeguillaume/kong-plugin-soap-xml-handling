@@ -11,14 +11,20 @@ local loaded, xslt = pcall(ffi.load, "xslt")
 -- Doc:	and xmlDoc parsed XML
 -- Returns:	a new XSLT stylesheet structure.
 function libxslt.xsltParseStylesheetDoc (styledoc)
-    local style = xslt.xsltParseStylesheetDoc(styledoc)
+  local errMessage
+  local style
+  kong.ctx.shared.xmlSoapErrMessage = nil
+  style = xslt.xsltParseStylesheetDoc(styledoc)
+  
+  if style == ffi.NULL then
+    kong.log.err("xsltParseStylesheetDoc returns null")
+  elseif kong.ctx.shared.xmlSoapErrMessage then
+    errMessage = kong.ctx.shared.xmlSoapErrMessage
+  end
     
-    if style == ffi.NULL then
-      kong.log.err("xsltParseStylesheetDoc returns null")
-    end
-    -- No need to free memory, it's already done (and it avoids the msg 'free(): double free detected in tcache 2')
-    -- return ffi.gc(style, xslt.xsltFreeStylesheet)
-    return style
+  -- No need to free memory, it's already done (and it avoids the msg 'free(): double free detected in tcache 2')
+  -- return ffi.gc(style, xslt.xsltFreeStylesheet)
+  return style, errMessage
 end
 
 -- Apply the stylesheet to the document NOTE: This may lead to a non-wellformed output XML wise!

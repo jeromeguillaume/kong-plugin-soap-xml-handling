@@ -1,0 +1,26 @@
+CPPFLAGS=-std=c++14 -fPIC -Igraalvm -I.
+LDLIBS=-ldl -lc -lsaxon-hec-12.5.0
+
+LIBOBJS=kong-adapter.o \
+	DocumentBuilder.o \
+	SaxonApiException.o \
+	SaxonCGlue.o \
+	SaxonCProcessor.o \
+	SaxonCXPath.o \
+	SaxonProcessor.o \
+	SchemaValidator.o \
+	XPathProcessor.o \
+	XQueryProcessor.o \
+	XdmArray.o \
+	XdmAtomicValue.o \
+	XdmFunctionItem.o \
+	XdmItem.o \
+	XdmMap.o \
+	XdmNode.o \
+	XdmValue.o \
+	Xslt30Processor.o \
+	XsltExecutable.o
+
+
+libsaxon-4-kong.so: $(LIBOBJS)
+	$(CC) -shared -o $@ $(LIBOBJS) $(LDLIBS)

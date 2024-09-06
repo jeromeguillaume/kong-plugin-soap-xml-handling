@@ -1,0 +1,13 @@
+FROM alpine as base
+
+#########################
+# AMD64
+#########################
+FROM --platform=linux/amd64 base as build_amd64
+COPY ../so/amd64 /kongsaxon
+
+#########################
+# ARM64
+#########################
+FROM --platform=linux/arm64 base as build_arm64
+COPY ../so/arm64 /kongsaxon

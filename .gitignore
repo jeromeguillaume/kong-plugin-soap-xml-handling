@@ -1,5 +1,9 @@
 kong/plugins/.DS_Store
 .DS_Store
+<<<<<<< HEAD
+=======
+kong/saxon/notes.txt
+>>>>>>> xslt-saxonc
 .pongo/
 servroot/
 .busted
@@ -19,3 +23,8 @@ luacov.stats.out
 luacov.report.out
 # exclude Pongo containerid file
 .containerid
+<<<<<<< HEAD
+=======
+so/
+zip/
+>>>>>>> xslt-saxonc

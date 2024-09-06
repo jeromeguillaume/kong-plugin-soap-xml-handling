@@ -187,7 +187,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     local url_cache_key = libxml2ex.hash_key(entities_url)
   
     local cacheTTL = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-      
+    
     -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
     response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entities_url)
     if err then
@@ -239,11 +239,10 @@ end
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
 -- ctxt:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
-function libxml2ex.xmlSchemaParse (xsd_context, verbose)
-    
+function libxml2ex.xmlSchemaParse (xsd_context, verbose) 
     kong.ctx.shared.xmlSoapErrMessage = nil
 
-    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapErrorHandler)
+    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
     
     if xsd_schema_doc == ffi.NULL then
@@ -252,6 +251,8 @@ function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     
     return ffi.gc(xsd_schema_doc, xml2.xmlSchemaFree), kong.ctx.shared.xmlSoapErrMessage
 end
+-- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+jit.off(libxml2ex.xmlSchemaParse)
 
 -- Create an XML Schemas validation context based on the given schema.
 -- schema:	a precompiled XML Schemas
@@ -275,47 +276,52 @@ end
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
 function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
-  
   kong.ctx.shared.xmlSoapErrMessage = nil
-  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapErrorHandler)
+  
+  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
   local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
   
   if xml_doc == ffi.NULL then
     -- It returns null in case of issue on SOAP/XML posted by the consumer
     -- We don't consider it as an Error
-    kong.log.err("xmlReadMemory returns null")
+    kong.log.debug("xmlReadMemory returns null")
     return nil, kong.ctx.shared.xmlSoapErrMessage
   end
 
   return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
 end
+-- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+jit.off(libxml2ex.xmlReadMemory)
 
 -- Validate a document tree in memory.
 -- ctxt:	a schema validation context
 -- doc:	a parsed document tree
 -- Returns:	0 if the document is schemas valid, a positive error code number otherwise and -1 in case of internal or API error.
 function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
-  
   kong.ctx.shared.xmlSoapErrMessage = nil
 
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end
+-- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+jit.off(libxml2ex.xmlSchemaValidateDoc)
+
 
 -- Validate a branch of a tree, starting with the given @elem.
 -- ctxt:	a schema validation context
 -- elem:	an element node
 -- Returns:	0 if the element and its subtree is valid, a positive error code number otherwise and -1 in case of an internal or API error.
-function libxml2ex.xmlSchemaValidateOneElement	(validation_context, xmlNodePtr, verbose)
-  
+function libxml2ex.xmlSchemaValidateOneElement(validation_context, xmlNodePtr, verbose)  
   kong.ctx.shared.xmlSoapErrMessage = nil
 
-  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapErrorHandler, nil)
+  xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end
+-- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
+jit.off(libxml2ex.xmlSchemaValidateOneElement)
 
 -- Format the Error Message
 function libxml2ex.formatErrMsg(xmlError)
@@ -430,7 +436,7 @@ function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodeSet)
     end
     -- free Buffer
     xml2.xmlBufferFree(xmlBuffer)
-    xml2.xmlOutputBufferClose(output_buffer)
+    -- The 'output_buffer' is freed by a ffi.gc configured in 'xmlOutputBufferCreate' function
   else
     kong.log.err("Error calling 'xmlBufferCreate'")
   end
