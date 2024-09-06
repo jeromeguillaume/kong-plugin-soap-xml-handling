@@ -11,9 +11,9 @@ local pluginResponse = plugins[2]
 local saxon_common = require "spec.common.saxon"
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test

@@ -1,5 +1,18 @@
 # Saxon and Kong
 
+## Overview
+[Saxonica](https://www.saxonica.com/html/welcome/welcome.html) company provides the `Saxon` processor for XSLT, XQuery, and XML Schema. The `Saxon` processor is available for Java, .NET, JavaScript, PHP, Python and C/C++. Several editions available: 
+- HE: Saxon Home Edition (open source)
+- PE: Saxon Professional Edition
+- EE: Saxon Enterprise Edition
+
+The HE edition provides XSLT 2.0 and 3.0 support but the XML validation is only included in EE edition. See the [Feature Matrix](https://www.saxonica.com/html/products/feature-matrix-12.html).
+So the purpose is to integrate `Saxon HE` to Kong for XSLT Transformation only. It enables JSON <-> XML transformation with [fn:json-to-xml](https://www.saxonica.com/html/documentation10/functions/fn/json-to-xml.html) and [fn:xml-to-json](https://www.saxonica.com/html/documentation12/functions/fn/xml-to-json.html) that [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) doesn't provide. 
+
+The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/saxon-c/doc12/html/index.html)) library is not included in the [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image. For that: build your own Kong Docker images or use a Kubernetes initContainer.
+
+Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
+
 ## Prerequisite: download the SaxonC-HE v12 - Zip package
 - Linux AArch64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip)
@@ -16,6 +29,15 @@
 ```sh
 cd saxon
 ```
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
+```sh
+make kong_saxon_docker_hub
+```
+- Build all
+```sh
+cd saxon
+make
+```
 - Extract and Build the `saxon` libraries. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
   - `arm64`
   ```sh
@@ -28,15 +50,6 @@ cd saxon
 - Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
-```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
-```sh
-make kong_saxon_docker_hub
-```
-- Build all
-```sh
-cd saxon
-make
 ```
 
 ## Run Kong with Saxon

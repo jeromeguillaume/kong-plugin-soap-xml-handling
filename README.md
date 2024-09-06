@@ -1,7 +1,8 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
 This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
-Add the SaxonC support for XSLT 3.0.
+
+The XSLT Transformation can be managed with the [Saxon](https://www.saxonica.com/html/welcome/welcome.html) library too, which supports XSLT 2.0 and 3.0. With XSLT >= 2.0 there is a way for applying JSON <-> XML transformation with [fn:json-to-xml](https://www.w3.org/TR/xslt-30/#func-json-to-xml) and [fn:xml-to-json](https://www.w3.org/TR/xslt-30/#func-xml-to-json). The Saxon library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate Saxon with Kong.
 
 These plugins don't apply to Kong OSS. They work for Kong EE and Konnect.
 
@@ -20,7 +21,7 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 6) `WSDL/XSD VALIDATION`: Validate the XML response with its WSDL/XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
-Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message)
+Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message).
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -786,6 +787,12 @@ You can change operation to the following values:
 - `Subtract`
 - `Divide`
 - `Multiply`
+
+## Plugins Testing
+The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo). 
+- Download pongo
+- Initialize pongo
+- Run tests with [pongo.sh](pongo.sh)
 
 ## Changelog
 - v1.0.0:
