@@ -116,9 +116,9 @@ deployment:
   - name: kongsaxon-vol
     mountPath: /usr/local/lib/kongsaxon
 ```
-- Execute the Helm command
+- Execute the `helm` command
 ```sh
-helm install my-kong kong/kong -n kong --values ./values.yaml
+helm install kong kong/kong -n kong --values ./values.yaml
 ```
 - See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 - For Kubernetes: **the `initContainer` is the preferred method** instead of using the customized image (`jeromeguillaume/kong-saxon`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doesn't require rebuilding for each new release of `kong/kong-gateway`.
