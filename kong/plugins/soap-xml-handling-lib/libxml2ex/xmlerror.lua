@@ -9,7 +9,7 @@ void	                xmlSetStructuredErrorFunc   (void* ctx, xmlStructuredErrorF
 
 // JeromeGuillaume:
 // Change 3rd argument from the original definition as follows:
-//         `...` -> `char *value var3`
+//         `...` -> `char *value type`
 // because LuaJit's FFI cannot manage a variable number of arguments of C function
 // See: 
 //   https://android.googlesource.com/platform/external/libxslt/+/7d1dabff1598661db0018d89d16cca02f7c31ae2/libxslt/xsltutils.c#650
