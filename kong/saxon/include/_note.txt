@@ -1,0 +1,3 @@
+# Copy the header files (.h)
+SOURCE     : ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h
+DESTINATION: ./kong-plugin-soap-xml-handling/kong/saxon/include

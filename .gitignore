@@ -1,6 +1,6 @@
 kong/plugins/.DS_Store
-.DS_Store
 kong/saxon/notes.txt
+.DS_Store
 .pongo/
 servroot/
 .busted
@@ -21,4 +21,5 @@ luacov.report.out
 # exclude Pongo containerid file
 .containerid
 so/
-zip/
+kong/saxon/zip/*.zip
+kong/saxon/include/*.h

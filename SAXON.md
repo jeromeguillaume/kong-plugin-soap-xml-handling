@@ -26,8 +26,17 @@ Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships wit
   - `libsaxon-hec-12.5.0.so`: C++ shared object extracted from `libsaxon-HEC-linux-<arch>-v12.5.0.zip`
   - `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
 - Prerequisite
+  - Copy `libsaxon-HEC` zip files
 ```sh
-cd saxon
+cd ./kong-plugin-soap-xml-handling/kong/saxon
+cp <Downloads>/libsaxon-HEC-linux-aarch64-v12.5.0.zip ./zip
+cp <Downloads>/libsaxon-HEC-linux-x86_64-v12.5.0.zip ./zip
+```
+  - Copy inlude files (`.h`) for C/C++ syntax checking
+```sh
+cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h ./include
+cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h ./include
+rm ./include/php8*
 ```
 - Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-12-5` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
