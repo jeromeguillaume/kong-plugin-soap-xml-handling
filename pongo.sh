@@ -2,7 +2,7 @@
 # Rebuild the pongo image
 #   required if the 'KONG_IMAGE' has been rebuilt w/o changing its tag version
 #------------------------------------------------------------------------------
-# KONG_IMAGE=jeromeguillaume/kong-saxon-12-5:3.7.1.1 pongo build
+# KONG_IMAGE=jeromeguillaume/kong-saxon-12-5:3.7.1.1 pongo build --force
 
 #-------------------------------------------------------------------------------
 # Execute the tests with the Kong standard image

@@ -310,8 +310,8 @@ function xmlgeneral.initializeSaxon()
   if not kong.xmlSoapSaxon then
     kong.log.debug ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
     kong.xmlSoapSaxon = {}
-    kong.xmlSoapSaxon.saxonProcessor    = nil
-    kong.xmlSoapSaxon.xslt30Processor   = nil
+    kong.xmlSoapSaxon.saxonProcessor    = ffi.NULL
+    kong.xmlSoapSaxon.xslt30Processor   = ffi.NULL
     
     -- Load the Saxon for kong Shared Object
     kong.log.debug ("initializeSaxon: loadSaxonforKongLibrary")
@@ -339,7 +339,7 @@ function xmlgeneral.initializeSaxon()
       kong.log.debug ("initializeSaxon: errMessage: " .. errMessage)
     end
   else
-    kong.log.debug ("initializeSaxon: Saxon is already initialized => nothing to do")
+    kong.log.debug ("initializeSaxon: 'saxon' is already initialized => nothing to do")
   end
 end
 

@@ -47,7 +47,7 @@ end
 function libsaxon4kong.isSaxonforKongLoaded()
   local err
   if not saxon4KongLib then
-    err = "Unable to find or load '" .. libsaxon4kong.libName .. "' and the dependency of the Saxon shared object. Please check 'LD_LIBRARY_PATH' env variable and the presence of both libraries"
+    err = "Unable to load the XSLT library shared object or its dependency. Please check 'LD_LIBRARY_PATH' env variable and the presence of libraries"
   end
   return err
 end
@@ -56,14 +56,19 @@ end
 -- Create Saxon processor
 --------------------------
 function libsaxon4kong.createSaxonProcessorKong()
-  local saxonProcessor
+  local saxonProcessor = ffi.NULL
   local err = "Unable to create the Saxon Processor"
+  local rc = true
 
   -- If the Saxon library is initialized
   if saxon4KongLib then
     -- Initialize the Saxon Processor
-    saxonProcessor = saxon4KongLib.createSaxonProcessorKong ()
-    if saxonProcessor ~= ffi.NULL then
+    rc, saxonProcessor = pcall(saxon4KongLib.createSaxonProcessorKong)
+    -- If there is an error on pcall
+    if not rc then
+      err = "createSaxonProcessorKong: " .. saxonProcessor
+      saxonProcessor = ffi.NULL
+    elseif saxonProcessor ~= ffi.NULL then
       err = nil
     end
   end
@@ -74,20 +79,25 @@ end
 -- Create XSLT 3.0 processor
 -----------------------------
 function libsaxon4kong.createXslt30ProcessorKong(saxonProcessor)
-  local xslt30Processor
+  local xslt30Processor = ffi.NULL
   local err = "Unable to create the Saxon XSLT 3.0 Processor"
-  
+  local rc = true
+
   if saxon4KongLib and saxonProcessor ~= ffi.NULL then
     local errorMessage_ptr = ffi.new ("char *[1]")
     -- Initialize the XSLT 3.0 Processor
-    xslt30Processor = saxon4KongLib.createXslt30ProcessorKong (saxonProcessor, errorMessage_ptr)
-    if errorMessage_ptr[0] ~= ffi.NULL then
+    rc, xslt30Processor = pcall(saxon4KongLib.createXslt30ProcessorKong, saxonProcessor, errorMessage_ptr)
+    -- If there is an error on pcall
+    if not rc then
+      err = "createXslt30ProcessorKong: " .. xslt30Processor
+      xslt30Processor = ffi.NULL
+    elseif errorMessage_ptr[0] ~= ffi.NULL then
       err = ffi.string(ffi.cast("char *", errorMessage_ptr[0]))
     else
       err = nil
     end
     -- Free memory
-    saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr[0]))        
+    saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr[0]))
   end
   return xslt30Processor, err
 end
@@ -97,10 +107,14 @@ end
 -- Get Error Message from Context
 ----------------------------------
 function libsaxon4kong.getErrorMessage(context)
-  local errorMessage  
+  local errorMessage
+  
   if saxon4KongLib then
-    local errorMessage_ptr = saxon4KongLib.getErrMessage (context)
-    if errorMessage_ptr ~= ffi.NULL then
+    local rc, errorMessage_ptr = pcall(saxon4KongLib.getErrMessage, context)
+    -- If there is an error on pcall
+    if not rc then
+      errorMessage = "getErrMessage: " .. errorMessage_ptr
+    elseif errorMessage_ptr ~= ffi.NULL then
       errorMessage = ffi.string(errorMessage_ptr)
       saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr))
       
@@ -119,7 +133,11 @@ end
 ------------------
 function libsaxon4kong.deleteContext(context)
   if saxon4KongLib and context ~= ffi.NULL then
-    saxon4KongLib.deleteContext (context)
+    local rc, errMsg = pcall(saxon4KongLib.deleteContext, context)
+    -- If there is an error on pcall
+    if not rc then
+      kong.log.err("Error on deleteContext: " .. errMsg)
+    end
   end
 end
 
@@ -127,20 +145,22 @@ end
 -- Compile Stylesheet
 ----------------------
 function libsaxon4kong.compileStylesheet(saxonProcessor, xslt30Processor, XSLT)
-  local context
+  local context = ffi.NULL
   local err
+  local rc = true
+
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and xslt30Processor ~= ffi.NULL then
-    context = saxon4KongLib.compileStylesheet (saxonProcessor, xslt30Processor, XSLT)
+    rc, context = pcall(saxon4KongLib.compileStylesheet, saxonProcessor, xslt30Processor, XSLT)
   end
-  err = "Unable to compile XSLT"
-  if saxonProcessor == ffi.NULL then
-    err = err .. ". The Saxon Processor is not initialized"
-  elseif xslt30Processor == ffi.NULL then
-    err = err .. ". The Saxon XSLT 3.0 Processor is not created"
-  elseif context == ffi.NULL then
-    err = "The 'context' is null"
-  else
+  
+  -- If there is an error on pcall
+  if not rc then
+    err = "compileStylesheet: " .. context
+    context = ffi.NULL
+  elseif context ~= ffi.NULL then
     err = libsaxon4kong.getErrorMessage(context)
+  else
+    err = "Unable to compile XSLT"
   end
   return context, err
 end
@@ -150,13 +170,19 @@ end
 --------------------------------------------------------------------------
 function libsaxon4kong.stylesheetInvokeTemplate (saxonProcessor, context, templateName, paramName, XMLtoTransform)
   local err
-  local xml_transformed
-  local xml_ptr
+  local xml_transformed = nil
+  local xml_ptr = ffi.NULL
+  local rc = true
+  
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
-    xml_ptr = saxon4KongLib.stylesheetInvokeTemplateKong (saxonProcessor, context, templateName, paramName, XMLtoTransform)
+    rc, xml_ptr = pcall(saxon4KongLib.stylesheetInvokeTemplateKong, saxonProcessor, context, templateName, paramName, XMLtoTransform)
   end
-
-  if xml_ptr ~= ffi.NULL then
+  
+  -- If there is an error on pcall
+  if not rc then
+    err = "stylesheetInvokeTemplate: " .. xml_ptr
+    xml_ptr = nil
+  elseif xml_ptr ~= ffi.NULL then
     xml_transformed = ffi.string(xml_ptr)
     saxon4KongLib.free(ffi.cast("char*", xml_ptr))
   elseif context ~= ffi.NULL then
@@ -175,12 +201,17 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
   local err
   local xml_transformed
   local xml_ptr
+  local rc = true
   
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
-    xml_ptr = saxon4KongLib.stylesheetTransformXmlKong (saxonProcessor, context, XMLtoTransform)
+    rc, xml_ptr = pcall (saxon4KongLib.stylesheetTransformXmlKong, saxonProcessor, context, XMLtoTransform)
   end
   
-  if xml_ptr ~= ffi.NULL then
+  -- If there is an error on pcall
+  if not rc then
+    err = "stylesheetTransformXml: " .. xml_ptr
+    xml_ptr = nil
+  elseif xml_ptr ~= ffi.NULL then
     xml_transformed = ffi.string(xml_ptr)
     saxon4KongLib.free(ffi.cast("char*", xml_ptr))
   elseif context ~= ffi.NULL then

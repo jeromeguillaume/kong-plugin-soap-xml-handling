@@ -126,7 +126,7 @@ extern "C" void *compileStylesheet( const void *saxonProcessor_void,
   try {
     Xslt30Processor *pxslt30Processor = (Xslt30Processor *) xslt30Processor_void;
     context = new Context();
-    context->_xsltExecutable = pxslt30Processor->compileFromString(stylesheet_string);
+    context->_xsltExecutable = pxslt30Processor->compileFromString(stylesheet_string);    
   }
   catch (SaxonApiException& e) {
     formatCerr ("Error in compile_stylesheet", e.getMessage());
