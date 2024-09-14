@@ -27,12 +27,12 @@ Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships wit
   - `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
 - Prerequisite
   - Copy `libsaxon-HEC` zip files
+  - Copy inlude files (`.h`) for C/C++ syntax checking
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/saxon
 cp <Downloads>/libsaxon-HEC-linux-aarch64-v12.5.0.zip ./zip
 cp <Downloads>/libsaxon-HEC-linux-x86_64-v12.5.0.zip ./zip
 ```
-  - Copy inlude files (`.h`) for C/C++ syntax checking
 ```sh
 cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h ./include
 cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h ./include
