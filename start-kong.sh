@@ -24,8 +24,8 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_GUI_LISTEN=0.0.0.0:7002, 0.0.0.0:7445 ssl" \
 -e "KONG_ADMIN_GUI_URL=http://localhost:7002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
--e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
+-e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e KONG_LICENSE_DATA \
 -p 7000:7000 \
 -p 7443:7443 \
@@ -39,6 +39,6 @@ kong/kong-gateway:3.7.1.1
 #-e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 #--mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
 
-#jeromeguillaume/kong-saxon-12-5:3.7.1.1
+#jeromeguillaume/kong-saxon:3.7.1.1-12.5
 
 echo 'docker logs kong-gateway-soap-xml-handling -f'

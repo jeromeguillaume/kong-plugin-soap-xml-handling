@@ -38,7 +38,7 @@ cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h ./include
 cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h ./include
 rm ./include/php8*
 ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-12-5` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_docker_hub
 ```
@@ -56,7 +56,7 @@ make
   ```sh
   make local_lib_amd64
   ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-12-5-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
 ```
@@ -73,16 +73,16 @@ make kong_saxon_initcontainer_docker_hub
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
-### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon-12-5`
+### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
 - Docker
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
 ...
-jeromeguillaume/kong-saxon-12-5:3.7.1.1
+jeromeguillaume/kong-saxon3.7.1.1-12.5
 ```
-- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon-12-5:3.7.1.1`
+- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.7.1.1-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
-### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-12-5-initcontainer`
+### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/xslt-saxonc?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
 - Prepare a `values.yaml`. Pay attention to `customEnv.LD_LIBRARY_PATH` and `deployment.initContainers`
 ```yaml
@@ -113,8 +113,8 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-12-5-initcontainer:1.0.0
-    command: ["/bin/sh", "-c", "cp /kongsaxon/* /usr/local/lib/kongsaxon"]
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0-12.5
+    command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
       mountPath: /usr/local/lib/kongsaxon
@@ -129,5 +129,5 @@ deployment:
 ```sh
 helm install kong kong/kong -n kong --values ./values.yaml
 ```
-- See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
-- For Kubernetes: **the `initContainer` is the preferred method** instead of using the customized image (`jeromeguillaume/kong-saxon-12-5`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doesn't require rebuilding for each new release of `kong/kong-gateway`
+- See a complete `values.yaml` example for Konnect: [values-4-Konnect-w-initContainer.yaml](kong/saxon/kubernetes/values-4-Konnect-w-initContainer.yaml)
+- For Kubernetes: **the `initContainer` is the preferred method** instead of using the customized image (`jeromeguillaume/kong-saxon`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doesn't require rebuilding for each new release of `kong/kong-gateway`

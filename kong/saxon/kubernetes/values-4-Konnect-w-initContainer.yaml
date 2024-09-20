@@ -1,5 +1,5 @@
 image:
-  repository: jeromeguillaume/kong-saxon-12-5
+  repository: kong/kong-gateway
   tag: "3.7.1.1"
 
 secretVolumes:
@@ -12,10 +12,10 @@ env:
   role: data_plane
   database: "off"
   cluster_mtls: pki
-  cluster_control_plane: 26af1b2a7b.eu.cp0.konghq.com:443
-  cluster_server_name: 26af1b2a7b.eu.cp0.konghq.com
-  cluster_telemetry_endpoint: 26af1b2a7b.eu.tp0.konghq.com:443
-  cluster_telemetry_server_name: 26af1b2a7b.eu.tp0.konghq.com
+  cluster_control_plane: ba704b38aa.eu.cp0.konghq.com:443
+  cluster_server_name: ba704b38aa.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: ba704b38aa.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: ba704b38aa.eu.tp0.konghq.com
   cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
   cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
   lua_ssl_trusted_certificate: system
@@ -41,6 +41,25 @@ plugins:
       path: libxml2ex
     - name: libxslt
       path: libxslt
+
+customEnv:
+  LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
+
+deployment:
+  initContainers:
+  - name: kongsaxon
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0-12.5
+    imagePullPolicy: Always
+    command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
+    volumeMounts:
+    - name: kongsaxon-vol
+      mountPath: /usr/local/lib/kongsaxon
+  userDefinedVolumes:
+  - name: kongsaxon-vol
+    emptyDir: {}
+  userDefinedVolumeMounts:
+  - name: kongsaxon-vol
+    mountPath: /usr/local/lib/kongsaxon
 
 ingressController:
   enabled: false
