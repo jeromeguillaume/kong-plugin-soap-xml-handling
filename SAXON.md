@@ -235,7 +235,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 4) Add `soap-xml-request-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsltLibrary` property with the value `saxon`
-- `xsdSoapSchema` property with no value (because our request is XML type, no SOAP type)
+- `xsdSoapSchema` property with no value (feel free to put a XSD Schema related to the request)
 - `xsltTransformAfter` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
@@ -385,7 +385,7 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
 - `xsltLibrary` property with the value `saxon`
 - `xsltSaxonTemplate` property with the value `main`
 - `xsltSaxonTemplateParam` property with the value `response-body`
-- `xsdSoapSchema` property with no value (because our request is XML type, no SOAP type)
+- `xsdSoapSchema` property with no value (feel free to put a XSD Schema related to the request)
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
