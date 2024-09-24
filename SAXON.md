@@ -328,53 +328,53 @@ Content-Type: application/json
   "args": {},
   "data": "{\"companyName\":\"KongHQ\",\"...\":\"...\"}",
   "json": {
-		"city": "SAN FRANCISCO",
-		"companyName": "KongHQ",
+    "city": "SAN FRANCISCO",
+    "companyName": "KongHQ",
     "state": "CA",
-		"country": "USA",
-		"offices": {
-			"site": [
-				"San Francisco (HQ)",
-				"Chicago",
-				"London",
-				"Bangalore",
-				"Singapore",
-				"Shangai",
-				"Japan"
-			]
-		},
-		"products": [
-			{
-				"Kong konnect": {
-					"saas": true,
-					"version": 2024
-				}
-			},
-			{
-				"Kong AI Gateway": {
-					"saas": false,
-					"version": 3.8
-				}
-			},
-			{
-				"Kong Ingress Controller": {
-					"saas": false,
-					"version": 3.3
-				}
-			},
-			{
-				"Kong Mesh": {
-					"saas": false,
-					"version": 2.8
-				}
-			},
-			{
-				"Insomnia": {
-					"saas": false,
-					"version": 10
-				}
-			}
-		],
-	},
+    "country": "USA",
+    "offices": {
+      "site": [
+        "San Francisco (HQ)",
+        "Chicago",
+        "London",
+        "Bangalore",
+        "Singapore",
+        "Shangai",
+        "Japan"
+      ]
+    },
+    "products": [
+      {
+        "Kong konnect": {
+          "saas": true,
+          "version": 2024
+          }
+      },
+      {
+        "Kong AI Gateway": {
+          "saas": false,
+          "version": 3.8
+        }
+      },
+      {
+        "Kong Ingress Controller": {
+          "saas": false,
+          "version": 3.3
+        }
+      },
+      {
+        "Kong Mesh": {
+          "saas": false,
+          "version": 2.8
+        }
+      },
+      {
+        "Insomnia": {
+          "saas": false,
+          "version": 10
+        }
+      }
+    ],
+  },
 }
 ```
