@@ -387,7 +387,7 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
 - `xsltSaxonTemplateParam` property with the value `response-body`
 - `xsdSoapSchema` property with no value (because our request is XML type, no SOAP type)
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
-```xml
+```xsl
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
   <xsl:template name="main">
