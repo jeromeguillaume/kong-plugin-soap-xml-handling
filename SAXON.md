@@ -269,7 +269,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
         </array>
       </map>
     </xsl:variable>
-  <xsl:value-of select="fn:xml-to-json($json-result)"/>
+    <xsl:value-of select="fn:xml-to-json($json-result)"/>
   </xsl:template>
 </xsl:stylesheet>
 ```
