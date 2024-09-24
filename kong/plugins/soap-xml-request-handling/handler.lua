@@ -133,10 +133,24 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   end
   
   -- If there is no Error   and
-  -- If there is a JSON -> XML transformation on the Request
-  --    => change the 'Content-Type' header of the Request
-  if soapFaultBody == nil and kong.ctx.shared.contentTypeJSON.request == true then
-    kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
+  if soapFaultBody == nil then
+
+    local rc = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelope_transformed)
+    
+    -- If there is a JSON -> SOAP/XML transformation on the Request
+    if kong.ctx.shared.contentTypeJSON.request == true then
+      -- change the 'Content-Type' header of the Request
+      kong.log.notice("**Jerome: change content-type to 'XML'")
+      kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
+    -- Else it's an XML request
+    else
+      -- Check if the body has been transformed to a JSON due to an XSLT transforamtion (SOAP/XML -> JSON)
+      local rc = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelope_transformed)
+      if rc == xmlgeneral.JSONContentTypeBody then
+        kong.log.notice("**Jerome: change content-type to 'JSON'")
+        kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
+      end
+    end
   end
   
   return soapEnvelope_transformed, soapFaultBody
@@ -227,13 +241,15 @@ function plugin:header_filter(plugin_conf)
         or 
        kong.response.get_source() == "error") then
     
+    -- If the Client sends an SOAP/XML request
     if kong.ctx.shared.contentTypeJSON.request == false then
       kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
       
       soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(plugin_conf.VerboseRequest, kong.ctx.shared.contentTypeJSON.request)
-      -- We aren't able to call 'kong.response.set_raw_body()' at this stage to change the body content
+      -- At this stage we cannot call 'kong.response.set_raw_body()' to change the body content
       -- but it will be done by 'body_filter' phase
       kong.response.set_header("Content-Length", #soapFaultBody)
+
       kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
     end
 

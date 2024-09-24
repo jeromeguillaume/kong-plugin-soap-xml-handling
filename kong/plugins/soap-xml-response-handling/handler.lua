@@ -173,7 +173,7 @@ function plugin:header_filter(plugin_conf)
           kong.response.get_source()  == "error") then
     if kong.ctx.shared.contentTypeJSON.request == true then
       kong.log.debug("A pending error has been set by other plugin or by the Service itself")
-      kong.response.set_header("Content-Type", xmlgeneral.JsonContentType)
+      kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
       return
     else
       kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
@@ -217,7 +217,7 @@ function plugin:header_filter(plugin_conf)
   
   -- If there is a XML -> JSON transformation on the Response: change the 'Content-Type' header of the Response
   if kong.ctx.shared.contentTypeJSON.request == true then
-    kong.response.set_header("Content-Type", xmlgeneral.JsonContentType)
+    kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
   end
 
   -- If there is no error

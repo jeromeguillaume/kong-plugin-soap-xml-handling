@@ -22,7 +22,10 @@ xmlgeneral.AfterXSD           = " (after XSD validation)"
 xmlgeneral.xmlnsXsdHref       = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema          = "schema"
 xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
-xmlgeneral.JsonContentType    = "application/json"
+xmlgeneral.JSONContentType    = "application/json"
+xmlgeneral.XMLContentTypeBody     = 1
+xmlgeneral.JSONContentTypeBody    = 2
+xmlgeneral.unknownContentTypeBody = 3
 
 xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to download XSD content
 xmlgeneral.prefetchStatusOk       = "Ok"
@@ -161,15 +164,15 @@ function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentTy
   if contentTypeJSON == false then
     contentType = xmlgeneral.XMLContentType
   else
-    contentType = xmlgeneral.JsonContentType
+    contentType = xmlgeneral.JSONContentType
   end
   -- Send a Fault code to client
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentType})
 end
 
------------------------------------------------------------------------
--- Initialize the ContentTypeJSON table for keeping the 'Content-Type'
------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+-- Initialize the ContentTypeJSON table for keeping the 'Content-Type' of the Request
+--------------------------------------------------------------------------------------
 function xmlgeneral.initializeContentTypeJSON ()
   -- If the 'kong.ctx.shared.contentTypeJSON' is not already created (by the Request plugin)
   if not kong.ctx.shared.contentTypeJSON then
@@ -179,6 +182,39 @@ function xmlgeneral.initializeContentTypeJSON ()
     kong.ctx.shared.contentTypeJSON.request = contentType == 'application/json' or 
                                               contentType == 'application/vnd.api+json'
   end
+end
+
+---------------------------------------------------------------------------------------------
+-- Get the Content-Type of the body by getting the first character:
+--    <      =>  SOAP/XML 
+--    { or [ =>  JSON
+-- It's used when an XSLT transformation is done:
+--    SOAP/XML transformed to JSON or 
+--    JSON transformed to SOAP/XML
+---------------------------------------------------------------------------------------------
+function xmlgeneral.getBodyContentType(plugin_conf, body)
+  local rc = xmlgeneral.unknownContentTypeBody  
+
+  if body then
+    -- check if the 1st character is a '<' that stands for a SOAP/XML body Content Type
+    -- we ignore space (\s) and tabulation (\t) characters
+    local i, _ = string.find(body, "^%s*<")
+    if i == 1 then
+      kong.log.notice("**Jerome: getBodyContentType | XML")
+      rc = xmlgeneral.XMLContentTypeBody
+    else
+      -- check if the 1st character is a '{' or '[' that stands for a JSON body Content Type
+      i, _ = string.find(body, "^%s*[{%[]")
+      if i == 1 then
+        kong.log.notice("**Jerome: getBodyContentType | JSON")
+        rc = xmlgeneral.JSONContentTypeBody
+      else
+        kong.log.notice("**Jerome: getBodyContentType | not xml, i=" .. tostring(i))
+      end
+    end
+  end
+  kong.log.notice("**Jerome: getBodyContentType: " .. tostring(rc))
+  return rc
 end
 
 -------------------------------------------------------------------
@@ -204,6 +240,7 @@ end
 -------------------------------------------------------------------------------
 -- Initialize the SOAP/XML plugin
 -- Setup a 'libxml2' Error handler
+-- Setup a 'libxslt' Error handler
 -- Setup the SOAP/XML Timer context in charge of downloading the XSD in the background
 -- Setup an External Entity Loader
 -------------------------------------------------------------------------------
