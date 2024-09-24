@@ -249,27 +249,27 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
         <string key="city"><xsl:value-of select="city"/></string>
         <string key="state"><xsl:value-of select="state"/></string>
         <string key="country"><xsl:value-of select="country"/></string>
-        <map key="offices">
-			<array key="site">
-        		<xsl:for-each select="offices/site">
-					<string><xsl:value-of select="."/></string>
-				</xsl:for-each>
-			</array>
-		</map>
-        <array key="products">
-          <xsl:for-each select="products/product">
-          <map>
-          	  <xsl:element name="map">
-                <xsl:attribute name="key"><xsl:value-of select="@name"/></xsl:attribute>
-                <number key="version"><xsl:value-of select="./version"/></number>
-                <boolean key="saas"><xsl:value-of select="./saas"/></boolean>
-	          </xsl:element>
-          </map>
+      <map key="offices">
+        <array key="site">
+          <xsl:for-each select="offices/site">
+            <string><xsl:value-of select="."/></string>
           </xsl:for-each>
         </array>
-     </map>
+        </map>
+        <array key="products">
+          <xsl:for-each select="products/product">
+            <map>
+              <xsl:element name="map">
+              <xsl:attribute name="key"><xsl:value-of select="@name"/></xsl:attribute>
+                <number key="version"><xsl:value-of select="./version"/></number>
+                <boolean key="saas"><xsl:value-of select="./saas"/></boolean>
+              </xsl:element>
+            </map>
+          </xsl:for-each>
+        </array>
+      </map>
     </xsl:variable>
-    <xsl:value-of select="fn:xml-to-json($json-result)"/>
+  <xsl:value-of select="fn:xml-to-json($json-result)"/>
   </xsl:template>
 </xsl:stylesheet>
 ```
@@ -387,7 +387,7 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
 - `xsltSaxonTemplateParam` property with the value `response-body`
 - `xsdSoapSchema` property with no value (because our request is XML type, no SOAP type)
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
-```xsl
+```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
   <xsl:template name="main">
