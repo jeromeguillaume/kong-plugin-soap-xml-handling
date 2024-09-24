@@ -317,7 +317,7 @@ Content-Type:"text/xml; charset=utf-8" \
   </products>
 </root>
 ```
-The expected `JSON` response is like:
+The expected `JSON` response is as following. Pay attention to the `json` property: it contains the whole converted request XML.
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -377,4 +377,87 @@ Content-Type: application/json
     ],
   },
 }
+```
+Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML response by using `soap-xml-response-handling` plugin:
+
+6) Add `soap-xml-response-handling` plugin to `httpbin` and configure the plugin with:
+- `VerboseResponse` enabled
+- `xsltLibrary` property with the value `saxon`
+- `xsltSaxonTemplate` property with the value `main`
+- `xsltSaxonTemplateParam` property with the value `response-body`
+- `xsdSoapSchema` property with no value (because our request is XML type, no SOAP type)
+- `xsltTransformBefore` property with this `XSLT 3.0` definition:
+```xml
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
+  <xsl:output method="xml" indent="yes"/>
+  <xsl:template name="main">
+    <xsl:param name="response-body" required="yes"/>
+    <xsl:variable name="json_var" select="fn:json-to-xml($response-body)"/>
+      <root>
+        <companyName><xsl:value-of select="$json_var/map/map/string[@key='companyName']"/></companyName>
+        <city><xsl:value-of select="$json_var/map/map/string[@key='city']"/></city>
+        <state><xsl:value-of select="$json_var/map/map/string[@key='state']"/></state>
+        <country><xsl:value-of select="$json_var/map/map/string[@key='country']"/></country>
+        <offices>
+        	<xsl:for-each select="$json_var/map/map/map[@key='offices']/array[@key='site']/string">
+        		<site><xsl:value-of select="."/></site>
+        	</xsl:for-each>
+        </offices>
+        <products>
+        	<xsl:for-each select="$json_var/map/map/array[@key='products']/map/map">
+        		<product>
+        			<xsl:attribute name="name"><xsl:value-of select="@key"/></xsl:attribute>
+					<version><xsl:value-of select="number[@key='version']"/></version>
+			    	<saas><xsl:value-of select="boolean[@key='saas']"/></saas>
+        		</product>
+        	</xsl:for-each>
+        </products>
+      </root>
+  </xsl:template>
+</xsl:stylesheet>
+```
+7) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request. Use command defined at step #5. The expected `XML` response is as following.
+```
+HTTP/1.1 200 OK
+Content-Type: text/xml
+...
+```
+```xml
+<root>
+  <companyName>KongHQ</companyName>
+  <city>SAN FRANCISCO</city>
+  <state>CA</state>
+  <country>USA</country>
+  <offices>
+    <site>San Francisco (HQ)</site>
+    <site>Chicago</site>
+    <site>London</site>
+    <site>Bangalore</site>
+    <site>Singapore</site>
+    <site>Shangai</site>
+    <site>Japan</site>
+  </offices>
+  <products>
+    <product name="Kong konnect">
+    	<version>2024</version>
+    	<saas>true</saas>
+    </product>
+    <product name="Kong AI Gateway">
+    	<version>3.8</version>
+    	<saas>false</saas>
+    </product>
+    <product name="Kong Ingress Controller">
+    	<version>3.3</version>
+    	<saas>false</saas>
+    </product>
+    <product name="Kong Mesh">
+    	<version>2.8</version>
+    	<saas>false</saas>
+    </product>
+    <product name="Insomnia">
+    	<version>10.0</version>
+    	<saas>false</saas>
+    </product>
+  </products>
+</root>
 ```
