@@ -249,12 +249,12 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
         <string key="city"><xsl:value-of select="city"/></string>
         <string key="state"><xsl:value-of select="state"/></string>
         <string key="country"><xsl:value-of select="country"/></string>
-      <map key="offices">
-        <array key="site">
-          <xsl:for-each select="offices/site">
-            <string><xsl:value-of select="."/></string>
-          </xsl:for-each>
-        </array>
+        <map key="offices">
+          <array key="site">
+            <xsl:for-each select="offices/site">
+              <string><xsl:value-of select="."/></string>
+            </xsl:for-each>
+          </array>
         </map>
         <array key="products">
           <xsl:for-each select="products/product">
