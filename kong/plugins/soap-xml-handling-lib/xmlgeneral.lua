@@ -215,6 +215,7 @@ function xmlgeneral.getBodyContentType(plugin_conf, body)
       end
     end
   end
+kong.log.notice("** jerome: getBodyContentType | rc: " .. rc)  
   return rc
 end
 
@@ -520,6 +521,10 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   if plugin_conf.xsltLibrary == 'libxslt' then
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
   elseif plugin_conf.xsltLibrary == 'saxon' then
+    -- If XMLtoTransform is a JSON type we add a faked <InternalkongRoot> tag to be ingested as an XML
+    if xmlgeneral.getBodyContentType(plugin_conf, XMLtoTransform) == xmlgeneral.JSONContentTypeBody then
+      XMLtoTransform = "<InternalkongRoot>" .. XMLtoTransform .. "</InternalkongRoot>"
+    end
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)
   else
     kong.log.err("XSLTransform: unknown library " .. plugin_conf.xsltLibrary)

@@ -15,7 +15,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   local soapEnvelope_transformed
   local errMessage
   local soapFaultBody
-
+  
   soapEnvelope_transformed = soapEnvelope
 
   -- If there is 'XSLT Transformation Before XSD' configuration then:

@@ -133,6 +133,69 @@ helm install kong kong/kong -n kong --values ./values.yaml
 - See a complete `values.yaml` example for Konnect: [values-4-Konnect-w-initContainer.yaml](kong/saxon/kubernetes/values-4-Konnect-w-initContainer.yaml)
 - For Kubernetes: **the `initContainer` is the preferred method** instead of using the customized image (`jeromeguillaume/kong-saxon`). Indeed the `initContainer` has no dependency to `kong/kong-gateway` and it doesn't require rebuilding for each new release of `kong/kong-gateway`
 
+## Behind the scenes of `fn:json-to-xml` and `fn:xml-to-json` functions
+The `fn:json-to-xml` function converts the `JSON` data types to corresponding `XML` tags. The `fn:xml-to-json` does the opposite. See the following `JSON` <-> `XML` conversion table mapping:
+|JSON Data Type   |XML Tag          |
+|:----------------|:----------------|
+|`{}`|`<map>`|
+|`[]`|`<array>`|
+|`string`|`<string>`|
+|`boolean`|`<boolean>`|
+|`number`|`<number>`|
+The `XML` attribute `key` is derivated from the `JSON` property name.
+
+See `JSON` following example:
+```json
+{
+  "companyName": "KongHQ",
+  "offices": {
+    "site": [
+      "San Francisco (HQ)",
+      "London"
+    ]
+  },
+  "products": [
+    {
+      "Kong konnect": {
+        "version": 2024,
+        "saas": true
+      }
+    }
+  ]
+}
+```
+Result of `fn:json-to-xml` conversion:
+```xml
+<map>
+   <string key="companyName">KongHQ</string>
+   <map key="offices">
+      <array key="site">
+         <string>San Francisco (HQ)</string>
+         <string>London</string>
+      </array>
+   </map>
+   <array key="products">
+      <map>
+         <map key="Kong konnect">
+            <number key="version">2024</number>
+            <boolean key="saas">true</boolean>
+         </map>
+      </map>
+   </array>
+</map>
+```
+You can try it with an online XSLT tester (like [https://linangdata.com/xslt-tester/](https://linangdata.com/xslt-tester/)). Use the following `XSLT` to transform `JSON` data into `XML` document. As an input, encapsulate the `JSON` with a `<data>` fake tag (like `<data>{"companyName": "KongHQ"}</data>`)
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="3.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:map="http://www.w3.org/2005/xpath-functions/map" exclude-result-prefixes="#all" expand-text="yes">
+
+  <xsl:output indent="yes"/>
+  <xsl:template match=".">
+    <xsl:copy-of select="json-to-xml(.)"/>
+  </xsl:template>
+
+</xsl:stylesheet>
+```
 ## How to test XML Handling plugins with `Saxon`
 ### Example A: Request and Response | `XSLT 3.0 TRANSFORMATION`: JSON (client) to SOAP/XML (server)
 Call the `calculator` web service by sending a `JSON` request.
