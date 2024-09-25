@@ -139,9 +139,13 @@ Call the `calculator` web service by sending a `JSON` request.
 The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the SOAP/XML response to JSON.
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
-2) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+2) If needed, 'Reset' the configuration by removing the Kong Gateway Service called `calculator`
 
-3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+3) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
+
+4) Create a Route on the Service `calculator` with the `path` value `/calculator`
+
+5) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsltLibrary` property with the value `saxon`
 - `xsltSaxonTemplate` property with the value `main`
@@ -170,7 +174,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 </xsl:stylesheet>
 ```
 
-4) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
+6) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
 - `xsltLibrary` property with the value `saxon`
 - `xsltTransformAfter` property with this `XSLT 3.0` definition:
@@ -192,7 +196,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 </xsl:stylesheet>
 ```
 
-5) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
+7) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
 ```sh
 http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
 ```

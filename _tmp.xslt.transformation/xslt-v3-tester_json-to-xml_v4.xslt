@@ -77,6 +77,6 @@
   </xsl:template>
   <xsl:template match="/">
       <xsl:call-template name="main">
-	  </xsl:call-template>
+	    </xsl:call-template>
   </xsl:template>
 </xsl:stylesheet>
