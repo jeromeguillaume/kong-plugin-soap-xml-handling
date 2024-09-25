@@ -315,7 +315,7 @@ Content-Type:"text/xml; charset=utf-8" \
       <saas>false</saas>
     </product>
   </products>
-</root>
+</root>'
 ```
 The expected `JSON` response is as following. Pay attention to the `json` property: it contains the whole converted request XML.
 ```
