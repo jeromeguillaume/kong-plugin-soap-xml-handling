@@ -758,4 +758,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add `jit.off()` for `libxml` to avoid `nginx: lua atpanic: Lua VM crashed, reason: bad callback` error
 - v1.1.1:
   - Add the `saxon` notices files (related to the Saxon license distribution)
+  - Add support for `XML` to `JSON` transformation
   - Rename the `kong-saxon-initcontainer` and `kong-saxon` docker images

@@ -132,24 +132,25 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
     end
   end
   
-  -- If there is no Error   and
+  -- If there is no Error
   if soapFaultBody == nil then
 
-    local rc = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelope_transformed)
+    -- If there is JSON <-> XML Transformation we have to change the Request 'Content-Type'
+    -- Change the Request 'Content-Type' according to the soapEnvelope_transformed Type
+    local bodyContentType = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelope_transformed)
     
-    -- If there is a JSON -> SOAP/XML transformation on the Request
-    if kong.ctx.shared.contentTypeJSON.request == true then
-      -- change the 'Content-Type' header of the Request
-      kong.log.notice("**Jerome: change content-type to 'XML'")
+    -- If the Request 'Content-Type' is JSON and the soapEnvelopeTransformed type is XML
+    if kong.ctx.shared.contentTypeJSON.request == true and bodyContentType == xmlgeneral.XMLContentTypeBody then
       kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
-    -- Else it's an XML request
+      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML")
+    -- Else If the Request 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
+    elseif kong.ctx.shared.contentTypeJSON.request == false and bodyContentType == xmlgeneral.JSONContentTypeBody then
+      -- Check if the body has been transformed to a JSON type, due to an XSLT transforamtion (SOAP/XML -> JSON)
+      kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
+      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON")
     else
-      -- Check if the body has been transformed to a JSON due to an XSLT transforamtion (SOAP/XML -> JSON)
-      local rc = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelope_transformed)
-      if rc == xmlgeneral.JSONContentTypeBody then
-        kong.log.notice("**Jerome: change content-type to 'JSON'")
-        kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
-      end
+      -- The Request 'Content-Type' is compatible with the Body
+      kong.log.debug("JSON<->XML Transformation: Don't change the Request's 'Content-Type' as it's compatible with the Body type")
     end
   end
   

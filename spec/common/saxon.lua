@@ -1,3 +1,7 @@
+-- Notes:
+-- Some characters, called magic characters, have special meanings when used in a pattern. The magic characters are
+-- ( ) . % + - * ? [ ^ $
+
 local helpers = require "spec.helpers"
 local split   = require("kong.tools.string").split
 local saxon_common = {}
@@ -82,7 +86,187 @@ saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
   message_verbose = 'SXXP0003:  Error reported by XML parser: Content is not allowed in prolog. SOAP/XML Web Service - HTTP code: 200'
 }
 
+saxon_common.httpbin_Request= [[
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <companyName>KongHQ</companyName>
+  <city>SAN FRANCISCO</city>
+  <state>CA</state>
+  <country>USA</country>
+  <offices>
+    <site>San Francisco (HQ)</site>
+    <site>Chicago</site>
+    <site>London</site>
+    <site>Bangalore</site>
+    <site>Singapore</site>
+    <site>Shangai</site>
+    <site>Japan</site>
+  </offices>
+  <products>
+    <product name="Kong konnect">
+    	<version>2024</version>
+    	<saas>true</saas>
+    </product>
+    <product name="Kong AI Gateway">
+    	<version>3.8</version>
+    	<saas>false</saas>
+    </product>
+    <product name="Kong Ingress Controller">
+    	<version>3.3</version>
+    	<saas>false</saas>
+    </product>
+    <product name="Kong Mesh">
+    	<version>2.8</version>
+    	<saas>false</saas>
+    </product>
+    <product name="Insomnia">
+    	<version>10.0</version>
+    	<saas>false</saas>
+    </product>
+  </products>
+</root>]]
 
+saxon_common.httpbin_Response_Ok= [[
+<%?xml version="1.0" encoding="UTF%-8"%?>
+<root>
+   <companyName>KongHQ</companyName>
+   <city>SAN FRANCISCO</city>
+   <state>CA</state>
+   <country>USA</country>
+   <offices>
+      <site>San Francisco %(HQ%)</site>
+      <site>Chicago</site>
+      <site>London</site>
+      <site>Bangalore</site>
+      <site>Singapore</site>
+      <site>Shangai</site>
+      <site>Japan</site>
+   </offices>
+   <products>
+      <product name="Kong konnect">
+         <version>2024</version>
+         <saas>true</saas>
+      </product>
+      <product name="Kong AI Gateway">
+         <version>3.8</version>
+         <saas>false</saas>
+      </product>
+      <product name="Kong Ingress Controller">
+         <version>3.3</version>
+         <saas>false</saas>
+      </product>
+      <product name="Kong Mesh">
+         <version>2.8</version>
+         <saas>false</saas>
+      </product>
+      <product name="Insomnia">
+         <version>10</version>
+         <saas>false</saas>
+      </product>
+   </products>
+</root>]]
+
+saxon_common.httpbin_Request_XSD_VALIDATION=[[
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="root" type="rootType"/>
+  <xs:complexType name="officesType">
+    <xs:sequence>
+      <xs:element name="site" maxOccurs="unbounded" minOccurs="0">
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="productType">
+    <xs:sequence>
+      <xs:element name="version" type="xs:float"/>
+      <xs:element name="saas" type="xs:boolean" />
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="name" use="optional"/>
+  </xs:complexType>
+  <xs:complexType name="productsType">
+    <xs:sequence>
+      <xs:element type="productType" name="product" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="rootType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="companyName"/>
+      <xs:element type="xs:string" name="city"/>
+      <xs:element type="xs:string" name="state"/>
+      <xs:element type="xs:string" name="country"/>
+      <xs:element type="officesType" name="offices" minOccurs="0"/>
+      <xs:element type="productsType" name="products" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+]]
+
+saxon_common.httpbin_Request_XSLT_AFTER = [[
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
+  <xsl:mode on-no-match="shallow-skip"/>
+  <xsl:output method="text"/>
+  
+  <xsl:template match="/root">
+    <xsl:variable name="json-result">
+      <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="companyName"><xsl:value-of select="companyName"/></string>
+        <string key="city"><xsl:value-of select="city"/></string>
+        <string key="state"><xsl:value-of select="state"/></string>
+        <string key="country"><xsl:value-of select="country"/></string>
+      <map key="offices">
+        <array key="site">
+          <xsl:for-each select="offices/site">
+            <string><xsl:value-of select="."/></string>
+          </xsl:for-each>
+        </array>
+        </map>
+        <array key="products">
+          <xsl:for-each select="products/product">
+            <map>
+              <xsl:element name="map">
+              <xsl:attribute name="key"><xsl:value-of select="@name"/></xsl:attribute>
+                <number key="version"><xsl:value-of select="./version"/></number>
+                <boolean key="saas"><xsl:value-of select="./saas"/></boolean>
+              </xsl:element>
+            </map>
+          </xsl:for-each>
+        </array>
+      </map>
+    </xsl:variable>
+    <xsl:value-of select="fn:xml-to-json($json-result)"/>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+saxon_common.httpbin_Response_XSLT_BEFORE = [[
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
+  <xsl:output method="xml" indent="yes"/>
+  <xsl:template name="main">
+    <xsl:param name="response-body" required="yes"/>
+    <xsl:variable name="json_var" select="fn:json-to-xml($response-body)"/>
+    <root>
+      <companyName><xsl:value-of select="$json_var/map/map/string[@key='companyName']"/></companyName>
+      <city><xsl:value-of select="$json_var/map/map/string[@key='city']"/></city>
+      <state><xsl:value-of select="$json_var/map/map/string[@key='state']"/></state>
+      <country><xsl:value-of select="$json_var/map/map/string[@key='country']"/></country>
+      <offices>
+        <xsl:for-each select="$json_var/map/map/map[@key='offices']/array[@key='site']/string">
+          <site><xsl:value-of select="."/></site>
+        </xsl:for-each>
+      </offices>
+      <products>
+        <xsl:for-each select="$json_var/map/map/array[@key='products']/map/map">
+          <product>
+            <xsl:attribute name="name"><xsl:value-of select="@key"/></xsl:attribute>
+              <version><xsl:value-of select="number[@key='version']"/></version>
+              <saas><xsl:value-of select="boolean[@key='saas']"/></saas>
+          </product>
+        </xsl:for-each>
+      </products>
+    </root>
+  </xsl:template>
+</xsl:stylesheet>
+]]
 ---------------------------------------------------------------------------------------------------
 -- SOAP/XML REQUEST/RESPONSE plugin with Saxon: configure the Kong entities (Service/Route/Plugin)
 ---------------------------------------------------------------------------------------------------
@@ -97,6 +281,15 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		host = "www.dneonline.com",
 		port = 80,
 		path = "/calculator.asmx",
+    name = "calculator"
+	})
+
+	local httpbin_service = blue_print.services:insert({
+		protocol = "http",
+		host = "httpbin.apim.eu",
+		port = 80,
+		path = "/anything",
+    name = "httpbin"
 	})
 
   local calculator_JSON_2_XML_Transformation_ok_route = blue_print.routes:insert{
@@ -121,7 +314,31 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
       xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
     }
   }
-
+  local httpbin_XML_2_JSON_Transformation_ok_route = blue_print.routes:insert{
+		service = httpbin_service,
+		paths = { "/calculator_XML_2_JSON_Transformation_ok" }
+	  }
+	blue_print.plugins:insert {
+    name = pluginRequest,
+    route = httpbin_XML_2_JSON_Transformation_ok_route,
+    config = {
+      xsltLibrary = xsltLibrary,
+      xsdSoapSchema =  saxon_common.httpbin_Request_XSD_VALIDATION,
+      xsltTransformAfter = saxon_common.httpbin_Request_XSLT_AFTER
+    }
+  }
+  blue_print.plugins:insert { 
+    name = pluginResponse,
+    route = httpbin_XML_2_JSON_Transformation_ok_route,
+    config = {
+      xsltLibrary = xsltLibrary,
+      xsdSoapSchema = saxon_common.httpbin_Request_XSD_VALIDATION,
+      xsltSaxonTemplate = 'main',
+      xsltSaxonTemplateParam = 'response-body',
+      xsltTransformBefore = saxon_common.httpbin_Response_XSLT_BEFORE
+    }
+  }
+  
   local calculator_REQ_XSLT_beforeXSD_invalid_XSLT_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_XSLT" }
@@ -303,6 +520,22 @@ function saxon_common._1_2_6_7_JSON_2_XML_Transformation_Ok (assert, client)
 	assert.equal("application/json", content_type)
   local json = assert.response(r).has.jsonbody()
   assert.same (saxon_common.calculator_JSON_2_XML_Transformation_ok, json)
+end
+
+function saxon_common._1_2_6_7_XML_2_JSON_Transformation_Ok (assert, client)
+    -- invoke a test request
+    local r = client:post("/calculator_XML_2_JSON_Transformation_ok", {
+      headers = {
+        ["Content-Type"] = "text/xml; charset=utf-8",
+      },
+      body = saxon_common.httpbin_Request,
+    })
+  
+    -- validate that the request succeeded: response status 200, Content-Type and right match
+    local body = assert.response(r).has.status(200)
+    local content_type = assert.response(r).has.header("Content-Type")
+    assert.equal("text/xml; charset=utf-8", content_type)
+    assert.matches(saxon_common.httpbin_Response_Ok, body)
 end
 
 function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)

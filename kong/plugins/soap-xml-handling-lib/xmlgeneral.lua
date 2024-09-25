@@ -179,41 +179,42 @@ function xmlgeneral.initializeContentTypeJSON ()
     kong.ctx.shared.contentTypeJSON = {}
     -- Get the 'Content-Type' to define the type of a potential Error message (sent by the plugin): SOAP/XML or JSON
     local contentType = kong.request.get_header("Content-Type")
-    kong.ctx.shared.contentTypeJSON.request = contentType == 'application/json' or 
-                                              contentType == 'application/vnd.api+json'
+    kong.ctx.shared.contentTypeJSON.request = xmlgeneral.compareToJSONType(contentType)
   end
+end
+
+----------------------------------------------------------------
+-- Return true if the contentType is JSON type, false otherwise
+----------------------------------------------------------------
+function xmlgeneral.compareToJSONType (contentType)
+  return contentType == 'application/json' or contentType == 'application/vnd.api+json'
 end
 
 ---------------------------------------------------------------------------------------------
 -- Get the Content-Type of the body by getting the first character:
---    <      =>  SOAP/XML 
+--    <      =>  XML 
 --    { or [ =>  JSON
 -- It's used when an XSLT transformation is done:
---    SOAP/XML transformed to JSON or 
---    JSON transformed to SOAP/XML
+--    XML transformed to JSON or 
+--    JSON transformed to XML
 ---------------------------------------------------------------------------------------------
 function xmlgeneral.getBodyContentType(plugin_conf, body)
   local rc = xmlgeneral.unknownContentTypeBody  
-
+  
   if body then
-    -- check if the 1st character is a '<' that stands for a SOAP/XML body Content Type
+    -- check if the 1st character is a '<', which stands for a SOAP/XML body Content Type
     -- we ignore space (\s) and tabulation (\t) characters
     local i, _ = string.find(body, "^%s*<")
     if i == 1 then
-      kong.log.notice("**Jerome: getBodyContentType | XML")
       rc = xmlgeneral.XMLContentTypeBody
     else
-      -- check if the 1st character is a '{' or '[' that stands for a JSON body Content Type
+      -- check if the 1st character is a '{' or '[', which stands for a JSON body Content Type
       i, _ = string.find(body, "^%s*[{%[]")
       if i == 1 then
-        kong.log.notice("**Jerome: getBodyContentType | JSON")
         rc = xmlgeneral.JSONContentTypeBody
-      else
-        kong.log.notice("**Jerome: getBodyContentType | not xml, i=" .. tostring(i))
       end
     end
   end
-  kong.log.notice("**Jerome: getBodyContentType: " .. tostring(rc))
   return rc
 end
 

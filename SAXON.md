@@ -136,7 +136,7 @@ helm install kong kong/kong -n kong --values ./values.yaml
 ## How to test XML Handling plugins with `Saxon`
 ### Example A: Request and Response | `XSLT 3.0 TRANSFORMATION`: JSON (client) to SOAP/XML (server)
 Call the `calculator` web service by sending a `JSON` request.
-The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the SOAP/XML response to JSON.
+The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the SOAP/XML response to JSON.
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
 2) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
@@ -225,7 +225,7 @@ You can change operation to the following values:
 
 ### Example B: Request and Response | `XSLT 3.0 TRANSFORMATION`: XML (client) to JSON (server)
 Call the `httpbin` REST API by sending an `XML` request.
-The `soap-xml-request-handling` is in charge of transforming the XML request to a JSON request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite, that's to say transforming the XML response to JSON.
+The `soap-xml-request-handling` is in charge of transforming the XML request to a JSON request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the XML response to JSON.
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
 2) Create a Kong Gateway Service named `httpbin` with this URL: http://httpbin.apim.eu. A simple HTTP Request & Response REST API Service.
@@ -235,7 +235,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 4) Add `soap-xml-request-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsltLibrary` property with the value `saxon`
-- `xsdSoapSchema` property with no value (feel free to put a XSD Schema related to the request)
+- `xsdSoapSchema` property with no value or [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
 - `xsltTransformAfter` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
@@ -276,7 +276,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 
 5) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request
 ```xml
-http POST http://localhost:8000/httpbin \
+http POST http://localhost:8000/httpbin/anything \
 Content-Type:"text/xml; charset=utf-8" \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <root>
@@ -295,24 +295,24 @@ Content-Type:"text/xml; charset=utf-8" \
   </offices>
   <products>
     <product name="Kong konnect">
-    	<version>2024</version>
-    	<saas>true</saas>
+      <version>2024</version>
+      <saas>true</saas>
     </product>
     <product name="Kong AI Gateway">
-    	<version>3.8</version>
-    	<saas>false</saas>
+      <version>3.8</version>
+      <saas>false</saas>
     </product>
     <product name="Kong Ingress Controller">
-    	<version>3.3</version>
-    	<saas>false</saas>
+      <version>3.3</version>
+      <saas>false</saas>
     </product>
     <product name="Kong Mesh">
-    	<version>2.8</version>
-    	<saas>false</saas>
+      <version>2.8</version>
+      <saas>false</saas>
     </product>
     <product name="Insomnia">
-    	<version>10.0</version>
-    	<saas>false</saas>
+      <version>10</version>
+      <saas>false</saas>
     </product>
   </products>
 </root>
@@ -385,7 +385,7 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
 - `xsltLibrary` property with the value `saxon`
 - `xsltSaxonTemplate` property with the value `main`
 - `xsltSaxonTemplateParam` property with the value `response-body`
-- `xsdSoapSchema` property with no value (feel free to put a XSD Schema related to the request)
+- `xsdSoapSchema` property with no value or [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
@@ -416,10 +416,10 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
   </xsl:template>
 </xsl:stylesheet>
 ```
-7) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request. Use command defined at step #5. The expected `XML` response is as following.
+7) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request. Use command defined at step #5. The expected `XML` response is as following. So For demoing purposes only, we get in the response the **same** xml sent.
 ```
 HTTP/1.1 200 OK
-Content-Type: text/xml
+Content-Type: text/xml; charset=utf-8
 ...
 ```
 ```xml
@@ -439,24 +439,24 @@ Content-Type: text/xml
   </offices>
   <products>
     <product name="Kong konnect">
-    	<version>2024</version>
-    	<saas>true</saas>
+      <version>2024</version>
+      <saas>true</saas>
     </product>
     <product name="Kong AI Gateway">
-    	<version>3.8</version>
-    	<saas>false</saas>
+      <version>3.8</version>
+      <saas>false</saas>
     </product>
     <product name="Kong Ingress Controller">
-    	<version>3.3</version>
-    	<saas>false</saas>
+      <version>3.3</version>
+      <saas>false</saas>
     </product>
     <product name="Kong Mesh">
-    	<version>2.8</version>
-    	<saas>false</saas>
+      <version>2.8</version>
+      <saas>false</saas>
     </product>
     <product name="Insomnia">
-    	<version>10.0</version>
-    	<saas>false</saas>
+      <version>10</version>
+      <saas>false</saas>
     </product>
   </products>
 </root>
