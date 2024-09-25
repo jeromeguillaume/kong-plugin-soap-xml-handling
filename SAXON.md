@@ -135,14 +135,15 @@ helm install kong kong/kong -n kong --values ./values.yaml
 
 ## Behind the scenes of `fn:json-to-xml` and `fn:xml-to-json` functions
 The `fn:json-to-xml` function converts the `JSON` data types to corresponding `XML` tags. The `fn:xml-to-json` does the opposite. See the following `JSON` <-> `XML` conversion table mapping:
-|JSON Data Type   |XML Tag          |
-|:----------------|:----------------|
+|JSON Data Type|XML Tag|
+|:-|:-|
 |`{}`|`<map>`|
 |`[]`|`<array>`|
 |`string`|`<string>`|
 |`boolean`|`<boolean>`|
 |`number`|`<number>`|
 |`null`|`<null>`|
+
 The `XML` attribute `key` is derivated from the `JSON` property name.
 
 See `JSON` following example:
