@@ -139,7 +139,7 @@ Call the `calculator` web service by sending a `JSON` request.
 The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the SOAP/XML response to JSON.
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
-2) If needed, 'Reset' the configuration by removing the Kong Gateway Service called `calculator`
+2) If the Kong Gateway Service called `calculator` exists, remove it
 
 3) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 
