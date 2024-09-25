@@ -142,6 +142,7 @@ The `fn:json-to-xml` function converts the `JSON` data types to corresponding `X
 |`string`|`<string>`|
 |`boolean`|`<boolean>`|
 |`number`|`<number>`|
+|`null`|`<null>`|
 The `XML` attribute `key` is derivated from the `JSON` property name.
 
 See `JSON` following example:
