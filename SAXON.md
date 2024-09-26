@@ -206,7 +206,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 
 2) If the Kong Gateway Service called `calculator` exists, remove it
 
-3) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
+3) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx
 
 4) Create a Route on the Service `calculator` with the `path` value `/calculator`
 
