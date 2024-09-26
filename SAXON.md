@@ -213,24 +213,21 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 5) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsltLibrary` property with the value `saxon`
-- `xsltSaxonTemplate` property with the value `main`
-- `xsltSaxonTemplateParam` property with the value `request-body`
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
-  <xsl:template name="main">
-    <xsl:param name="request-body" required="yes"/>
-    <xsl:variable name="json" select="fn:json-to-xml($request-body)"/>    
+  <xsl:template match="/">
+    <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>    
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
       <soap:Body>
-        <xsl:variable name="operation" select="$json/map/string[@key='operation']"/>    
+        <xsl:variable name="operation" select="$json_var/map/string[@key='operation']"/>    
         <xsl:element name="{$operation}" xmlns="http://tempuri.org/">
           <intA>
-            <xsl:value-of select="$json/map/number[@key='intA']"/>
+            <xsl:value-of select="$json_var/map/number[@key='intA']"/>
           </intA>
           <intB>
-            <xsl:value-of select="$json/map/number[@key='intB']"/>
+            <xsl:value-of select="$json_var/map/number[@key='intB']"/>
           </intB>              
         </xsl:element>
       </soap:Body>
@@ -452,16 +449,13 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
 6) Add `soap-xml-response-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseResponse` enabled
 - `xsltLibrary` property with the value `saxon`
-- `xsltSaxonTemplate` property with the value `main`
-- `xsltSaxonTemplateParam` property with the value `response-body`
 - `xsdSoapSchema` property with no value or [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
-  <xsl:template name="main">
-    <xsl:param name="response-body" required="yes"/>
-    <xsl:variable name="json_var" select="fn:json-to-xml($response-body)"/>
+  <xsl:template match="/">
+    <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>
     <root>
       <companyName><xsl:value-of select="$json_var/map/map/string[@key='companyName']"/></companyName>
       <city><xsl:value-of select="$json_var/map/map/string[@key='city']"/></city>

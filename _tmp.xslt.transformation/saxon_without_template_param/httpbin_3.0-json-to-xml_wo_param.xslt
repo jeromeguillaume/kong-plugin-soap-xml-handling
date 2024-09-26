@@ -1,6 +1,6 @@
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
-  <xsl:template name="main">
+  <xsl:template match="/">
     <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>
     <root>
       <companyName><xsl:value-of select="$json_var/map/map/string[@key='companyName']"/></companyName>
@@ -22,9 +22,5 @@
         </xsl:for-each>
       </products>
     </root>
-  </xsl:template>
-    <xsl:template match="/">
-      <xsl:call-template name="main">
-       </xsl:call-template>
   </xsl:template>
 </xsl:stylesheet>
