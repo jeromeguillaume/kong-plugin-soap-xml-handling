@@ -1,3 +1,56 @@
+<data>{
+  "root": {
+    "companyName": "KongHQ",
+    "city": "SAN FRANCISCO",
+    "state": "CA",
+    "country": "USA",
+    "offices": {
+      "site": [
+        "San Francisco (HQ)",
+        "Chicago",
+        "London",
+        "Bangalore",
+        "Singapore",
+        "Shangai",
+        "Japan"
+      ]
+    },
+    "products": [
+      {
+        "Kong konnect": {
+          "version": 2024,
+          "saas": true
+        }
+      },
+      {
+        "Kong AI Gateway": {
+          "version": 3.8,
+          "saas": false
+        }
+      },
+      {
+        "Kong Ingress Controller": {
+          "version": 3.3,
+          "saas": false
+        }
+      },
+      {
+        "Kong Mesh": {
+          "version": 2.8,
+          "saas": false
+        }
+      },
+      {
+        "Insomnia": {
+          "version": 10,
+          "saas": false
+        }
+      }
+    ]
+  }
+}</data>
+
+
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
   <xsl:template match="/">

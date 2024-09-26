@@ -28,8 +28,6 @@ return {
           },},
           { xsltTransformAfter = { type = "string", required = false }, },
           { xsltTransformBefore = { type = "string", required = false }, },
-          { xsltSaxonTemplate = { type = "string", required = false }, },
-          { xsltSaxonTemplateParam = { type = "string", required = false }, },
         },
     }, },
   },

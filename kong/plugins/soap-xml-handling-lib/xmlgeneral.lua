@@ -215,7 +215,6 @@ function xmlgeneral.getBodyContentType(plugin_conf, body)
       end
     end
   end
-kong.log.notice("** jerome: getBodyContentType | rc: " .. rc)  
   return rc
 end
 

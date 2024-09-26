@@ -760,3 +760,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add the `saxon` notices files (related to the Saxon license distribution)
   - Add support for `XML` to `JSON` transformation
   - Rename the `kong-saxon-initcontainer` and `kong-saxon` docker images
+- v1.1.2:
+  - `saxon` library: remove the `xsltSaxonTemplate` and `xsltSaxonTemplateParam` parameters and use `XSLT` without `<xsl:template name="main">`

@@ -21,18 +21,17 @@ saxon_common.responsePlugin_config_ok = {
 saxon_common.calculator_Request_XSLT_BEFORE = [[
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
-  <xsl:template name="main">
-    <xsl:param name="request-body" required="yes"/>
-    <xsl:variable name="json" select="fn:json-to-xml($request-body)"/>    
+  <xsl:template match="/">
+    <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>    
     <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
       <soap:Body>
-        <xsl:variable name="operation" select="$json/map/string[@key='operation']"/>    
+        <xsl:variable name="operation" select="$json_var/map/string[@key='operation']"/>    
         <xsl:element name="{$operation}" xmlns="http://tempuri.org/">
           <intA>
-            <xsl:value-of select="$json/map/number[@key='intA']"/>
+            <xsl:value-of select="$json_var/map/number[@key='intA']"/>
           </intA>
           <intB>
-            <xsl:value-of select="$json/map/number[@key='intB']"/>
+            <xsl:value-of select="$json_var/map/number[@key='intB']"/>
           </intB>              
         </xsl:element>
       </soap:Body>
@@ -241,9 +240,8 @@ saxon_common.httpbin_Request_XSLT_AFTER = [[
 saxon_common.httpbin_Response_XSLT_BEFORE = [[
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
   <xsl:output method="xml" indent="yes"/>
-  <xsl:template name="main">
-    <xsl:param name="response-body" required="yes"/>
-    <xsl:variable name="json_var" select="fn:json-to-xml($response-body)"/>
+  <xsl:template match="/">
+    <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>
     <root>
       <companyName><xsl:value-of select="$json_var/map/map/string[@key='companyName']"/></companyName>
       <city><xsl:value-of select="$json_var/map/map/string[@key='city']"/></city>
@@ -301,8 +299,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     route = calculator_JSON_2_XML_Transformation_ok_route,
     config = {
       xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'main',
-      xsltSaxonTemplateParam = 'request-body',
       xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
     }
   }
@@ -333,8 +329,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     config = {
       xsltLibrary = xsltLibrary,
       xsdSoapSchema = saxon_common.httpbin_Request_XSD_VALIDATION,
-      xsltSaxonTemplate = 'main',
-      xsltSaxonTemplateParam = 'response-body',
       xsltTransformBefore = saxon_common.httpbin_Response_XSLT_BEFORE
     }
   }
@@ -348,8 +342,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     route = calculator_REQ_XSLT_beforeXSD_invalid_XSLT_route,
     config = {
       xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'main',
-      xsltSaxonTemplateParam = 'request-body',
       -- it lacks the '<' beginning tag
       xsltTransformBefore = [[
 				xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -376,8 +368,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     config = {
       VerboseRequest = true,
       xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'main',
-      xsltSaxonTemplateParam = 'request-body',
       -- it lacks the '<' beginning tag
       xsltTransformBefore = [[
 				xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -394,55 +384,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
       xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
     }
   }
-  
-  local calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template" }
-	}
-  blue_print.plugins:insert {
-    name = pluginRequest,
-    route = calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_route,
-    config = {
-      xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'XXmainXX',
-      xsltSaxonTemplateParam = 'request-body',
-      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
-    }
-  }
-  blue_print.plugins:insert {
-    name = pluginResponse,
-    route = calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_route,
-    config = {
-      xsltLibrary = xsltLibrary,
-      xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
-    }
-  }
-
-  local calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_verbose_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_verbose" }
-	}
-  blue_print.plugins:insert {
-    name = pluginRequest,
-    route = calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_verbose_route,
-    config = {
-      VerboseRequest = true,
-      xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'XXmainXX',
-      xsltSaxonTemplateParam = 'request-body',
-      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
-    }
-  }
-  blue_print.plugins:insert {
-    name = pluginResponse,
-    route = calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_verbose_route,
-    config = {
-      VerboseResponse = true,
-      xsltLibrary = xsltLibrary,
-      xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
-    }
-  }
-
 
   local calculator_RES_XSLT_afterXSD_invalid_XSLT_route = blue_print.routes:insert{
 		service = calculator_service,
@@ -453,8 +394,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     route = calculator_RES_XSLT_afterXSD_invalid_XSLT_route,
     config = {
       xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'main',
-      xsltSaxonTemplateParam = 'request-body',
       xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
     }
   }
@@ -481,8 +420,6 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     config = {
       VerboseRequest = true,
       xsltLibrary = xsltLibrary,
-      xsltSaxonTemplate = 'main',
-      xsltSaxonTemplateParam = 'request-body',
       xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
     }
   }
@@ -570,40 +507,6 @@ function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (as
 	assert.equal("application/json", content_type)
   local json = assert.response(r).has.jsonbody()
   assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_val_verbose, json)
-end
-
-function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_Saxon_template_input (assert, client)
-  -- invoke a test request
-  local r = client:post("/calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template", {
-    headers = {
-			["Content-Type"] = "application/json",
-		},
-    body = saxon_common.calculator_Request,
-  })
-
-  -- validate that the request failed: response status 500, Content-Type and right match
-	local body = assert.response(r).has.status(500)
-	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("application/json", content_type)
-  local json = assert.response(r).has.jsonbody()
-  assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_val, json)
-end
-
-function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_Saxon_template_input_with_verbose (assert, client)
-  -- invoke a test request
-  local r = client:post("/calculator_REQ_XSLT_beforeXSD_invalid_Saxon_template_verbose", {
-    headers = {
-      ["Content-Type"] = "application/json",
-    },
-    body = saxon_common.calculator_Request,
-  })
-
-  -- validate that the request failed: response status 500, Content-Type and right match
-  local body = assert.response(r).has.status(500)
-  local content_type = assert.response(r).has.header("Content-Type")
-  assert.equal("application/json", content_type)
-  local json = assert.response(r).has.jsonbody()
-  assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_Template_val_verbose, json)
 end
 
 function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client)
