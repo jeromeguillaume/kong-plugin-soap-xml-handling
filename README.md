@@ -46,8 +46,6 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.xsltLibrary|libxslt|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
-|config.xsltSaxonTemplate|N/A|Name of the template loaded by `<xsl:template name="...">`. Applies only to `saxon`
-|config.xsltSaxonTemplateParam|N/A|Parameters name used by the template and loaded by `<xsl:param name="...">`. Applies only to `saxon`
 
 ## How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
 1) Do a Git Clone of this repo
