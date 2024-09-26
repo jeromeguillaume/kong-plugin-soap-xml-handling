@@ -11,7 +11,7 @@ So the purpose is to integrate `Saxon HE` to Kong for XSLT Transformation only. 
 
 The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/html/download/c.html)) library is not included in the [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image. For that: build your own Kong Docker images or use a Kubernetes initContainer.
 
-Behind the scenes the `SaxonC-HE` library is developped in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
+Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
 
 ## Prerequisite: download the `SaxonC-HE` Zip package
 The `SaxonC-HE` v12.5.0 is used
