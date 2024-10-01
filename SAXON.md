@@ -10,6 +10,7 @@ The HE edition provides XSLT 2.0 and 3.0 support but the XML validation is only 
 So the purpose is to integrate `Saxon HE` to Kong for XSLT Transformation only. It enables JSON <-> XML transformation with [fn:json-to-xml](https://www.saxonica.com/html/documentation10/functions/fn/json-to-xml.html) and [fn:xml-to-json](https://www.saxonica.com/html/documentation12/functions/fn/xml-to-json.html) that [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) doesn't provide. 
 
 The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/html/download/c.html)) library is not included in the [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image. For that: build your own Kong Docker images or use a Kubernetes initContainer.
+The `SaxonC` documentation is [here](https://www.saxonica.com/saxon-c/documentation12/index.html).
 
 Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
 
@@ -70,7 +71,7 @@ make kong_saxon_initcontainer_docker_hub
   ...
   --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
   -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
-  kong/kong-gateway:3.7.1.1
+  kong/kong-gateway:3.8.0.0
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
@@ -79,9 +80,9 @@ make kong_saxon_initcontainer_docker_hub
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
 ...
-jeromeguillaume/kong-saxon3.7.1.1-12.5
+jeromeguillaume/kong-saxon:3.8.0.0-12.5
 ```
-- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.7.1.1-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.8.0.0-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
@@ -114,7 +115,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.0-12.5
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.1-12.5
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
@@ -301,7 +302,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 4) Add `soap-xml-request-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsltLibrary` property with the value `saxon`
-- `xsdSoapSchema` property with no value or [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
+- `xsdSoapSchema` property with the value [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
 - `xsltTransformAfter` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
@@ -449,7 +450,7 @@ Now, let's convert the `JSON` response (sent by `httpbin` server) to an XML resp
 6) Add `soap-xml-response-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseResponse` enabled
 - `xsltLibrary` property with the value `saxon`
-- `xsdSoapSchema` property with no value or [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
+- `xsdSoapSchema` property with the value [kong.xsd](_tmp.xslt.transformation/kong.xsd) for XSD validation
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml
 <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">

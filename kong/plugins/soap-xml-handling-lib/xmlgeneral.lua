@@ -351,7 +351,7 @@ function xmlgeneral.initializeSaxon()
     kong.xmlSoapSaxon.saxonProcessor    = ffi.NULL
     kong.xmlSoapSaxon.xslt30Processor   = ffi.NULL
     
-    -- Load the Saxon for kong Shared Object
+    -- Load the 'Saxon for kong' Shared Object
     kong.log.debug ("initializeSaxon: loadSaxonforKongLibrary")
     errMessage = libsaxon4kong.loadSaxonforKongLibrary ()
 
@@ -403,6 +403,8 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
 
   if not errMessage then
     -- If the XSLT Transformation is configured with a Template (example: <xsl:template name="main">)
+    -- see example in the repo: _tmp.xslt.transformation/xslt-v3-tester_kong_json-to-xml_with_template.xslt
+    -- xsltSaxonTemplate='main' and xsltSaxonTemplateParam='request-body'
     if plugin_conf.xsltSaxonTemplate and plugin_conf.xsltSaxonTemplateParam then
       -- Transform the XML doc with XSLT transformation by invoking a template
       xml_transformed_dump, errMessage = libsaxon4kong.stylesheetInvokeTemplate ( 

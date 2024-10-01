@@ -4,3 +4,4 @@ ARG TARGETARCH
 
 COPY ./so/$TARGETARCH /kongsaxon
 COPY notices/ /kongsaxon/notices/
+COPY conf/ /kongsaxon/conf/

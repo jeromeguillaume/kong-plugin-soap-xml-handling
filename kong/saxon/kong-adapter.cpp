@@ -15,6 +15,8 @@
 
 #include <string>
 #include <thread>
+#include <sys/types.h>
+#include <unistd.h>
 
 using namespace std;
 
@@ -31,9 +33,10 @@ void formatCerr(string msg, string detailedMsg)
   time_t timestamp = time(&timestamp);
   struct tm datetime = *localtime(&timestamp);
   char dateStr [64];
-
+  
+  pid_t pid = getpid();
   sprintf (dateStr, "%d/%.2d/%.2d %.2d:%.2d:%.2d", datetime.tm_year + 1900, datetime.tm_mon + 1, datetime.tm_mday, datetime.tm_hour, datetime.tm_min, datetime.tm_sec);
-  cerr << dateStr << " [error] " << "[libsaxon-4-kong.so]: " << msg;
+  cerr << dateStr << " [error] " << pid << "#0: " << "[libsaxon-4-kong.so]: " << msg;
   if (detailedMsg.size ())
   {
     if (detailedMsg.back () == '\n') {
@@ -88,7 +91,7 @@ extern "C" void *createSaxonProcessorKong ()
   SaxonProcessor *pSaxonProcessor = nullptr;
   try {
     // Initialize the SaxonC processor
-    pSaxonProcessor = new SaxonProcessor(true);    
+    pSaxonProcessor = new SaxonProcessor("/usr/local/lib/kongsaxon/conf/saxonConf.xml");
   }
   catch (...) {
     formatCerr ("Error in createSaxonProcessorKong", "");

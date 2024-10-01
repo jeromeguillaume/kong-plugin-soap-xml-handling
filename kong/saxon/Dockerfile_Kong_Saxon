@@ -1,8 +1,9 @@
-FROM kong/kong-gateway:3.7.1.1 as base
+FROM kong/kong-gateway:3.8.0.0 as base
 
 ARG TARGETARCH
 
 COPY ../so/$TARGETARCH /usr/local/lib/kongsaxon
 COPY ./notices /usr/local/lib/kongsaxon/notices
+COPY ./conf /usr/local/lib/kongsaxon/conf
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/kongsaxon

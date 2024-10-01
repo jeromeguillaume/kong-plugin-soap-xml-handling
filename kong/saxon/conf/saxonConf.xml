@@ -1,0 +1,31 @@
+ <configuration xmlns="http://saxon.sf.net/ns/configuration" 
+                edition="HE">
+  <global
+    errorListener="net.sf.saxon.StandardErrorListener">
+  </global>
+  <xslt
+    initialMode=""
+    initialTemplate=""
+    messageReceiver=""
+    outputUriResolver=""
+    schemaAware="false"
+    staticErrorListener=""
+    staticUriResolver=""
+    styleParser=""
+    version="3.0">
+  </xslt>
+  <xquery
+    allowUpdate="true"
+    constructionMode="preserve"
+    defaultElementNamespace=""
+    defaultFunctionNamespace="http://www.w3.org/2005/xpath-functions"
+    emptyLeast="true"
+    inheritNamespaces="true"
+    preserveBoundarySpace="false"
+    preserveNamespaces="true"
+    requiredContextItemType="document-node()"
+    schemaAware="false"
+    staticErrorListener=""
+    version="3.1"
+    />
+</configuration>
