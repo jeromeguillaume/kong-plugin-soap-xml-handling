@@ -3,7 +3,7 @@
 #   required if the 'KONG_IMAGE' has been rebuilt w/o changing its tag version
 #------------------------------------------------------------------------------
 # pongo clean
-# KONG_IMAGE=jeromeguillaume/kong-saxon:3.7.1.1-12.5 pongo build --force
+# KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.0.0-12.5 pongo build --force
 
 #-------------------------------------------------------------------------------
 # Execute the tests with the Kong standard image
@@ -14,7 +14,7 @@
 #-------------------------------------------------------------
 # Execute the tests with the customized Kong image with Saxon
 #-------------------------------------------------------------
-KONG_IMAGE=jeromeguillaume/kong-saxon:3.7.1.1-12.5 pongo run --lpath=$PWD/spec/common
+KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.0.0-12.5 pongo run --lpath=$PWD/spec/common
 
 #---------------------------------------------------------
 # Loop tests

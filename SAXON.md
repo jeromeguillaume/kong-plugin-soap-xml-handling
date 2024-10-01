@@ -69,6 +69,7 @@ make kong_saxon_initcontainer_docker_hub
   ```sh
   docker run -d --name kong-gateway-soap-xml-handling \
   ...
+  --mount type=bind,source="$(pwd)"/kong/saxon/conf,destination=/usr/local/lib/kongsaxon/conf \
   --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
   -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
   kong/kong-gateway:3.8.0.0
