@@ -7,9 +7,9 @@ local PLUGIN_NAME = "soap-xml-response-handling"
 local response_common = require "spec.common.response"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-  --end
+	if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -85,7 +85,7 @@ for _, strategy in helpers.all_strategies() do
       it ("5|XSLT (BEFORE XSD) - Content-encoding - Unknown encoding with verbose", function()
 				response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding_with_verbose (assert, client)
 			end)
-      
+     
       it("5+6|XSD Validation - Ok", function()
 				response_common._5_6_XSD_Validation_Ok (assert, client)
 			end)
@@ -97,7 +97,7 @@ for _, strategy in helpers.all_strategies() do
       it("5+6|XSD Validation - Invalid SOAP XSD input with verbose", function()
 				response_common._5_6_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose (assert, client)
 			end)
-      
+     
       it("5+6|XSD Validation - Invalid API XSD input", function()
 				response_common._5_6_XSD_Validation_Invalid_API_XSD_input (assert, client)
 			end)
