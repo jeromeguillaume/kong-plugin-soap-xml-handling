@@ -173,7 +173,7 @@ end
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
   local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  -- If required load the 'saxon' library 
+  -- If required load the 'saxon' library
   xmlgeneral.pluginConfigure (configs)
 end
 

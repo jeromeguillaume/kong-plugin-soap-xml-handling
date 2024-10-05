@@ -203,7 +203,7 @@ function xmlgeneral.getBodyContentType(plugin_conf, body)
   
   if body then
     -- check if the 1st character is a '<', which stands for a SOAP/XML body Content Type
-    -- we ignore space (\s) and tabulation (\t) characters
+    -- we ignore space and tabulation (%s) characters
     local i, _ = string.find(body, "^%s*<")
     if i == 1 then
       rc = xmlgeneral.XMLContentTypeBody
@@ -395,12 +395,12 @@ function xmlgeneral.pluginConfigure (configs)
         break;
       end
     end
-  end
-  -- If the 'saxon' is not already Initialized and
-  -- If the 'saxon' library is enabled at least for 1 plugin
-  if kong.xmlSoapSaxon == nil and saxon then
-    -- Initialize Saxon
-    xmlgeneral.initializeSaxon()
+    -- If the 'saxon' is not already Initialized and
+    -- If the 'saxon' library is enabled at least by 1 plugin
+    if kong.xmlSoapSaxon == nil and saxon then
+      -- Initialize Saxon
+      xmlgeneral.initializeSaxon()
+    end
   end
 end
 
