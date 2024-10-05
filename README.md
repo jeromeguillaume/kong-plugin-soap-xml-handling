@@ -762,3 +762,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `saxon` library: remove the `xsltSaxonTemplate` and `xsltSaxonTemplateParam` parameters and use `XSLT` without `<xsl:template name="main">`
   - Add `conf/saxonConf.xml` for `saxon` configuration file 
   - Add nginx `pid` for `saxon` logs
+- v1.1.3:
+  - Load `saxon` library during the `configure` nginx phase only if necessary

@@ -382,6 +382,29 @@ function xmlgeneral.initializeSaxon()
 end
 
 ---------------------------------------------------
+-- Process of 'configure' phase
+-- If required load the 'saxon' library 
+---------------------------------------------------
+function xmlgeneral.pluginConfigure (configs)
+  local saxon = false
+  if configs then
+    for _, config in ipairs(configs) do
+      local plugin_id = config.__plugin_id
+      if config.xsltLibrary == 'saxon' then
+        saxon = true
+        break;
+      end
+    end
+  end
+  -- If the 'saxon' is not already Initialized and
+  -- If the 'saxon' library is enabled at least for 1 plugin
+  if kong.xmlSoapSaxon == nil and saxon then
+    -- Initialize Saxon
+    xmlgeneral.initializeSaxon()
+  end
+end
+
+---------------------------------------------------
 -- libsaxon: Transform XML with XSLT Transformation
 ---------------------------------------------------
 function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, verbose)

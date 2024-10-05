@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.1.2",
+    VERSION = "1.1.3",
   }
 
 ------------------------------------------------------------------------------------------------------------------------------------
@@ -166,17 +166,15 @@ function plugin:init_worker ()
 
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
-
-  -- Initialize Saxon
-  xmlgeneral.initializeSaxon()
-
 end
 
 ------------------------------------------------------------------------------------------------
 -- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
-  
+  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  -- If required load the 'saxon' library 
+  xmlgeneral.pluginConfigure (configs)
 end
 
 ---------------------------------------------------------------------------------------------------
