@@ -374,7 +374,7 @@ function xmlgeneral.initializeSaxon()
       end
 
     else
-      kong.log.debug ("initializeSaxon: errMessage: " .. errMessage)
+      kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
     end
   else
     kong.log.debug ("initializeSaxon: 'saxon' is already initialized => nothing to do")
@@ -382,8 +382,8 @@ function xmlgeneral.initializeSaxon()
 end
 
 ---------------------------------------------------
--- Process of 'configure' phase
--- If required load the 'saxon' library 
+-- Process linked with the 'configure' phase
+--  If required load the 'saxon' library 
 ---------------------------------------------------
 function xmlgeneral.pluginConfigure (configs)
   local saxon = false
@@ -395,7 +395,8 @@ function xmlgeneral.pluginConfigure (configs)
         break;
       end
     end
-    -- If the 'saxon' is not already Initialized and
+    -- If the 'saxon' is not already Initialized 
+    --    and
     -- If the 'saxon' library is enabled at least by 1 plugin
     if kong.xmlSoapSaxon == nil and saxon then
       -- Initialize Saxon
