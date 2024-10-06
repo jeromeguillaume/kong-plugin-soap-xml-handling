@@ -533,10 +533,10 @@ Content-Length: 185
 Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
-<xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+<xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempuri.org.request-response.xsd"/>
 ```
 
-1) Create a Kong Route named `tempui.org.request-response.xsd` with the `path` value `/tempui.org.request-response.xsd`
+1) Create a Kong Route named `tempuri.org.request-response.xsd` with the `path` value `/tempuri.org.request-response.xsd`
 
 2) Add `Request Termination` plugin to this Route and configure the plugin with:
 - `body` property with this `XSD` value:
@@ -579,9 +579,9 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
                   xmlns:tns="http://tempuri.org/"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  name="Tempui.org"
+                  name="Tempuri.org"
                   targetNamespace="http://tempuri.org/">
-  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  <wsdl:documentation>Tempuri.org - Add and Subtract calculation
   </wsdl:documentation>
   <wsdl:types>
     <!-- XSD schema for the Request and the Response -->
@@ -590,7 +590,7 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempuri.org.request-response.xsd"/>
     </xsd:schema>
   </wsdl:types>
 </wsdl:definitions>
@@ -646,9 +646,9 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
                   xmlns:tns="http://tempuri.org/"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  name="Tempui.org"
+                  name="Tempuri.org"
                   targetNamespace="http://tempuri.org/">
-  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  <wsdl:documentation>Tempuri.org - Add and Subtract calculation
   </wsdl:documentation>
   <wsdl:types>
     <!-- XSD schema for the Request and the Response -->
@@ -657,13 +657,13 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempui.org.request-response.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempuri.org.request-response.xsd"/>
     </xsd:schema>
   </wsdl:types>
 </wsdl:definitions>
 ```
 - `xsdApiSchemaInclude` property with this value:
-  - key: `http://localhost:8000/tempui.org.request-response.xsd`
+  - key: `http://localhost:8000/tempuri.org.request-response.xsd`
   - value: 
 ```xml
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
