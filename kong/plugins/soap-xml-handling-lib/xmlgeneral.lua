@@ -101,13 +101,16 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
       if detailErrMsg:sub(-1) ~= '.' then
         detailErrMsg = detailErrMsg .. '.'
       end
-      local additionalErrMsg = "SOAP/XML Web Service - HTTP code: " .. tostring(status)      
+      local additionalErrMsg = "SOAP/XML Web Service - HTTP code: " .. tostring(status)
       detailErrMsg = detailErrMsg .. " " .. additionalErrMsg
     end
   end
   
   -- If it's a SOAP/XML Request then the Fault Message is SOAP/XML text
   if contentTypeJSON == false then
+    -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
+    detailErrMsg = string.gsub(detailErrMsg, "<", "Less Than")
+    detailErrMsg = string.gsub(detailErrMsg, ">", "Greater Than")
     kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
     if VerboseResponse then
       detailErrMsg = "\n      <detail>" .. detailErrMsg .. "</detail>"
@@ -577,12 +580,12 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
   -- If it's the 1st time we call the Prefetch
   if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey] == nil then
     kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey] = {
-      prefetchStus = xmlgeneral.prefetchStatusRunning
+      prefetchStatus = xmlgeneral.prefetchStatusRunning
     }
     kong.log.debug("prefetchExternalEntities - First execution")
   -- Else if the Prefetch has been already called: we don't call it anymore
-  elseif kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus ~= xmlgeneral.prefetchStatusRunning then
-    kong.log.debug("prefetchExternalEntities - Prefetch was already executed, prefetchSatus: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus)
+  elseif kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
+    kong.log.debug("prefetchExternalEntities - Prefetch was already executed, prefetchSatus: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus)
     return  
   end
 
@@ -595,7 +598,7 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
     -- If the prefetch succeeded we stop it
     if not errMessage then
       kong.log.debug("prefetchExternalEntities: #" .. i .. " **Success**")
-      kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus = xmlgeneral.prefetchStatusOk
+      kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusOk
       break
     else
       kong.log.debug("prefetchExternalEntities: #" .. i .. " err: " .. errMessage)
@@ -609,16 +612,16 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
       end
     end
     i = i + 1
-    -- Do a sleep and expect that, meanwhile, the 'timerXmlSoap' function downloads the XSD content
-    ngx.sleep (xmlgeneral.timerXmlSoapSleep / 2)
+    -- Do a sleep and expect that, meanwhile, the 'asyncDownloadEntities' function downloads the XSD content
+    ngx.sleep (xmlgeneral.timerXmlSoapSleep)
     
   end
   -- If the Prefetch status is still 'Running' it means that the Prefetch failed. 
   -- So we set a Ko status and next time it won't be executed (the Prefetch is executed 1 time)
-  if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus == xmlgeneral.prefetchStatusRunning then
-    kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus = xmlgeneral.prefetchStatusKo
+  if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusRunning then
+    kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusKo
   end
-  kong.log.debug("prefetchExternalEntities - Last status: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStus)
+  kong.log.debug("prefetchExternalEntities - Last status: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus)
 end
 
 

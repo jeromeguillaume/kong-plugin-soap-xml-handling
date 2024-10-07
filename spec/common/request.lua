@@ -90,7 +90,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found</detail>
+      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -215,7 +215,7 @@ request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
+      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -227,7 +227,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>WSDL validation %- errMessage Error code: 4, Line: 1, Message: Start tag expected, '<' not found</detail>
+      <detail>WSDL validation %- errMessage Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -294,7 +294,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, '<' not found</detail>
+      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -1278,7 +1278,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+	assert.matches("<detail>.*Failed to parse the XML resource 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
 end
 
 function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)

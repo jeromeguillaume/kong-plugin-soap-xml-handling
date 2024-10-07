@@ -764,3 +764,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add nginx `pid` for `saxon` logs
 - v1.1.3:
   - Load `saxon` library during the `configure` nginx phase only if necessary
+- v1.1.4:
+  - `ExternalEntityLoader_Async`: replace `nginx.timer.at` by `kong.tools.queue`
