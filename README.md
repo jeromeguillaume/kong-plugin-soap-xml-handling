@@ -52,7 +52,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
-2) Create and prepare a PostgreDB called `kong-gateway-soap-xml-handling`.
+2) Create and prepare a PostgreDB called `kong-database-soap-xml-handling`.
 [See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database)
 3) Provision a license of Kong Enterprise Edition and put the content in `KONG_LICENSE_DATA` environment variable. The following license is only an example. You must use the following format, but provide your own content
 ```sh
