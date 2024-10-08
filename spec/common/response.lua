@@ -851,9 +851,9 @@ function response_common._5_6_XSD_Validation_Invalid_SOAP_response (assert, clie
 		},
 		body = response_common.calculator_Request,
 	})
-
+	
 	-- validate that the request failed: response status 500, Content-Type and right match
-	local body = assert.response(r).has.status(500)
+	local body = assert.response(r).has.status(500)	
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
 	assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed, body)

@@ -1,3 +1,4 @@
+ <!-- https://www.saxonica.com/documentation12/index.html#!configuration/configuration-file -->
  <configuration xmlns="http://saxon.sf.net/ns/configuration" 
                 edition="HE">
   <global

@@ -3,8 +3,10 @@ local KongGzip = require("kong.tools.gzip")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.1.4",
+    VERSION = "1.1.5",
   }
+
+local xmlgeneral = nil
 
 -----------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML response Before (XSD VALIDATION)
@@ -12,7 +14,6 @@ local plugin = {
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSON)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelopeTransformed
   local soapFaultBody
   
@@ -85,7 +86,7 @@ end
 -- Executed upon every Nginx worker process’s startup
 ------------------------------------------------------
 function plugin:init_worker ()
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
@@ -96,7 +97,6 @@ end
 -- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   -- If required load the 'saxon' library 
   xmlgeneral.pluginConfigure (configs)
 end
@@ -105,8 +105,6 @@ end
 -- Executed for every request from a client and before it is being proxied to the upstream service
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
-  
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   
   -- Initialize the ContentTypeJSON table for storing the Content-Type of the Request
   xmlgeneral.initializeContentTypeJSON ()
@@ -140,7 +138,6 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelopeTransformed
   local soapFaultBody
   local soapEnvelope

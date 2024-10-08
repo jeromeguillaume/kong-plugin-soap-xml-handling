@@ -1,9 +1,11 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.1.4",
+    VERSION = "1.1.5",
   }
 
+local xmlgeneral = nil
+  
 ------------------------------------------------------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML request with XSLT (XSLTransformation) before XSD Validation
 -- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
@@ -11,7 +13,6 @@ local plugin = {
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------
 function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSON)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapEnvelope_transformed
   local errMessage
   local soapFaultBody
@@ -162,7 +163,7 @@ end
 -- Executed upon every Nginx worker process’s startup
 ------------------------------------------------------
 function plugin:init_worker ()
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
@@ -172,8 +173,7 @@ end
 -- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  -- If required load the 'saxon' library
+  -- If required, load the 'saxon' library
   xmlgeneral.pluginConfigure (configs)
 end
 
@@ -181,7 +181,6 @@ end
 -- Executed for every request from a client and before it is being proxied to the upstream service
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
@@ -226,7 +225,6 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -----------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
   local soapFaultBody
 
   -- If needed: initialize the ContentTypeJSON table for storing the Content-Type of the Request
@@ -271,8 +269,7 @@ end
 -- This function can be called multiple times
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)
-  local xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-
+  
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   -- we reformat the JSON message to SOAP/XML Fault
   if  kong.ctx.shared.xmlSoapHandlingFault and 

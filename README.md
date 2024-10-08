@@ -766,3 +766,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Load `saxon` library during the `configure` nginx phase only if necessary
 - v1.1.4:
   - `ExternalEntityLoader_Async`: replace `nginx.timer.at` by `kong.tools.queue`
+- v1.1.5:
+  - Remove the `require("kong.plugins.soap-xml-handling-lib.xmlgeneral")` declared on each phase to a global definition

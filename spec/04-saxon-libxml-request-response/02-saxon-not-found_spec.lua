@@ -49,7 +49,7 @@ for _, strategy in helpers.all_strategies() do
         local blue_print = helpers.get_db_utils(strategy, nil, { pluginRequest,  pluginResponse })
 				
 				local saxon_context = saxon_common.lazy_setup(PLUGIN_NAME, blue_print, "saxon")
-				
+				helpers.unsetenv ("LD_LIBRARY_PATH")
 				-- start kong
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
@@ -59,25 +59,15 @@ for _, strategy in helpers.all_strategies() do
 				}))
 		
     	end)
+               
+      it("1|Saxon library not found", function()
+        saxon_common._1_Saxon_Library_not_found (assert, client)
+			end)
+
+      it("1|Saxon library not found with verbose", function()
+        saxon_common._1_Saxon_Library_not_found_with_verbose (assert, client)
+			end)
       
-      it ("1+2+6+7|JSON to XML Transformation - Ok", function()
-				saxon_common._1_2_6_7_JSON_2_XML_Transformation_Ok (assert, client)
-			end)
-      it ("1+2+6+7|XML to JSON Transformation - Ok", function()
-				saxon_common._1_2_6_7_XML_2_JSON_Transformation_Ok (assert, client)
-			end)
-      it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input", function()
-				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
-			end)
-      it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input with verbose", function()
-				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (assert, client)
-			end)
-      it("1+2+6+7|XSLT (BEFORE XSD) - Response - Invalid XSLT input", function()
-				saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client)
-			end)
-      it("1+2+6+7|XSLT (BEFORE XSD) - Response - Invalid XSLT input with verbose", function()
-				saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (assert, client)
-			end)      
 		end)		
 	end)
   ::continue::

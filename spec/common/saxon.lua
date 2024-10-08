@@ -85,6 +85,11 @@ saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
   message_verbose = 'SXXP0003:  Error reported by XML parser: Content is not allowed in prolog. SOAP/XML Web Service - HTTP code: 200'
 }
 
+saxon_common.error_message_Saxon_Library_not_Found_val_verbose = {
+  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message_verbose = "Unable to load the XSLT library shared object or its dependency. Please check 'LD_LIBRARY_PATH' env variable and the presence of libraries"
+}
+
 saxon_common.httpbin_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <root>
@@ -436,6 +441,33 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			]]
     }
   }
+  local saxon_Library_not_found_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/saxon_Library_not_found" }
+	}
+  blue_print.plugins:insert {
+    name = pluginRequest,
+    route = saxon_Library_not_found_route,
+    config = {
+      VerboseRequest = false,
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
+
+  local saxon_Library_not_found_verbose_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/saxon_Library_not_found_verbose" }
+	}
+  blue_print.plugins:insert {
+    name = pluginRequest,
+    route = saxon_Library_not_found_verbose_route,
+    config = {
+      VerboseRequest = true,
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
 
 end
 
@@ -542,4 +574,39 @@ function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbos
   local json = assert.response(r).has.jsonbody()
   assert.same (saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose, json)
 end
+
+function saxon_common._1_Saxon_Library_not_found (assert, client)
+  -- invoke a test request
+  local r = client:post("/saxon_Library_not_found", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+  })
+
+  -- validate that the response failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_val, json)
+end
+
+function saxon_common._1_Saxon_Library_not_found_with_verbose (assert, client)
+  -- invoke a test request
+  local r = client:post("/saxon_Library_not_found_verbose", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+  })
+
+  -- validate that the response failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Saxon_Library_not_Found_val_verbose, json)
+end
+
 return saxon_common

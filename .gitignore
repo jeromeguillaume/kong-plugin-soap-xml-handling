@@ -23,3 +23,4 @@ luacov.report.out
 so/
 kong/saxon/zip/*.zip
 kong/saxon/include/*.h
+start-kong-3.7.sh
