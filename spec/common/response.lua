@@ -108,6 +108,10 @@ response_common.calculator_Response_XSD_VALIDATION = [[
 </xs:schema>
 ]]
 
+response_common.calculator_Response_XSD_VALIDATION_Failed_shortened = [[
+<faultstring>Response %- XSD validation failed</faultstring>
+]]
+
 response_common.calculator_Response_XSD_VALIDATION_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -549,7 +553,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 	}
 
   local tempui_org_request_response_xsd = blue_print.routes:insert{
-		paths = { "/tempui.org.request-response.xsd" }
+		paths = { "/tempuri.org.request-response.xsd" }
 	}
 	blue_print.plugins:insert {
 		name = "request-termination",
@@ -615,7 +619,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseResponse = true,
 			xsdApiSchemaInclude = {
-				["http://localhost:9000/tempui.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
+				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
 		}
@@ -1000,6 +1004,7 @@ function response_common._6_WSDL_Validation_with_async_download_Invalid_Import_w
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed_shortened, body)
 	assert.matches("<detail>.*Failed to parse the XML resource 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
 end
 

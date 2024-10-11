@@ -5,9 +5,9 @@
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                   xmlns:example="http://example.com/"
                   attribute="value-no-ns"
-                  name="Tempui.org"
+                  name="tempuri.org"
                   targetNamespace="http://tempuri.org/">
-  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
   </wsdl:documentation>
   <wsdl:types>
     <!-- XSD schema for the Request and the Response -->

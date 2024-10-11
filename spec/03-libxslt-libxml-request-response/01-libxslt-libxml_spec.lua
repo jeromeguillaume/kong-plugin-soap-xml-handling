@@ -12,9 +12,9 @@ local pluginRequest  = plugins[1]
 local pluginResponse = plugins[2]
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -200,6 +200,93 @@ for _, strategy in helpers.all_strategies() do
             xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
           }
         }
+
+        local tempui_org_request_response_xsd = blue_print.routes:insert{
+          paths = { "/tempuri.org.request-response.xsd" }
+        }
+        blue_print.plugins:insert {
+          name = "request-termination",
+          route = tempui_org_request_response_xsd,
+          config = {
+            status_code = 200,
+            content_type = "text/xml; charset=utf-8",
+            body = request_common.calculator_Request_Response_XSD_VALIDATION
+          }	
+        }
+        local calculator_wsdl_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL_with_async_download_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_wsdl_ok,
+          config = {
+            VerboseRequest = false,
+            ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_wsdl_ok,
+          config = {
+            VerboseResponse = false,
+            ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+          }
+        }
+
+        local calculator_wsdl_invalid_import_request_verbose_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL_with_async_download_invalid_import_Request_verbose" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_wsdl_invalid_import_request_verbose_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_wsdl_invalid_import_request_verbose_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+          }
+        }
+
+        local calculator_wsdl_invalid_import_response_verbose_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL_with_async_download_invalid_import_Response_verbose" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_wsdl_invalid_import_response_verbose_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_wsdl_invalid_import_response_verbose_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
+          }
+        }
         
 				-- start kong
 				assert(helpers.start_kong({
@@ -289,6 +376,56 @@ for _, strategy in helpers.all_strategies() do
         local content_type = assert.response(r).has.header("Content-Type")
         assert.equal("text/xml; charset=utf-8", content_type)
         assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed_verbose, body)
+      end)
+
+      it("2+6|Request and Response plugins|WSDL Validation with async download - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_with_async_download_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|Request and Response plugins|WSDL Validation with async download - Invalid Import on Request plugin with verbose", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_with_async_download_invalid_import_Request_verbose", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+        assert.matches("<detail>.*Failed to parse the XML resource 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+      end)
+
+      it("2+6|Request and Response plugins|WSDL Validation with async download - Invalid Import on Response plugin with verbose", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_with_async_download_invalid_import_Response_verbose", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed_shortened, body)
+        assert.matches("<detail>.*Failed to parse the XML resource 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
       end)
 
 		end)		

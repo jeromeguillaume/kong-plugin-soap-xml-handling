@@ -11,6 +11,9 @@ local loaded, xslt = pcall(ffi.load, "xslt")
 
 xmlgeneral.HTTPCodeSOAPFault = 500
 
+xmlgeneral.RequestTypePlugin   = 1
+xmlgeneral.ResponseTypePlugin  = 2
+
 xmlgeneral.RequestTextError   = "Request"
 xmlgeneral.ResponseTextError  = "Response"
 xmlgeneral.GeneralError       = "General process failed"
@@ -27,10 +30,10 @@ xmlgeneral.XMLContentTypeBody     = 1
 xmlgeneral.JSONContentTypeBody    = 2
 xmlgeneral.unknownContentTypeBody = 3
 
-xmlgeneral.timerXmlSoapSleep      = 0.250  -- it's the sleep (in second) of the timer to download XSD content
-xmlgeneral.prefetchStatusOk       = "Ok"
-xmlgeneral.prefetchStatusRunning  = "Running"
-xmlgeneral.prefetchStatusKo       = "Ko"
+xmlgeneral.prefetchStatusInit     = 0
+xmlgeneral.prefetchStatusOk       = 1
+xmlgeneral.prefetchStatusRunning  = 2
+xmlgeneral.prefetchStatusKo       = 3
 
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
@@ -194,7 +197,7 @@ function xmlgeneral.compareToJSONType (contentType)
 end
 
 ---------------------------------------------------------------------------------------------
--- Get the Content-Type of the body by getting the first character:
+-- Get the content type of the body by getting the first character:
 --    <      =>  XML 
 --    { or [ =>  JSON
 -- It's used when an XSLT transformation is done:
@@ -234,20 +237,266 @@ function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude = plugin_conf.xsdApiSchemaInclude
   
   if not kong.ctx.shared.xmlSoapExternalEntity.cacheTTL then
-    kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = 1
+    kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = libxml2ex.externalEntityCacheTTL
   end
   if not kong.ctx.shared.xmlSoapExternalEntity.timeout then
-    kong.ctx.shared.xmlSoapExternalEntity.timeout = 3600
+    kong.ctx.shared.xmlSoapExternalEntity.timeout = libxml2ex.externalEntityTimeout
   end
 end
 
--------------------------------------------------------------------------------
+----------------------------
+-- libsaxon: Initialization
+----------------------------
+function xmlgeneral.initializeSaxon()
+  local errMessage
+
+  if not kong.xmlSoapSaxon then
+    kong.log.debug ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
+    kong.xmlSoapSaxon = {}
+    kong.xmlSoapSaxon.saxonProcessor    = ffi.NULL
+    kong.xmlSoapSaxon.xslt30Processor   = ffi.NULL
+    
+    -- Load the 'Saxon for kong' Shared Object
+    kong.log.debug ("initializeSaxon: loadSaxonforKongLibrary")
+    errMessage = libsaxon4kong.loadSaxonforKongLibrary ()
+
+    if not errMessage then
+      -- Create Saxon Processor
+      kong.log.debug ("initializeSaxon: createSaxonProcessorKong")
+      kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon4kong.createSaxonProcessorKong ()
+      
+      if not errMessage then
+        -- Create XSLT 3.0 processor
+        kong.log.debug ("initializeSaxon: createXslt30ProcessorKong")
+        kong.xmlSoapSaxon.xslt30Processor, errMessage = libsaxon4kong.createXslt30ProcessorKong (kong.xmlSoapSaxon.saxonProcessor)
+        if not errMessage then
+          kong.log.debug ("initializeSaxon: the 'saxon' library is successfully initialized")
+        end
+      end
+
+      if errMessage then
+        kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
+      end
+    else
+      kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
+    end
+  else
+    kong.log.debug ("initializeSaxon: 'saxon' is already initialized => nothing to do")
+  end
+end
+
+-----------------------------------------------------------------------------------------------
+-- Callback function called by 'kong.tools.queue' to Asynchronously Prefetch External Entities
+-----------------------------------------------------------------------------------------------
+local asyncPrefetchExternalEntities_callback = function(_, prefetchConf_entries)
+  local errMessage
+  local child
+  local WSDL
+  local verbose
+  local xsdHashKey
+  local rc = true
+  kong.log.notice("asyncPrefetchExternalEntities_callback - Begin")
+  
+  -- Loop over all URLs
+  for k, prefetchConf_entry in pairs (prefetchConf_entries) do
+        
+    xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
+    
+    -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
+    if xsdHashKey then
+      WSDL       = prefetchConf_entry.xsdApiSchema
+      verbose    = prefetchConf_entry.VerboseRequest
+      child      = 2
+    
+      -- If the prefetch has been already done or running
+      if xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusOk or 
+      xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusRunning then
+          kong.log.notice("asyncPrefetchExternalEntities_callback - prefetchStatus='Ok' or 'Running' - Nothing to do")
+        return true
+      elseif xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusInit then
+        kong.log.notice("asyncPrefetchExternalEntities_callback - First execution")
+      end
+      xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusRunning
+
+      -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
+      -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
+      errMessage = xmlgeneral.XMLValidateWithWSDL (_, child, nil, WSDL, verbose, true)
+      
+      -- If the prefetch succeeded
+      if not errMessage then
+        kong.log.debug("asyncPrefetchExternalEntities_callback: **Success**")
+        xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
+      else
+        kong.log.debug("asyncPrefetchExternalEntities_callback: err: " .. errMessage)
+        local j, _ = string.find(errMessage, "failed.to.load.external.entity")
+        local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+        -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
+        if j == nil and k == nil then
+          xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
+        end
+      end
+
+      -- If the Prefetch status is still 'Running' it means that there is no syntax Error 
+      -- but not all external entities are downloaded
+      if xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusRunning then
+        xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
+        rc = false
+        errMessage = "Not all external entities are downloaded"
+      else
+        -- At this stage the status could be 'prefetchStatusKo' related to a WSDL/XSD syntax error, in this case
+        -- no need to return 'false' because at the next execution there will have the same result (syntax error)
+        rc = true
+        errMessage = nil
+      end
+      kong.log.notice("asyncPrefetchExternalEntities_callback - Last status: " .. tostring(xsdHashKey.prefetchStatus))
+    
+    -- Else the XSD 'hashKey' is not found in the 'entityLoader.hashKeys'
+    else
+      rc = false
+      errMessage = "Unable to find XSD HashKey '" .. (prefetchConf_entry.xsdHashKey or "nil") .. "' in the 'entityLoader.hashKeys'"
+      kong.log.debug("asyncPrefetchExternalEntities_callback: " .. errMessage)
+    end
+  end
+  return rc, errMessage
+end
+
+------------------------------------------------------------------------
+-- Function to Asynchronously execute the Prefetch of External Entities
+------------------------------------------------------------------------
+function xmlgeneral.asyncPrefetchExternalEntities (prefetchConf)
+  local Queue       = require "kong.tools.queue"
+  local timeout     = prefetchConf.ExternalEntityLoader_Timeout
+  
+  local queue_conf  =
+  {
+    name = "soap-xml-handling-prefetch",  -- name of the queue (required)
+    log_tag = "soap-xml-handling",    -- tag string to identify plugin or application area in logs
+    max_batch_size = 1,               -- maximum number of entries in one batch (default 1)
+    max_coalescing_delay = 1,         -- maximum number of seconds after first entry before a batch is sent
+    max_entries = 10000,              -- maximum number of entries on the queue (default 10000)
+    max_bytes = nil,                  -- maximum number of bytes on the queue (default nil)
+    initial_retry_delay = libxml2ex.xmlSoapSleepAsync / 2,            -- initial delay when retrying a failed batch, doubled for each subsequent retry
+    max_retry_time  = timeout,        -- maximum number of seconds before a failed batch is dropped
+    max_retry_delay = timeout,        -- maximum delay between send attempts, caps exponential retry
+    concurrency_limit = 1             -- specify the number of delivery timers (`-1` means no limit at all, and each entry would create an individual timer for sending)
+  }
+  Queue.enqueue(queue_conf, asyncPrefetchExternalEntities_callback, _, prefetchConf)
+  return nil
+end
+
+--------------------------------------------------------------------------------------------
+-- Process linked with the 'configure' phase
+-- If there is a change in Request  Plugins 'pluginConfigure' called
+-- If there is a change in Response Plugins 'pluginConfigure' is called another time
+--  libxml -> Enable the prefetch for the new WSDL/XSD Api Schemas and existing that failed
+--  saxon  -> If required load the 'saxon' library
+--------------------------------------------------------------------------------------------
+function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
+  local saxon = false
+  local iCount = 0
+
+  if configs then
+    
+    -- Prepare the purge of 'entityLoader.hashKeys' that are no longer useful
+    -- First consider that all entries have to be deleted
+    for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
+      if requestTypePlugin == xmlgeneral.RequestTypePlugin then
+        entityHashKey.ReqPluginRemove = true
+      else
+        entityHashKey.ResPluginRemove = true
+      end
+      iCount = iCount + 1
+    end
+    kong.log.notice("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))    
+    
+    -- Parse all instances of the plugin
+    for _, config in ipairs(configs) do
+      local plugin_id = config.__plugin_id
+      
+      -- If saxon
+      if config.xsltLibrary == 'saxon' then
+        saxon = true
+
+      -- Else If libxslt
+      elseif  config.xsltLibrary == 'libxslt' then
+        -- If Asynchronous and an XSD API Schema are enabled
+        if config.ExternalEntityLoader_Async and
+           config.xsdApiSchema then
+          local xsdHashKey = libxml2ex.hash_key(config.xsdApiSchema)
+          -- If it's the 1st time the XSD API Schema is seen
+          if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
+            kong.log.notice("pluginConfigure: it's the 1st time the XSD Api Schema is seen, hashKey=" .. xsdHashKey)
+            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
+              prefetchStatus = xmlgeneral.prefetchStatusInit
+            }
+          -- Else If the XSD Api Schema is already known and the Prefetch status is Ko
+          elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
+            kong.log.notice("pluginConfigure: the XSD Api Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
+            -- So let's try another Prefetch
+            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
+          else
+            -- Else If the XSD Api Schema is already known and the Prefetch status is Init/Running/Ok
+            --   => Don't change anything
+          end
+          if requestTypePlugin == xmlgeneral.RequestTypePlugin then
+            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ReqPluginRemove = false
+          else
+            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ResPluginRemove = false
+          end
+          
+          -- If the Prefetch has the 'Init' status
+          if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusInit then
+            local prefetchConf = {
+              xsdApiSchema = config.xsdApiSchema,
+              VerboseRequest = config.VerboseRequest,
+              ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
+              xsdHashKey = xsdHashKey
+            }
+            -- Asynchronously execute the Prefetch of External Entities            
+            xmlgeneral.asyncPrefetchExternalEntities (prefetchConf)
+          end
+  
+        end
+      else
+        kong.log.err("pluginConfigure: unknown library " .. config.xsltLibrary)
+      end
+    end
+
+    -- Execute the purge of entityLoader.hashKeys
+    -- Free memory of XSD entries that are no longer used due to a plugin change/deletion
+    for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
+      if  (entityHashKey.ReqPluginRemove == nil or entityHashKey.ReqPluginRemove == true ) and
+          (entityHashKey.ResPluginRemove == nil or entityHashKey.ResPluginRemove == true ) and
+          entityHashKey.prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
+        kong.log.notice("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=" .. k)
+        kong.xmlSoapAsync.entityLoader.hashKeys [k] = nil
+      end
+    end
+    
+    -- If the 'saxon' is not already Initialized 
+    --    and
+    -- If the 'saxon' library is enabled at least by 1 plugin
+    if kong.xmlSoapSaxon == nil and saxon then
+      -- Initialize Saxon
+      xmlgeneral.initializeSaxon()
+    end
+
+    iCount = 0
+    for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
+      iCount = iCount + 1
+    end
+    kong.log.notice("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
+
+  end
+end
+
+---------------------------------------------------------------------------------
 -- Initialize the SOAP/XML plugin
 -- Setup a 'libxml2' Error handler
 -- Setup a 'libxslt' Error handler
--- Setup the SOAP/XML Timer context in charge of downloading the XSD in the background
+-- Setup the SOAP/XML context in charge of downloading the XSD in the background
 -- Setup an External Entity Loader
--------------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 function xmlgeneral.initializeXmlSoapPlugin ()
   -- We initialize the Error Handlers only one time for the Nginx process and for the Plugin
   -- The error message will be set contextually to the Request by using the 'kong.ctx'
@@ -292,17 +541,18 @@ function xmlgeneral.initializeXmlSoapPlugin ()
   end
   
   -- Initialize the SOAP/XML context in charge of downloading Asynchronously the XSD content
-  if not kong.xmlSoapTimer then
-    kong.xmlSoapTimer = {entityLoader = {hashKeys = {}, urls = {} } }
+  if not kong.xmlSoapAsync then
+    kong.xmlSoapAsync = {entityLoader = {hashKeys = {} } }
   end
 
   -- Initialize the External Entity Loader for downloading XSD that are imported on 'http(s)://'
-  -- Example: <xsd:import namespace="http://tempuri.org/" schemaLocation="https://mytempui.com/tempui.org.xsd"/>
+  -- Example: <xsd:import namespace="http://tempuri.org/" schemaLocation="https://mytempuri.com/tempuri.org.xsd"/>
   if not kong.xmlSoapInitializeExternalEntityLoader then
+    kong.log.debug ("initializeExternalEntityLoader: it's the 1st time the function is called => initialize the 'libxml2' External Loader")
     libxml2ex.initializeExternalEntityLoader()
     kong.xmlSoapInitializeExternalEntityLoader = true
   else
-    kong.log.debug ("initializeExternalEntityLoader: 'libxml2' External Load is already initialized => nothing to do")
+    kong.log.debug ("initializeExternalEntityLoader: 'libxml2' External Loader is already initialized => nothing to do")
   end
 end
 
@@ -340,72 +590,6 @@ function xmlgeneral.XSLT_Format_XMLDeclaration(plugin_conf, version, encoding, o
   end
   
   return xmlDeclaration
-end
-
-----------------------------
--- libsaxon: Initialization
-----------------------------
-function xmlgeneral.initializeSaxon()
-  local errMessage
-
-  if not kong.xmlSoapSaxon then
-    kong.log.debug ("initializeSaxon: it's the 1st time the function is called => initialize the 'saxon' library")
-    kong.xmlSoapSaxon = {}
-    kong.xmlSoapSaxon.saxonProcessor    = ffi.NULL
-    kong.xmlSoapSaxon.xslt30Processor   = ffi.NULL
-    
-    -- Load the 'Saxon for kong' Shared Object
-    kong.log.debug ("initializeSaxon: loadSaxonforKongLibrary")
-    errMessage = libsaxon4kong.loadSaxonforKongLibrary ()
-
-    if not errMessage then
-      -- Create Saxon Processor
-      kong.log.debug ("initializeSaxon: createSaxonProcessorKong")
-      kong.xmlSoapSaxon.saxonProcessor, errMessage = libsaxon4kong.createSaxonProcessorKong ()
-      
-      if not errMessage then
-        -- Create XSLT 3.0 processor
-        kong.log.debug ("initializeSaxon: createXslt30ProcessorKong")
-        kong.xmlSoapSaxon.xslt30Processor, errMessage = libsaxon4kong.createXslt30ProcessorKong (kong.xmlSoapSaxon.saxonProcessor)
-        if not errMessage then
-          kong.log.debug ("initializeSaxon: the 'saxon' library is successfully initialized")
-        end
-      end
-
-      if errMessage then
-        kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
-      end
-
-    else
-      kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
-    end
-  else
-    kong.log.debug ("initializeSaxon: 'saxon' is already initialized => nothing to do")
-  end
-end
-
----------------------------------------------------
--- Process linked with the 'configure' phase
---  If required load the 'saxon' library 
----------------------------------------------------
-function xmlgeneral.pluginConfigure (configs)
-  local saxon = false
-  if configs then
-    for _, config in ipairs(configs) do
-      local plugin_id = config.__plugin_id
-      if config.xsltLibrary == 'saxon' then
-        saxon = true
-        break;
-      end
-    end
-    -- If the 'saxon' is not already Initialized 
-    --    and
-    -- If the 'saxon' library is enabled at least by 1 plugin
-    if kong.xmlSoapSaxon == nil and saxon then
-      -- Initialize Saxon
-      xmlgeneral.initializeSaxon()
-    end
-  end
 end
 
 ---------------------------------------------------
@@ -577,17 +761,15 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
   end
 
   local xsdHashKey = libxml2ex.hash_key(plugin_conf.xsdApiSchema)
-  -- If it's the 1st time we call the Prefetch
-  if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey] == nil then
-    kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey] = {
-      prefetchStatus = xmlgeneral.prefetchStatusRunning
-    }
-    kong.log.debug("prefetchExternalEntities - First execution")
-  -- Else if the Prefetch has been already called: we don't call it anymore
-  elseif kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
-    kong.log.debug("prefetchExternalEntities - Prefetch was already executed, prefetchSatus: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus)
+
+  -- if the Prefetch has been already called: we don't call it anymore
+  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus ~= xmlgeneral.prefetchStatusInit then
+    kong.log.notice("prefetchExternalEntities - Prefetch was already executed, prefetchSatus: " .. tostring(kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus))
     return  
   end
+
+  kong.log.notice("prefetchExternalEntities - First execution")
+  kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusRunning
 
   -- Loop during a maximum of 'timeout' second to retrieve the complete list of the URL of XSD
   while (nowTime + kong.ctx.shared.xmlSoapExternalEntity.timeout) > ngx.now() do
@@ -598,7 +780,7 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
     -- If the prefetch succeeded we stop it
     if not errMessage then
       kong.log.debug("prefetchExternalEntities: #" .. i .. " **Success**")
-      kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusOk
+      kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusOk
       break
     else
       kong.log.debug("prefetchExternalEntities: #" .. i .. " err: " .. errMessage)
@@ -613,17 +795,16 @@ function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
     end
     i = i + 1
     -- Do a sleep and expect that, meanwhile, the 'asyncDownloadEntities' function downloads the XSD content
-    ngx.sleep (xmlgeneral.timerXmlSoapSleep)
+    ngx.sleep (libxml2ex.xmlSoapSleepAsync)
     
   end
   -- If the Prefetch status is still 'Running' it means that the Prefetch failed. 
   -- So we set a Ko status and next time it won't be executed (the Prefetch is executed 1 time)
-  if kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusRunning then
-    kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusKo
+  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusRunning then
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusKo
   end
-  kong.log.debug("prefetchExternalEntities - Last status: " .. kong.xmlSoapTimer.entityLoader.hashKeys[xsdHashKey].prefetchStatus)
+  kong.log.notice("prefetchExternalEntities - Last status: " .. tostring(kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus))
 end
-
 
 --------------------------
 -- Dump a document to XML
@@ -760,7 +941,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
     -- Retrieve '<wsdl:types>' Node in the WSDL
     while currentNode ~= ffi.NULL and not typesNodeFound do
       if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
-        kong.log.debug ("currentNode.name: " .. ffi.string(currentNode.name))
+        kong.log.debug ("currentNode.name: '" .. ffi.string(currentNode.name) .. "'")
         nodeName = ffi.string(currentNode.name)
         if nodeName == "types" then
           typesNodeFound = true
@@ -772,7 +953,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
     end
     -- If we don't find <wsdl:types>
     if not typesNodeFound then
-      errMessage = "Unable to find the 'wsdl:types'"
+      errMessage = "Unable to find the '<wsdl:types>'"
       kong.log.debug (errMessage)
       return errMessage
     end
@@ -874,7 +1055,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   -- Create Parser Context
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
   
-  -- Create XSD schema  
+  -- Create XSD schema
   local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
   -- If it's a Prefetch we just have to parse the XSD which downloads XSD in cascade 
   if prefech then

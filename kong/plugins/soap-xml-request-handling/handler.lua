@@ -53,7 +53,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
     
     -- Prefetch External Entities (i.e. Download XSD content)
-    xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
+    -- v1.1.5 => commented following code: xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
     
     -- Validate the API XML with its schema
     errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
@@ -174,7 +174,7 @@ end
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
   -- If required, load the 'saxon' library
-  xmlgeneral.pluginConfigure (configs)
+  xmlgeneral.pluginConfigure (configs, xmlgeneral.RequestTypePlugin)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -202,7 +202,7 @@ function plugin:access(plugin_conf)
       kong.ctx.shared.xmlSoapHandlingFault = {
         error = true,
         otherPlugin = false,
-        priority = plugin.PRIORITY,
+        priority = plugin.__plugin_id,
         soapEnvelope = soapFaultBody
       }
 
@@ -255,7 +255,7 @@ function plugin:header_filter(plugin_conf)
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
       otherPlugin = true,
-      priority = plugin.PRIORITY,
+      priority = plugin.__plugin_id,
       soapEnvelope = soapFaultBody
     }
     
