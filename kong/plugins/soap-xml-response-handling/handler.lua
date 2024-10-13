@@ -7,6 +7,7 @@ local plugin = {
   }
 
 local xmlgeneral = nil
+local libxml2ex  = nil
 
 -----------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML response Before (XSD VALIDATION)
@@ -52,7 +53,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- If there is no error and
   -- If there is a configuration for XSD or WSDL API schema validation then:
   -- => we validate the SOAP XML with its schema
-  if soapFaultBody == nil and plugin_conf.xsdApiSchema then  
+  if soapFaultBody == nil and plugin_conf.xsdApiSchema then
+
     local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -87,7 +89,8 @@ end
 ------------------------------------------------------
 function plugin:init_worker ()
   xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  
+  libxml2ex  = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
 
@@ -112,9 +115,20 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- Prefetch External Entities (i.e. Download XSD content)
-  -- v1.1.5 => commented following code: xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse)
-  
+  -- If the plugin is defined with XSD or WSDL API schema and
+  -- If Asynchronous is enabled and
+  -- If there is no Included Schema
+  if  plugin_conf.xsdApiSchema                and
+      plugin_conf.ExternalEntityLoader_Async  and
+      #plugin_conf.xsdApiSchemaInclude == 0   then
+      
+    -- Wait for the end of Prefetch External Entities (i.e. Download XSD content)    
+    while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName) do
+      -- This 'sleep' happens only one time per Plugin configuration update
+      ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+    end
+  end
+
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
 

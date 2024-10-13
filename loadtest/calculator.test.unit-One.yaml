@@ -5,10 +5,10 @@ _info:
   - load-test-prefetch
 routes:
 - https_redirect_status_code: 426
-  name: dneonline.com.request.test1.xsd
+  name: dneonline.com.request.testOne.xsd
   path_handling: v0
   paths:
-  - /dneonline.com.request.test1.xsd
+  - /dneonline.com.request.testOne.xsd
   plugins:
   - config:
       body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
@@ -41,10 +41,10 @@ routes:
   response_buffering: true
   strip_path: true
 - https_redirect_status_code: 426
-  name: dneonline.com.response.test1.xsd
+  name: dneonline.com.response.testOne.xsd
   path_handling: v0
   paths:
-  - /dneonline.com.response.test1.xsd
+  - /dneonline.com.response.testOne.xsd
   plugins:
   - config:
       body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
@@ -76,12 +76,12 @@ services:
 - connect_timeout: 60000
   enabled: true
   host: www.dneonline.com
-  name: calculator.test1
+  name: calculator.testOne
   path: /calculator.asmx
   plugins:
   - config:
       ExternalEntityLoader_Async: true
-      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_CacheTTL: 15
       ExternalEntityLoader_Timeout: 1
       RouteToPath: null
       RouteXPath: null
@@ -93,7 +93,7 @@ services:
         xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
         - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
         XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
-        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test1.xsd"/>     </xsd:schema>   </wsdl:types>
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.testOne.xsd"/>     </xsd:schema>   </wsdl:types>
         </wsdl:definitions>
       xsdApiSchemaInclude: {}
       xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
@@ -141,14 +141,14 @@ services:
     - https
   - config:
       ExternalEntityLoader_Async: true
-      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_CacheTTL: 15
       ExternalEntityLoader_Timeout: 1
       VerboseResponse: true
       xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
         xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
         - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
         XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
-        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test1.xsd"/>     </xsd:schema>   </wsdl:types>
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.testOne.xsd"/>     </xsd:schema>   </wsdl:types>
         </wsdl:definitions>
       xsdApiSchemaInclude: {}
       xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
@@ -200,10 +200,10 @@ services:
   retries: 5
   routes:
   - https_redirect_status_code: 426
-    name: calculator.test1
+    name: calculator.testOne
     path_handling: v0
     paths:
-    - /calculator.test1
+    - /calculator.testOne
     preserve_host: false
     protocols:
     - http

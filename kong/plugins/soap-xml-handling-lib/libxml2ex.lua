@@ -24,16 +24,18 @@ if not loaded then
   end
 end
 
-libxml2ex.xmlSoapSleepAsync      = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to download Asynchronously XSD content
-libxml2ex.externalEntityCacheTTL = 1     -- default value
-libxml2ex.externalEntityTimeout  = 3600  -- default value
-libxml2ex.queueTimeout           = 1     -- Queue Timeout of Asynchronous for Downloading External Entities
+libxml2ex.xmlSoapSleepAsync             = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to download Asynchronously XSD content
+libxml2ex.externalEntityCacheTTL        = 3600  -- default value in the Prefetch context
+libxml2ex.externalEntityTimeout         = 1     -- default value in the Prefetch context
+libxml2ex.downloadEntitiesQueueTimeout  = 1     -- Queue Timeout to Asynchronously download External Entities
+libxml2ex.sizeOfLRUCache                = 2000  -- Size of size of LRU Cache (1 entry per XSD URL/External Entity)
+libxml2ex.queueNamePrefix               = "soap-xml-handling"
 
 -- Initialize the defaultLoader to nil.
 local defaultLoader = nil
 
 -- Initialize the LRU cache of External Entities
-local lruCacheEntities, err = lrucache.new (1000)
+local lruCacheEntities, err = lrucache.new (libxml2ex.sizeOfLRUCache)
 if not lruCacheEntities then
   kong.log.err("Failed to create the LRU Cache of External Entities: " .. (err or "unknown"))
 else
@@ -136,37 +138,6 @@ local asyncDownloadEntities_callback = function(_, url_entries)
   return rc, errRc
 end
 
--- Function to download Asynchronously entities from a given URL
-function libxml2ex.asyncDownloadEntities (url)
-  local Queue = require "kong.tools.queue"
-  local timeout
-
-  -- If this function is called in the context of an end-user Request (nginx 'access' phase)
-  if kong.ctx.shared.xmlSoapExternalEntity then
-    timeout = kong.ctx.shared.xmlSoapExternalEntity.timeout
-  -- Else this function is called in the context of the nginx 'configure' phase, which is not related to an end-user Request
-  --   so there is no 'kong.ctx.shared'
-  else
-    timeout = libxml2ex.queueTimeout
-  end
-
-  local queue_conf  =
-  {
-    name = "soap-xml-handling-external-entities",  -- name of the queue (required)
-    log_tag = "soap-xml-handling",    -- tag string to identify plugin or application area in logs
-    max_batch_size = 1,               -- maximum number of entries in one batch (default 1)
-    max_coalescing_delay = 1,         -- maximum number of seconds after first entry before a batch is sent
-    max_entries = 10000,              -- maximum number of entries on the queue (default 10000)
-    max_bytes = nil,                  -- maximum number of bytes on the queue (default nil)
-    initial_retry_delay = libxml2ex.xmlSoapSleepAsync / 2,            -- initial delay when retrying a failed batch, doubled for each subsequent retry
-    max_retry_time = timeout,         -- maximum number of seconds before a failed batch is dropped
-    max_retry_delay = timeout,        -- maximum delay between send attempts, caps exponential retry
-    concurrency_limit = 1             -- specify the number of delivery timers (`-1` means no limit at all, and each entry would create an individual timer for sending)
-  }
-  Queue.enqueue(queue_conf, asyncDownloadEntities_callback, nil, url)
-  return nil
-end
-
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local ret = nil
@@ -214,9 +185,24 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     
     kong.log.debug("REQUIRE an entry in the LRU cache url=" .. entity_url)
     cache_entity = lruCacheEntities:get(url_cache_key)
+
+    local queue_conf  =
+    {
+      name = libxml2ex.queueNamePrefix .. "-external-entities", -- name of the queue (required)
+      log_tag = libxml2ex.queueNamePrefix,               -- tag string to identify plugin or application area in logs
+      max_batch_size = 1,                                -- maximum number of entries in one batch (default 1)
+      max_coalescing_delay = 1,                          -- maximum number of seconds after first entry before a batch is sent
+      max_entries = 10000,                               -- maximum number of entries on the queue (default 10000)
+      max_bytes = nil,                                   -- maximum number of bytes on the queue (default nil)
+      initial_retry_delay = libxml2ex.xmlSoapSleepAsync, -- initial delay when retrying a failed batch, doubled for each subsequent retry
+      max_retry_time = timeout,                          -- maximum number of seconds before a failed batch is dropped
+      max_retry_delay = timeout,                         -- maximum delay between send attempts, caps exponential retry
+      concurrency_limit = 1                              -- specify the number of delivery timers (`-1` means no limit at all, and each entry would create an individual timer for sending)
+    }
+    
     -- If the Entry is not in LRU Cache of Entities
     if not cache_entity then
-      
+
       err = "The entity is not in the LRU cache, so download it asynchronously"
       kong.log.debug(err)
       if lruCacheEntities:count() == lruCacheEntities:capacity () then
@@ -224,9 +210,9 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
         kong.log.warn("The LRU Cache of Entities reached its capacity=" .. lruCacheEntities:capacity () ..". " ..
                       "The least recently used item is going to be evicted. So increase LRU Cache for avoiding this message")          
       end
-  
+      
       -- Add a new entry in the Entities LRU cache
-      kong.log.debug("ADD a new entry in LRU cache url=" .. entity_url .. " ttl=" .. cacheTTL .." timeout=" .. timeout)
+      kong.log.debug("ADD a new entry in LRU cache and download it => url=" .. entity_url .. " ttl=" .. cacheTTL .." timeout=" .. timeout)
       cache_entity = { 
         url            = entity_url,
         timeout        = timeout,
@@ -238,19 +224,37 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
 
       -- Download Asynchronously the new entity from a given URL
-      libxml2ex.asyncDownloadEntities (entity_url)
+      local rcAsync, errAsync = kong.xmlSoapAsync.entityLoader.downloadExtEntitiesQueue.enqueue(
+                                     queue_conf, 
+                                     asyncDownloadEntities_callback, 
+                                     nil, 
+                                     entity_url)
+      if errAsync then
+        kong.log.err("xmlMyExternalEntityLoader: " .. errAsync)
+        err = err .. ". " .. errAsync
+      end
+
       return nil, err
 
     -- Else the Entry has to be refreshed
-    elseif ngx.time () > cache_entity.timeDownloaded + cache_entity.cacheTTL then
+    elseif ngx.time () > cache_entity.timeDownloaded + cacheTTL then
       -- Update the timeout and TTL of 'cache_entity' regarding a potential change in the plugin configuration
       cache_entity.timeout  = timeout
       cache_entity.cacheTTL = cacheTTL 
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
 
-      kong.log.debug("UPDATE an existing entry in LRU cache url=" .. entity_url .. " ttl=" .. cacheTTL .." timeout=" .. timeout)
+      kong.log.debug("UPDATE an existing entry in LRU cache and download it => url=" .. entity_url .. " ttl=" .. cacheTTL .." timeout=" .. timeout)
       -- Update Asynchronously the existing entity from a given URL
-      libxml2ex.asyncDownloadEntities (entity_url)      
+      local rcAsync, errAsync = kong.xmlSoapAsync.entityLoader.downloadExtEntitiesQueue.enqueue(
+                                     queue_conf, 
+                                     asyncDownloadEntities_callback, 
+                                     nil, 
+                                     entity_url)
+      if errAsync then
+        kong.log.err("xmlMyExternalEntityLoader: " .. errAsync)
+        err = err .. ". " .. errAsync
+      end
+      
       response_body = cache_entity.body
     else
       kong.log.debug("GOT the entity in the LRU cache url=" .. entity_url .. " httpStatus=" .. cache_entity.httpStatus .. " ttl=" .. cacheTTL .." timeout=" .. timeout)

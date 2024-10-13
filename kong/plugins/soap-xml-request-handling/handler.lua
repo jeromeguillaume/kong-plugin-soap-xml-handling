@@ -5,7 +5,8 @@ local plugin = {
   }
 
 local xmlgeneral = nil
-  
+local libxml2ex  = nil
+
 ------------------------------------------------------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML request with XSLT (XSLTransformation) before XSD Validation
 -- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
@@ -52,9 +53,16 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
     
-    -- Prefetch External Entities (i.e. Download XSD content)
-    -- v1.1.5 => commented following code: xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
-    
+    -- If Asynchronous is enabled and 
+    -- If there is no Included Schema
+    if   plugin_conf.ExternalEntityLoader_Async and
+        #plugin_conf.xsdApiSchemaInclude == 0  then
+      -- Wait for the end of Prefetch External Entities (i.e. Download XSD content)
+      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName) do
+        -- This 'sleep' happens only one time per Plugin configuration update
+        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+      end
+    end
     -- Validate the API XML with its schema
     errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
 
@@ -146,7 +154,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
       kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML")
     -- Else If the Request 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
     elseif kong.ctx.shared.contentTypeJSON.request == false and bodyContentType == xmlgeneral.JSONContentTypeBody then
-      -- Check if the body has been transformed to a JSON type, due to an XSLT transforamtion (SOAP/XML -> JSON)
+      -- Check if the body has been transformed to a JSON type, due to an XSLT transformation (SOAP/XML -> JSON)
       kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
       kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON")
     else
@@ -164,6 +172,7 @@ end
 ------------------------------------------------------
 function plugin:init_worker ()
   xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  libxml2ex  = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
