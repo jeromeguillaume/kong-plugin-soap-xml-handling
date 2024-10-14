@@ -19,4 +19,10 @@
       <xsd:element type="xsd:string" name="AddResult"/>
     </xsd:sequence>
   </xsd:complexType>
+  <xsd:element name="SubtractResponse" type="tem:SubtractResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="SubtractResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="SubtractResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
 </xsd:schema>

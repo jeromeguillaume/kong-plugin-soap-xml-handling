@@ -3,7 +3,7 @@ local KongGzip = require("kong.tools.gzip")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.1.5",
+    VERSION = "1.1.6",
   }
 
 local xmlgeneral = nil
@@ -115,14 +115,22 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
+  -- Check if there is 'xsdApiSchemaInclude'
+  local xsdApiSchemaInclude = false
+  if plugin_conf.xsdApiSchemaInclude then
+    for k,v in pairs(plugin_conf.xsdApiSchemaInclude) do            
+      xsdApiSchemaInclude = true
+      break
+    end
+  end
+  
   -- If the plugin is defined with XSD or WSDL API schema and
   -- If Asynchronous is enabled and
   -- If there is no Included Schema
-  if  plugin_conf.xsdApiSchema                and
-      plugin_conf.ExternalEntityLoader_Async  and
-      #plugin_conf.xsdApiSchemaInclude == 0   then
-      
-    -- Wait for the end of Prefetch External Entities (i.e. Download XSD content)    
+  if  plugin_conf.xsdApiSchema               and
+      plugin_conf.ExternalEntityLoader_Async and
+      not xsdApiSchemaInclude                then
+    -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)  
     while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName) do
       -- This 'sleep' happens only one time per Plugin configuration update
       ngx.sleep(libxml2ex.xmlSoapSleepAsync)

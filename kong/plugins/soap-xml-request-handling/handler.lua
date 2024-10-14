@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.1.5",
+    VERSION = "1.1.6",
   }
 
 local xmlgeneral = nil
@@ -53,11 +53,20 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
     
+    -- Check if there is 'xsdApiSchemaInclude'
+    local xsdApiSchemaInclude = false
+    if plugin_conf.xsdApiSchemaInclude then
+      for k,v in pairs(plugin_conf.xsdApiSchemaInclude) do            
+        xsdApiSchemaInclude = true
+        break
+      end
+    end
+
     -- If Asynchronous is enabled and 
-    -- If there is no Included Schema
-    if   plugin_conf.ExternalEntityLoader_Async and
-        #plugin_conf.xsdApiSchemaInclude == 0  then
-      -- Wait for the end of Prefetch External Entities (i.e. Download XSD content)
+    -- If XSD content is NOT included in the plugin configuration
+    if  plugin_conf.ExternalEntityLoader_Async and
+        not xsdApiSchemaInclude                then
+      -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)
       while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName) do
         -- This 'sleep' happens only one time per Plugin configuration update
         ngx.sleep(libxml2ex.xmlSoapSleepAsync)

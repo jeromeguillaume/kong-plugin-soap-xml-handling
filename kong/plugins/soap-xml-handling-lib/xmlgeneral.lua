@@ -35,8 +35,8 @@ xmlgeneral.prefetchStatusOk       = 1
 xmlgeneral.prefetchStatusRunning  = 2
 xmlgeneral.prefetchStatusKo       = 3
 xmlgeneral.prefetchQueueTimeout   = 1  -- Queue Timeout to Asynchronously prefetch XSD
-xmlgeneral.prefetchReqQueueName   = "-prefetch-request"
-xmlgeneral.prefetchResQueueName   = "-prefetch-response"
+xmlgeneral.prefetchReqQueueName   = "-prefetch-request-schema"
+xmlgeneral.prefetchResQueueName   = "-prefetch-response-schema"
 
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
@@ -111,7 +111,9 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
       detailErrMsg = detailErrMsg .. " " .. additionalErrMsg
     end
   end
-  
+  -- Replace " by '
+  detailErrMsg = string.gsub(detailErrMsg, "\"", "'")
+
   -- If it's a SOAP/XML Request then the Fault Message is SOAP/XML text
   if contentTypeJSON == false then
     -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
@@ -135,8 +137,6 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
 "
   -- Else the Fault Message is a JSON text
   else
-    -- Replace " by '
-    detailErrMsg = string.gsub(detailErrMsg, "\"", "'")
     kong.log.err ("message: '" .. ErrMsg .. "' message_verbose: '".. detailErrMsg .. "'")
     soapErrMsg = "{\n    \"message\": \"" .. ErrMsg .. "\""
     if VerboseResponse then
@@ -403,7 +403,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
     }
 
     -- Prepare the purge of 'entityLoader.hashKeys' that are no longer useful
-    -- First consider that all entries have to be deleted
+    -- Firstly, consider that all entries have to be deleted
     for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
       if requestTypePlugin == xmlgeneral.RequestTypePlugin then
         entityHashKey.ReqPluginRemove = true
@@ -424,12 +424,20 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
 
       -- Else If libxslt
       elseif  config.xsltLibrary == 'libxslt' then
-        -- If Asynchronous is enabled      and 
-        -- If an XSD API Schema is defined and
-        -- If there is no Included Schema
+        -- Check if there is 'xsdApiSchemaInclude'
+        local xsdApiSchemaInclude = false
+        if config.xsdApiSchemaInclude then
+          for k,v in pairs(config.xsdApiSchemaInclude) do            
+            xsdApiSchemaInclude = true
+            break
+          end
+        end
+        -- If Asynchronous is enabled       and 
+        -- If an XSD API Schema is defined  and
+        -- If XSD content is NOT included in the plugin configuration
         if config.ExternalEntityLoader_Async and
-           config.xsdApiSchema               and 
-           #config.xsdApiSchemaInclude == 0  then
+           config.xsdApiSchema               and
+           not xsdApiSchemaInclude           then
           local xsdHashKey = libxml2ex.hash_key(config.xsdApiSchema)
           -- If it's the 1st time the XSD API Schema is seen
           if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
@@ -464,7 +472,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
             -- Asynchronously execute the Prefetch of External Entities
             local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetchExternalEntities_callback, nil , prefetchConf)            
             if err then
-              kong.log.err("Queue.enqueue: " .. err)
+              kong.log.err("prefetchQueue: " .. err)
             end
           end
         end
@@ -473,13 +481,15 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
       end
     end
 
-    -- Purge 'entityLoader.hashKeys'
+    -- Lastly, purge the 'entityLoader.hashKeys'
     --    => Free memory of XSD entries that are no longer used due to a plugin change/deletion
+    --    For an effective deletion of an XSD shared by the Request AND Response plugin, we have to 'wait' 
+    --    the 'configure' phase of both plugins: 'Request' AND 'Response' plugins
     for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
       if  (entityHashKey.ReqPluginRemove == nil or entityHashKey.ReqPluginRemove == true ) and
           (entityHashKey.ResPluginRemove == nil or entityHashKey.ResPluginRemove == true ) and
           entityHashKey.prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
-        kong.log.debug("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=" .. k)
+            kong.log.debug("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=" .. k)
         kong.xmlSoapAsync.entityLoader.hashKeys [k] = nil
       end
     end
@@ -497,7 +507,6 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
       iCount = iCount + 1
     end
     kong.log.debug("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
-
   end
 end
 
