@@ -190,7 +190,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     {
       name = libxml2ex.queueNamePrefix .. "-download-xsd", -- name of the queue (required)
       log_tag = libxml2ex.queueNamePrefix,               -- tag string to identify plugin or application area in logs
-      max_batch_size = 1,                                -- maximum number of entries in one batch (default 1)
+      max_batch_size = 10,                               -- maximum number of entries in one batch (default 1)
       max_coalescing_delay = 1,                          -- maximum number of seconds after first entry before a batch is sent
       max_entries = 10000,                               -- maximum number of entries on the queue (default 10000)
       max_bytes = nil,                                   -- maximum number of bytes on the queue (default nil)

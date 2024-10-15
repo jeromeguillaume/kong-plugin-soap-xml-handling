@@ -289,16 +289,16 @@ function xmlgeneral.initializeSaxon()
 end
 
 -----------------------------------------------------------------------------------------------
--- Callback function called by 'kong.tools.queue' to Asynchronously Prefetch External Entities
+-- Callback function called by 'kong.tools.queue' to Asynchronously Prefetch Schema Validation
 -----------------------------------------------------------------------------------------------
-local asyncPrefetchExternalEntities_callback = function(_, prefetchConf_entries)
+local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entries)
   local errMessage
   local child
   local WSDL
   local verbose
   local xsdHashKey
   local rc = true
-  kong.log.debug("asyncPrefetchExternalEntities_callback - Begin")
+  kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin")
   
   local count = 0
 
@@ -306,7 +306,7 @@ local asyncPrefetchExternalEntities_callback = function(_, prefetchConf_entries)
   for k, prefetchConf_entry in pairs (prefetchConf_entries) do
     
     count = count + 1
-    kong.log.debug("asyncPrefetchExternalEntities_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
+    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
     
     xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
     
@@ -318,11 +318,11 @@ local asyncPrefetchExternalEntities_callback = function(_, prefetchConf_entries)
 
       -- If the prefetch has been successfully done 
       if  xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusOk then
-        kong.log.debug("asyncPrefetchExternalEntities_callback - prefetchStatus='Ok' - Nothing to do")
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback - prefetchStatus='Ok' - Nothing to do")
         -- Go on the next Entry
         break
       elseif xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusInit then
-        kong.log.debug("asyncPrefetchExternalEntities_callback - First execution")
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback - First execution")
       end
       xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusRunning
 
@@ -332,10 +332,10 @@ local asyncPrefetchExternalEntities_callback = function(_, prefetchConf_entries)
       
       -- If the prefetch succeeded
       if not errMessage then
-        kong.log.debug("asyncPrefetchExternalEntities_callback: **Success**")
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success**")
         xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
       else
-        kong.log.debug("asyncPrefetchExternalEntities_callback: err: " .. errMessage)
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: err: " .. errMessage)
         local j, _ = string.find(errMessage, "failed.to.load.external.entity")
         local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
         -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
@@ -356,13 +356,13 @@ local asyncPrefetchExternalEntities_callback = function(_, prefetchConf_entries)
         rc = true
         errMessage = nil
       end
-      kong.log.debug("asyncPrefetchExternalEntities_callback - Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or ''))
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback - Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or ''))
     
     -- Else the XSD 'hashKey' is not found in the 'entityLoader.hashKeys'
     else
       rc = false
       errMessage = "Unable to find XSD HashKey '" .. (prefetchConf_entry.xsdHashKey or "nil") .. "' in the 'entityLoader.hashKeys'"
-      kong.log.debug("asyncPrefetchExternalEntities_callback: " .. errMessage)
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback: " .. errMessage)
     end
   end
   return rc, errMessage
@@ -470,7 +470,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
               xsdHashKey = xsdHashKey
             }
             -- Asynchronously execute the Prefetch of External Entities
-            local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetchExternalEntities_callback, nil , prefetchConf)            
+            local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, nil , prefetchConf)            
             if err then
               kong.log.err("prefetchQueue: " .. err)
             end

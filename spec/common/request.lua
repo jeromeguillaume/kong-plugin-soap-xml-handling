@@ -370,6 +370,29 @@ request_common.calculatorWSDL_with_async_download_Ok = [[
 </wsdl:definitions>
 ]]
 
+request_common.calculatorWSDL_req_only_with_async_download_Ok = [[
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="tempuri.org"
+                  targetNamespace="http://tempuri.org/">
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
+  </wsdl:documentation>
+  <wsdl:types>
+    <!-- XSD schema for the Request -->
+      <xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.request.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
 request_common.calculatorWSDL_with_async_download_Failed = [[
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -1283,7 +1306,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-	assert.matches("<detail>.*Failed to parse the XML resource 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+	assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
 end
 
 function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)
