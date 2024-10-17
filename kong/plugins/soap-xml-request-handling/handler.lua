@@ -64,8 +64,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
 
     -- If Asynchronous is enabled and 
     -- If XSD content is NOT included in the plugin configuration
-    if  plugin_conf.ExternalEntityLoader_Async and
-        not xsdApiSchemaInclude                then
+    if  plugin_conf.ExternalEntityLoader_Async then
       -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)
       while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName) do
         -- This 'sleep' happens only one time per Plugin configuration update
@@ -220,7 +219,7 @@ function plugin:access(plugin_conf)
       kong.ctx.shared.xmlSoapHandlingFault = {
         error = true,
         otherPlugin = false,
-        priority = plugin.__plugin_id,
+        pluginId = plugin.__plugin_id,
         soapEnvelope = soapFaultBody
       }
 
@@ -273,7 +272,7 @@ function plugin:header_filter(plugin_conf)
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
       otherPlugin = true,
-      priority = plugin.__plugin_id,
+      pluginId = plugin.__plugin_id,
       soapEnvelope = soapFaultBody
     }
     
