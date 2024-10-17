@@ -3,10 +3,11 @@ local KongGzip = require("kong.tools.gzip")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.1.5",
+    VERSION = "1.1.6",
   }
 
 local xmlgeneral = nil
+local libxml2ex  = nil
 
 -----------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML response Before (XSD VALIDATION)
@@ -52,7 +53,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- If there is no error and
   -- If there is a configuration for XSD or WSDL API schema validation then:
   -- => we validate the SOAP XML with its schema
-  if soapFaultBody == nil and plugin_conf.xsdApiSchema then  
+  if soapFaultBody == nil and plugin_conf.xsdApiSchema then
+
     local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -87,7 +89,8 @@ end
 ------------------------------------------------------
 function plugin:init_worker ()
   xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-  
+  libxml2ex  = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
+
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
 
@@ -98,7 +101,7 @@ end
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
   -- If required load the 'saxon' library 
-  xmlgeneral.pluginConfigure (configs)
+  xmlgeneral.pluginConfigure (configs, xmlgeneral.ResponseTypePlugin)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -112,9 +115,26 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- Prefetch External Entities (i.e. Download XSD content)
-  xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse)
+  -- Check if there is 'xsdApiSchemaInclude'
+  local xsdApiSchemaInclude = false
+  if plugin_conf.xsdApiSchemaInclude then
+    for k,v in pairs(plugin_conf.xsdApiSchemaInclude) do            
+      xsdApiSchemaInclude = true
+      break
+    end
+  end
   
+  -- If the plugin is defined with XSD or WSDL API schema and
+  -- If Asynchronous is enabled
+  if  plugin_conf.xsdApiSchema               and
+      plugin_conf.ExternalEntityLoader_Async then
+    -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)  
+    while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName) do
+      -- This 'sleep' happens only one time per Plugin configuration update
+      ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+    end
+  end
+
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
 
@@ -128,7 +148,7 @@ function plugin:access(plugin_conf)
     kong.log.err(errMsg)
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
-      priority = -1,
+      pluginId = -1,
       soapEnvelope = errMsg
     }
   end
@@ -244,7 +264,7 @@ function plugin:header_filter(plugin_conf)
     -- It prevents to apply XML/SOAP handling whereas there is already an error
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
-      priority = plugin.PRIORITY,
+      pluginId = plugin.__plugin_id,
       soapEnvelope = soapFaultBody
     }
   -- If the SOAP envelope is transformed
@@ -294,7 +314,7 @@ function plugin:header_filter(plugin_conf)
     -- by calling 'kong.response.get_raw_body ()' in header_filter
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = false,
-      priority = plugin.PRIORITY,
+      pluginId = plugin.__plugin_id,
       soapEnvelope = soapEnvelopeTransformed
     }
   end
@@ -311,14 +331,14 @@ function plugin:body_filter(plugin_conf)
   -- If there is a pending error set by other SOAP/XML plugin we do nothing except for the Plugin itself
   if  kong.ctx.shared.xmlSoapHandlingFault      and
     kong.ctx.shared.xmlSoapHandlingFault.error  and 
-    kong.ctx.shared.xmlSoapHandlingFault.priority ~= plugin.PRIORITY then
+    kong.ctx.shared.xmlSoapHandlingFault.pluginId ~= plugin.__plugin_id then
     kong.log.debug("A pending error has been set by other SOAP/XML plugin: we do nothing in this plugin")
     return
   end
 
   -- Get modified SOAP envelope set by the plugin itself on 'header_filter'
   if  kong.ctx.shared.xmlSoapHandlingFault  and
-      kong.ctx.shared.xmlSoapHandlingFault.priority == plugin.PRIORITY then
+      kong.ctx.shared.xmlSoapHandlingFault.pluginId == plugin.__plugin_id then
     
     if kong.ctx.shared.xmlSoapHandlingFault.soapEnvelope then
       -- Set the modified SOAP envelope

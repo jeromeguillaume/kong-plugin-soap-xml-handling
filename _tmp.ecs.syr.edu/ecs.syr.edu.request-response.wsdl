@@ -3,29 +3,29 @@
                   xmlns:tns="http://tempuri.org/"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  name="Tempui.org"
+                  name="tempuri.org"
                   targetNamespace="http://tempuri.org/">
-  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
   </wsdl:documentation>
   <wsdl:types>
-    <!-- XSD schema for the Request and the Response
+    <!-- Common XSD schema for the Request and the Response -->
       <xsd:schema
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://kong-gateway-temp:9000/tempui.org.request-response.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/ecs.syr.edu.request-response.xsd"/>
     </xsd:schema>
-     -->
-     
+    
+    <!-- Separated XSD schemas for the Request and the Response
       <xsd:schema
         xmlns:xsd="http://www.w3.org/2001/XMLSchema"
         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://kong-gateway-temp:9000/tempui.org.request.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/ecs.syr.edu.request.xsd"/>
     </xsd:schema>
     
     <xsd:schema
@@ -34,7 +34,8 @@
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://kong-gateway-temp:9000/tempui.org.response.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/ecs.syr.edu.response.xsd"/>
     </xsd:schema>
+     -->
   </wsdl:types>
 </wsdl:definitions>

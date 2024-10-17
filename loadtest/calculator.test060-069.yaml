@@ -1,0 +1,2087 @@
+_format_version: "3.0"
+_info:
+  defaults: {}
+  select_tags:
+  - load-test-prefetch
+routes:
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test060.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test060.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test060.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test060.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test061.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test061.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test061.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test061.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test062.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test062.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test062.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test062.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test063.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test063.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test063.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test063.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test064.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test064.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test064.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test064.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test065.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test065.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test065.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test065.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test066.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test066.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test066.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test066.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test067.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test067.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test067.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test067.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test068.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test068.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test068.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test068.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.request.test069.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.request.test069.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddType">     <xs:sequence>       <xs:element type="xs:integer" name="intA"
+        minOccurs="1"/>       <xs:element type="xs:integer" name="intB" minOccurs="1"/>     </xs:sequence>   </xs:complexType>   <xs:element
+        name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="SubtractType">     <xs:sequence>       <xs:element type="xs:integer"
+        name="intA" minOccurs="1"/>       <xs:element type="xs:integer" name="intB"
+        minOccurs="1"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+- https_redirect_status_code: 426
+  name: dneonline.com.response.test069.xsd
+  path_handling: v0
+  paths:
+  - /dneonline.com.response.test069.xsd
+  plugins:
+  - config:
+      body: <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+        targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">   <xs:element
+        name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xs:complexType
+        name="AddResponseType">     <xs:sequence>       <xs:element type="xs:string"
+        name="AddResult"/>     </xs:sequence>   </xs:complexType> </xs:schema>
+      content_type: text/xml
+      echo: false
+      message: null
+      status_code: 200
+      trigger: null
+    enabled: true
+    name: request-termination
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  preserve_host: false
+  protocols:
+  - http
+  - https
+  regex_priority: 0
+  request_buffering: true
+  response_buffering: true
+  strip_path: true
+services:
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test060
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test060.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test060.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test060
+    path_handling: v0
+    paths:
+    - /calculator.test060
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test061
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test061.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test061.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test061
+    path_handling: v0
+    paths:
+    - /calculator.test061
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test062
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test062.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test062.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test062
+    path_handling: v0
+    paths:
+    - /calculator.test062
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test063
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test063.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test063.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test063
+    path_handling: v0
+    paths:
+    - /calculator.test063
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test064
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test064.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test064.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test064
+    path_handling: v0
+    paths:
+    - /calculator.test064
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test065
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test065.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test065.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test065
+    path_handling: v0
+    paths:
+    - /calculator.test065
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test066
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test066.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test066.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test066
+    path_handling: v0
+    paths:
+    - /calculator.test066
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test067
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test067.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test067.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test067
+    path_handling: v0
+    paths:
+    - /calculator.test067
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test068
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test068.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test068.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test068
+    path_handling: v0
+    paths:
+    - /calculator.test068
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
+  host: www.dneonline.com
+  name: calculator.test069
+  path: /calculator.asmx
+  plugins:
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      RouteToPath: null
+      RouteXPath: null
+      RouteXPathCondition: null
+      RouteXPathRegisterNs:
+      - soap,http://schemas.xmlsoap.org/soap/envelope/
+      VerboseRequest: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.request.test069.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-request-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  - config:
+      ExternalEntityLoader_Async: true
+      ExternalEntityLoader_CacheTTL: 3600
+      ExternalEntityLoader_Timeout: 1
+      VerboseResponse: true
+      xsdApiSchema: <?xml version="1.0" encoding="UTF-8" standalone="no"?> <wsdl:definitions
+        xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"                   xmlns:tns="http://tempuri.org/"                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"                   xmlns:example="http://example.com/"                   attribute="value-no-ns"                   name="tempuri.org"                   targetNamespace="http://tempuri.org/">   <wsdl:documentation>tempuri.org
+        - Add and Subtract calculation   </wsdl:documentation>   <wsdl:types>     <!--
+        XSD schema for the Response -->           <xsd:schema         xmlns:xsd="http://www.w3.org/2001/XMLSchema"         xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"         attributeFormDefault="qualified"         elementFormDefault="qualified">       <xsd:import
+        namespace="http://tempuri.org/" schemaLocation="http://localhost:7000/dneonline.com.response.test069.xsd"/>     </xsd:schema>   </wsdl:types>
+        </wsdl:definitions>
+      xsdApiSchemaInclude: {}
+      xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+        header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+        name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0" /><xs:element
+        ref="tns:Body" minOccurs="1" /><xs:any namespace="##other" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##other"
+        processContents="lax" /></xs:complexType><xs:element name="Header" type="tns:Header"
+        /><xs:complexType name="Header" ><xs:sequence><xs:any namespace="##other"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##other" processContents="lax" /></xs:complexType><xs:element name="Body"
+        type="tns:Body" /><xs:complexType name="Body" ><xs:sequence><xs:any namespace="##any"
+        minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+        namespace="##any" processContents="lax" ><xs:annotation><xs:documentation>Prose
+        in the spec does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+        Global Attributes.  The following attributes are intended to be usable via
+        qualified attribute names on any complex type referencing them.  --><xs:attribute
+        name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+        value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+        name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+        indicates any canonicalization conventions followed in the contents of the
+        containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+        indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+        itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+        type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+        ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+        /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+        reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+        name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+        /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+        name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+        name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+        processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any" processContents="lax"
+        /> </xs:complexType></xs:schema>
+      xsltLibrary: libxslt
+      xsltTransformAfter: null
+      xsltTransformBefore: null
+    enabled: true
+    name: soap-xml-response-handling
+    protocols:
+    - grpc
+    - grpcs
+    - http
+    - https
+  port: 80
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: calculator.test069
+    path_handling: v0
+    paths:
+    - /calculator.test069
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000

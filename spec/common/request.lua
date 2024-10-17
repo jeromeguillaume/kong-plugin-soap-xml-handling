@@ -197,6 +197,10 @@ s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xm
 </s:schema>
 ]]
 
+request_common.calculator_Request_XSD_VALIDATION_Failed_shortened = [[
+<faultstring>Request %- XSD validation failed</faultstring>
+]]
+
 request_common.calculator_Request_XSD_VALIDATION_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -349,9 +353,9 @@ request_common.calculatorWSDL_with_async_download_Ok = [[
                   xmlns:tns="http://tempuri.org/"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  name="Tempui.org"
+                  name="tempuri.org"
                   targetNamespace="http://tempuri.org/">
-  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
   </wsdl:documentation>
   <wsdl:types>
     <!-- XSD schema for the Request and the Response -->
@@ -360,7 +364,30 @@ request_common.calculatorWSDL_with_async_download_Ok = [[
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempui.org.request-response.xsd"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.request-response.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL_req_only_with_async_download_Ok = [[
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="tempuri.org"
+                  targetNamespace="http://tempuri.org/">
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
+  </wsdl:documentation>
+  <wsdl:types>
+    <!-- XSD schema for the Request -->
+      <xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.request.xsd"/>
     </xsd:schema>
   </wsdl:types>
 </wsdl:definitions>
@@ -372,9 +399,9 @@ request_common.calculatorWSDL_with_async_download_Failed = [[
                   xmlns:tns="http://tempuri.org/"
                   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-                  name="Tempui.org"
+                  name="tempuri.org"
                   targetNamespace="http://tempuri.org/">
-  <wsdl:documentation>Tempui.org - Add and Subtract calculation
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
   </wsdl:documentation>
   <wsdl:types>
     <!-- XSD schema for the Request and the Response -->
@@ -774,7 +801,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 	}
 
 	local tempui_org_request_response_xsd = blue_print.routes:insert{
-		paths = { "/tempui.org.request-response.xsd" }
+		paths = { "/tempuri.org.request-response.xsd" }
 	}
 	blue_print.plugins:insert {
 		name = "request-termination",
@@ -839,7 +866,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseRequest = false,
 			xsdApiSchemaInclude = {
-				["http://localhost:9000/tempui.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
+				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
 		}
@@ -1278,7 +1305,8 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches("<detail>.*Failed to parse the XML resource 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+	assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
 end
 
 function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)

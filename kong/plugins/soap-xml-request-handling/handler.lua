@@ -1,11 +1,12 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.1.5",
+    VERSION = "1.1.6",
   }
 
 local xmlgeneral = nil
-  
+local libxml2ex  = nil
+
 ------------------------------------------------------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML request with XSLT (XSLTransformation) before XSD Validation
 -- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
@@ -52,9 +53,24 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   -- => we validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
     
-    -- Prefetch External Entities (i.e. Download XSD content)
-    xmlgeneral.prefetchExternalEntities (plugin_conf, 2, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest)
-    
+    -- Check if there is 'xsdApiSchemaInclude'
+    local xsdApiSchemaInclude = false
+    if plugin_conf.xsdApiSchemaInclude then
+      for k,v in pairs(plugin_conf.xsdApiSchemaInclude) do            
+        xsdApiSchemaInclude = true
+        break
+      end
+    end
+
+    -- If Asynchronous is enabled and 
+    -- If XSD content is NOT included in the plugin configuration
+    if  plugin_conf.ExternalEntityLoader_Async then
+      -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)
+      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName) do
+        -- This 'sleep' happens only one time per Plugin configuration update
+        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+      end
+    end
     -- Validate the API XML with its schema
     errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
 
@@ -146,7 +162,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
       kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML")
     -- Else If the Request 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
     elseif kong.ctx.shared.contentTypeJSON.request == false and bodyContentType == xmlgeneral.JSONContentTypeBody then
-      -- Check if the body has been transformed to a JSON type, due to an XSLT transforamtion (SOAP/XML -> JSON)
+      -- Check if the body has been transformed to a JSON type, due to an XSLT transformation (SOAP/XML -> JSON)
       kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
       kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON")
     else
@@ -164,6 +180,7 @@ end
 ------------------------------------------------------
 function plugin:init_worker ()
   xmlgeneral = require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+  libxml2ex  = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
@@ -174,7 +191,7 @@ end
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
   -- If required, load the 'saxon' library
-  xmlgeneral.pluginConfigure (configs)
+  xmlgeneral.pluginConfigure (configs, xmlgeneral.RequestTypePlugin)
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -202,7 +219,7 @@ function plugin:access(plugin_conf)
       kong.ctx.shared.xmlSoapHandlingFault = {
         error = true,
         otherPlugin = false,
-        priority = plugin.PRIORITY,
+        pluginId = plugin.__plugin_id,
         soapEnvelope = soapFaultBody
       }
 
@@ -255,7 +272,7 @@ function plugin:header_filter(plugin_conf)
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
       otherPlugin = true,
-      priority = plugin.PRIORITY,
+      pluginId = plugin.__plugin_id,
       soapEnvelope = soapFaultBody
     }
     
