@@ -24,6 +24,10 @@ return {
               values = {type = "string", required = true},
           }},
           { xsdSoapSchema = { type = "string", required = false, default = XSD_SOAP }, },
+          { xsdSoapSchemaInclude = { type = "map", required = false, 
+            keys = { type = "string", required = true },
+            values = {type = "string", required = true},
+            }},
           { xsltLibrary = {required = true, type = "string", default = "libxslt",
             one_of = {
               "libxslt",

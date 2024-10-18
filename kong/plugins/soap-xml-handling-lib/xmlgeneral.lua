@@ -24,6 +24,8 @@ xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 xmlgeneral.xmlnsXsdHref       = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema          = "schema"
+xmlgeneral.schemaTypeSOAP     = 0
+xmlgeneral.schemaTypeAPI      = 2
 xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
 xmlgeneral.JSONContentType    = "application/json"
 xmlgeneral.XMLContentTypeBody     = 1
@@ -234,10 +236,11 @@ function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   if kong.ctx.shared.xmlSoapExternalEntity == nil then
     kong.ctx.shared.xmlSoapExternalEntity = {}
   end
-  kong.ctx.shared.xmlSoapExternalEntity.async               = plugin_conf.ExternalEntityLoader_Async
-  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL            = plugin_conf.ExternalEntityLoader_CacheTTL
-  kong.ctx.shared.xmlSoapExternalEntity.timeout             = plugin_conf.ExternalEntityLoader_Timeout
-  kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude = plugin_conf.xsdApiSchemaInclude
+  kong.ctx.shared.xmlSoapExternalEntity.async                = plugin_conf.ExternalEntityLoader_Async
+  kong.ctx.shared.xmlSoapExternalEntity.cacheTTL             = plugin_conf.ExternalEntityLoader_CacheTTL
+  kong.ctx.shared.xmlSoapExternalEntity.timeout              = plugin_conf.ExternalEntityLoader_Timeout
+  kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude  = plugin_conf.xsdApiSchemaInclude
+  kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude = plugin_conf.xsdSoapSchemaInclude
   
   if not kong.ctx.shared.xmlSoapExternalEntity.cacheTTL then
     kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = libxml2ex.externalEntityCacheTTL
@@ -312,15 +315,15 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
     
     -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
     if xsdHashKey then
-      WSDL       = prefetchConf_entry.xsdApiSchema
+      WSDL       = prefetchConf_entry.xsdSchemaInclude
       verbose    = prefetchConf_entry.VerboseRequest
-      child      = 2
+      child      = prefetchConf_entry.child
 
       -- If the prefetch has been successfully done 
       if  xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusOk then
         kong.log.debug("asyncPrefetch_Schema_Validation_callback - prefetchStatus='Ok' - Nothing to do")
         -- Go on the next Entry
-        break
+        goto continue
       elseif xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusInit then
         kong.log.debug("asyncPrefetch_Schema_Validation_callback - First execution")
       end
@@ -364,17 +367,69 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
       errMessage = "Unable to find XSD HashKey '" .. (prefetchConf_entry.xsdHashKey or "nil") .. "' in the 'entityLoader.hashKeys'"
       kong.log.debug("asyncPrefetch_Schema_Validation_callback: " .. errMessage)
     end
+    ::continue::
   end
   return rc, errMessage
 end
 
---------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 -- Process linked with the 'configure' phase
+--  libxml -> Enable the prefetch Validation of SOAP Schema and WSDL/XSD Api Schemas
+--            It concerns the new on and the existing schemas that previously failed
+--------------------------------------------------------------------------------------
+function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, xsdSchemaInclude, child, queueName, queue_conf)
+
+  local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
+  kong.log.notice("XSD_Validation_Prefetch: '" .. string.sub(xsdSchemaInclude, 1, 100) .. "...etc.' xsdHashKey=" .. xsdHashKey)
+  -- If it's the 1st time the XSD API Schema is seen
+  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
+    kong.log.notice("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
+      prefetchStatus = xmlgeneral.prefetchStatusInit
+    }
+  -- Else If the XSD Api Schema is already known and the Prefetch status is Ko
+  elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
+    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
+    -- So let's try another Prefetch
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
+  else
+    -- Else If the XSD Api Schema is already known and the Prefetch status is Init/Running/Ok
+    --   => Don't change anything
+  end
+
+  -- Set the information of the plugin using the Schema
+  if requestTypePlugin == xmlgeneral.RequestTypePlugin then
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ReqPluginRemove = false
+  else
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ResPluginRemove = false
+  end
+
+  -- If the Prefetch has the 'Init' status
+  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusInit then
+    local prefetchConf = {
+      xsdSchemaInclude = xsdSchemaInclude,
+      VerboseRequest = config.VerboseRequest,
+      ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
+      plugin_id = plugin_id,
+      xsdHashKey = xsdHashKey,
+      child = child
+    }
+    -- Asynchronously execute the Prefetch of External Entities
+    local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, nil , prefetchConf)            
+    if err then
+      kong.log.err("XSD_Validation_Prefetch, prefetchQueue: " .. err)
+    end
+  end
+end
+
+--------------------------------------------------------------------------------------
+-- Process linked with the 'configure' phase
+--  libxml -> Enable the prefetch Validation
+--  saxon  -> If required load the 'saxon' library
+--
 -- If there is a change in Request  Plugins 'pluginConfigure' called
 -- If there is a change in Response Plugins 'pluginConfigure' is called another time
---  libxml -> Enable the prefetch for the new WSDL/XSD Api Schemas and existing that failed
---  saxon  -> If required load the 'saxon' library
---------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
 function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
   local saxon = false
   local iCount = 0
@@ -412,7 +467,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
       end
       iCount = iCount + 1
     end
-    kong.log.debug("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))    
+    kong.log.notice("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))    
     
     -- Parse all instances of the plugin
     for _, config in ipairs(configs) do
@@ -424,6 +479,16 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
 
       -- Else If libxslt
       elseif  config.xsltLibrary == 'libxslt' then
+
+        -- Check if there is 'xsdSoapSchemaInclude'
+        local xsdSoapSchemaInclude = false
+        if config.xsdSoapSchemaInclude then
+          for k,v in pairs(config.xsdSoapSchemaInclude) do            
+            xsdSoapSchemaInclude = true
+            break
+          end
+        end
+
         -- Check if there is 'xsdApiSchemaInclude'
         local xsdApiSchemaInclude = false
         if config.xsdApiSchemaInclude then
@@ -432,49 +497,26 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
             break
           end
         end
-        -- If Asynchronous is enabled       and 
-        -- If an XSD API Schema is defined  and
-        -- If XSD content is NOT included in the plugin configuration
-        if config.ExternalEntityLoader_Async and
-           config.xsdApiSchema               and
-           not xsdApiSchemaInclude           then
-          local xsdHashKey = libxml2ex.hash_key(config.xsdApiSchema)
-          -- If it's the 1st time the XSD API Schema is seen
-          if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
-            kong.log.debug("pluginConfigure: it's the 1st time the XSD Api Schema is seen, hashKey=" .. xsdHashKey)
-            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
-              prefetchStatus = xmlgeneral.prefetchStatusInit
-            }
-          -- Else If the XSD Api Schema is already known and the Prefetch status is Ko
-          elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
-            kong.log.debug("pluginConfigure: the XSD Api Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
-            -- So let's try another Prefetch
-            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
-          else
-            -- Else If the XSD Api Schema is already known and the Prefetch status is Init/Running/Ok
-            --   => Don't change anything
+        
+        -- If Asynchronous is enabled
+        if config.ExternalEntityLoader_Async then
+          kong.log.notice("pluginConfigure, Async")
+
+          -- If a SOAP XSD Schema is defined and
+          -- If the XSD content is NOT included in the plugin configuration
+          if      config.xsdSoapSchema and
+              not xsdSoapSchemaInclude then
+            kong.log.notice("pluginConfigure, Validation Prefetch of SOAP Schema")
+            xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP, queueName, queue_conf)
           end
-          if requestTypePlugin == xmlgeneral.RequestTypePlugin then
-            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ReqPluginRemove = false
-          else
-            kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ResPluginRemove = false
-          end
-          
-          -- If the Prefetch has the 'Init' status
-          if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusInit then
-            local prefetchConf = {
-              xsdApiSchema = config.xsdApiSchema,
-              VerboseRequest = config.VerboseRequest,
-              ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
-              plugin_id = plugin_id,
-              xsdHashKey = xsdHashKey
-            }
-            -- Asynchronously execute the Prefetch of External Entities
-            local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, nil , prefetchConf)            
-            if err then
-              kong.log.err("prefetchQueue: " .. err)
-            end
-          end
+
+          -- If an API XSD Schema is defined and
+          -- If the XSD content is NOT included in the plugin configuration
+          if      config.xsdApiSchema  and
+              not xsdApiSchemaInclude then
+            kong.log.notice("pluginConfigure, Validation Prefetch of API Schema")
+            xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
+          end          
         end
       else
         kong.log.err("pluginConfigure: unknown library " .. config.xsltLibrary)
@@ -506,8 +548,42 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
     for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
       iCount = iCount + 1
     end
-    kong.log.debug("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
+    kong.log.notice("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
   end
+end
+
+----------------------------------------------
+-- Do a sleep for waiting the end of Prefetch
+----------------------------------------------
+function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchemaInclude, queuename)
+  local rc = false
+  -- Check if there is 'xsdSchemaInclude'
+  local xsdApiSchemaIncluded = false
+  if xsdApiSchemaInclude then
+    for k,v in pairs(xsdApiSchemaInclude) do            
+      xsdApiSchemaIncluded = true
+      break
+    end
+  end
+
+  local nowTime = ngx.now()
+
+  -- If Asynchronous is enabled and 
+  -- If XSD content is NOT included in the plugin configuration
+  if  ExternalEntityLoader_Async and 
+      not xsdApiSchemaIncluded   then
+    -- Wait for:
+    --     The end of Prefetch External Entities (i.e. Validate the XSD schema) and
+    --     The timeout Prefetch (avoiding infinite loop)
+    while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
+           (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
+kong.log.notice("**jerome sleep=" .. libxml2ex.xmlSoapSleepAsync .. "s")
+            -- This 'sleep' happens only one time per Plugin configuration update
+      ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+      rc = true
+    end
+  end
+  return rc
 end
 
 ---------------------------------------------------------------------------------
@@ -1064,7 +1140,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   local libxml2       = require("xmlua.libxml2")
 
   -- Prepare the error Message
-  if child == 0 then
+  if child == xmlgeneral.schemaTypeSOAP then
     schemaType = "SOAP"
   else
     schemaType = "API"
@@ -1093,7 +1169,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     if errMessage then
     -- The Error processing is done at the End of the function, so we do nothing...
     -- if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
-    elseif child ~=0 then
+    elseif child ~= xmlgeneral.schemaTypeSOAP then
       -- Example:
       -- <soap:Envelope xmlns:xsi=....">
       --    <soap:Body>

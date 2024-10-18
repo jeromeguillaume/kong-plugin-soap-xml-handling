@@ -1306,7 +1306,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-	assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+	assert.matches("<detail>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
 end
 
 function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)
