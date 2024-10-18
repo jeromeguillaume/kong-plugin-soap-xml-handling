@@ -36,7 +36,7 @@ xmlgeneral.prefetchStatusInit     = 0
 xmlgeneral.prefetchStatusOk       = 1
 xmlgeneral.prefetchStatusRunning  = 2
 xmlgeneral.prefetchStatusKo       = 3
-xmlgeneral.prefetchQueueTimeout   = 1  -- Queue Timeout to Asynchronously prefetch XSD
+xmlgeneral.prefetchQueueTimeout   = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously prefetch XSD
 xmlgeneral.prefetchReqQueueName   = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName   = "-prefetch-response-schema"
 
@@ -572,12 +572,12 @@ function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchem
   -- If XSD content is NOT included in the plugin configuration
   if  ExternalEntityLoader_Async and 
       not xsdApiSchemaIncluded   then
+
     -- Wait for:
     --     The end of Prefetch External Entities (i.e. Validate the XSD schema) and
     --     The timeout Prefetch (avoiding infinite loop)
     while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
            (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
-kong.log.notice("**jerome sleep=" .. libxml2ex.xmlSoapSleepAsync .. "s")
             -- This 'sleep' happens only one time per Plugin configuration update
       ngx.sleep(libxml2ex.xmlSoapSleepAsync)
       rc = true

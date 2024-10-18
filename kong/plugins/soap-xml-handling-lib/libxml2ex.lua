@@ -104,24 +104,23 @@ local asyncDownloadEntities_callback = function(_, url_entries)
         method = 'GET',
         ssl_verify = false,
       })
+      -- If there is no response (bad hostname for instance)
       if not res then
         rc = false
         errRc = "url '".. url .. "' err: " .. err
         cache_entity.body           = nil
         cache_entity.httpStatus     = 0
         cache_entity.timeDownloaded = ngx.time ()
-        --kong.log.debug("asyncDownloadEntities_callback - RESPONSE Ko: " .. errRc)
-      else        
+      -- Else there is an Http response
+      else
         cache_entity.httpStatus     = res.status
         cache_entity.timeDownloaded = ngx.time ()
         if res.status == 200 then
           cache_entity.body         = res.body
-          --kong.log.debug("asyncDownloadEntities_callback - RESPONSE Ok: " .. url .. " httpStatus: " .. res.status)
         else
           cache_entity.body         = nil
           rc = false
           errRc = "url '".. url .. "' err: " .. res.status
-          --kong.log.debug("asyncDownloadEntities_callback - RESPONSE Ko: " .. url .. " httpStatus: " .. res.status)
         end
       end
       
@@ -135,8 +134,9 @@ local asyncDownloadEntities_callback = function(_, url_entries)
     end
   end
   
-  -- Always return true, otherwsise, in case of error 404 (for instance), the Queue tries again and again
-  -- receiving (the same Error, i.e. 404) and the Queue goes on the next URL only after the tiemout (1s)
+  -- *** Always return true *** 
+  -- Otherwise, in case of 404 error (for instance), the Queue tries the download again and again but the Queue
+  -- receives the same Error (i.e. 404). Finally, the Queue goes on the next URL once the timeout (1s) is reached
   -- return rc, errRc
   return true
 end
@@ -206,7 +206,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     {
       name = libxml2ex.queueNamePrefix .. "-download-xsd", -- name of the queue (required)
       log_tag = libxml2ex.queueNamePrefix,               -- tag string to identify plugin or application area in logs
-      max_batch_size = 10,                               -- maximum number of entries in one batch (default 1)
+      max_batch_size = 1,                               -- maximum number of entries in one batch (default 1)
       max_coalescing_delay = 0,                          -- maximum number of seconds after first entry before a batch is sent
       max_entries = 10000,                               -- maximum number of entries on the queue (default 10000)
       max_bytes = nil,                                   -- maximum number of bytes on the queue (default nil)
