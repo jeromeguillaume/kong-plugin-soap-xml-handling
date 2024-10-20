@@ -744,7 +744,7 @@ Call correctly `calculator` by using a `SOAP` 1.2 enveloppe. The `SOAP` 1.2 XSD 
   <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
   <xs:complexType name="AddResponseType">
     <xs:sequence>
-      <xs:element type="xs:string" name="KongResult"/>
+      <xs:element type="xs:string" name="AddResult"/>
     </xs:sequence>
   </xs:complexType>
 </xs:schema>
