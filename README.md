@@ -232,7 +232,7 @@ We call incorrectly the Service by injecting a SOAP error; the plugin detects it
 
 Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `VerboseRequest` enabled
-- `XsdApiSchema` property with this value:
+- `xsdApiSchema` property with this value:
 ```xml
 <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema">
   <s:element name="Add">
@@ -405,7 +405,7 @@ Use command defined at Example #3, the expected result is `<KongResult>13</KongR
 ```
 ### Example #6: Response | `XSD VALIDATION`: checking validity of XML response with its XSD schema
 Open `soap-xml-response-handling` plugin and configure the plugin with:
-- `XsdApiSchema` property with this value:
+- `xsdApiSchema` property with this value:
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -572,7 +572,7 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
 4) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `ExternalEntityLoader_CacheTTL` property with the value `15` seconds
 - `VerboseRequest` enabled
-- `XsdApiSchema` property with this `WSDL` value:
+- `xsdApiSchema` property with this `WSDL` value:
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -639,7 +639,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `XsdApiSchema` property with this `WSDL` value:
+- `xsdApiSchema` property with this `WSDL` value:
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -695,7 +695,7 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 
 ### Example #10-b: Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema with Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
-2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file ([kic/kongPlugin-SOAP-XML-request.yaml](kic/kongPlugin-SOAP-XML-request.yaml)) is already configured in regards of `example #10-a`: `wsdl` in `XsdApiSchema` and `XSD` import in `xsdApiSchemaInclude`
+2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file ([kic/kongPlugin-SOAP-XML-request.yaml](kic/kongPlugin-SOAP-XML-request.yaml)) is already configured in regards of `example #10-a`: `wsdl` in `xsdApiSchema` and `XSD` import in `xsdApiSchemaInclude`
 ```sh
 kubectl apply -f kic/kongPlugin-SOAP-XML-request.yaml
 ```
@@ -707,6 +707,69 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 
 ### Example #11: Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library
 See [SAXON.md](SAXON.md)
+
+### Example #12: Request and Response | SOAP 1.2 `XSD VALIDATION`: use a SOAP 1.2 XSD defintion and the XSD API `caclulator` definition
+Call correctly `calculator` by using a `SOAP` 1.2 enveloppe. The `SOAP` 1.2 XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
+1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
+
+2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseRequest` enabled
+- `xsdSoapSchema` property with the `XSD` value defined in [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoapSchemaInclude` property with this value:
+  - key: `http://www.w3.org/2001/xml.xsd`
+  - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
+- `xsdApiSchema` property with this `XSD` value:
+```xml
+<s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema">
+  <s:element name="Add">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
+</s:schema>
+```
+3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseResponse` enabled
+- `xsdSoapSchema` property with the `XSD` value defined in [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoapSchemaInclude` property with this value:
+  - key: `http://www.w3.org/2001/xml.xsd`
+  - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
+- `xsdApiSchema` property with this `XSD` value:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddResponseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="KongResult"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+```
+
+4) Call the `calculator` through the Kong Gateway Route
+```
+http POST http://localhost:8000/calculator \
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+  <soap12:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>5</intA>
+      <intB>7</intB>
+    </Add>
+  </soap12:Body>
+</soap12:Envelope>'
+
+The expected result is: 
+```xml
+...
+<AddResult>12</AddResult>
+...
+```
+
 
 ## Plugins Testing
 The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo)
@@ -772,3 +835,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Replace `plugin.PRIORITY` by `plugin.__plugin_id` regarding the Error management
 - v1.1.6:
   - `ExternalEntityLoader_Async`: use a `kong.tools.queue` to execute a WSDL/XSD validation prefetch on the `configure` nginx phase (for downloading the `ìmport`ed XSD)
+- v1.2.0:
+  - Add support for `SOAP` v1.2 (which does an `ìmport`, which can be included in a new property: `xsdSoapSchemaInclude`)

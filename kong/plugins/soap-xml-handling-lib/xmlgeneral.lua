@@ -36,7 +36,7 @@ xmlgeneral.prefetchStatusInit     = 0
 xmlgeneral.prefetchStatusOk       = 1
 xmlgeneral.prefetchStatusRunning  = 2
 xmlgeneral.prefetchStatusKo       = 3
-xmlgeneral.prefetchQueueTimeout   = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously prefetch XSD
+xmlgeneral.prefetchQueueTimeout   = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
 xmlgeneral.prefetchReqQueueName   = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName   = "-prefetch-response-schema"
 
@@ -309,7 +309,7 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
   for k, prefetchConf_entry in pairs (prefetchConf_entries) do
     
     count = count + 1
-    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
+    kong.log.notice("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
     
     xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
     
@@ -335,8 +335,9 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
       
       -- If the prefetch succeeded
       if not errMessage then
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success**")
         xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
+        xsdHashKey.duration = ngx.now() - xsdHashKey.started
+        kong.log.notice("asyncPrefetch_Schema_Validation_callback: **Success** | duration=" .. xsdHashKey.duration)
       else
         kong.log.debug("asyncPrefetch_Schema_Validation_callback: err: " .. errMessage)
         local j, _ = string.find(errMessage, "failed.to.load.external.entity")
@@ -380,18 +381,23 @@ end
 function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, xsdSchemaInclude, child, queueName, queue_conf)
 
   local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
-  kong.log.notice("XSD_Validation_Prefetch: '" .. string.sub(xsdSchemaInclude, 1, 100) .. "...etc.' xsdHashKey=" .. xsdHashKey)
   -- If it's the 1st time the XSD API Schema is seen
   if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
     kong.log.notice("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
     kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
-      prefetchStatus = xmlgeneral.prefetchStatusInit
+      prefetchStatus = xmlgeneral.prefetchStatusInit,
+      started  = ngx.now(),
+      duration =  0
+
     }
   -- Else If the XSD Api Schema is already known and the Prefetch status is Ko
   elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
     kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
     -- So let's try another Prefetch
     kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].started  = ngx.now()
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].duration =  0
+
   else
     -- Else If the XSD Api Schema is already known and the Prefetch status is Init/Running/Ok
     --   => Don't change anything

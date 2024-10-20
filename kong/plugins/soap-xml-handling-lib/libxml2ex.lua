@@ -25,8 +25,8 @@ if not loaded then
 end
 
 libxml2ex.xmlSoapSleepAsync             = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to download Asynchronously XSD content
-libxml2ex.externalEntityCacheTTL        = 3600  -- default value in the Prefetch context
-libxml2ex.externalEntityTimeout         = 1     -- default value in the Prefetch context
+libxml2ex.externalEntityCacheTTL        = 3600  -- default value for the context of the XSD Validation Prefetch
+libxml2ex.externalEntityTimeout         = 1     -- default value for the context of the XSD Validation Prefetch
 libxml2ex.sizeOfLRUCache                = 2000  -- Size of size of LRU Cache (1 entry per XSD URL/External Entity)
 libxml2ex.queueNamePrefix               = "soap-xml-handling"
 

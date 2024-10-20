@@ -866,7 +866,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseRequest = false,
 			xsdApiSchemaInclude = {
-				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
+				["http://www.w3.org/2001/xml.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
 		}
