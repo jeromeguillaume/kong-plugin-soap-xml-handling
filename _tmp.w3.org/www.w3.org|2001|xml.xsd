@@ -9,6 +9,7 @@
 
  <xs:annotation>
   <xs:documentation>This schema defines attributes and an attribute group...
+  </xs:documentation>
  </xs:annotation>
 
  <xs:annotation>
