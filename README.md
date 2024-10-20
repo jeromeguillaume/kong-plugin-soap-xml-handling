@@ -837,4 +837,4 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - v1.1.6:
   - `ExternalEntityLoader_Async`: use a `kong.tools.queue` to execute a WSDL/XSD validation prefetch on the `configure` nginx phase (for downloading the `ìmport`ed XSD)
 - v1.2.0:
-  - Add support for `SOAP` v1.1 and v1.2 (which do an `ìmport` that can be included in a new property: `xsdSoapSchemaInclude`)
+  - Add support for `SOAP` v1.1 and v1.2, which do an `ìmport` (that can be included in a new property: `xsdSoapSchemaInclude`)
