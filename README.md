@@ -714,7 +714,7 @@ Call correctly `calculator` by using a `SOAP` 1.2 enveloppe. The `SOAP` 1.2 XSD 
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `xsdSoapSchema` property with the `XSD` value defined in [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoapSchema` property: replace the default `XSD` by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
 - `xsdSoapSchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
   - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
@@ -733,7 +733,7 @@ Call correctly `calculator` by using a `SOAP` 1.2 enveloppe. The `SOAP` 1.2 XSD 
 ```
 3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
-- `xsdSoapSchema` property with the `XSD` value defined in [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoapSchema` property:  replace the default `XSD` by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
 - `xsdSoapSchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
   - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
