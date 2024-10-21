@@ -57,7 +57,7 @@ local function syncDownloadEntities(url)
   https.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
   
   local i, _ = string.find(url, "https://")
-  kong.log.nntice("syncDownloadEntities url: " .. url .. " timeout (sec): " .. kong.ctx.shared.xmlSoapExternalEntity.timeout)
+  kong.log.notice("syncDownloadEntities url: " .. url .. " timeout (sec): " .. kong.ctx.shared.xmlSoapExternalEntity.timeout)
 
   -- https:// request
   if i == 1 then
