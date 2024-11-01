@@ -42,7 +42,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.VerboseResponse|false|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|false|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
 |config.xsdApiSchemaInclude|false|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
-|config.xsdSoapSchema|Pre-defined with `SOAP` v1.0|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
+|config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
 |config.xsdSoapSchemaInclude|false|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
 |config.xsltLibrary|libxslt|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
