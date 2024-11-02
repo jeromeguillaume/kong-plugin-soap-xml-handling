@@ -44,7 +44,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
     if not sleepForPrefetchEnd then
       sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
     end
-    kong.log.notice("**jerome sleepForPrefetchEnd: " .. tostring(sleepForPrefetchEnd))
+    
     errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
@@ -64,7 +64,6 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
     if not sleepForPrefetchEnd then
       sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
     end
-    kong.log.notice("**jerome sleepForPrefetchEnd: " .. tostring(sleepForPrefetchEnd))
     
     -- Validate the API XML with its schema
     errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, xmlgeneral.schemaTypeAPI, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
@@ -75,6 +74,24 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage,
                                                     contentTypeJSON)
+    end
+  end
+
+  -- If there is no error and
+  -- => Validate the 'SOAPAction' header
+  if soapFaultBody == nil then
+    
+    local SOAPAction_header = kong.request.get_header(xmlgeneral.SOAPAction)
+
+    -- Validate the API XML with its schema
+    errMessage = xmlgeneral.validateSOAPActionHeader (soapEnvelope_transformed, SOAPAction_header, plugin_conf.xsdApiSchema, plugin_conf.SOAPActionHeader_Validation, plugin_conf.VerboseRequest)
+    
+    if errMessage ~= nil then
+      -- Format a Fault code to Client
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                  xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
+                                                  errMessage,
+                                                  contentTypeJSON)
     end
   end
 

@@ -2,7 +2,7 @@
 This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
 
-The XSLT Transformation can also be managed with the [saxon](https://www.saxonica.com/html/welcome/welcome.html) library, which supports XSLT 2.0 and 3.0. With XSLT 2.0+ there is a way for applying JSON <-> XML transformation with [fn:json-to-xml](https://www.w3.org/TR/xslt-30/#func-json-to-xml) and [fn:xml-to-json](https://www.w3.org/TR/xslt-30/#func-xml-to-json). The `saxon` library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate saxon with Kong. It's optional, don't install `saxon` library if you don't need it.
+The XSLT Transformation can also be managed with the [saxon](https://www.saxonica.com/html/welcome/welcome.html) library, which supports XSLT 2.0 and 3.0. With XSLT 2.0+ there is a way for applying JSON <-> XML transformation with [fn:json-to-xml](https://www.w3.org/TR/xslt-30/#func-json-to-xml) and [fn:xml-to-json](https://www.w3.org/TR/xslt-30/#func-xml-to-json). The `saxon` library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate saxon with Kong. It's optional, don't install the `saxon` library if you don't need it.
 
 These plugins don't apply to Kong OSS. They work for Kong EE and Konnect.
 
@@ -709,8 +709,8 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 ### Example #11: Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library
 See [SAXON.md](SAXON.md)
 
-### Example #12: Request and Response | `SOAP` 1.2 `XSD VALIDATION`: use a `SOAP` 1.2 `XSD` defintion and the `caclulator` API `XSD` definition
-Call correctly `calculator` by using a `SOAP` 1.2 enveloppe. The `SOAP` 1.2 XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
+### Example #12: Request and Response | `SOAP 1.2` `XSD VALIDATION`: use a `SOAP 1.2` `XSD` defintion and the `caclulator` API `XSD` definition
+Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:

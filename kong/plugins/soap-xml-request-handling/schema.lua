@@ -28,6 +28,13 @@ return {
             keys = { type = "string", required = true },
             values = {type = "string", required = true},
             }},
+          { SOAPActionHeader_Validation = {required = false, type = "string", default = "no",
+            one_of = {
+              "no",
+              "yes_empty_allowed",
+              "yes",
+            },
+          },},
           { xsltLibrary = {required = true, type = "string", default = "libxslt",
             one_of = {
               "libxslt",
