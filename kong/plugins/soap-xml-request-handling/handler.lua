@@ -84,7 +84,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
     local SOAPAction_header = kong.request.get_header(xmlgeneral.SOAPAction)
 
     -- Validate the API XML with its schema
-    errMessage = xmlgeneral.validateSOAPActionHeader (soapEnvelope_transformed, SOAPAction_header, plugin_conf.xsdApiSchema, plugin_conf.SOAPActionHeader_Validation, plugin_conf.VerboseRequest)
+    errMessage = xmlgeneral.validateSOAPAction_Header (soapEnvelope_transformed, SOAPAction_header, plugin_conf.xsdApiSchema, plugin_conf.SOAPAction_Header_Validation, plugin_conf.VerboseRequest)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client

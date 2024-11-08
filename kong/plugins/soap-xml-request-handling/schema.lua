@@ -17,6 +17,13 @@ return {
           { RouteXPath = { type = "string", required = false }, },
           { RouteXPathCondition = { type = "string", required = false }, },
           { RouteXPathRegisterNs = { type = "array",  required = false, elements = {type = "string"}, default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"}},},
+          { SOAPAction_Header_Validation = {required = false, type = "string", default = "no",
+            one_of = {
+              "no",
+              "yes_empty_allowed",
+              "yes",
+            },
+          },},
           { VerboseRequest = { type = "boolean", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 
@@ -28,13 +35,6 @@ return {
             keys = { type = "string", required = true },
             values = {type = "string", required = true},
             }},
-          { SOAPActionHeader_Validation = {required = false, type = "string", default = "no",
-            one_of = {
-              "no",
-              "yes_empty_allowed",
-              "yes",
-            },
-          },},
           { xsltLibrary = {required = true, type = "string", default = "libxslt",
             one_of = {
               "libxslt",

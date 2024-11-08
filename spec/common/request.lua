@@ -866,7 +866,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseRequest = false,
 			xsdApiSchemaInclude = {
-				["http://www.w3.org/2001/xml.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
+				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
 		}
@@ -885,7 +885,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 			body = request_common.calculator_Request,
 		})
 	
-		-- validate that the request succeeded: response status 200, Content-Type and right math
+		-- validate that the request succeeded: response status 200, Content-Type and right match
 		local body = assert.response(r).has.status(200)
 		local content_type = assert.response(r).has.header("Content-Type")
 		assert.equal("text/xml; charset=utf-8", content_type)
@@ -965,7 +965,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_request_ter
 		body = request_common.calculator_Request,
 	})
 	
-	-- validate that the request succeeded: response status 200, Content-Type and right math
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1013,7 +1013,7 @@ function request_common._1_2_XSD_Validation_Ok (assert, client)
 		body = request_common.calculator_Request,
 	})
 
-	-- validate that the request succeeded: response status 200, Content-Type and right math
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1157,7 +1157,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
 		body = request_common.calculator_Subtract_Request,
 	})
 
-	-- validate that the request succeeded: response status 200, Content-Type and right math
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
@@ -1173,7 +1173,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client
 		body = request_common.calculator_Subtract_Request,
 	})
 
-	-- validate that the request failed: response status 500, Content-Type and right math
+	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)

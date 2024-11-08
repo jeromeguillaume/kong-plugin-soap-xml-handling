@@ -131,7 +131,7 @@
   <wsdl:binding name="CalculatorSoap" type="tns:CalculatorSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
     <wsdl:operation name="Add">
-      <soap:operation soapAction="http://tempuri.org/Add" style="document" />
+      <soap:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -140,7 +140,7 @@
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="Subtract">
-      <soap:operation soapAction="http://tempuri.org/Subtract" style="document" />
+      <soap:operation soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>

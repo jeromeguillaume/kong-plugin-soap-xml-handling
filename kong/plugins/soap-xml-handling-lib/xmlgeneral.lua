@@ -36,9 +36,9 @@ xmlgeneral.schemaTypeAPI      = 2
 xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
 xmlgeneral.JSONContentType    = "application/json"
 xmlgeneral.SOAPAction         = "SOAPAction"
-xmlgeneral.SOAPActionHeader_Validation_No        = "no"
-xmlgeneral.SOAPActionHeader_Validation_Yes_Empty = "yes_empty_allowed"
-xmlgeneral.SOAPActionHeader_Validation_Yes       = "yes"
+xmlgeneral.SOAPAction_Header_Validation_No        = "no"
+xmlgeneral.SOAPAction_Header_Validation_Yes_Empty = "yes_empty_allowed"
+xmlgeneral.SOAPAction_Header_Validation_Yes       = "yes"
 
 xmlgeneral.XMLContentTypeBody     = 1
 xmlgeneral.JSONContentTypeBody    = 2
@@ -321,7 +321,7 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
   for k, prefetchConf_entry in pairs (prefetchConf_entries) do
     
     count = count + 1
-    kong.log.notice("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
+    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
     
     xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
     
@@ -349,7 +349,7 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
       if not errMessage then
         xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
         xsdHashKey.duration = ngx.now() - xsdHashKey.started
-        kong.log.notice("asyncPrefetch_Schema_Validation_callback: **Success** | duration=" .. xsdHashKey.duration)
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success** | duration=" .. xsdHashKey.duration)
       else
         kong.log.debug("asyncPrefetch_Schema_Validation_callback: err: " .. errMessage)
         local j, _ = string.find(errMessage, "failed.to.load.external.entity")
@@ -395,7 +395,7 @@ function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, 
   local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
   -- If it's the 1st time the XSD API Schema is seen
   if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
-    kong.log.notice("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
+    kong.log.debug("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
     kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
       prefetchStatus = xmlgeneral.prefetchStatusInit,
       started  = ngx.now(),
@@ -485,7 +485,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
       end
       iCount = iCount + 1
     end
-    kong.log.notice("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))    
+    kong.log.debug("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))    
     
     -- Parse all instances of the plugin
     for _, config in ipairs(configs) do
@@ -518,13 +518,13 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
         
         -- If Asynchronous is enabled
         if config.ExternalEntityLoader_Async then
-          kong.log.notice("pluginConfigure, Async")
+          kong.log.debug("pluginConfigure, Async")
 
           -- If a SOAP XSD Schema is defined and
           -- If the XSD content is NOT included in the plugin configuration
           if      config.xsdSoapSchema and
               not xsdSoapSchemaInclude then
-            kong.log.notice("pluginConfigure, Validation Prefetch of SOAP Schema")
+            kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
             xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP, queueName, queue_conf)
           end
 
@@ -532,7 +532,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
           -- If the XSD content is NOT included in the plugin configuration
           if      config.xsdApiSchema  and
               not xsdApiSchemaInclude then
-            kong.log.notice("pluginConfigure, Validation Prefetch of API Schema")
+            kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
             xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
           end          
         end
@@ -566,7 +566,7 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
     for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
       iCount = iCount + 1
     end
-    kong.log.notice("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
+    kong.log.debug("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
   end
 end
 
@@ -1257,188 +1257,28 @@ end
 --------------------------------------------------------------------------------------------------------
 -- Get the 'SOAPAction' value from WSDL related to the Operation Name (retrieved from the SOAP Request)
 --------------------------------------------------------------------------------------------------------
-function xmlgeneral.OLDgetSOAPActionFromWSDL (xmlWSDL_doc, xmlWSDLNodePtrRoot, request_OperationName, xmlnsSOAPEnvelope_hRef)
-  local j
-  local currentNode
-  local nodeName
-  local bindingNode
-  local bindingChildNode
-  local operationChildNode
-  local wsdlRaw_namespaces
-  local wsdlSOAPAction_found  = false
-  local wsdlTransport_found   = false
-  local wsdlOperation_found   = false
-  local wsdlBinding_found     = false
-  local wsdlNsSOAP            = false
-  local wsdlSOAPActionHeader_Value
-  local errMessage
-  
-  -- In WSDL definition: 
-  --   Find <wsdl:binding> child of <wsdl:definitions>
-  --     Find <soap|12:binding> (child of <wsdl:binding>) with transport="http://schemas.xmlsoap.org/soap/http"
-  --       Find <soap|12:operation soapAction='TO_BE_FOUND' (child of <soap|12:binding>) related to the Service API
-  -- Example: 
-  -- <wsdl:definitions>
-  --  <wsdl:binding name="CalculatorSoap" type="tns:CalculatorSoap">
-  --    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
-  --    <wsdl:operation name="Add">
-  --      <soap:operation soapAction="http://tempuri.org/Add" style="document" />
-  --  <wsdl:binding name="CalculatorSoap12" type="tns:CalculatorSoap">
-  --    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
-  --    <wsdl:operation name="Add">
-  --      <soap12:operation soapAction="http://tempuri.org/Add" style="document" />
-  --  
-  --   Must be related to operationName=Add (found in the SOAP/XML body Request)
-  
-  bindingNode  = libxml2.xmlFirstElementChild(xmlWSDLNodePtrRoot)
-
-  -- Retrieve all <wsdl:binding> Node in <wsdl:definitions> until the 'SOAPAction' is found
-  while bindingNode ~= ffi.NULL and not wsdlSOAPAction_found do
-    if tonumber(bindingNode.type) == ffi.C.XML_ELEMENT_NODE then
-      nodeName = ffi.string(bindingNode.name)
-      if nodeName == "binding" then
-        
-        wsdlBinding_found   = true
-        wsdlTransport_found = false
-        wsdlOperation_found = false
-        wsdlNsSOAP          = false
-        
-        local bindingName = libxml2.xmlGetProp(bindingNode, "name")
-        if bindingName then
-          kong.log.notice("**jerome bindingName=" .. bindingName)
-        end        
-
-        -- Retrieve all <soap|12:binding> and <wsdl:operation> Nodes in <wsdl:binding> until the 'SOAPAction' is found
-        bindingChildNode = libxml2.xmlFirstElementChild(bindingNode)
-        while bindingChildNode ~= ffi.NULL and not wsdlSOAPAction_found do 
-          if tonumber(bindingChildNode.type) == ffi.C.XML_ELEMENT_NODE then
-            nodeName = ffi.string(bindingChildNode.name)
-            
-            if nodeName == "binding" then
-              local nodePath = libxml2.xmlGetNodePath (bindingChildNode)
-              if nodePath then
-                kong.log.notice("**jerome nodePath=" .. nodePath)
-              end
-
-              -- Get the List of all NameSpaces
-              wsdlRaw_namespaces = libxml2.xmlGetNsList(xmlWSDL_doc, bindingChildNode)
-              j = 0
-              -- Find the right SOAP NameSpace
-              while wsdlRaw_namespaces and wsdlRaw_namespaces[j] ~= ffi.NULL do
-                kong.log.notice("**jerome wsdlRaw_namespaces:" .. ffi.string(wsdlRaw_namespaces[j].prefix) ..", " .. ffi.string(wsdlRaw_namespaces[j].href))
-
-                -- If the SOAP Namespace of the <soap:binding> is SOAP 1.1 and 
-                -- If the SOAP Namespace of the <soap:Envelope> Request is SOAP 1.1
-                if ffi.string(wsdlRaw_namespaces[j].href) == xmlgeneral.schemaWSDL1_1_SOAP1_1 and 
-                  xmlnsSOAPEnvelope_hRef == xmlgeneral.schemaSOAP1_1 then
-                  wsdlNsSOAP = true
-                -- If the SOAP Namespace of the <soap12:binding> is SOAP 1.2 and 
-                -- If the SOAP Namespace of the <soap:Envelope> Request is SOAP 1.2
-                elseif ffi.string(wsdlRaw_namespaces[j].href) == xmlgeneral.schemaWSDL1_1_SOAP1_2 and 
-                      xmlnsSOAPEnvelope_hRef == xmlgeneral.schemaSOAP1_2 then
-                  wsdlNsSOAP = true                
-                end
-                --if wsdlNsSOAP == true then
-                --  break
-                --end
-                
-                j = j + 1
-              end              
-              
-              local wsdlTransport = libxml2.xmlGetProp(bindingChildNode, "transport")
-              if wsdlTransport == "http://schemas.xmlsoap.org/soap/http" then
-                wsdlTransport_found = true
-                kong.log.notice("**jerome: successfully found 'transport'")
-              end
-
-            elseif nodeName == "operation" then
-              kong.log.notice("**jerome: successfully found 'operation'")
-              local wsdlOperationName = libxml2.xmlGetProp(bindingChildNode, "name")
-              kong.log.notice("**jerome: 'wsdl:operation name=" .. wsdlOperationName) 
-              if wsdlOperationName == request_OperationName then
-                kong.log.notice("**jerome: successfully found 'wsdl:operation name=" .. request_OperationName)
-                wsdlOperation_found = true
-                wsdlSOAPActionHeader_Value = nil
-                
-                -- Retrieve all <soap|12:operation> and <wsdl:input|output> Nodes in <wsdl:operation> until the 'SOAPAction' is found
-                operationChildNode = libxml2.xmlFirstElementChild(bindingChildNode)
-                while operationChildNode ~= ffi.NULL and not wsdlSOAPActionHeader_Value do                    
-                  if tonumber(operationChildNode.type) == ffi.C.XML_ELEMENT_NODE then
-                    nodeName = ffi.string(operationChildNode.name)
-                    if nodeName == "operation" then
-                      wsdlSOAPActionHeader_Value = libxml2.xmlGetProp(operationChildNode, "soapAction")
-                    end
-                  end
-                  -- If the 'soapAction' is not found
-                  if not wsdlSOAPActionHeader_Value then
-                    -- Go on next child of <wsdl:binding>
-                    operationChildNode = ffi.cast("xmlNode *", operationChildNode.next)
-                  end
-                end
-
-              end
-            end
-            -- If the 'http' transport is found in WSDL
-            --   AND
-            -- If the Operation Name is found in WSDL (related to the Operation Name found in the SOAP Request)
-            --   AND
-            -- If the SOAP Namespace (1.1 or 1.2) of <wsdl:binding> is found (related to the SOAP NS of the SOAP Request)
-            if wsdlTransport_found and wsdlOperation_found and wsdlNsSOAP then
-              -- We found the OperationName
-              wsdlSOAPAction_found = true
-            end
-          end
-          if not wsdlSOAPAction_found then
-            -- Go on next child of <wsdl:binding>
-            bindingChildNode = ffi.cast("xmlNode *", bindingChildNode.next)
-          end  
-        end
-      end
-    end
-
-    if not wsdlSOAPAction_found then
-      -- Go on next '<wsdl:binding>'
-      bindingNode = ffi.cast("xmlNode *", bindingNode.next)
-    end
-
-  end
-
-  -- If we don't find <wsdl:binding>
-  if not wsdlBinding_found then
-    errMessage = "In the WSDL definition, unable to find the 'wsdl:binding'"
-  -- Else If we don't find the proper 'operation name' with 'http' transport
-  elseif not wsdlSOAPAction_found then
-    errMessage = "In the WSDL definition, unable to find the tag 'wsdl:operation name='".. request_OperationName .. "'' " ..
-                 "in the SOAP Namespace='" .. xmlnsSOAPEnvelope_hRef .. "' " ..
-                "with 'soap:binding transport='http://schemas.xmlsoap.org/soap/http''"
-  -- Else if we don't find 'soapAction'
-  elseif not wsdlSOAPActionHeader_Value then
-    errMessage = "In the WSDL definition, unable to find the tag 'soap:operation soapAction='"
-  end
-  return wsdlSOAPActionHeader_Value, errMessage
-end
-
---------------------------------------------------------------------------------------------------------
--- Get the 'SOAPAction' value from WSDL related to the Operation Name (retrieved from the SOAP Request)
---------------------------------------------------------------------------------------------------------
 function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOAPEnvelope_hRef, verbose)
 
   local rc                    = false
   local wsdlDefinitions_found = false
-  local context             = nil
-  local object              = nil
-  local errMessage          = nil
-  local xmlWSDL_doc         = nil
-  local xmlWSDLNodePtrRoot  = nil
-  local nodeName            = nil
-  local parserCtx           = nil
-  local document            = nil
-  local wsdlRaw_namespaces  = nil
-  local wsdlNS              = nil
-  local wsdlNS_SOAP         = nil
-  local wsdlNS_SOAP1_1      = nil
-  local wsdlNS_SOAP1_2      = nil
-  local wsdlSOAPActionHeader_Value = nil
+  local context               = nil
+  local object                = nil
+  local errMessage            = nil
+  local xmlWSDL_doc           = nil
+  local xmlWSDLNodePtrRoot    = nil
+  local nodeName              = nil
+  local parserCtx             = nil
+  local document              = nil
+  local xpathReqRoot          = nil
+  local xpathReqSoapAction    = nil
+  local xpathReqRequired      = nil
+  local wsdlRaw_namespaces    = nil
+  local wsdlNS                = nil
+  local wsdlNS_SOAP           = nil
+  local wsdlNS_SOAP1_1        = nil
+  local wsdlNS_SOAP1_2        = nil
+  local wsdlSoapAction_Value  = nil
+  local wsdlRequired_Value    = false
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
 
@@ -1458,7 +1298,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     end
 
     if wsdlDefinitions_found then
-      kong.log.notice("getSOAPActionFromWSDL: <wsdl:definitions> found")
+      kong.log.debug("getSOAPActionFromWSDL: <wsdl:definitions> found")
       -- Get the List of all NameSpaces of the WSLD and find the NameSpace related to WSDL, SOAP 1.1 and SOAP 1.2
       wsdlRaw_namespaces = libxml2.xmlGetNsList(xmlWSDL_doc, xmlWSDLNodePtrRoot)
       local i = 0
@@ -1475,13 +1315,14 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
         end
         i = i + 1
       end
-      kong.log.notice("getSOAPActionFromWSDL: NameSpaces found: WSDL='" .. (wsdlNS or 'nil') .. 
+      kong.log.debug("getSOAPActionFromWSDL: NameSpaces found: WSDL='" .. (wsdlNS or 'nil') .. 
                       "', SOAP1.1='" .. (wsdlNS_SOAP1_1 or 'nil') .. 
                       "', SOAP1.2='" .. (wsdlNS_SOAP1_2 or 'nil') .. "'")
       
     -- Else we don't find the <wsdl:definitions>
     else
-      errMessage = "Unable to find the 'wsdl:definitions' int the WSDL"
+      errMessage = "Unable to find the 'wsdl:definitions' in the WSDL"
+      kong.log.debug(errMessage)
     end
   end
 
@@ -1492,10 +1333,12 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     if document then
       context = libxml2.xmlXPathNewContext(document)
       if not context then
-        errMessage = "xmlXPathNewContext error, no 'context' for the WSDL"
+        errMessage = "xmlXPathNewContext, no 'context' for the WSDL"
+        kong.log.debug(errMessage)
       end
     else
-      errMessage = "xmlCtxtReadMemory error, no 'document' for the WSDL"
+      errMessage = "xmlCtxtReadMemory, no 'document' for the WSDL"
+      kong.log.debug(errMessage)
     end
   end
 
@@ -1522,6 +1365,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
   
   -- Register the NameSpaces to make a XPath request
   if not errMessage then
+    rc = true
     if wsdlNS then
       rc = libxml2.xmlXPathRegisterNs(context, wsdlNS, xmlgeneral.schemaWSDL)
     end
@@ -1537,6 +1381,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     end
     if not rc then
       errMessage = "Failure registering NameSpaces for the XPath request"
+      kong.log.debug(errMessage)
     end
   end
   
@@ -1552,35 +1397,79 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     elseif xmlnsSOAPEnvelope_hRef == xmlgeneral.schemaSOAP1_2 and not wsdlNS_SOAP1_2 then
       errMessage = "Unable to find (in the WSDL) the Namespace prefix linked with the SOAP 1.2 Request: '" .. xmlgeneral.schemaWSDL1_1_SOAP1_2 .. "'"
     end
+    if errMessage then
+      kong.log.debug(errMessage)
+    end
   end
   
-  -- Execute the XPath request to find the 'SOAPAction' value in the WSDL
+  -- Execute the XPath request to find the 'soapAction' attribute value and 
+  -- the 'soapActionRequired' optional value in the WSDL
   if not errMessage then
-    local xpathReq = "/"..wsdlNS..":definitions/"..wsdlNS..":binding/"..wsdlNS_SOAP..":binding[@transport=\"" .. xmlgeneral.schemaHttpTransport .. "\"]"..
-                        "/parent::"..wsdlNS..":binding/"..wsdlNS..":operation[@name=\"" .. request_OperationName .. "\"]/"..wsdlNS_SOAP..":operation/@soapAction"
-    kong.log.notice("getSOAPActionFromWSDL: the XPath request to get the 'SAOPAction' from the WSDL is: '"..xpathReq.."'")
-    object = libxml2.xmlXPathEvalExpression(xpathReq, context)
-  end
+    -- Example: /wsdl:definitions/wsdl:binding/soap12:binding[@transport="http://schemas.xmlsoap.org/soap/http"]/parent::wsdl:binding/wsdl:operation[@name="Add"]/soap12:operation/@soapAction
+    xpathReqRoot = "/"..wsdlNS..":definitions/"..wsdlNS..":binding/"..wsdlNS_SOAP..":binding[@transport=\"" .. xmlgeneral.schemaHttpTransport .. "\"]"..
+                        "/parent::"..wsdlNS..":binding/"..wsdlNS..":operation[@name=\"" .. request_OperationName .. "\"]/"..wsdlNS_SOAP..":operation/"
+    xpathReqRequired   = xpathReqRoot .. "@soapActionRequired"
+    xpathReqSoapAction = xpathReqRoot .. "@soapAction"
+    kong.log.notice("getSOAPActionFromWSDL: the XPath request to get (from the WSDL) 'soapAction'= '"..xpathReqRoot.."', " ..
+                    "'xpathReqRequired'= '"..xpathReqRequired .."'")
 
-  if not errMessage and object ~= ffi.NULL then
-    -- If we found the XPath element
-    if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then        
-      wsdlSOAPActionHeader_Value = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
-      kong.log.notice("getSOAPActionFromWSDL: 'SOAPAction' found in the WSDL: " .. wsdlSOAPActionHeader_Value)
+    -- Execute the XPath request to find the 'soapActionRequired' optional attribute
+    object = libxml2.xmlXPathEvalExpression(xpathReqRequired, context)    
+    local errXPathSoapAction = " | XPath request='".. xpathReqRequired.. "'"
+    if object ~= ffi.NULL then
+      -- If we found the XPath element
+      if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
+        if libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0]) == 'true' then
+          wsdlRequired_Value = true
+        else
+          wsdlRequired_Value = false
+        end
+        kong.log.debug("getSOAPActionFromWSDL: 'soapActionRequired' found in the WSDL: '" ..tostring(wsdlRequired_Value).."'")
+      else
+        -- As the attribute is optional, there is no error
+        kong.log.notice("getSOAPActionFromWSDL: the optional 'xpathReqRequired' attribute is not found")
+      end
     else
-      errMessage = "xmlXPathEvalExpression: object.nodesetval is null"
+      errMessage = "Invalid XPath request 'soapActionRequired'"
+      kong.log.err(errMessage .. errXPathSoapAction)
     end
-  else
-    errMessage = "xmlXPathEvalExpression: object is null"
+
+    if not errMessage then
+      -- Execute the XPath request to find the 'soapAction' attribute
+      object = libxml2.xmlXPathEvalExpression(xpathReqSoapAction, context)
+      local errXPathSoapAction = " | XPath request='" .. xpathReqSoapAction .. "'"
+
+      if object ~= ffi.NULL then
+        -- If we found the XPath element
+        if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
+          wsdlSoapAction_Value = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
+        else      
+          errMessage = "No value for XPath request 'soapAction'"
+          kong.log.err(errMessage .. errXPathSoapAction)
+        end
+        
+        -- If 'soapAction' attribute has a content
+        if wsdlSoapAction_Value and wsdlSoapAction_Value ~= '' then
+          kong.log.debug("getSOAPActionFromWSDL: 'soapAction' found in the WSDL: '" .. wsdlSoapAction_Value .. "'")
+        else
+          errMessage = "Unable to get the value of '"..wsdlNS_SOAP..":operation soapAction' attribute in the WSDL linked with '" ..request_OperationName.. "' Operation name"
+          kong.log.err(errMessage ..  errXPathSoapAction)
+        end
+      end      
+    else
+      errMessage = "Invalid XPath request 'soapAction'"
+      kong.log.err(errMessage .. errXPathSoapAction)
+    end
+  
   end
 
-  return wsdlSOAPActionHeader_Value, errMessage
+  return wsdlSoapAction_Value, wsdlRequired_Value, errMessage
 end
 
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
-function xmlgeneral.validateSOAPActionHeader (SOAPRequest, SOAPActionHeader_Value, WSDL, SOAPActionHeader_Validation, verbose)
+function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Value, WSDL, SOAPAction_Header_Validation, verbose)
   local i
   local xmlRequest_doc
   local xmlWSDL_doc
@@ -1590,8 +1479,9 @@ function xmlgeneral.validateSOAPActionHeader (SOAPRequest, SOAPActionHeader_Valu
   local xmlWSDLNodePtrRoot
   local currentNode
   local nodeName
-  local wsdlSOAPActionHeader_Value
+  local wsdlSOAPAction_Header_Value
   local request_OperationName
+  local wsdlRequired_Value    = false
   local soapBody_found        = false
   local nsSOAP_11_12_found    = false
   local wsdlDefinitions_found = false
@@ -1601,21 +1491,17 @@ function xmlgeneral.validateSOAPActionHeader (SOAPRequest, SOAPActionHeader_Valu
   -- If 'SOAPAction' header doesn't have to be validated 
   --   OR
   -- If 'SOAPAction' header is empty and it's allowed by the plugin configuration
-  if SOAPActionHeader_Validation == xmlgeneral.SOAPActionHeader_Validation_No or
-    (SOAPActionHeader_Validation == xmlgeneral.SOAPActionHeader_Validation_Yes_Empty and
-    (SOAPActionHeader_Value == nil or SOAPActionHeader_Value == ''))
+  if SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_No or
+    (SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_Yes_Empty and
+    (SOAPAction_Header_Value == nil or SOAPAction_Header_Value == ''))
       then
     -- The validation of 'SOAPAction' header is not required. Return 'no error'
     return nil
   end
 
-  -- If 'SOAPAction' header is required but it's empty
-  if SOAPActionHeader_Validation == xmlgeneral.SOAPActionHeader_Validation_Yes and
-    (SOAPActionHeader_Value == nil or SOAPActionHeader_Value == '') then
-    errMessage = "No 'SOAPAction' http header found"
-  -- Else If there is no WSDL definition in the plugin configuration 
-  elseif not WSDL then
-    errMessage = "No WSDL definition found: it's mandatory to validate the 'SOAPAction' http header"
+  -- If there is no WSDL definition in the plugin configuration 
+  if not WSDL then
+    errMessage = "No WSDL definition found: it's mandatory to validate the 'SOAPAction' header"
   end
   
   -- Parse an XML in-memory document from the SOAP Request and build a tree
@@ -1667,7 +1553,7 @@ function xmlgeneral.validateSOAPActionHeader (SOAPRequest, SOAPActionHeader_Valu
       currentNode = libxml2.xmlFirstElementChild(currentNode)
       if currentNode ~= ffi.NULL then
         request_OperationName = ffi.string(currentNode.name)
-        kong.log.notice("validate 'SOAPAction' Header - Found in SOAP Request: operationName=" .. request_OperationName)
+        kong.log.debug("validate 'SOAPAction' Header - Found in SOAP Request: operationName=" .. request_OperationName)
       else
         errMessage = "Unable to find the Operation Name inside 'soap:Body'"
       end
@@ -1678,22 +1564,32 @@ function xmlgeneral.validateSOAPActionHeader (SOAPRequest, SOAPActionHeader_Valu
 
   -- Get the 'SOAPAction' value from WSDL related to the Operation Name (retrieved from the SOAP Request)
   if not errMessage then
-    wsdlSOAPActionHeader_Value, errMessage = xmlgeneral.getSOAPActionFromWSDL(
-                                                    WSDL, 
-                                                    request_OperationName,
-                                                    ffi.string(raw_namespaces[i].href),
-                                                    verbose)
-    if not errMessage then      
-      if wsdlSOAPActionHeader_Value ~= SOAPActionHeader_Value then
-        errMessage = "In 'soap:Body' of the Request, the Operation Name found is '" .. request_OperationName .. "'. " ..
-                    "According to the WSDL the 'SOAPAction' should be '" .. wsdlSOAPActionHeader_Value .. "' and not '" .. SOAPActionHeader_Value .. "'"
-      else
-        kong.log.notice("validate 'SOAPAction' Header - Successful validation of '" .. SOAPActionHeader_Value .. "' value")
+    wsdlSOAPAction_Header_Value, wsdlRequired_Value, errMessage = xmlgeneral.getSOAPActionFromWSDL(
+                                                                    WSDL, 
+                                                                    request_OperationName,
+                                                                    ffi.string(raw_namespaces[i].href),
+                                                                    verbose)
+    if not errMessage then
+      if  SOAPAction_Header_Value == nil then
+        -- If the WSDL has soapActionRequired="true" attribute
+        if wsdlRequired_Value == true then
+          errMessage = "The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'"
+        else
+          -- No error, as the WSDL has soapActionRequired="false" or no soapActionRequired attribute (and the default value is "false")
+        end
+      -- Elseif there is a mismacth between the 'SOAPAction' header and the Operation name
+      elseif wsdlSOAPAction_Header_Value ~= SOAPAction_Header_Value then
+        errMessage = "The Operation Name found in 'soap:Body' is '"..request_OperationName.."'. "..
+                     "According to the WSDL the 'SOAPAction' should be '" .. (wsdlSOAPAction_Header_Value or '').. "' and not '" .. (SOAPAction_Header_Value or '').. "'"
       end
     end
+
   end
   
-  if errMessage then
+  if not errMessage then
+    kong.log.debug("validate 'SOAPAction' Header - Successful validation of '" .. (SOAPAction_Header_Value or '') .. "' value")  
+  else
+    errMessage = "Validation of 'SOAPAction' header: " .. errMessage
     kong.log.debug (errMessage)
   end
 
