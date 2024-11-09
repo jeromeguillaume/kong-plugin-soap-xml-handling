@@ -918,3 +918,4 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Improve support for `SOAP` v1.1 and v1.2, which does an `ìmport` (that can be included in a new property: `xsdSoapSchemaInclude`)
   - Add the validation of the `SOAPAction` Http header
   - `xmlgeneral.pluginConfigure`: enable the `XSD_Validation_Prefetch` for `saxon` library (not only `libxslt`)
+  - Add the `Known Limitations` section in the README.md
