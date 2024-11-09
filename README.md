@@ -38,7 +38,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`)|
-|config.SOAPAction_Header|`no`|Validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If enabled the `xsdSoapSchema` must be defined with a WSDL including the `soapAction` value (in `<wsdl:binding>`); the `soapActionRequired` tag is considered. If `yes_null_allowed` is set, the plugin allows the request even if the `SOAPAction` is not present|
+|config.SOAPAction_Header|`no`|Validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If enabled the `xsdSoapSchema` must be defined with a WSDL including the `soapAction` value (in `<wsdl:binding>`); the optional `soapActionRequired` tag is considered. If `yes_null_allowed` is set, the plugin allows the request even if the `SOAPAction` is not present|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
@@ -908,3 +908,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `ExternalEntityLoader_Async`: use a `kong.tools.queue` to execute a WSDL/XSD validation prefetch on the `configure` nginx phase (for downloading the `ìmport`ed XSD)
 - v1.2.0:
   - Improve support for `SOAP` v1.1 and v1.2, which does an `ìmport` (that can be included in a new property: `xsdSoapSchemaInclude`)
+  - Add the validation of the `SOAPAction` Http header
+  - `xmlgeneral.pluginConfigure`: enable the `XSD_Validation_Prefetch` for `saxon` library (not only `libxslt`)

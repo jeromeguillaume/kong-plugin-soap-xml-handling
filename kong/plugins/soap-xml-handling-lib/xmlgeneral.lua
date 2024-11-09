@@ -491,59 +491,54 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
     for _, config in ipairs(configs) do
       local plugin_id = config.__plugin_id
       
-      -- If saxon
+      -- If saxon library is enabled
       if config.xsltLibrary == 'saxon' then
         saxon = true
+      end
 
-      -- Else If libxslt
-      elseif  config.xsltLibrary == 'libxslt' then
+      -- Check if there is 'xsdSoapSchemaInclude'
+      local xsdSoapSchemaInclude = false
+      if config.xsdSoapSchemaInclude then
+        for k,v in pairs(config.xsdSoapSchemaInclude) do            
+          xsdSoapSchemaInclude = true
+          break
+        end
+      end
 
-        -- Check if there is 'xsdSoapSchemaInclude'
-        local xsdSoapSchemaInclude = false
-        if config.xsdSoapSchemaInclude then
-          for k,v in pairs(config.xsdSoapSchemaInclude) do            
-            xsdSoapSchemaInclude = true
-            break
-          end
+      -- Check if there is 'xsdApiSchemaInclude'
+      local xsdApiSchemaInclude = false
+      if config.xsdApiSchemaInclude then
+        for k,v in pairs(config.xsdApiSchemaInclude) do            
+          xsdApiSchemaInclude = true
+          break
+        end
+      end
+      
+      -- If Asynchronous is enabled
+      if config.ExternalEntityLoader_Async then
+        kong.log.debug("pluginConfigure, Async")
+
+        -- If a SOAP XSD Schema is defined and
+        -- If the XSD content is NOT included in the plugin configuration
+        if      config.xsdSoapSchema and
+            not xsdSoapSchemaInclude then
+          kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
+          xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP, queueName, queue_conf)
         end
 
-        -- Check if there is 'xsdApiSchemaInclude'
-        local xsdApiSchemaInclude = false
-        if config.xsdApiSchemaInclude then
-          for k,v in pairs(config.xsdApiSchemaInclude) do            
-            xsdApiSchemaInclude = true
-            break
-          end
-        end
-        
-        -- If Asynchronous is enabled
-        if config.ExternalEntityLoader_Async then
-          kong.log.debug("pluginConfigure, Async")
-
-          -- If a SOAP XSD Schema is defined and
-          -- If the XSD content is NOT included in the plugin configuration
-          if      config.xsdSoapSchema and
-              not xsdSoapSchemaInclude then
-            kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
-            xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP, queueName, queue_conf)
-          end
-
-          -- If an API XSD Schema is defined and
-          -- If the XSD content is NOT included in the plugin configuration
-          if      config.xsdApiSchema  and
-              not xsdApiSchemaInclude then
-            kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
-            xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
-          end          
-        end
-      else
-        kong.log.err("pluginConfigure: unknown library " .. config.xsltLibrary)
+        -- If an API XSD Schema is defined and
+        -- If the XSD content is NOT included in the plugin configuration
+        if      config.xsdApiSchema  and
+            not xsdApiSchemaInclude then
+          kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
+          xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, requestTypePlugin, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
+        end          
       end
     end
 
     -- Lastly, purge the 'entityLoader.hashKeys'
     --    => Free memory of XSD entries that are no longer used due to a plugin change/deletion
-    --    For an effective deletion of an XSD shared by the Request AND Response plugin, we have to 'wait' 
+    --    For an effective deletion of a XSD shared by the Request AND Response plugin, we have to 'wait' 
     --    the 'configure' phase of both plugins: 'Request' AND 'Response' plugins
     for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
       if  (entityHashKey.ReqPluginRemove == nil or entityHashKey.ReqPluginRemove == true ) and
@@ -858,68 +853,6 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
     kong.log.err("XSLTransform: unknown library " .. plugin_conf.xsltLibrary)
   end
   return xml_transformed_dump, errMessage
-end
-
-----------------------------------------------------------------------------------------------------
--- Prefetch External Entities (i.e. Download Asynchronously XSD content) specified in WSDL
--- Executed one time during 1st call for each 'xsdApiSchema' plugin configuration
--- When the plugin configuration ('xsdApiSchema') has changed the prefetch is executed another time
-----------------------------------------------------------------------------------------------------
-function xmlgeneral.prefetchExternalEntities (plugin_conf, child, WSDL, verbose)
-  local errMessage
-  local i   = 1
-  local nowTime = ngx.now()
-
-  -- If Asynchronous is not enabled OR
-  -- If there is no XSD we don't do a Prefetch
-  if not plugin_conf.ExternalEntityLoader_Async or not plugin_conf.xsdApiSchema then
-    return
-  end
-
-  local xsdHashKey = libxml2ex.hash_key(plugin_conf.xsdApiSchema)
-  
-  -- if the Prefetch has been already called: we don't call it anymore
-  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus ~= xmlgeneral.prefetchStatusInit then
-    kong.log.debug("prefetchExternalEntities - Prefetch was already executed, prefetchSatus: " .. tostring(kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus))
-    return  
-  end
-
-  kong.log.debug("prefetchExternalEntities - First execution")
-  kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusRunning
-
-  -- Loop during a maximum of 'timeout' second to retrieve the complete list of the URL of XSD
-  while (nowTime + kong.ctx.shared.xmlSoapExternalEntity.timeout) > ngx.now() do
-    -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
-    -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
-    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, nil, WSDL, verbose, true)
-    
-    -- If the prefetch succeeded we stop it
-    if not errMessage then
-      kong.log.debug("prefetchExternalEntities: #" .. i .. " **Success**")
-      kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusOk
-      break
-    else
-      kong.log.debug("prefetchExternalEntities: #" .. i .. " err: " .. errMessage)
-      local j, _ = string.find(errMessage, "failed.to.load.external.entity")
-      local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
-      -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
-      --    => Stop the loop
-      -- Else continue the loop
-      if j == nil and k == nil then
-        break
-      end
-    end
-    i = i + 1
-    -- Do a sleep and expect that, meanwhile, the 'asyncDownloadEntities' function downloads the XSD content
-    ngx.sleep (libxml2ex.xmlSoapSleepAsync)
-    
-  end
-  -- If the Prefetch status is still 'Running' it means that the Prefetch failed. 
-  -- So we set a Ko status and next time it won't be executed (the Prefetch is executed 1 time)
-  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusRunning then
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusKo
-  end
-  kong.log.debug("prefetchExternalEntities - Last status: " .. tostring(kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus))
 end
 
 --------------------------
