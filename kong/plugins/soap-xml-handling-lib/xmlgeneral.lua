@@ -37,7 +37,7 @@ xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
 xmlgeneral.JSONContentType    = "application/json"
 xmlgeneral.SOAPAction         = "SOAPAction"
 xmlgeneral.SOAPAction_Header_Validation_No        = "no"
-xmlgeneral.SOAPAction_Header_Validation_Yes_Empty = "yes_empty_allowed"
+xmlgeneral.SOAPAction_Header_Validation_Yes_Null  = "yes_null_allowed"
 xmlgeneral.SOAPAction_Header_Validation_Yes       = "yes"
 
 xmlgeneral.XMLContentTypeBody     = 1
@@ -1299,7 +1299,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
 
     if wsdlDefinitions_found then
       kong.log.debug("getSOAPActionFromWSDL: <wsdl:definitions> found")
-      -- Get the List of all NameSpaces of the WSLD and find the NameSpace related to WSDL, SOAP 1.1 and SOAP 1.2
+      -- Get the List of all NameSpaces of the WSDL and find the NameSpace related to WSDL and SOAP 1.1 and SOAP 1.2
       wsdlRaw_namespaces = libxml2.xmlGetNsList(xmlWSDL_doc, xmlWSDLNodePtrRoot)
       local i = 0
       while wsdlRaw_namespaces and wsdlRaw_namespaces[i] ~= ffi.NULL do
@@ -1490,10 +1490,10 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
 
   -- If 'SOAPAction' header doesn't have to be validated 
   --   OR
-  -- If 'SOAPAction' header is empty and it's allowed by the plugin configuration
+  -- If 'SOAPAction' header is null and it's allowed by the plugin configuration
   if SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_No or
-    (SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_Yes_Empty and
-    (SOAPAction_Header_Value == nil or SOAPAction_Header_Value == ''))
+    (SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_Yes_Null and
+    (SOAPAction_Header_Value == nil))
       then
     -- The validation of 'SOAPAction' header is not required. Return 'no error'
     return nil
@@ -1579,7 +1579,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
         end
       -- Elseif there is a mismacth between the 'SOAPAction' header and the Operation name
       elseif wsdlSOAPAction_Header_Value ~= SOAPAction_Header_Value then
-        errMessage = "The Operation Name found in 'soap:Body' is '"..request_OperationName.."'. "..
+        errMessage = "The Operation Name found in '"..ffi.string(raw_namespaces[i].prefix)..":Body' is '"..request_OperationName.."'. "..
                      "According to the WSDL the 'SOAPAction' should be '" .. (wsdlSOAPAction_Header_Value or '').. "' and not '" .. (SOAPAction_Header_Value or '').. "'"
       end
     end

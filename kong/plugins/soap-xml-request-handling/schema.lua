@@ -20,7 +20,7 @@ return {
           { SOAPAction_Header_Validation = {required = false, type = "string", default = "no",
             one_of = {
               "no",
-              "yes_empty_allowed",
+              "yes_null_allowed",
               "yes",
             },
           },},

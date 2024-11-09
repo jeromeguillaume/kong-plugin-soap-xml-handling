@@ -174,17 +174,122 @@ local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
   </soap:Body>
 </soap:Envelope>]]
 
----------------------------------------------------
+local calculator_soap12_Add_XSD_VALIDATION_Failed_No_Header_But_Required = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not ''</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap12_Add_XSD_VALIDATION_Failed_Mismatch_Header = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap12_Subtract_XSD_VALIDATION_Failed_Empty_Header= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not ''</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap12_Subtract_XSD_VALIDATION_Failed_Mismatch_Header= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not 'http://tempuri.org/Add'</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+  
+
+local calculator_soap12_Multiply_XSD_VALIDATION_Failed_Empty_Header= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not ''</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap12_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap_XSD_VALIDATION_Failed_NO_WSDL_Definition= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: No WSDL definition found: it's mandatory to validate the 'SOAPAction' header</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: Unable to find the 'wsdl:definitions' in the WSDL</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+----------------------------------------------------------------------------------------------------
 -- This WSDL provides:
--- soap 1.1 -> 4 operations defined
+--   The Namespace prefix of wsdl 1.0 is 'wsdl'
+--   The Namespace prefix of soap 1.1 is 'soap'
+--   The Namespace prefix of soap 1.2 is 'soap12'
+--   The plugin supports only HTTP Transport. But the SOAP specification enables JMS too (and more)
+--
+-- soap 1.1 -> 4 HTTP operations defined with transport="http://schemas.xmlsoap.org/soap/http"/
 --    Add       with    soapActionRequired="true"
 --    Subtract  with    soapActionRequired="false"
 --    Multiply  without soapActionRequired
 --    Divide    without soapActionRequired
 --
--- soap 1.2 -> 4 operations defined (like above)
----------------------------------------------------
-local calculatorWSDL_soap11_soap12= [[
+-- soap 1.1 -> 2 JMS operations defined with transport="http://cxf.apache.org/transports/jms"/
+--
+-- soap 1.2 -> 4 HTTP operations + 2 JMS operations defined (like above)
+----------------------------------------------------------------------------------------------------
+
+local calculatorWSDL_soap_soap12= [[
 <?xml version="1.0" encoding="utf-8"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">
   <wsdl:types>
@@ -425,6 +530,264 @@ local calculatorWSDL_soap11_soap12= [[
 </wsdl:definitions>
 ]]
 
+--------------------------------------------------------------------------------------------------------
+-- This WSDL provides:
+--   The Namespace prefix of wsdl 1.0 is 'kong_w_s_d_l'
+--   The Namespace prefix of soap 1.1 is 'kong11'
+--   The Namespace prefix of soap 1.2 is 'kong12'
+--   The plugin supports only HTTP Transport. But the SOAP specification enables JMS too (and more)
+--
+-- soap 1.1 (kong11) -> 4 HTTP operations defined with transport="http://schemas.xmlsoap.org/soap/http"/
+--    Add       with    soapActionRequired="true"
+--    Subtract  with    soapActionRequired="false"
+--    Multiply  without soapActionRequired
+--    Divide    without soapActionRequired
+--
+-- soap 1.1 (kong11) -> 2 JMS operations defined with transport="http://cxf.apache.org/transports/jms"/
+--
+-- soap 1.2 (kong12) -> 4 HTTP operations + 2 JMS operations defined (like above)
+--------------------------------------------------------------------------------------------------------
+local calculatorWSDL_kong_wsdl_kong11_kong12= [[
+<?xml version="1.0" encoding="utf-8"?>
+<kong_w_s_d_l:definitions xmlns:kong11="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:kong12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:kong_w_s_d_l="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">
+  <kong_w_s_d_l:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="Add">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Subtract">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="SubtractResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SubtractResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Multiply">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="MultiplyResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="MultiplyResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Divide">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DivideResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="DivideResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </kong_w_s_d_l:types>
+  <kong_w_s_d_l:message name="AddSoapIn">
+    <kong_w_s_d_l:part name="parameters" element="tns:Add" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="AddSoapOut">
+    <kong_w_s_d_l:part name="parameters" element="tns:AddResponse" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="SubtractSoapIn">
+    <kong_w_s_d_l:part name="parameters" element="tns:Subtract" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="SubtractSoapOut">
+    <kong_w_s_d_l:part name="parameters" element="tns:SubtractResponse" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="MultiplySoapIn">
+    <kong_w_s_d_l:part name="parameters" element="tns:Multiply" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="MultiplySoapOut">
+    <kong_w_s_d_l:part name="parameters" element="tns:MultiplyResponse" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="DivideSoapIn">
+    <kong_w_s_d_l:part name="parameters" element="tns:Divide" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:message name="DivideSoapOut">
+    <kong_w_s_d_l:part name="parameters" element="tns:DivideResponse" />
+  </kong_w_s_d_l:message>
+  <kong_w_s_d_l:portType name="CalculatorSoap">
+    <kong_w_s_d_l:operation name="Add">
+      <kong_w_s_d_l:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds two integers. This is a test WebService. ©DNE Online</kong_w_s_d_l:documentation>
+      <kong_w_s_d_l:input message="tns:AddSoapIn" />
+      <kong_w_s_d_l:output message="tns:AddSoapOut" />
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Subtract">
+      <kong_w_s_d_l:input message="tns:SubtractSoapIn" />
+      <kong_w_s_d_l:output message="tns:SubtractSoapOut" />
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Multiply">
+      <kong_w_s_d_l:input message="tns:MultiplySoapIn" />
+      <kong_w_s_d_l:output message="tns:MultiplySoapOut" />
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Divide">
+      <kong_w_s_d_l:input message="tns:DivideSoapIn" />
+      <kong_w_s_d_l:output message="tns:DivideSoapOut" />
+    </kong_w_s_d_l:operation>
+  </kong_w_s_d_l:portType>
+  <kong_w_s_d_l:binding name="JMSCalculatorSoap" type="tns:CalculatorSoap">
+    <kong11:binding style="rpc" transport="http://cxf.apache.org/transports/jms"/>
+    <kong_w_s_d_l:operation name="Add">
+      <kong11:operation soapAction="" style="rpc"/>
+      <kong_w_s_d_l:input>
+        <kong11:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong11:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Subtract">
+      <kong11:operation soapAction="" style="rpc"/>
+      <kong_w_s_d_l:input>
+        <kong11:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong11:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+  </kong_w_s_d_l:binding>
+  <kong_w_s_d_l:binding name="CalculatorSoap" type="tns:CalculatorSoap">
+    <kong11:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <kong_w_s_d_l:operation name="Add">
+      <kong11:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
+      <kong_w_s_d_l:input>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Subtract">
+      <kong11:operation soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document" />
+      <kong_w_s_d_l:input>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Multiply">
+      <kong11:operation soapAction="http://tempuri.org/Multiply" style="document" />
+      <kong_w_s_d_l:input>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Divide">
+      <kong11:operation soapAction="http://tempuri.org/Divide" style="document" />
+      <kong_w_s_d_l:input>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong11:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+  </kong_w_s_d_l:binding>
+  <kong_w_s_d_l:binding name="JMSCalculatorSoap12" type="tns:CalculatorSoap">
+    <kong12:binding style="rpc" transport="http://cxf.apache.org/transports/jms"/>
+    <kong_w_s_d_l:operation name="Add">
+      <kong12:operation soapAction="" style="rpc"/>
+      <kong_w_s_d_l:input>
+        <kong12:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong12:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Subtract">
+      <kong12:operation soapAction="" style="rpc"/>
+      <kong_w_s_d_l:input>
+        <kong12:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong12:body namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+  </kong_w_s_d_l:binding>
+  <kong_w_s_d_l:binding name="CalculatorSoap12" type="tns:CalculatorSoap">
+    <kong12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <kong_w_s_d_l:operation name="Add">
+      <kong12:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
+      <kong_w_s_d_l:input>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Subtract">
+      <kong12:operation soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document" />
+      <kong_w_s_d_l:input>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Multiply">
+      <kong12:operation soapAction="http://tempuri.org/Multiply" style="document" />
+      <kong_w_s_d_l:input>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+    <kong_w_s_d_l:operation name="Divide">
+      <kong12:operation soapAction="http://tempuri.org/Divide" style="document" />
+      <kong_w_s_d_l:input>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:input>
+      <kong_w_s_d_l:output>
+        <kong12:body use="literal" />
+      </kong_w_s_d_l:output>
+    </kong_w_s_d_l:operation>
+  </kong_w_s_d_l:binding>
+  <kong_w_s_d_l:service name="Calculator">
+    <kong_w_s_d_l:port name="CalculatorSoap" binding="tns:CalculatorSoap">
+      <kong11:address location="http://www.dneonline.com/calculator.asmx" />
+    </kong_w_s_d_l:port>
+    <kong_w_s_d_l:port name="CalculatorSoap12" binding="tns:CalculatorSoap12">
+      <kong12:address location="http://www.dneonline.com/calculator.asmx" />
+    </kong_w_s_d_l:port>
+  </kong_w_s_d_l:service>
+</kong_w_s_d_l:definitions>
+]]
+
 for _, strategy in helpers.all_strategies() do
   if strategy == "off" then
     goto continue
@@ -469,6 +832,7 @@ for _, strategy in helpers.all_strategies() do
           path = "/calculator.asmx",
         })
       
+     
       local calculator_wsdl_soap11_ok = blue_print.routes:insert{
         service = calculator_service,
         paths = { "/calculatorWSDL_SOAPAction_11_ok" }
@@ -478,7 +842,21 @@ for _, strategy in helpers.all_strategies() do
         route = calculator_wsdl_soap11_ok,
         config = {
           VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL_soap11_soap12,
+          xsdApiSchema = calculatorWSDL_soap_soap12,
+          SOAPAction_Header_Validation = "yes"
+        }
+      }
+
+      local calculator_wsdl_kong11_stands_for_soap11_ok = blue_print.routes:insert{
+        service = calculator_service,
+        paths = { "/calculatorWSDL_SOAPAction_kong_wsdl_kong11_ok" }
+        }
+      blue_print.plugins:insert {
+        name = PLUGIN_NAME,
+        route = calculator_wsdl_kong11_stands_for_soap11_ok,
+        config = {
+          VerboseRequest = true,
+          xsdApiSchema = calculatorWSDL_kong_wsdl_kong11_kong12,
           SOAPAction_Header_Validation = "yes"
         }
       }
@@ -492,12 +870,71 @@ for _, strategy in helpers.all_strategies() do
         route = calculator_wsdl_soap12_ok,
         config = {
           VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL_soap11_soap12,
+          xsdApiSchema = calculatorWSDL_soap_soap12,
           SOAPAction_Header_Validation = "yes",
           xsdSoapSchema = soap12_common.soap12_XSD,
           xsdSoapSchemaInclude = {
             ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
           }
+        }
+      }
+
+      local calculator_wsdl_kong12_stands_for_soap12_ok = blue_print.routes:insert{
+        service = calculator_service,
+        paths = { "/calculatorWSDL_SOAPAction_kong_wsdl_kong12_ok" }
+        }
+      blue_print.plugins:insert {
+        name = PLUGIN_NAME,
+        route = calculator_wsdl_kong12_stands_for_soap12_ok,
+        config = {
+          VerboseRequest = true,
+          xsdApiSchema = calculatorWSDL_kong_wsdl_kong11_kong12,
+          SOAPAction_Header_Validation = "yes",
+          xsdSoapSchema = soap12_common.soap12_XSD,
+          xsdSoapSchemaInclude = {
+            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+          }
+        }
+      }
+
+      local calculator_wsdl_soap_wsdl_not_defined_in_plugin_ko = blue_print.routes:insert{
+        service = calculator_service,
+        paths = { "/calculatorWSDL_SOAPAction_wsdl_not_defined_in_plugin_ko" }
+        }
+      blue_print.plugins:insert {
+        name = PLUGIN_NAME,
+        route = calculator_wsdl_soap_wsdl_not_defined_in_plugin_ko,
+        config = {
+          VerboseRequest = true,
+          SOAPAction_Header_Validation = "yes"
+        }
+      }
+      
+      local calculator_wsdl_soap_xsd_defined_instead_of_wsdl_ko = blue_print.routes:insert{
+        service = calculator_service,
+        paths = { "/calculatorWSDL_SOAPAction_xsd_defined_instead_of_wsdl_ko" }
+        }
+      blue_print.plugins:insert {
+        name = PLUGIN_NAME,
+        route = calculator_wsdl_soap_xsd_defined_instead_of_wsdl_ko,
+        config = {
+          VerboseRequest = true,
+          xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,          
+          SOAPAction_Header_Validation = "yes"        
+        }
+      }
+      
+      local calculator_wsdl_soap11_yes_null_allowed_ok = blue_print.routes:insert{
+        service = calculator_service,
+        paths = { "/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok" }
+        }
+      blue_print.plugins:insert {
+        name = PLUGIN_NAME,
+        route = calculator_wsdl_soap11_yes_null_allowed_ok,
+        config = {
+          VerboseRequest = true,
+          xsdApiSchema = calculatorWSDL_soap_soap12,
+          SOAPAction_Header_Validation = "yes_null_allowed"
         }
       }
 
@@ -510,6 +947,9 @@ for _, strategy in helpers.all_strategies() do
         }))       
       end)
 
+      --------------------------------------------------------------------------------------------------
+      -- SOAP 1.1
+      --------------------------------------------------------------------------------------------------
       it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL) - Ok", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_11_ok", {
@@ -560,7 +1000,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
-      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL) and Header mismacthes with Operation Name - Ko", function()
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL) and Header mismatches with Operation Name - Ko", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_11_ok", {
           headers = {
@@ -627,7 +1067,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches(calculator_soap11_Subtract_XSD_VALIDATION_Failed_Empty_Header, body)
       end)
 
-      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"false\" (in WSDL) and Header mismacthes with Operation Name - Ko", function()
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"false\" (in WSDL) and Header mismatches with Operation Name - Ko", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_11_ok", {
           headers = {
@@ -694,7 +1134,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches(calculator_soap11_Multiply_XSD_VALIDATION_Failed_Empty_Header, body)
       end)
 
-      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header without soapActionRequired (in WSDL) and Header mismacthes with Operation Name - Ko", function()
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header without soapActionRequired (in WSDL) and Header mismatches with Operation Name - Ko", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_11_ok", {
           headers = {
@@ -709,6 +1149,39 @@ for _, strategy in helpers.all_strategies() do
         local content_type = assert.response(r).has.header("Content-Type")
         assert.equal("text/xml; charset=utf-8", content_type)
         assert.matches(calculator_soap11_Multiply_XSD_VALIDATION_Failed_Mismatch_Header, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL | 'kong_w_s_d_l' Namespace that stands for 'wsdl' and 'kong11' for 'soap' 1.1) - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_kong_wsdl_kong11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap11_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL | 'kong_w_s_d_l' Namespace that stands for 'wsdl' and 'kong11' for 'soap' 1.1) and NO header - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_kong_wsdl_kong11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = calculator_soap11_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
       --------------------------------------------------------------------------------------------------
@@ -731,6 +1204,56 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"true\" (in WSDL) and NO header - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = calculator_soap12_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"true\" (in WSDL) and Header is '' - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = ""
+          },
+          body = calculator_soap12_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap12_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"true\" (in WSDL) and Header mismatches with Operation Name - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Subtract"
+          },
+          body = calculator_soap12_Add_Request,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap12_Add_XSD_VALIDATION_Failed_Mismatch_Header, body)
+      end)
+
       it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"false\" (in WSDL) - Ok", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
@@ -746,6 +1269,56 @@ for _, strategy in helpers.all_strategies() do
         local content_type = assert.response(r).has.header("Content-Type")
         assert.equal("application/soap+xml; charset=utf-8", content_type)
         assert.matches('<SubtractResult>7</SubtractResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"false\" (in WSDL) and NO header - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = calculator_soap12_Subtract_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches('<SubtractResult>7</SubtractResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"false\" (in WSDL) and Header is '' - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = ""
+          },
+          body = calculator_soap12_Subtract_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap12_Subtract_XSD_VALIDATION_Failed_Empty_Header, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"false\" (in WSDL) and Header mismatches with Operation Name - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap12_Subtract_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap12_Subtract_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
       it("2|WSDL Validation - 'SOAPAction' 1.2 Http header without soapActionRequired (in WSDL) - Ok", function()
@@ -764,8 +1337,179 @@ for _, strategy in helpers.all_strategies() do
         assert.equal("application/soap+xml; charset=utf-8", content_type)
         assert.matches('<MultiplyResult>32</MultiplyResult>', body)
       end)
-  
-		end)		
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header without soapActionRequired (in WSDL) and NO header - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = calculator_soap12_Multiply_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches('<MultiplyResult>32</MultiplyResult>', body)
+      end)
+      
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header without soapActionRequired (in WSDL) and Header is '' - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = ""
+          },
+          body = calculator_soap12_Multiply_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap12_Multiply_XSD_VALIDATION_Failed_Empty_Header, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header without soapActionRequired (in WSDL) and Header mismatches with Operation Name - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap12_Multiply_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap12_Multiply_XSD_VALIDATION_Failed_Mismatch_Header, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"true\" (in WSDL | 'kong_w_s_d_l' Namespace that stands for 'wsdl' and 'kong12' for 'soap' 1.2) - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_kong_wsdl_kong12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap12_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.2 Http header with soapActionRequired=\"true\" (in WSDL | 'kong_w_s_d_l' Namespace that stands for 'wsdl' and 'kong12' for 'soap' 1.2) and NO header - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_kong_wsdl_kong12_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = calculator_soap12_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
+      end)
+      
+      --------------------------------------------------------------------------------------------------
+      -- SOAP 1.1/1.2 Miscellaneous
+      --------------------------------------------------------------------------------------------------
+      it("2|WSDL Validation - 'SOAPAction' Http header - WSDL not defined in the plugin - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_wsdl_not_defined_in_plugin_ko", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap11_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap_XSD_VALIDATION_Failed_NO_WSDL_Definition, body)        
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' Http header - XSD defined instead of WSDL - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_xsd_defined_instead_of_wsdl_ko", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap11_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL, body)        
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' Http header with soapActionRequired=\"true\" (in WSDL) and 'yes_null_allowed' - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap11_Add_Request,
+        })
+        
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' Http header with soapActionRequired=\"true\" (in WSDL) and header is Null and 'yes_null_allowed' - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = calculator_soap11_Add_Request,
+        })
+        
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' Http header with soapActionRequired=\"true\" (in WSDL) and Header is '' and 'yes_null_allowed' - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = ""
+          },
+          body = calculator_soap11_Add_Request,
+        })
+        
+        -- Check that the Request plugin processes the request w/o error: 'SOAPAction'='' allowed by the plugin configured with 'yes_null_allowed'
+        -- However the upstream server doesn't support the usage of 'SOAPAction'='', so there is the error '...Server did not recognize...'
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
+      end)      
+
+		end)    
 	end)
   ::continue::
 end
