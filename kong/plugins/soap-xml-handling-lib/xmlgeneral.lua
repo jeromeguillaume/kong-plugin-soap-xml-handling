@@ -36,9 +36,9 @@ xmlgeneral.schemaTypeAPI      = 2
 xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
 xmlgeneral.JSONContentType    = "application/json"
 xmlgeneral.SOAPAction         = "SOAPAction"
-xmlgeneral.SOAPAction_Header_Validation_No        = "no"
-xmlgeneral.SOAPAction_Header_Validation_Yes_Null  = "yes_null_allowed"
-xmlgeneral.SOAPAction_Header_Validation_Yes       = "yes"
+xmlgeneral.SOAPAction_Header_No        = "no"
+xmlgeneral.SOAPAction_Header_Yes_Null  = "yes_null_allowed"
+xmlgeneral.SOAPAction_Header_Yes       = "yes"
 
 xmlgeneral.XMLContentTypeBody     = 1
 xmlgeneral.JSONContentTypeBody    = 2
@@ -1469,7 +1469,7 @@ end
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
-function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Value, WSDL, SOAPAction_Header_Validation, verbose)
+function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Value, WSDL, SOAPAction_Header, verbose)
   local i
   local xmlRequest_doc
   local xmlWSDL_doc
@@ -1491,8 +1491,8 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
   -- If 'SOAPAction' header doesn't have to be validated 
   --   OR
   -- If 'SOAPAction' header is null and it's allowed by the plugin configuration
-  if SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_No or
-    (SOAPAction_Header_Validation == xmlgeneral.SOAPAction_Header_Validation_Yes_Null and
+  if SOAPAction_Header == xmlgeneral.SOAPAction_Header_No or
+    (SOAPAction_Header == xmlgeneral.SOAPAction_Header_Yes_Null and
     (SOAPAction_Header_Value == nil))
       then
     -- The validation of 'SOAPAction' header is not required. Return 'no error'

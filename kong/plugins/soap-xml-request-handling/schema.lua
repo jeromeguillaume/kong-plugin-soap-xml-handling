@@ -17,7 +17,7 @@ return {
           { RouteXPath = { type = "string", required = false }, },
           { RouteXPathCondition = { type = "string", required = false }, },
           { RouteXPathRegisterNs = { type = "array",  required = false, elements = {type = "string"}, default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"}},},
-          { SOAPAction_Header_Validation = {required = false, type = "string", default = "no",
+          { SOAPAction_Header = {required = false, type = "string", default = "no",
             one_of = {
               "no",
               "yes_null_allowed",

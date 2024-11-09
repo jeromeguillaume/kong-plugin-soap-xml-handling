@@ -789,9 +789,9 @@ local calculatorWSDL_kong_wsdl_kong11_kong12= [[
 ]]
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -843,7 +843,7 @@ for _, strategy in helpers.all_strategies() do
         config = {
           VerboseRequest = true,
           xsdApiSchema = calculatorWSDL_soap_soap12,
-          SOAPAction_Header_Validation = "yes"
+          SOAPAction_Header = "yes"
         }
       }
 
@@ -857,7 +857,7 @@ for _, strategy in helpers.all_strategies() do
         config = {
           VerboseRequest = true,
           xsdApiSchema = calculatorWSDL_kong_wsdl_kong11_kong12,
-          SOAPAction_Header_Validation = "yes"
+          SOAPAction_Header = "yes"
         }
       }
 
@@ -871,7 +871,7 @@ for _, strategy in helpers.all_strategies() do
         config = {
           VerboseRequest = true,
           xsdApiSchema = calculatorWSDL_soap_soap12,
-          SOAPAction_Header_Validation = "yes",
+          SOAPAction_Header = "yes",
           xsdSoapSchema = soap12_common.soap12_XSD,
           xsdSoapSchemaInclude = {
             ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -889,7 +889,7 @@ for _, strategy in helpers.all_strategies() do
         config = {
           VerboseRequest = true,
           xsdApiSchema = calculatorWSDL_kong_wsdl_kong11_kong12,
-          SOAPAction_Header_Validation = "yes",
+          SOAPAction_Header = "yes",
           xsdSoapSchema = soap12_common.soap12_XSD,
           xsdSoapSchemaInclude = {
             ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -906,7 +906,7 @@ for _, strategy in helpers.all_strategies() do
         route = calculator_wsdl_soap_wsdl_not_defined_in_plugin_ko,
         config = {
           VerboseRequest = true,
-          SOAPAction_Header_Validation = "yes"
+          SOAPAction_Header = "yes"
         }
       }
       
@@ -920,7 +920,7 @@ for _, strategy in helpers.all_strategies() do
         config = {
           VerboseRequest = true,
           xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,          
-          SOAPAction_Header_Validation = "yes"        
+          SOAPAction_Header = "yes"        
         }
       }
       
@@ -934,7 +934,7 @@ for _, strategy in helpers.all_strategies() do
         config = {
           VerboseRequest = true,
           xsdApiSchema = calculatorWSDL_soap_soap12,
-          SOAPAction_Header_Validation = "yes_null_allowed"
+          SOAPAction_Header = "yes_null_allowed"
         }
       }
 

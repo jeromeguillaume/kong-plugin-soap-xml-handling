@@ -38,7 +38,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`)|
-|config.SOAPAction_Header_Validation|`no`|Validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If enabled the `xsdSoapSchema` must be defined with a WSDL including the `soapAction` value (in `<wsdl:binding>`); the `soapActionRequired` tag is considered. If `yes_null_allowed` is set, the plugin allows the request even if the `SOAPAction` is not present|
+|config.SOAPAction_Header|`no`|Validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If enabled the `xsdSoapSchema` must be defined with a WSDL including the `soapAction` value (in `<wsdl:binding>`); the `soapActionRequired` tag is considered. If `yes_null_allowed` is set, the plugin allows the request even if the `SOAPAction` is not present|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
@@ -781,7 +781,7 @@ Call correctly `calculator` by setting the expection `SOAPAction` Http header
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.multiple-xsd.binding_soap1.1_soap1.2.wsdl)
-- `SOAPAction_Header_Validation` property with the value `yes`
+- `SOAPAction_Header` property with the value `yes`
 
 3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested, the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
