@@ -38,7 +38,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`)|
-|config.SOAPAction_Header|`no`|Validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If enabled the `xsdSoapSchema` must be defined with a WSDL including the `soapAction` value (in `<wsdl:binding>`); the optional `soapActionRequired` tag is considered. If `yes_null_allowed` is set, the plugin allows the request even if the `SOAPAction` is not present|
+|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If enabled the `xsdSoapSchema` must be defined with a WSDL including the `soapAction` value (in `<wsdl:binding>`); the optional `soapActionRequired` tag is considered. If `yes_null_allowed` is set, the plugin allows the request even if the `SOAPAction` is not present|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
@@ -849,6 +849,14 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
 3) Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
 Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean` for rebuilding the Pongo image
+
+## Known Limitations
+1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2 due to the current Nginx limitation. See [Kong Gateway doc](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/#available-contexts)
+2) The `WSDL/XSD VALIDATION`, which imports XSD from external entity, uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`): it's a non-yield function which uses the `socket.http` (blocking library). To avoid this limitation please have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async property` (which uses `resty.http`)
+3) If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the `WSDL/XSD VALIDATION` that can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored, and the `import` is only done through `socket.http`
+4) WSDL 2.0 is not supported (and WSDL 1.0 is supported)
+5) The `WSDL/XSD VALIDATION` can be applied for SOAP 1.1 or SOAP 1.2 (related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`) but not both simultaneously. To avoid this limitation please create one Kong route per SOAP version
+6) The MIME type of the request's `Content-Type` (i.e. `text/xml` for SOAP 1.1 or `application/soap+xml` for SOAP 1.2) is not checked by the plugin. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version.
 
 ## Changelog
 - v1.0.0:
