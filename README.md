@@ -856,7 +856,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 3) If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the `WSDL/XSD VALIDATION` that can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored, and the `import` is only done through `socket.http`
 4) WSDL 2.0 is not supported (but WSDL 1.0 is supported)
 5) The `WSDL/XSD VALIDATION` can be applied for SOAP 1.1 or SOAP 1.2 (related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`) but not both simultaneously. To avoid this limitation please create one Kong route per SOAP version
-6) The MIME type of the request's `Content-Type` (i.e. `text/xml` for SOAP 1.1 or `application/soap+xml` for SOAP 1.2) is not checked by the plugin. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version.
+6) The MIME type of the request's `Content-Type` (i.e. `text/xml` for SOAP 1.1 or `application/soap+xml` for SOAP 1.2) is not checked by the plugin. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
 
 ## Changelog
 - v1.0.0:
