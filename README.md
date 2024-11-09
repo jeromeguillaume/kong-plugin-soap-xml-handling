@@ -852,9 +852,9 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 
 ## Known Limitations
 1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2 due to the current Nginx limitation. See [Kong Gateway doc](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/#available-contexts)
-2) The `WSDL/XSD VALIDATION`, which imports XSD from external entity, uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`): it's a non-yield function which uses the `socket.http` (blocking library). To avoid this limitation please have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async property` (which uses `resty.http`)
+2) The `WSDL/XSD VALIDATION`, which imports XSD from external entity, uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`): it's a non-yield function which uses the `socket.http` (blocking library). To avoid this limitation please have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
 3) If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the `WSDL/XSD VALIDATION` that can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored, and the `import` is only done through `socket.http`
-4) WSDL 2.0 is not supported (and WSDL 1.0 is supported)
+4) WSDL 2.0 is not supported (but WSDL 1.0 is supported)
 5) The `WSDL/XSD VALIDATION` can be applied for SOAP 1.1 or SOAP 1.2 (related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`) but not both simultaneously. To avoid this limitation please create one Kong route per SOAP version
 6) The MIME type of the request's `Content-Type` (i.e. `text/xml` for SOAP 1.1 or `application/soap+xml` for SOAP 1.2) is not checked by the plugin. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version.
 
