@@ -813,7 +813,7 @@ HTTP/1.1 500 Internal Server Error
 <faultstring>Request - XSD validation failed</faultstring>
 <detail>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</detail>
 ```
-- Use previous command defined, **set ```SOAPAction:"http://tempuri.org/Subtract```** and Kong says: 
+- Use previous command defined, **set ```SOAPAction:"http://tempuri.org/Subtract"```** and Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
@@ -821,7 +821,7 @@ HTTP/1.1 500 Internal Server Error
 <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</detail>
 ```
 
-6) If the `SOAPAction` is not set but it's allowed by `soapActionRequired="false"`, the plugin allows the request
+6) If the `SOAPAction` is not set but the `soapActionRequired="false"` is defined (in the WSDL) the plugin allows the request
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:"text/xml; charset=utf-8" \
