@@ -775,7 +775,7 @@ The expected result is:
 ...
 ```
 ### Example (F): Request | `WSDL VALIDATION`: validate the `SOAPAction` Http header
-Call correctly `calculator` by setting the expection `SOAPAction` Http header
+Call correctly `calculator` by setting the expected `SOAPAction` Http header
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
