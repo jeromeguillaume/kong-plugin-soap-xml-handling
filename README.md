@@ -821,7 +821,7 @@ HTTP/1.1 500 Internal Server Error
 <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</detail>
 ```
 
-6) If the `SOAPAction` is not set but the `soapActionRequired="false"` is defined (in the WSDL) the plugin allows the request
+6) If the `SOAPAction` is not set but there is `soapActionRequired="false"` (in the WSDL) for `Subtract` operation, the plugin allows the request
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:"text/xml; charset=utf-8" \
