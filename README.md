@@ -854,7 +854,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2
 - It's due to the current Nginx limitation. See [Kong Gateway doc](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/#available-contexts)
 2) The `WSDL/XSD VALIDATION` has following limitations:
-- If the WSDL/XSD schema imports an XSD from external entity, it uses by default a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`): as it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
+- If the WSDL/XSD schema imports an XSD from external entity, it uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`). As it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
   - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or 
   - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude`
 - If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http`. The reommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
