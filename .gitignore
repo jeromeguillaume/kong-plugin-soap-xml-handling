@@ -20,8 +20,10 @@ luacov.stats.out
 luacov.report.out
 # exclude Pongo containerid file
 .containerid
+.busted
 so/
 kong/saxon/zip/*.zip
 kong/saxon/include/*.h
 backup/
 .VSCodeCounter/
+to_do.txt

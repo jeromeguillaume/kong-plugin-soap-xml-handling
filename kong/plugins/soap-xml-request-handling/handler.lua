@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.1.6",
+    VERSION = "1.2.0",
   }
 
 local xmlgeneral = nil
@@ -17,6 +17,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   local soapEnvelope_transformed
   local errMessage
   local soapFaultBody
+  local sleepForPrefetchEnd = false
   
   soapEnvelope_transformed = soapEnvelope
 
@@ -36,9 +37,15 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
 
   -- If there is no error and
   -- If the plugin is defined with XSD SOAP schema then:
-  -- => we validate the SOAP envelope with its schema
+  -- => Validate the SOAP envelope with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
-    errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, 0, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
+
+    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
+    if not sleepForPrefetchEnd then
+      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
+    end
+    
+    errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -50,29 +57,16 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
 
   -- If there is no error and
   -- If the plugin is defined with XSD or WSDL API schema then:
-  -- => we validate the API XML (included in the <soap:envelope>) with its schema
+  -- => Validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
     
-    -- Check if there is 'xsdApiSchemaInclude'
-    local xsdApiSchemaInclude = false
-    if plugin_conf.xsdApiSchemaInclude then
-      for k,v in pairs(plugin_conf.xsdApiSchemaInclude) do            
-        xsdApiSchemaInclude = true
-        break
-      end
+    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
+    if not sleepForPrefetchEnd then
+      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
     end
-
-    -- If Asynchronous is enabled and 
-    -- If XSD content is NOT included in the plugin configuration
-    if  plugin_conf.ExternalEntityLoader_Async then
-      -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)
-      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName) do
-        -- This 'sleep' happens only one time per Plugin configuration update
-        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
-      end
-    end
+    
     -- Validate the API XML with its schema
-    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, 2, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
+    errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, xmlgeneral.schemaTypeAPI, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
 
     if errMessage ~= nil then
         -- Format a Fault code to Client
@@ -80,6 +74,24 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage,
                                                     contentTypeJSON)
+    end
+  end
+
+  -- If there is no error and
+  -- => Validate the 'SOAPAction' header
+  if soapFaultBody == nil then
+    
+    local SOAPAction_header = kong.request.get_header(xmlgeneral.SOAPAction)
+
+    -- Validate the API XML with its schema
+    errMessage = xmlgeneral.validateSOAPAction_Header (soapEnvelope_transformed, SOAPAction_header, plugin_conf.xsdApiSchema, plugin_conf.SOAPAction_Header, plugin_conf.VerboseRequest)
+    
+    if errMessage ~= nil then
+      -- Format a Fault code to Client
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                  xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
+                                                  errMessage,
+                                                  contentTypeJSON)
     end
   end
 
