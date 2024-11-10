@@ -606,7 +606,7 @@ KONG_NGINX_WORKER_PROCESSES=2
 ```
 Note: 
   - The non-blocking `resty.http` library cannot be used because it raises a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
-  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
+  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude`
 
 6) Call the `calculator` through the Kong Gateway Route
 ```
