@@ -172,8 +172,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     streamListen = true
   end
   
+  -- If 'stream_listen' is not enabled
+  --   AND
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
-  if kong.ctx.shared.xmlSoapExternalEntity then
+  if streamListen == false and kong.ctx.shared.xmlSoapExternalEntity then
     cacheTTL             = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
     timeout              = kong.ctx.shared.xmlSoapExternalEntity.timeout
     async                = kong.ctx.shared.xmlSoapExternalEntity.async
