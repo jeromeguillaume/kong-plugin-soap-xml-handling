@@ -14,6 +14,13 @@ local PLUGIN_NAME = "soap-xml-request-handling"
 local calculator_soap11_Add_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Header>
+    <auth:Authentication xmlns:auth="http://example.com/auth">
+        <auth:Username>user123</auth:Username>
+        <auth:Password>securepassword</auth:Password>
+    </auth:Authentication>
+    <trans:TransactionID xmlns:trans="http://example.com/transaction">12345</trans:TransactionID>
+  </soap:Header>
   <soap:Body>
 		<!-- My Comment -->
     <Add xmlns="http://tempuri.org/">
@@ -27,6 +34,13 @@ local calculator_soap11_Add_Request= [[
 local calculator_soap11_Subtract_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Header>
+    <auth:Authentication xmlns:auth="http://example.com/auth">
+        <auth:Username>user123</auth:Username>
+        <auth:Password>securepassword</auth:Password>
+    </auth:Authentication>
+    <trans:TransactionID xmlns:trans="http://example.com/transaction">12345</trans:TransactionID>
+  </soap:Header>
   <soap:Body>
 		<!-- My Comment -->
     <Subtract xmlns="http://tempuri.org/">
@@ -46,6 +60,31 @@ local calculator_soap11_Multiply_Request= [[
       <intA>8</intA>
 			<intB>4</intB>
     </Multiply>
+  </soap:Body>
+</soap:Envelope>
+]]
+
+local calculator_soap11_Divide_Request= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+		<!-- My Comment -->
+    <Divide xmlns="http://tempuri.org/">
+      <intA>8</intA>
+			<intB>4</intB>
+    </Divide>
+  </soap:Body>
+</soap:Envelope>
+]]
+local calculator_soap11_Power_Request = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+		<!-- My Comment -->
+    <Power xmlns="http://tempuri.org/">
+      <intA>8</intA>
+			<intB>4</intB>
+    </Power>
   </soap:Body>
 </soap:Envelope>
 ]]
@@ -148,7 +187,6 @@ local calculator_soap11_Subtract_XSD_VALIDATION_Failed_Mismatch_Header= [[
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
-  
 
 local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Empty_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
@@ -170,6 +208,30 @@ local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap11_Divide_XSD_VALIDATION_Failed_sopAction_attibute_is_empty= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Divide' Operation name</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+local calculator_soap11_Power_XSD_VALIDATION_Failed_sopAction_attibute_is_not_defined= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Power' Operation name</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -276,17 +338,18 @@ local calculator_soap_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL= [[
 --   The Namespace prefix of wsdl 1.0 is 'wsdl'
 --   The Namespace prefix of soap 1.1 is 'soap'
 --   The Namespace prefix of soap 1.2 is 'soap12'
---   The plugin supports only HTTP Transport. But the SOAP specification enables JMS too (and more)
+--   JMS and HTTP transport and the plugin supports only HTTP Transport
 --
--- soap 1.1 -> 4 HTTP operations defined with transport="http://schemas.xmlsoap.org/soap/http"/
+-- soap 1.1 -> 5 HTTP operations defined with transport="http://schemas.xmlsoap.org/soap/http"/
 --    Add       with    soapActionRequired="true"
 --    Subtract  with    soapActionRequired="false"
 --    Multiply  without soapActionRequired
---    Divide    without soapActionRequired
+--    Divide    with    soapAction=''           (which is not correctly defined)
+--    Power     with    no soapAction attribute (which is not correctly defined)
 --
 -- soap 1.1 -> 2 JMS operations defined with transport="http://cxf.apache.org/transports/jms"/
 --
--- soap 1.2 -> 4 HTTP operations + 2 JMS operations defined (like above)
+-- soap 1.2 -> 5 HTTP operations + 2 JMS operations defined (like above)
 ----------------------------------------------------------------------------------------------------
 
 local calculatorWSDL_soap_soap12= [[
@@ -354,6 +417,21 @@ local calculatorWSDL_soap_soap12= [[
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="Power">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PowerResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="PowerResult" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
     </s:schema>
   </wsdl:types>
   <wsdl:message name="AddSoapIn">
@@ -380,6 +458,12 @@ local calculatorWSDL_soap_soap12= [[
   <wsdl:message name="DivideSoapOut">
     <wsdl:part name="parameters" element="tns:DivideResponse" />
   </wsdl:message>
+  <wsdl:message name="PowerSoapIn">
+    <wsdl:part name="parameters" element="tns:Power" />
+  </wsdl:message>
+  <wsdl:message name="PowerSoapOut">
+    <wsdl:part name="parameters" element="tns:PowerResponse" />
+  </wsdl:message>
   <wsdl:portType name="CalculatorSoap">
     <wsdl:operation name="Add">
       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds two integers. This is a test WebService. ©DNE Online</wsdl:documentation>
@@ -397,6 +481,10 @@ local calculatorWSDL_soap_soap12= [[
     <wsdl:operation name="Divide">
       <wsdl:input message="tns:DivideSoapIn" />
       <wsdl:output message="tns:DivideSoapOut" />
+    </wsdl:operation>
+        <wsdl:operation name="Power">
+      <wsdl:input message="tns:PowerSoapIn" />
+      <wsdl:output message="tns:PowerSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="JMSCalculatorSoap" type="tns:CalculatorSoap">
@@ -450,7 +538,16 @@ local calculatorWSDL_soap_soap12= [[
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="Divide">
-      <soap:operation soapAction="http://tempuri.org/Divide" style="document" />
+      <soap:operation soapAction="" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+      <wsdl:operation name="Power">
+      <soap:operation style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -510,7 +607,16 @@ local calculatorWSDL_soap_soap12= [[
       </wsdl:output>
     </wsdl:operation>
     <wsdl:operation name="Divide">
-      <soap12:operation soapAction="http://tempuri.org/Divide" style="document" />
+      <soap12:operation soapAction="" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Power">
+      <soap12:operation style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -535,7 +641,7 @@ local calculatorWSDL_soap_soap12= [[
 --   The Namespace prefix of wsdl 1.0 is 'kong_w_s_d_l'
 --   The Namespace prefix of soap 1.1 is 'kong11'
 --   The Namespace prefix of soap 1.2 is 'kong12'
---   The plugin supports only HTTP Transport. But the SOAP specification enables JMS too (and more)
+--   JMS and HTTP transport and the plugin supports only HTTP Transport
 --
 -- soap 1.1 (kong11) -> 4 HTTP operations defined with transport="http://schemas.xmlsoap.org/soap/http"/
 --    Add       with    soapActionRequired="true"
@@ -1491,7 +1597,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
-      it("2|WSDL Validation - 'SOAPAction' Http header with soapActionRequired=\"true\" (in WSDL) and Header is '' and 'yes_null_allowed' - Ok", function()
+      it("2|WSDL Validation - 'SOAPAction' Http header with soapActionRequired=\"true\" (in WSDL) and Header is '' and 'yes_null_allowed' - Ko", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok", {
           headers = {
@@ -1501,13 +1607,46 @@ for _, strategy in helpers.all_strategies() do
           body = calculator_soap11_Add_Request,
         })
         
-        -- Check that the Request plugin processes the request w/o error: 'SOAPAction'='' allowed by the plugin configured with 'yes_null_allowed'
-        -- However the upstream server doesn't support the usage of 'SOAPAction'='', so there is the error '...Server did not recognize...'
+        -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.equal("text/xml; charset=utf-8", content_type)
         assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
-      end)      
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' Http header with soapAction='' (not properly defined in WSDL) and Header is '' - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = ""
+          },
+          body = calculator_soap11_Divide_Request,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap11_Divide_XSD_VALIDATION_Failed_sopAction_attibute_is_empty, body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' Http header with no soapAction (defined in WSDL) and Header is '' - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_SOAPAction_yes_null_allowed_11_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = ""
+          },
+          body = calculator_soap11_Power_Request,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches(calculator_soap11_Power_XSD_VALIDATION_Failed_sopAction_attibute_is_not_defined, body)
+      end)
 
 		end)    
 	end)

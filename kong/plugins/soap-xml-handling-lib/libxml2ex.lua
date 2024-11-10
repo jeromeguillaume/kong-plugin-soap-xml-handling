@@ -24,11 +24,12 @@ if not loaded then
   end
 end
 
-libxml2ex.xmlSoapSleepAsync             = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to download Asynchronously XSD content
-libxml2ex.externalEntityCacheTTL        = 3600  -- default value for the context of the XSD Validation Prefetch
-libxml2ex.externalEntityTimeout         = 1     -- default value for the context of the XSD Validation Prefetch
-libxml2ex.sizeOfLRUCache                = 2000  -- Size of size of LRU Cache (1 entry per XSD URL/External Entity)
-libxml2ex.queueNamePrefix               = "soap-xml-handling"
+libxml2ex.xmlSoapSleepAsync       = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to download Asynchronously XSD content
+libxml2ex.externalEntityCacheTTL  = 3600  -- default value for the context of the XSD Validation Prefetch
+libxml2ex.externalEntityTimeout   = 1     -- default value for the context of the XSD Validation Prefetch
+libxml2ex.sizeOfLRUCache          = 2000  -- Size of size of LRU Cache (1 entry per XSD URL/External Entity)
+libxml2ex.queueNamePrefix         = "soap-xml-handling"
+libxml2ex.stream_listen_err       = "The 'stream_listen' is enabled but it's partially incompatible for downloading External entities defined in WSDL/XSD. Recommendation => disable 'stream_listen'"
 
 -- Initialize the defaultLoader to nil.
 local defaultLoader = nil
@@ -53,11 +54,17 @@ local function syncDownloadEntities(url)
 
   local response_body, response_code, response_headers
 
-  http.TIMEOUT  = kong.ctx.shared.xmlSoapExternalEntity.timeout
-  https.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
+  -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
+  if #kong.configuration.stream_listeners > 0 then
+    http.TIMEOUT  = libxml2ex.externalEntityTimeout
+    https.TIMEOUT = libxml2ex.externalEntityTimeout
+  else
+    http.TIMEOUT  = kong.ctx.shared.xmlSoapExternalEntity.timeout
+    https.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
+  end
   
   local i, _ = string.find(url, "https://")
-  kong.log.notice("syncDownloadEntities url: " .. url .. " timeout (sec): " .. kong.ctx.shared.xmlSoapExternalEntity.timeout)
+  kong.log.debug("syncDownloadEntities url: " .. url .. " timeout (sec): " .. http.TIMEOUT)
 
   -- https:// request
   if i == 1 then
@@ -98,7 +105,7 @@ local asyncDownloadEntities_callback = function(_, url_entries)
     
     -- If the URL is found in the LRU cache of Entities
     if cache_entity then
-      kong.log.notice("asyncDownloadEntities_callback - url[".. k .. "]: '" .. url .. "'")
+      kong.log.debug("asyncDownloadEntities_callback - url[".. k .. "]: '" .. url .. "'")
       httpc:set_timeout(cache_entity.timeout * 1000)
       local res, err = httpc:request_uri(url, {
         method = 'GET',
@@ -125,12 +132,12 @@ local asyncDownloadEntities_callback = function(_, url_entries)
       end
       
       -- Update the Entry in the LRU cache
-      kong.log.notice("asyncDownloadEntities_callback: UPDATE cache url=" .. url .. " httpStatus=" .. cache_entity.httpStatus .. " ttl=" .. cache_entity.cacheTTL .. " timeout=" .. cache_entity.timeout)
+      kong.log.debug("asyncDownloadEntities_callback: UPDATE cache url=" .. url .. " httpStatus=" .. cache_entity.httpStatus .. " ttl=" .. cache_entity.cacheTTL .. " timeout=" .. cache_entity.timeout)
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
     else
       rc = false
       errRc = "Unable to find url '" .. url .. "' in the LRU cache of Entities"
-      kong.log.notice("asyncDownloadEntities_callback - url[".. k .. "]: '" .. url .. "' " .. errRc)
+      kong.log.debug("asyncDownloadEntities_callback - url[".. k .. "]: '" .. url .. "' " .. errRc)
     end
   end
   
@@ -153,7 +160,17 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local async
   local xsdApiSchemaInclude
   local xsdSoapSchemaInclude
+  local streamListen = false
   local url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
+  
+  -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
+  if #kong.configuration.stream_listeners > 0 then
+    err = libxml2ex.stream_listen_err ..
+          ". Therefore the synchronous download is forced with default values, CacheTTL=" ..libxml2ex.externalEntityCacheTTL..
+          ", timeout=" .. libxml2ex.externalEntityTimeout
+    kong.log.err(err)
+    streamListen = true
+  end
   
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
   if kong.ctx.shared.xmlSoapExternalEntity then
@@ -167,7 +184,11 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   else
     cacheTTL             = libxml2ex.externalEntityCacheTTL
     timeout              = libxml2ex.externalEntityTimeout
-    async                = true
+    if streamListen then
+      async              = false
+    else
+      async              = true
+    end
     xsdApiSchemaInclude  = nil
     xsdSoapSchemaInclude = nil
   end
@@ -222,7 +243,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
       err = "The entity is not in the LRU cache, so download it asynchronously"
       kong.log.debug(err)
       if lruCacheEntities:count() == lruCacheEntities:capacity () then
-        -- DON'T change the 'err' message as the LRU caching is going to evict the leastest used: it's just a warning
+        -- DON'T change this 'warning' message as the LRU caching is going to evict the leastest used
         kong.log.warn("The LRU Cache of Entities reached its capacity=" .. lruCacheEntities:capacity () ..". " ..
                       "The least recently used item is going to be evicted. So increase LRU Cache for avoiding this message")          
       end
@@ -250,10 +271,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
         err = err .. ". " .. errAsync
       end
 
-      return nil, err
+      return nil
     
     -- Else If the Entry has to be refreshed OR
-    --     (If the status is not 200 and the last download happened after 'timeout + libxml2ex.xmlSoapSleepAsync' second)
+    --     (If the status is not 200 and the last download happened after 'timeout + libxml2ex.xmlSoapSleepAsync' seconds)
     elseif ngx.time () > cache_entity.timeDownloaded + cacheTTL or
            (cache_entity.httpStatus ~= 200 and 
             ngx.time () > cache_entity.timeDownloaded + timeout + libxml2ex.xmlSoapSleepAsync) then
@@ -288,7 +309,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entity_url)
     if err then
       kong.log.err("Error while retrieving entities from cache, error: '", err .. "'")
-      return nil, err
+      return nil
     end
 
   end
@@ -296,7 +317,9 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- Create a new XML string input stream using the retrieved response_body.
   ret = xml2.xmlNewStringInputStream(ctxt, response_body);
   if ret ~= ffi.NULL then
-    -- **** Do we have to free memory with 'xmlFreeInputStream'? ****
+    -- No need to do a 'return ffi.gc(ret, xml2.xmlFreeInputStream)'
+    -- it's probably done by 'xmlSchemaParse' in charge of calling this function and freeing 'ret'
+    -- If the 'return ffi.gc(ret, xml2.xmlFreeInputStream)' is called => it raises an "[alert] 1#0: worker process **** exited on signal 11" when Nginx stops
     return ret
   end
 
@@ -344,7 +367,7 @@ function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     if xsd_schema_doc == ffi.NULL then
       return nil, kong.ctx.shared.xmlSoapErrMessage
     end
-    
+
     return ffi.gc(xsd_schema_doc, xml2.xmlSchemaFree), kong.ctx.shared.xmlSoapErrMessage
 end
 -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT

@@ -514,8 +514,13 @@ function xmlgeneral.pluginConfigure (configs, requestTypePlugin)
         end
       end
       
+      -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
+      -- the Schema included in the plugin conf or the Asynchronous download can't work
+      if #kong.configuration.stream_listeners > 0 and 
+        (xsdSoapSchemaInclude or xsdApiSchemaInclude or config.ExternalEntityLoader_Async) then
+        kong.log.err(libxml2ex.stream_listen_err)
       -- If Asynchronous is enabled
-      if config.ExternalEntityLoader_Async then
+      elseif config.ExternalEntityLoader_Async then
         kong.log.debug("pluginConfigure, Async")
 
         -- If a SOAP XSD Schema is defined and
@@ -1343,7 +1348,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
                         "/parent::"..wsdlNS..":binding/"..wsdlNS..":operation[@name=\"" .. request_OperationName .. "\"]/"..wsdlNS_SOAP..":operation/"
     xpathReqRequired   = xpathReqRoot .. "@soapActionRequired"
     xpathReqSoapAction = xpathReqRoot .. "@soapAction"
-    kong.log.notice("getSOAPActionFromWSDL: the XPath request to get (from the WSDL) 'soapAction'= '"..xpathReqRoot.."', " ..
+    kong.log.debug("getSOAPActionFromWSDL: the XPath request to get (from the WSDL) 'soapAction'= '"..xpathReqRoot.."', " ..
                     "'xpathReqRequired'= '"..xpathReqRequired .."'")
 
     -- Execute the XPath request to find the 'soapActionRequired' optional attribute
@@ -1360,7 +1365,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
         kong.log.debug("getSOAPActionFromWSDL: 'soapActionRequired' found in the WSDL: '" ..tostring(wsdlRequired_Value).."'")
       else
         -- As the attribute is optional, there is no error
-        kong.log.notice("getSOAPActionFromWSDL: the optional 'xpathReqRequired' attribute is not found")
+        kong.log.debug("getSOAPActionFromWSDL: the optional 'xpathReqRequired' attribute is not found")
       end
     else
       errMessage = "Invalid XPath request 'soapActionRequired'"

@@ -127,7 +127,7 @@ cd soap-xml-handling-lib
 kubectl -n kong create configmap libxml2ex --from-file=./libxml2ex
 kubectl -n kong create configmap libxslt --from-file=./libxslt
 ```
-3) [See Kong Gateway on Kubernetes documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the helm `values.yaml`:
+3) [See Kong Gateway in Kubernetes documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the helm `values.yaml`:
 ```yaml
 image:
   repository: kong/kong-gateway
@@ -851,12 +851,18 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
 Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean` for rebuilding the Pongo image
 
 ## Known Limitations
-1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2 due to the current Nginx limitation. See [Kong Gateway doc](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/#available-contexts)
-2) The `WSDL/XSD VALIDATION`, which imports XSD from external entity, uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`): it's a non-yield function which uses the `socket.http` (blocking library). To avoid this limitation please have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
-3) If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the `WSDL/XSD VALIDATION` that can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored, and the `import` is only done through `socket.http`
+1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2
+- It's due to the current Nginx limitation. See [Kong Gateway doc](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/#available-contexts)
+2) The `WSDL/XSD VALIDATION` has following limitations:
+- If the WSDL/XSD schema imports an XSD from external entity, it uses by default a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`): as it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
+  - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or 
+  - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude`
+- If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http`. The reommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
 4) WSDL 2.0 is not supported (but WSDL 1.0 is supported)
-5) The `WSDL/XSD VALIDATION` can be applied for SOAP 1.1 or SOAP 1.2 (related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`) but not both simultaneously. To avoid this limitation please create one Kong route per SOAP version
-6) The MIME type of the request's `Content-Type` (i.e. `text/xml` for SOAP 1.1 or `application/soap+xml` for SOAP 1.2) is not checked by the plugin. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
+5) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
+- It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
+6) The MIME type of the request's `Content-Type` is not checked by the plugin
+- For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
 
 ## Changelog
 - v1.0.0:

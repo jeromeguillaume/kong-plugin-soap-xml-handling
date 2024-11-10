@@ -37,6 +37,9 @@ docker run -d --name kong-gateway-soap-xml-handling \
 --platform linux/$ARCHITECTURE \
 kong/kong-gateway:3.8.0.0
 
+#-e "KONG_STREAM_LISTEN= 127.0.0.1:7099" \
+
+
 #kong/kong-gateway:3.8.0.0
 #kong/kong-gateway:3.7.1.1
 #-e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
