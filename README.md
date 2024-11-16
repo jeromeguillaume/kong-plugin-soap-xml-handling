@@ -711,6 +711,8 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 
 ### Example (D): Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library
 See [SAXON.md](SAXON.md)
+- Request and Response | `XSLT 3.0 TRANSFORMATION`: JSON (client) to SOAP/XML (server): [here](SAXON.md#example-a-request-and-response--xslt-30-transformation-json-client-to-soapxml-server)
+- Request and Response | `XSLT 3.0 TRANSFORMATION`: XML (client) to JSON (server): [here](SAXON.md#example-b-request-and-response--xslt-30-transformation-xml-client-to-json-server)
 
 ### Example (E): Request and Response | `SOAP 1.2` `XSD VALIDATION`: use a `SOAP 1.2` `XSD` definition and the `calculator` API `XSD` definition
 Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
