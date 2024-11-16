@@ -785,7 +785,7 @@ Call correctly `calculator` by setting the expected `SOAPAction` Http header
 - `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.multiple-xsd.binding_soap1.1_soap1.2.wsdl)
 - `SOAPAction_Header` property with the value `yes`
 
-3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested, the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
+3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:"text/xml; charset=utf-8" \
