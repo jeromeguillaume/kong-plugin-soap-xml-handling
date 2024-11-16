@@ -605,6 +605,20 @@ function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchem
   return rc
 end
 
+
+local function dump(o)
+  if type(o) == 'table' then
+     local s = '{ '
+     for k,v in pairs(o) do
+        if type(k) ~= 'number' then k = '"'..k..'"' end
+        s = s .. '['..k..'] = ' .. dump(v) .. ','
+     end
+     return s .. '} '
+  else
+     return tostring(o)
+  end
+end
+
 ---------------------------------------------------------------------------------
 -- Initialize the SOAP/XML plugin
 -- Setup a 'libxml2' Error handler
@@ -849,7 +863,7 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
   if plugin_conf.xsltLibrary == 'libxslt' then
     xml_transformed_dump, errMessage = xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbose)
   elseif plugin_conf.xsltLibrary == 'saxon' then
-    -- If XMLtoTransform is a JSON type we add a faked <InternalkongRoot> tag to be ingested as an XML
+    -- If XMLtoTransform is a JSON type, we add a fake <InternalkongRoot> tag to be ingested as an XML
     if xmlgeneral.getBodyContentType(plugin_conf, XMLtoTransform) == xmlgeneral.JSONContentTypeBody then
       XMLtoTransform = "<InternalkongRoot>" .. XMLtoTransform .. "</InternalkongRoot>"
     end
@@ -941,6 +955,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   local wsdlNodeFound    = false
   local typesNodeFound   = false
   local validSchemaFound = false
+  local operationName    = nil
   local nodeName         = ""
   local index            = 0
   
@@ -1023,6 +1038,14 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   else
     currentNode = xmlNodePtrRoot
   end
+
+  -- If prefetch is not enabled
+  if not prefetch then
+    -- Try to get the Operation Name in the <soap:Body>
+    -- note: if there is an XML syntax error the operationName can't found and is nil
+    operationName = xmlgeneral.getOperationNameFromSOAPEnvelope(XMLtoValidate, verbose)
+  end
+
   -- Retrieve all '<xs:schema>' Nodes until 
   --   We found a valid Schema validating the XML 
   --     OR
@@ -1124,8 +1147,8 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
-    -- The Error processing is done at the End of the function, so we do nothing...
-    -- if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
+      -- The Error processing is done at the End of the function, so we do nothing...
+    -- Else if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
     elseif child ~= xmlgeneral.schemaTypeSOAP then
       -- Example:
       -- <soap:Envelope xmlns:xsi=....">
@@ -1137,7 +1160,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       --    </soap:Body>
       --  </soap:Envelope>
       -- Get Root Element, which is <soap:Envelope>
-      local xmlNodePtrRoot   = libxml2.xmlDocGetRootElement(xml_doc);
+      local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
 
       currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
        -- Retrieve '<soap:Body>' Node in the XML
@@ -1163,12 +1186,15 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
 
       -- Get WebService Child Element, which is, for instance, <Add xmlns="http://tempuri.org/">
       local xmlNodePtrChildWS = libxml2.xmlFirstElementChild(currentNode)
-
-      -- Dump in a String the WebService part
-      kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
-
-      -- Check validity of One element with its XSD schema
-      is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)
+      
+      if xmlNodePtrChildWS ~= ffi.NULL and tonumber(xmlNodePtrChildWS.type) == ffi.C.XML_ELEMENT_NODE then
+        -- Dump in a String the WebService part
+        kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
+        -- Check validity of One element with its XSD schema
+        is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)
+      else
+        errMessage = "XSD validation - Unable to find the Operation tag int the 'soap:Body'"
+      end      
     else
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
@@ -1404,6 +1430,60 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
   return wsdlSoapAction_Value, wsdlRequired_Value, errMessage
 end
 
+-------------------------------------------------
+-- Get the Operation Name from the SOAP Envelope
+-- Exemple: OperationName='Add'
+--   <soap:Envelope xmlns:xsi=....">
+--      <soap:Body>
+--        <Add xmlns="http://tempuri.org/">      
+-------------------------------------------------
+function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
+  local errMessage
+  local xmlNodePtrRoot
+  local currentNode
+  local nodeName
+  local operationName
+  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
+                                        ffi.C.XML_PARSE_NOWARNING)
+  
+  xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(xmlRequest_doc, nil, nil, default_parse_options, verbose)
+
+  if not errMessage then
+    -- Get root element '<soap:Envelope>' from the SOAP Request
+    xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xmlRequest_doc)
+    if not xmlNodePtrRoot or ffi.string(xmlNodePtrRoot.name) ~= "Envelope"  then
+      errMessage = "Unable to find 'soap:Envelope'"
+    end
+  end
+  
+  -- Get the Operation Name in '<soap:Body>' (for instance '<Add>')
+  if not errMessage then
+    currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
+    -- Retrieve '<soap:Body>' Node
+    while currentNode ~= ffi.NULL do
+      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+        nodeName = ffi.string(currentNode.name)
+        if nodeName == "Body" then
+          break
+        end
+      end
+      currentNode = ffi.cast("xmlNode *", currentNode.next)
+    end
+    if nodeName == "Body" then
+      currentNode = libxml2.xmlFirstElementChild(currentNode)
+      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+        operationName = ffi.string(currentNode.name)
+        kong.log.debug("getOperationNameFromSOAPEnvelope - Found in SOAP Request: operationName=" .. operationName)
+      else
+        errMessage = "Unable to find the Operation Name inside 'soap:Body'"
+      end
+    else
+      errMessage = "Unable to find 'soap:Body'"
+    end
+  end
+  return operationName, errMessage
+end
+
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
@@ -1489,7 +1569,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
     end
     if soapBody_found then
       currentNode = libxml2.xmlFirstElementChild(currentNode)
-      if currentNode ~= ffi.NULL then
+      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
         request_OperationName = ffi.string(currentNode.name)
         kong.log.debug("validate 'SOAPAction' Header - Found in SOAP Request: operationName=" .. request_OperationName)
       else

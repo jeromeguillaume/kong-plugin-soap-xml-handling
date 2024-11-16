@@ -3,13 +3,12 @@ local helpers = require "spec.helpers"
 
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
-
 local request_common = require "spec.common.request"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -153,7 +152,7 @@ for _, strategy in helpers.all_strategies() do
 			it("2|WSDL Validation with async download - Ok", function()
 				request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 			end)
-			
+		
 			it("2|WSDL Validation with async download - Invalid Import", function()
 				request_common._2_WSDL_Validation_with_async_download_Invalid_Import (assert, client)
 			end)

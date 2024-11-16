@@ -782,7 +782,7 @@ Call correctly `calculator` by setting the expected `SOAPAction` Http header
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.multiple-xsd.binding_soap1.1_soap1.2.wsdl)
+- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 - `SOAPAction_Header` property with the value `yes`
 
 3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
@@ -929,3 +929,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `xmlgeneral.pluginConfigure`: enable the `XSD_Validation_Prefetch` for `saxon` library (not only `libxslt`)
   - Add a `Known Limitations` section in the README.md
   - If `stream_listen` is enabled, send an error message in the log and forces the synchronous download by using `socket.http` (blocking library)
+- v1.2.1
+  - Send the correct detailed error message in case <soap:Body> is empty (instead `Ko`)

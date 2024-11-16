@@ -360,7 +360,7 @@ end
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
 -- ctxt:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
-function libxml2ex.xmlSchemaParse (xsd_context, verbose) 
+function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     kong.ctx.shared.xmlSoapErrMessage = nil
 
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)

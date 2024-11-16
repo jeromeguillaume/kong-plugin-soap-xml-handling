@@ -3,7 +3,7 @@ local KongGzip = require("kong.tools.gzip")
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.2.0",
+    VERSION = "1.2.1",
   }
 
 local xmlgeneral = nil
