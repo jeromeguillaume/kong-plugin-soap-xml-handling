@@ -930,4 +930,4 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add a `Known Limitations` section in the README.md
   - If `stream_listen` is enabled, send an error message in the log and forces the synchronous download by using `socket.http` (blocking library)
 - v1.2.1
-  - Send the correct detailed error message in case <soap:Body> is empty (instead `Ko`)
+  - Send the correct detailed error message (instead `Ko`) in case there is no Operation in `<soap:Body>`
