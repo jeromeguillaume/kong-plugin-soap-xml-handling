@@ -150,8 +150,16 @@ for _, strategy in helpers.all_strategies() do
 				response_common._6_WSDL_Validation_with_import_no_download_Ok (assert, client)
 			end)
 
-			it("6|WSDL Validation - Blank SOAP with verbose - Ko", function()
-				response_common._6_WSDL_Validation_blank_soap_request_with_verbose_ko (assert, client)
+			it("6|WSDL Validation - Invalid SOAP response (Blank) with verbose - Ko", function()
+				response_common._6_WSDL_Validation_Invalid_SOAP_response_Blank_with_verbose_ko (assert, client)
+			end)
+
+			it("6|WSDL Validation - Invalid SOAP response (no 'soap:Body') with verbose - Ko", function()
+				response_common._6_WSDL_Validation_Invalid_SOAP_response_without_soapBody_with_verbose_ko (assert, client)
+			end)
+
+			it("6|WSDL Validation - Invalid API response (no Operation) with verbose - Ko", function()
+				response_common._6_WSDL_Validation_Invalid_API_response_without_operation_with_verbose_ko (assert, client)
 			end)
 
   	end)

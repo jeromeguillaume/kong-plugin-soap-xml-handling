@@ -310,7 +310,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed
   </soap:Body>
 </soap:Envelope>]]
 
-request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_NO_OPERATION_Failed_verbose = [[
+request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <soap:Body>
@@ -1303,7 +1303,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (as
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose, body)
 end
 
-function request_common._1_2_XSD_Validation_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
+function request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {
@@ -1319,7 +1319,7 @@ function request_common._1_2_XSD_Validation_SOAP_request_without_soapBody_with_v
 	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed_verbose, body)
 end
 
-function request_common._1_2_XSD_Validation_API_request_without_Operation_with_verbose_ko (assert, client)
+function request_common._1_2_XSD_Validation_Invalid_API_request_without_Operation_with_verbose_ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {
@@ -1332,7 +1332,7 @@ function request_common._1_2_XSD_Validation_API_request_without_Operation_with_v
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_NO_OPERATION_Failed_verbose, body)
+	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
 end
 
 function request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
@@ -1512,7 +1512,7 @@ function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, c
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
-function request_common._2_WSDL_Validation_Empty_SOAP_request_with_verbose_ko (assert, client)
+function request_common._2_WSDL_Validation_Invalid_SOAP_request_Empty_with_verbose_ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_async_download_ok", {
 		headers = {

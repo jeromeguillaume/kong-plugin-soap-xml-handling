@@ -121,12 +121,12 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (assert, client)
 			end)
 
-			it("1+2|XSD Validation - SOAP request without 'soap:Body' with verbose - Ko", function()
-				request_common._1_2_XSD_Validation_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
+			it("1+2|XSD Validation - Invalid SOAP request (no 'soap:Body') with verbose - Ko", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
 			end)
 
-			it("1+2|XSD Validation - API request without Operation with verbose - Ko", function()
-				request_common._1_2_XSD_Validation_API_request_without_Operation_with_verbose_ko (assert, client)
+			it("1+2|XSD Validation - Invalid API request (no Operation) with verbose - Ko", function()
+				request_common._1_2_XSD_Validation_Invalid_API_request_without_Operation_with_verbose_ko (assert, client)
 			end)
 			
 			it("1+2+3|XSLT (AFTER XSD) - Ok", function()
@@ -173,8 +173,8 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)
 			end)
 
-			it("2|XSD Validation - Empty SOAP with verbose - Ko", function()
-				request_common._2_WSDL_Validation_Empty_SOAP_request_with_verbose_ko (assert, client)
+			it("2|XSD Validation - Invalid SOAP request (Empty) with verbose - Ko", function()
+				request_common._2_WSDL_Validation_Invalid_SOAP_request_Empty_with_verbose_ko (assert, client)
 			end)
 
 			it("2|WSDL Validation with no import and multiple XSD - Add in XSD#1 - Ko", function()
