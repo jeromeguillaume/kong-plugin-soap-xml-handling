@@ -31,7 +31,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 ## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference
 |FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
 |:------------------------------|:----------------|:-----------------------------------------------------------|
-|config.ExternalEntityLoader_Async|`false`|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://)|
+|config.ExternalEntityLoader_Async|`false`|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
 |config.ExternalEntityLoader_Timeout|`1`|Tiemout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname:port/path`|

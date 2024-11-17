@@ -56,7 +56,7 @@ for _, strategy in helpers.all_strategies() do
 			it ("1|XSLT (BEFORE XSD) - Valid transformation", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 			end)
-
+			
 			it("1|XSLT (BEFORE XSD) - Invalid XSLT input", function()
 				request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
 			end)
@@ -96,15 +96,15 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2|XSD Validation - Invalid SOAP XSD input with verbose", function()
 				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose (assert, client)
 			end)
-
+			
 			it("1+2|XSD Validation - Invalid API XSD input", function()
 				request_common._1_2_XSD_Validation_Invalid_API_XSD_input (assert, client)
 			end)
-
+			
 			it("1+2|XSD Validation - Invalid API XSD input with verbose", function()
 				request_common._1_2_XSD_Validation_Invalid_API_XSD_input_with_verbose (assert, client)
 			end)
-
+			
 			it("1+2|XSD Validation - Invalid SOAP request", function()
 				request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client)
 			end)
@@ -112,7 +112,7 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2|XSD Validation - Invalid SOAP request with verbose", function()
 				request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (assert, client)
 			end)
-
+			
 			it("1+2|XSD Validation - Invalid API request", function()
 				request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
 			end)
@@ -121,18 +121,26 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (assert, client)
 			end)
 
+			it("1+2|XSD Validation - SOAP request without 'soap:Body' with verbose - Ko", function()
+				request_common._1_2_XSD_Validation_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
+			end)
+
+			it("1+2|XSD Validation - API request without Operation with verbose - Ko", function()
+				request_common._1_2_XSD_Validation_API_request_without_Operation_with_verbose_ko (assert, client)
+			end)
+			
 			it("1+2+3|XSLT (AFTER XSD) - Ok", function()
 				request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
 			end)
-
+			
 			it("1+2+3|XSLT (AFTER XSD) - Invalid XSLT input", function()
 				request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client)
 			end)
-
+			
 			it("1+2+3|XSLT (AFTER XSD) - Invalid XSLT input with verbose", function()
 				request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (assert, client)
 			end)
-
+			
 			it("1+2+3+4|ROUTING BY XPATH with 'upstream' entity - Ok", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_upstream_entity_Ok (assert, client)
 			end)
@@ -140,7 +148,7 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Ok", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, client)
 			end)
-
+			
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503)", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)
 			end)
@@ -152,7 +160,7 @@ for _, strategy in helpers.all_strategies() do
 			it("2|WSDL Validation with async download - Ok", function()
 				request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 			end)
-		
+			
 			it("2|WSDL Validation with async download - Invalid Import", function()
 				request_common._2_WSDL_Validation_with_async_download_Invalid_Import (assert, client)
 			end)
@@ -164,6 +172,19 @@ for _, strategy in helpers.all_strategies() do
 			it("2|WSDL Validation with import no download - Ok", function()
 				request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, client)
 			end)
+
+			it("2|XSD Validation - Empty SOAP with verbose - Ko", function()
+				request_common._2_WSDL_Validation_Empty_SOAP_request_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation with no import and multiple XSD - Add in XSD#1 - Ko", function()
+				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Add_in_XSD1_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation with no import and multiple XSD - Subtract in XSD#2 - Ok", function()
+				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XSD2_with_verbose_ok (assert, client)
+			end)
+
 		end)
 		
 	end)

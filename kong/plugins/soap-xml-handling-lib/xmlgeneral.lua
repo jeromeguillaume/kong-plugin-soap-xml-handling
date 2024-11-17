@@ -372,7 +372,7 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
         rc = true
         errMessage = nil
       end
-      kong.log.debug("asyncPrefetch_Schema_Validation_callback - Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or ''))
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback - Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or "'N/A'"))
     
     -- Else the XSD 'hashKey' is not found in the 'entityLoader.hashKeys'
     else
@@ -603,20 +603,6 @@ function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchem
     end
   end
   return rc
-end
-
-
-local function dump(o)
-  if type(o) == 'table' then
-     local s = '{ '
-     for k,v in pairs(o) do
-        if type(k) ~= 'number' then k = '"'..k..'"' end
-        s = s .. '['..k..'] = ' .. dump(v) .. ','
-     end
-     return s .. '} '
-  else
-     return tostring(o)
-  end
 end
 
 ---------------------------------------------------------------------------------
@@ -951,10 +937,12 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   local firstErrMessage  = nil
   local xsdSchema        = nil
   local currentNode      = nil
+  local elementNode      = nil
   local xmlNsXsdPrefix   = nil
   local wsdlNodeFound    = false
   local typesNodeFound   = false
   local validSchemaFound = false
+  local XMLXSDMatching   = false
   local operationName    = nil
   local nodeName         = ""
   local index            = 0
@@ -1042,27 +1030,56 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   -- If prefetch is not enabled
   if not prefetch then
     -- Try to get the Operation Name in the <soap:Body>
-    -- note: if there is an XML syntax error the operationName can't found and is nil
+    -- Note: if there is an XML syntax error the operationName can't found and is nil
     operationName = xmlgeneral.getOperationNameFromSOAPEnvelope(XMLtoValidate, verbose)
+    kong.log.notice("XMLValidateWithWSDL, operationName='"..(operationName or 'Not_Found').."' in XML")    
   end
 
   -- Retrieve all '<xs:schema>' Nodes until 
   --   We found a valid Schema validating the XML 
   --     OR
   --   If prefetch is enabled
-  while currentNode ~= ffi.NULL and (not validSchemaFound or prefetch) do
+  --     AND
+  --   If there is no Match between the Operation Name (of XML) and the XSD
+  while currentNode ~= ffi.NULL and (not validSchemaFound or prefetch) and not XMLXSDMatching do
     
     if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
       -- Get the node Name
       nodeName = ffi.string(currentNode.name)
-      if nodeName == "schema" then
+      if nodeName == "schema" then        
         index = index + 1
         xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, currentNode, 1, 1)
-        kong.log.debug ("schema #" .. index .. ", length: " .. #xsdSchema .. ", dump: " .. xsdSchema)
+        kong.log.notice ("schema #" .. index .. ", length: " .. #xsdSchema .. ", dump: " .. xsdSchema)
         
         -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
         xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)
-
+        
+        -- If prefetch is NOT enabled 
+        --   AND
+        -- If there is an 'operationName'
+        if not prefetch and operationName then
+          elementNode  = libxml2.xmlFirstElementChild(currentNode)                    
+          -- Search the '<xs:element>' related to the Operation Name and 
+          -- stop the main loop if the <xsd:schema> is related to the Operation Name
+          -- Example:
+          --  XSD => <xs:element name="Add">
+          --  XML => <Add xmlns="http://tempuri.org/">
+          while elementNode ~= ffi.NULL do
+            
+            if tonumber(elementNode.type) == ffi.C.XML_ELEMENT_NODE and 
+               ffi.string(elementNode.name) == 'element' then
+              local propName = libxml2.xmlGetProp (elementNode, "name")
+              if propName ~= ffi.NULL and ffi.string(propName) == operationName then
+                -- The Operation Name is found in the XSD Schema
+                XMLXSDMatching = true
+                kong.log.notice("XMLValidateWithWSDL, operationName '"..operationName.."' (from XML) was found in this XSD schema")
+                break
+              end
+            end
+            -- Go to the next '<xs:element' Node
+            elementNode = ffi.cast("xmlNode *", elementNode.next)
+          end
+        end
         errMessage = nil
         -- Validate the XML with the <xs:schema>'
         errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema, verbose, prefetch)
@@ -1085,7 +1102,6 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
           kong.log.debug ("Found the right XSD Schema validating the SOAP/XML")
           validSchemaFound = true
           errMessage = nil
-          break
         end
       end
     end
@@ -1193,16 +1209,20 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
         -- Check validity of One element with its XSD schema
         is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)
       else
-        errMessage = "XSD validation - Unable to find the Operation tag int the 'soap:Body'"
+        errMessage = "XSD validation - Unable to find the Operation tag in the 'soap:Body'"
       end      
     else
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
-      kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
-      
-      -- Check validity of XML with its XSD schema
-      is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
-      kong.log.debug ("XSD validation - is_valid: " .. is_valid)
+      if xmlNodePtrRoot ~= ffi.NULL then
+        kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
+        
+        -- Check validity of XML with its XSD schema
+        is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
+        kong.log.debug ("XSD validation - is_valid: " .. is_valid)
+      else
+        errMessage = "XSD validation - Unable to find the 'soap:Envelope'"
+      end
     end
   end
 
@@ -1473,7 +1493,6 @@ function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
       currentNode = libxml2.xmlFirstElementChild(currentNode)
       if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
         operationName = ffi.string(currentNode.name)
-        kong.log.debug("getOperationNameFromSOAPEnvelope - Found in SOAP Request: operationName=" .. operationName)
       else
         errMessage = "Unable to find the Operation Name inside 'soap:Body'"
       end
