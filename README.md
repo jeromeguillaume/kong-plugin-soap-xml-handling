@@ -23,19 +23,16 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message).
 
-1. [How to deploy SOAP/XML Handling plugins](#deployment)
+1. [Configuration Reference](#configuration_reference)
+2. [How to deploy SOAP/XML Handling plugins](#deployment)
   1. [Docker](#docker)
   2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
-
-## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
-
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
 ![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
 
-
-## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference
+## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference <a id="configuration_reference"></a>
 |FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.ExternalEntityLoader_Async|`false`|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
@@ -57,9 +54,8 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
 <a id="deployment"></a>
-<a id="docker"></a>
 
-## How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+## How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker <a id="docker"></a>
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
