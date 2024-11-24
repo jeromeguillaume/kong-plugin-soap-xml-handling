@@ -25,13 +25,13 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 
 1. [Configuration Reference](#configuration_reference)
 2. [How to deploy SOAP/XML Handling plugins](#deployment)
-  1. [Docker](#docker)
-  2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
-  3. [Schema in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
-  4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
+    1. [Docker](#docker)
+    2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
+    3. [Schema in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
+    4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
 3. [Quick Test: How to test an XML `calculator` Web Service without the plugins](#Quick_Test)
-  1. [Kong Gateway](#Quick_Test_Kong_Gateway)
-  2. [Kong Ingress Controller (KIC)](#Quick_Test_KIC)
+    1. [Kong Gateway](#Quick_Test_Kong_Gateway)
+    2. [Kong Ingress Controller (KIC)](#Quick_Test_KIC)
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
