@@ -24,8 +24,8 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message).
 
 1. [How to deploy SOAP/XML Handling plugins](#deployment)
-    1. [Docker](#docker)
-    2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
+  1. [Docker](#docker)
+  2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
 
 ## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 
