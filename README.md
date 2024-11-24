@@ -40,6 +40,17 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
     5. [Example #5: Response | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_5)
     6. [Example #6: Response | XSD VALIDATION](#Main_Example_6)
     7. [Example #7: Response | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_7)
+5. [Miscellaneous examples](#Miscellaneous_examples)
+    1. [Example (A) : Response | Use a SOAP/XML WebService with gzip](#Miscellaneous_example_A)
+    2. [Example (B) : Request | Use a WSDL definition, which imports an XSD schema from an external entity](#Miscellaneous_example_B)
+    3. [Example (C1): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration](#Miscellaneous_example_C1)
+    4. [Example (C2): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration for KIC](#Miscellaneous_example_C2)
+    5. [Example (D) : Request and Response | XSLT with the saxon library](#Miscellaneous_example_D)
+    6. [Example (E) : Request and Response | use a `SOAP 1.2` XSD definition and the calculator API XSD definition](#Miscellaneous_example_E)
+    7. [Example (F) : Request | validate the SOAPAction Http header](#Miscellaneous_example_F)
+6. [Plugins Testing](#Plugins_Testing)
+7. [Known Limitations](#Known_Limitations)
+8. [Changelog](#Changelog)
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -515,7 +526,13 @@ Use command defined at Example #3, the expected result is:
 </addResponse>
 ```
 ---
+
+<a id="Miscellaneous_examples"></a>
+
 ## Miscellaneous examples
+
+<a id="Miscellaneous_example_A"></a>
+
 ### Example (A): Response | Use a SOAP/XML WebService with a `Content-Encondig: gzip`
 With `Content-Encondig: gzip` the SOAP/XML Response body is zipped. So the `soap-xml-response-handling` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
 
@@ -589,6 +606,8 @@ Content-Length: 185
   </soap:Body>
 </soap:Envelope>
 ```
+
+<a id="Miscellaneous_example_B"></a>
 
 ### Example (B): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from an external entity (i.e.: http(s)://)
 Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
@@ -694,7 +713,9 @@ HTTP/1.1 500 Internal Server Error
 <detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
 ```
 
-### Example (C-1): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from the plugin configuration (no download)
+<a id="Miscellaneous_example_C1"></a>
+
+### Example (C1): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from the plugin configuration (no download)
 Call incorrectly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity. 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
@@ -754,7 +775,9 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 
 3) Call the `calculator` through the Kong Gateway Route. Use command defined at step #6 of Example (B)
 
-### Example (C-2): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from the plugin configuration (no download) for Kong Ingress Controller (KIC)
+<a id="Miscellaneous_example_C2"></a>
+
+### Example (C2): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from the plugin configuration (no download) for Kong Ingress Controller (KIC)
 1) If it’s not done yet, create the Kubernetes External Service and the related Ingress kind (see topic: `How to configure and test calculator Web Service in Kong Ingress Controller (KIC)`)
 2) Create the Kubernetes `KongPlugin` of `soap-xml-request-handling`. The yaml file ([kic/kongPlugin-SOAP-XML-request.yaml](kic/kongPlugin-SOAP-XML-request.yaml)) is already configured in regards of `example #10-a`: `wsdl` in `xsdApiSchema` and `XSD` import in `xsdApiSchemaInclude`
 ```sh
@@ -766,10 +789,14 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 ```
 4) Call the `calculator` through the Kong Ingress. Use command defined at step #6 of Example (B). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
+<a id="Miscellaneous_example_D"></a>
+
 ### Example (D): Request and Response | `XSLT 3.0 TRANSFORMATION` with the `saxon` library
 See [SAXON.md](SAXON.md)
 - Request and Response | `XSLT 3.0 TRANSFORMATION`: JSON (client) to SOAP/XML (server): [here](SAXON.md#example-a-request-and-response--xslt-30-transformation-json-client-to-soapxml-server)
 - Request and Response | `XSLT 3.0 TRANSFORMATION`: XML (client) to JSON (server): [here](SAXON.md#example-b-request-and-response--xslt-30-transformation-xml-client-to-json-server)
+
+<a id="Miscellaneous_example_E"></a>
 
 ### Example (E): Request and Response | `SOAP 1.2` `XSD VALIDATION`: use a `SOAP 1.2` `XSD` definition and the `calculator` API `XSD` definition
 Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
@@ -833,6 +860,9 @@ The expected result is:
 <AddResult>12</AddResult>
 ...
 ```
+
+<a id="Miscellaneous_example_F"></a>
+
 ### Example (F): Request | `WSDL VALIDATION`: validate the `SOAPAction` Http header
 Call correctly `calculator` by setting the expected `SOAPAction` Http header
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
@@ -901,6 +931,8 @@ The expected result is:
 ...
 ```
 
+<a id="Plugins_Testing"></a>
+
 ## Plugins Testing
 The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo)
 1) Download pongo
@@ -908,6 +940,8 @@ The plugins testing is available through [pongo](https://github.com/Kong/kong-po
 3) Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
 Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean` for rebuilding the Pongo image
+
+<a id="Known_Limitations"></a>
 
 ## Known Limitations
 1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2
@@ -923,6 +957,8 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
 6) The MIME type of the request's `Content-Type` is not checked by the plugin
 - For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
+
+<a id="Changelog"></a>
 
 ## Changelog
 - v1.0.0:
