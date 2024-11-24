@@ -61,7 +61,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 
 ## <a id="deployment"></a>How to deploy SOAP/XML Handling plugins
 
-### <a id="docker"></a>How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+### <a id="docker"></a> How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
