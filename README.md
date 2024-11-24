@@ -23,6 +23,13 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message).
 
+1. [How to deploy SOAP/XML Handling plugins](#deployment)
+  1. [Docker](#docker)
+  2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
+
+## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
+
+
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
 ![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
@@ -49,6 +56,9 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
+<a id="deployment"></a>
+<a id="docker"></a>
+
 ## How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
 1) Do a Git Clone of this repo
 ```sh
@@ -64,6 +74,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```sh
 ./start-kong.sh
 ```
+<a id="Konnect_CP_for_Kong_Gateway"></a>
 
 ## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
@@ -930,7 +941,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add a `Known Limitations` section in the README.md
   - If `stream_listen` is enabled, send an error message in the log and forces the synchronous download by using `socket.http` (blocking library)
 - v1.2.1
-  - Add support of WSDL 2.0 (for WSDL/XSD Validation)
+  - Add support of WSDL 2.0 (for `WSDL/XSD Validation`)
   - `WSDL/XSD Validation`: Handle correctly the case where the Namespace (associated with `http://www.w3.org/ns/wsdl` or `http://www.w3.org/2001/XMLSchema`) has no prefix
   - Send the correct detailed error message (instead `Ko`) in case there is no Operation in `<soap:Body>`  
   - Optimize the `WSDL` validation (in case of multiple `<xs:schema>`): match the Operation in `<soap:Body>` with its associated `<xs:element name=` in `<xs:schema>`
