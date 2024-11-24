@@ -530,6 +530,152 @@ request_common.calculatorWSDL_no_import_multiple_xsd_ok = [[
 </wsdl:definitions>
 ]]
 
+request_common.calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok = [[
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
+<!-- WSDL v2 with <description> tag -->
+<!-- 'wsdl' Namespace is the default Namespace and there is no prefix => xmlns   ="http://www.w3.org/ns/wsdl"         -->
+<!-- 'xs'   Namespace has a prefix                                    => xmlns:xs="http://www.w3.org/2001/XMLSchema"> -->
+<description
+    xmlns=           "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/"
+    xmlns:tns=       "http://tempuri.org/"
+    xmlns:stns =     "http://tempuri.org/"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns:xs=        "http://www.w3.org/2001/XMLSchema">
+
+  <documentation>
+    This is the web service documentation.
+  </documentation>
+
+  <types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xs:element name="Add" type="typeAdd" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeAdd">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="intA" type="xs:int" />
+          <xs:element minOccurs="1" maxOccurs="1" name="intB" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+ 
+      <xs:element name="AddResponse" type="typeAddResponse" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeAddResponse">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="AddResult" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+
+    </xs:schema>
+  </types>
+
+  <interface  name = "AddInterface" >
+    <fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
+    <operation name="calculatorOperation" pattern="http://www.w3.org/ns/wsdl/in-out" style="http://www.w3.org/ns/wsdl/style/iri" wsdlx:safe = "true">
+      <input    messageLabel="In"  element="stns:Add" />
+      <output   messageLabel="Out" element="stns:AddResponse" />
+      <outfault messageLabel="Out" ref    ="tns:invalidAddFault" />    
+    </operation>
+  </interface>
+
+  <binding name="calculatorSOAPBinding"
+          interface="tns:AddInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+    <fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
+    <operation ref="tns:calculatorOperation"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+  </binding>
+
+  <service name ="calculatorService" interface="tns:AddInterface">
+     <endpoint name ="calculatorEndpoint" binding ="tns:calculatorSOAPBinding" address ="http://www.dneonline.com/calculator.asmx"/>
+  </service>
+
+</description>]]
+
+request_common.calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok= [[
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
+<!-- WSDL v2 with <description> tag -->
+<!-- 'wsdl' Namespace has a prefix                                    => xmlns:wsdl="http://www.w3.org/ns/wsdl"         -->
+<!-- 'xsd'  Namespace is the default Namespace and there is no prefix => xmlns     ="http://www.w3.org/2001/XMLSchema"> -->
+<wsdl2:description
+    xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/"
+    xmlns:tns=       "http://tempuri.org/"
+    xmlns:stns =     "http://tempuri.org/"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns=           "http://www.w3.org/2001/XMLSchema">
+
+  <wsdl2:documentation>
+    This is the web service documentation.
+  </wsdl2:documentation>
+
+  <wsdl2:types>
+    <schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <element name="Add" type="tempuri:typeAdd" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeAdd">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="intA" type="int" />
+          <element minOccurs="1" maxOccurs="1" name="intB" type="int" />
+        </sequence>
+      </complexType>
+ 
+      <element name="AddResponse" type="tempuri:typeAddResponse" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeAddResponse">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="AddResult" type="int" />
+        </sequence>
+      </complexType>
+
+    </schema>
+  </wsdl2:types>
+
+  <wsdl2:interface  name = "AddInterface" >
+
+    <wsdl2:fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
+
+    <wsdl2:operation name="calculatorOperation"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+
+      <wsdl2:input    messageLabel="In"  element="stns:Add" />
+      <wsdl2:output   messageLabel="Out" element="stns:AddResponse" />
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
+    
+    </wsdl2:operation>
+
+  </wsdl2:interface>
+
+  <wsdl2:binding name="calculatorSOAPBinding"
+          interface="tns:AddInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+
+    <wsdl2:fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
+
+    <wsdl2:operation ref="tns:calculatorOperation"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+
+  </wsdl2:binding>
+
+  <wsdl2:service
+       name     ="calculatorService"
+       interface="tns:AddInterface">
+
+     <wsdl2:endpoint name ="calculatorEndpoint"
+            binding ="tns:calculatorSOAPBinding"
+            address ="http://www.dneonline.com/calculator.asmx"/>
+
+  </wsdl2:service>
+
+</wsdl2:description>
+]]
+
 request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_missing_intB_Add_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -1012,6 +1158,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
 		}
 	}
+
 	local calculator_wsdl_no_import_mutliple_xsd_subtract_in_xsd2_ok = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_ok" }
@@ -1026,6 +1173,37 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
 		}
 	}
+
+	local calculator_wsdl_v2_no_import_wsdl_defaultNS_xsd_schema_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_v2_no_import_wsdl_defaultNS_xsd_schema_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok
+		}
+	}
+
+	local calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok
+		}
+	}
+
 end
 
 ------------------------------------------
@@ -1558,6 +1736,38 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XS
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
 	assert.matches("<SubtractResult>4</SubtractResult>", body)
+end
+
+function request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schema_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
 end
 
 return request_common

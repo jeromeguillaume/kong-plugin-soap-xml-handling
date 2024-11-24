@@ -930,5 +930,8 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add a `Known Limitations` section in the README.md
   - If `stream_listen` is enabled, send an error message in the log and forces the synchronous download by using `socket.http` (blocking library)
 - v1.2.1
-  - Send the correct detailed error message (instead `Ko`) in case there is no Operation in `<soap:Body>`
+  - Add support of WSDL 2.0 (for WSDL/XSD Validation)
+  - `WSDL/XSD Validation`: Handle correctly the case where the Namespace (associated with `http://www.w3.org/ns/wsdl` or `http://www.w3.org/2001/XMLSchema`) has no prefix
+  - Send the correct detailed error message (instead `Ko`) in case there is no Operation in `<soap:Body>`  
   - Optimize the `WSDL` validation (in case of multiple `<xs:schema>`): match the Operation in `<soap:Body>` with its associated `<xs:element name=` in `<xs:schema>`
+  - `xmlgeneral.addNamespaces`: fix a memory issue when the prefix is NULL (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`)

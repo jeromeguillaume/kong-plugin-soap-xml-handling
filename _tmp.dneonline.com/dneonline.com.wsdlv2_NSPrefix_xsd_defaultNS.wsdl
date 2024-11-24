@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
+<!-- WSDL v2 with <description> tag -->
+<!-- 'wsdl' Namespace has a prefix                                    => xmlns:wsdl="http://www.w3.org/ns/wsdl"         -->
+<!-- 'xsd'  Namespace is the default Namespace and there is no prefix => xmlns     ="http://www.w3.org/2001/XMLSchema"> -->
+<wsdl2:description
+    xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/"
+    xmlns:tns=       "http://tempuri.org/"
+    xmlns:stns =     "http://tempuri.org/"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns=           "http://www.w3.org/2001/XMLSchema">
+
+  <wsdl2:documentation>
+    This is the web service documentation.
+  </wsdl2:documentation>
+
+  <wsdl2:types>
+    <schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <element name="Add" type="tempuri:typeAdd" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeAdd">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="intA" type="int" />
+          <element minOccurs="1" maxOccurs="1" name="intB" type="int" />
+        </sequence>
+      </complexType>
+ 
+      <element name="AddResponse" type="tempuri:typeAddResponse" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeAddResponse">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="AddResult" type="int" />
+        </sequence>
+      </complexType>
+
+    </schema>
+  </wsdl2:types>
+
+  <wsdl2:interface  name = "AddInterface" >
+
+    <wsdl2:fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
+
+    <wsdl2:operation name="calculatorOperation"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+
+      <wsdl2:input    messageLabel="In"  element="stns:Add" />
+      <wsdl2:output   messageLabel="Out" element="stns:AddResponse" />
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
+    
+    </wsdl2:operation>
+
+  </wsdl2:interface>
+
+  <wsdl2:binding name="calculatorSOAPBinding"
+          interface="tns:AddInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+
+    <wsdl2:fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
+
+    <wsdl2:operation ref="tns:calculatorOperation"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+
+  </wsdl2:binding>
+
+  <wsdl2:service
+       name     ="calculatorService"
+       interface="tns:AddInterface">
+
+     <wsdl2:endpoint name ="calculatorEndpoint"
+            binding ="tns:calculatorSOAPBinding"
+            address ="http://www.dneonline.com/calculator.asmx"/>
+
+  </wsdl2:service>
+
+</wsdl2:description>

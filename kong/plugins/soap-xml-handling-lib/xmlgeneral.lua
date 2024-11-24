@@ -885,37 +885,64 @@ function xmlgeneral.addNamespaces(xsdSchema, document, node)
   local raw_namespaces
   local beginSchema
   local endSchema
-
-  -- Retrieve the Schema NameSpace prefix of 'xmlns:prefix' regarding hRef: 'http://www.w3.org/2001/XMLSchema'
-  -- Example of prefix: xsd (xmlns:xsd), xs (xmlns:xs), myxsd (xmlns:myxsd), etc.
+  
+  -- Retrieve the NameSpace prefix of 'XML Schema': 'xmlns:prefix' associated to hRef: 'http://www.w3.org/2001/XMLSchema'
+  --    Example of 'prefix': xsd (xmlns:xsd), xs (xmlns:xs), myxsd (xmlns:myxsd), etc.
+  -- The prefix can be null:
+  --    Example of a NULL 'prefix': xmlns="http://www.w3.org/2001/XMLSchema"
   local xmlNsPtr = libxml2.xmlSearchNsByHref(document, node, xmlgeneral.xmlnsXsdHref)
-  if xmlNsPtr ~= ffi.NULL then
-    xmlNsXsdPrefix = ffi.string(xmlNsPtr.prefix)
+  -- If the Namespace of 'XML Schema' is found
+  if xmlNsPtr ~= ffi.NULL and xmlNsPtr.type == ffi.C.XML_NAMESPACE_DECL then
+    -- The prefix is defined
+    if xmlNsPtr.prefix ~= ffi.NULL then
+      xmlNsXsdPrefix = ffi.string(xmlNsPtr.prefix) .. ':'
+    -- Else the prefix is NULL
+    else
+      xmlNsXsdPrefix = ''
+    end    
   end
   
-  -- Get the List of all NameSpaces
-  raw_namespaces = libxml2.xmlGetNsList(document, node)
-
-  -- Search the begin and end of '<xsd:schema'
+  -- Search the begin and end of '<xsd:schema' ... '>'
   if xmlNsXsdPrefix then
-    xsdSchemaTag = "<" .. xmlNsXsdPrefix .. ":" .. xmlgeneral.xsdSchema
+    xsdSchemaTag = "<" .. xmlNsXsdPrefix .. xmlgeneral.xsdSchema
     beginSchema = xsdSchema:find (xsdSchemaTag, 1)
     endSchema   = xsdSchema:find (">", 2)
   end
 
+  -- Get the List of all NameSpaces
+  raw_namespaces = libxml2.xmlGetNsList(document, node)
+  
   if not xmlNsXsdPrefix or not raw_namespaces or not beginSchema or not endSchema then
     kong.log.err("WSDL validation - Unable to add Namespaces from <wsdl:definition>")
     return xsdSchema
   end
 
   local xsdSchemaTmp = xsdSchema:sub(beginSchema, endSchema)
-
   local i = 0
   local xmlns = ''
   -- Add each Namespace definition defined at <wsdl> level in <xsd:schema>
   while raw_namespaces[i] ~= ffi.NULL do
-    if not xsdSchemaTmp:find("xmlns:" .. ffi.string(raw_namespaces[i].prefix) .. "=\"") then
-      xmlns = "xmlns:" .. ffi.string(raw_namespaces[i].prefix) .. "=\"" .. ffi.string(raw_namespaces[i].href) .. "\" " .. xmlns
+    
+    -- If it's a NAMESPACE DECLaration
+    if raw_namespaces[i].type == ffi.C.XML_NAMESPACE_DECL then      
+      
+      -- If the prefix and href are both defined (example: xmlns:xs="http://www.w3.org/2001/XMLSchema" | here prefix='xs' and href="http://www.w3.org/2001/XMLSchema")
+      --   AND
+      -- If the prefix (xmlns:xs) is not already defined in the current <xsd:schema>
+      if     raw_namespaces[i].prefix ~= ffi.NULL and raw_namespaces[i].href ~= ffi.NULL and
+         not xsdSchemaTmp:find("xmlns:" .. ffi.string(raw_namespaces[i].prefix) .. "=\"") then
+        xmlns = "xmlns:" .. ffi.string(raw_namespaces[i].prefix) .. "=\"" .. ffi.string(raw_namespaces[i].href) .. "\" " .. xmlns
+      
+        -- If the prefix is not defined and href is defined (example: xmlns="http://www.w3.org/2001/XMLSchema" | here prefix=NULL and href="http://www.w3.org/2001/XMLSchema")
+      --   AND
+      -- If the 'xmlns' is not already defined in the current <xsd:schema>
+      elseif raw_namespaces[i].prefix == ffi.NULL and raw_namespaces[i].href ~= ffi.NULL and
+         not xsdSchemaTmp:find("xmlns=\"") then
+          xmlns = "xmlns=\"" .. ffi.string(raw_namespaces[i].href) .. "\" " .. xmlns
+      else
+        -- Do nothing because the Namespace is already defined
+      end
+
     end
     i = i + 1
   end
@@ -923,7 +950,6 @@ function xmlgeneral.addNamespaces(xsdSchema, document, node)
   if #xmlns > 1 then
     xsdSchema = xsdSchemaTag .. " " .. xmlns .. xsdSchema:sub(beginSchema + #xsdSchemaTag, -1)
   end
-  
   return xsdSchema
 end
 
@@ -953,8 +979,12 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   --   THEN
   -- We do a loop for validating the 'XMLtoValidate' XML with each '<xs:schema>' until one works
   --
-  -- Example of WSDL:
+  -- Example of WSDL 2.0:
+  --  <description xmlns="http://www.w3.org/ns/wsdl" targetNamespace="http://tempuri.org/" xmlns:tns="http://tempuri.org/" xmlns:stns="http://tempuri.org/" xmlns:wsoap="http://www.w3.org/ns/wsdl/soap" xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:wsdlx="http://www.w3.org/ns/wsdl-extensions" >
+  -- Example of WSDL 1.1:
   --  <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.microsoft.com/ws/06/2004/policy/http" xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract" xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" targetNamespace="http://tempuri.org/" name="INonCacheService" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  --  <!-- ********************************* --> 
+  --  <!-- Ccommon part for WSDL 1.1 and 2.0 -->
   --    <wsdl:types>
   --      <xs:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ser="http://schemas.microsoft.com/2003/10/Serialization/">
   --        <xs:import namespace="http://schemas.datacontract.org/2004/07/APIM_Dummy.Common.Models.Responses" />
@@ -984,9 +1014,14 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   -- Retrieve the <wsdl:definitions>
   local xmlNodePtrRoot   = libxml2.xmlDocGetRootElement(xml_doc)
   if xmlNodePtrRoot then
-    if tonumber(xmlNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE then
+    if tonumber(xmlNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE and 
+       xmlNodePtrRoot.name ~= ffi.NULL then
       nodeName = ffi.string(xmlNodePtrRoot.name)
-      if nodeName == "definitions" then
+      -- WSDL 1.1
+      if     nodeName == "definitions" then
+        wsdlNodeFound = true
+      -- WSDL 2.0
+      elseif nodeName == "description" then
         wsdlNodeFound = true
       end
     end
@@ -997,7 +1032,8 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
     currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
     -- Retrieve '<wsdl:types>' Node in the WSDL
     while currentNode ~= ffi.NULL and not typesNodeFound do
-      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and 
+        currentNode.name ~= ffi.NULL then
         kong.log.debug ("currentNode.name: '" .. ffi.string(currentNode.name) .. "'")
         nodeName = ffi.string(currentNode.name)
         if nodeName == "types" then
@@ -1032,24 +1068,25 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
     -- Try to get the Operation Name in the <soap:Body>
     -- Note: if there is an XML syntax error the operationName can't found and is nil
     operationName = xmlgeneral.getOperationNameFromSOAPEnvelope(XMLtoValidate, verbose)
-    kong.log.notice("XMLValidateWithWSDL, operationName='"..(operationName or 'Not_Found').."' in XML")    
+    kong.log.debug("XMLValidateWithWSDL, operationName='"..(operationName or 'Not_Found').."' in XML")    
   end
 
   -- Retrieve all '<xs:schema>' Nodes until 
   --   We found a valid Schema validating the XML 
   --     OR
-  --   If prefetch is enabled
+  --  ( If prefetch is enabled
   --     AND
-  --   If there is no Match between the Operation Name (of XML) and the XSD
+  --   If there is no Match between the Operation Name (of XML) and the XSD )
   while currentNode ~= ffi.NULL and (not validSchemaFound or prefetch) and not XMLXSDMatching do
     
-    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and 
+       currentNode.name ~= ffi.NULL then
       -- Get the node Name
       nodeName = ffi.string(currentNode.name)
       if nodeName == "schema" then        
         index = index + 1
         xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, currentNode, 1, 1)
-        kong.log.notice ("schema #" .. index .. ", length: " .. #xsdSchema .. ", dump: " .. xsdSchema)
+        kong.log.debug ("schema #" .. index .. ", length: " .. #xsdSchema .. ", dump: " .. xsdSchema)
         
         -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
         xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)
@@ -1067,12 +1104,13 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
           while elementNode ~= ffi.NULL do
             
             if tonumber(elementNode.type) == ffi.C.XML_ELEMENT_NODE and 
-               ffi.string(elementNode.name) == 'element' then
+               elementNode.name ~= ffi.NULL                         and
+               ffi.string(elementNode.name) == 'element'            then
               local propName = libxml2.xmlGetProp (elementNode, "name")
               if propName ~= ffi.NULL and ffi.string(propName) == operationName then
                 -- The Operation Name is found in the XSD Schema
                 XMLXSDMatching = true
-                kong.log.notice("XMLValidateWithWSDL, operationName '"..operationName.."' (from XML) was found in this XSD schema")
+                kong.log.debug("XMLValidateWithWSDL, operationName '"..operationName.."' (from XML) was found in this XSD schema")
                 break
               end
             end
@@ -1181,7 +1219,8 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
        -- Retrieve '<soap:Body>' Node in the XML
       while currentNode ~= ffi.NULL and not bodyNodeFound do
-        if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+        if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and
+           currentNode.name ~= ffi.NULL then
           kong.log.debug ("XSD validation - CurrentNode.name: " .. ffi.string(currentNode.name))
           nodeName = ffi.string(currentNode.name)
           if nodeName == "Body" then
