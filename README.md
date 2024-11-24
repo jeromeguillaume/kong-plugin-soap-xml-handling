@@ -22,7 +22,7 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
 Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message).
-
+---
 1. [Configuration Reference](#configuration_reference)
 2. [How to deploy SOAP/XML Handling plugins](#deployment)
     1. [Docker](#docker)
