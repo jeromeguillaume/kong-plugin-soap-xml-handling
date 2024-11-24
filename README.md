@@ -76,8 +76,8 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```sh
 ./start-kong.sh
 ```
-
-### <a id="Konnect_CP_for_Kong_Gateway"></a>How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
+<a id="Konnect_CP_for_Kong_Gateway"></a>
+### How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -93,7 +93,8 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 
 Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua) of `soap-xml-response-handling`
 
-### <a id="Konnect_CP_for_KIC"></a> How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
+<a id="Konnect_CP_for_KIC"></a>
+### How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
