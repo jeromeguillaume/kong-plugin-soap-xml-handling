@@ -32,7 +32,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 
 ![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
 
-## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference <a id="configuration_reference"></a>
+## <a id="configuration_reference"></a>`soap-xml-request-handling` and `soap-xml-response-handling` configuration reference
 |FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.ExternalEntityLoader_Async|`false`|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
@@ -55,7 +55,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 
 <a id="deployment"></a>
 
-## How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker <a id="docker"></a>
+## <a id="docker"></a>How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
