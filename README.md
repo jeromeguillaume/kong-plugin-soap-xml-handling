@@ -27,6 +27,11 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 2. [How to deploy SOAP/XML Handling plugins](#deployment)
   1. [Docker](#docker)
   2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
+  3. [Schema in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
+  4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
+3. [Quick Test: How to test an XML `calculator` Web Service without the plugins](#Quick_Test)
+  1. [Kong Gateway](#Quick_Test_Kong_Gateway)
+  2. [Kong Ingress Controller (KIC)](#Quick_Test_KIC)
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -53,9 +58,10 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
-<a id="deployment"></a>
 
-## <a id="docker"></a>How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+## <a id="deployment"></a>How to deploy SOAP/XML Handling plugins
+
+### <a id="docker"></a>How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -70,9 +76,8 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```sh
 ./start-kong.sh
 ```
-<a id="Konnect_CP_for_Kong_Gateway"></a>
 
-## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
+### <a id="Konnect_CP_for_Kong_Gateway"></a>How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -88,7 +93,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 
 Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-handling/schema.lua) of `soap-xml-response-handling`
 
-## How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
+### <a id="Konnect_CP_for_KIC"></a>How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Ingress Controller (KIC)
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -111,7 +116,7 @@ cd -
 cd ./kong-plugin-soap-xml-handling/kong/plugins/soap-xml-response-handling
 ```
 
-## How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes
+### <a id="Konnect_DP_for_K8S">How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes
 1) Do a Git Clone of this repo (if it’s not done yet):
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
@@ -160,8 +165,8 @@ plugins:
 ```sh
 helm install kong kong/kong -n kong --values ./values.yaml
 ```
-
-## How to configure and test `calculator` Web Service in Kong Gateway
+## <a id="Quick_Test">Quick Test: How to test an XML `calculator` Web Service without the plugins
+### <a id="Quick_Test_Kong_Gateway">How to configure and test `calculator` Web Service in Kong Gateway
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
@@ -194,7 +199,7 @@ The expected result is `12`:
 </soap:Envelope>
 ```
 
-## How to configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
+### <a id="Quick_Test_KIC">How to configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
 1) Configure a Kubernetes `External Service` (to http://www.dneonline.com:80/calculator.asmx) with [kic/extService-Calculator-Ingress.yaml](kic/extService-Calculator-Ingress.yaml) and a related `Ingress` kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
