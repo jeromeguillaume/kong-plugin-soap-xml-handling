@@ -1,4 +1,9 @@
-local KongGzip = require("kong.tools.gzip")
+print("kong-version",  kong.version_num )
+if kong.version_num < 3006000 then
+	local KongGzip        = require "kong.tools.utils"
+else
+	local KongGzip        = require "kong.tools.gzip"
+end
 
 -- handler.lua
 local plugin = {

@@ -4,7 +4,12 @@
 
 local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
-local KongGzip        = require "kong.tools.gzip"
+print("kong-version",  kong.version_num )
+if kong.version_num < 3006000 then
+	local KongGzip        = require "kong.tools.utils"
+else
+	local KongGzip        = require "kong.tools.gzip"
+end
 local response_common = {}
 
 response_common.calculator_Request = [[
