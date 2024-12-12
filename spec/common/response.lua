@@ -4,14 +4,43 @@
 
 local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
-print("kong-version",  kong.version_num )
-if kong.version_num < 3006000 then
-	local KongGzip        = require "kong.tools.utils"
-else
-	local KongGzip        = require "kong.tools.gzip"
-end
-local response_common = {}
 
+local KongGzip
+
+-- Function to split version string into components
+local function split_version(version)
+    local t = {}
+    for part in version:gmatch("([^.]+)") do
+        table.insert(t, tonumber(part))
+    end
+    return t
+end
+
+-- Function to compare two version strings
+local function compare_versions(v1, v2)
+    local v1_parts = split_version(v1)
+    local v2_parts = split_version(v2)
+    
+    for i = 1, math.max(#v1_parts, #v2_parts) do
+        local v1_part = v1_parts[i] or 0
+        local v2_part = v2_parts[i] or 0
+        if v1_part < v2_part then
+            return true
+        elseif v1_part > v2_part then
+            return false
+        end
+    end
+    return false
+end
+
+-- Compare version strings
+if compare_versions(kong.version, "3.6") then
+    KongGzip = require "kong.tools.utils"
+else
+    KongGzip = require "kong.tools.gzip"
+end
+
+local response_common = {}
 response_common.calculator_Request = [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
