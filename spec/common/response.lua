@@ -4,7 +4,14 @@
 
 local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
-local KongGzip        = require "kong.tools.gzip"
+local xmlgeneral 			= require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+local KongGzip				= nill
+-- Compare version strings
+if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
+	KongGzip = require "kong.tools.utils"
+else
+	KongGzip = require "kong.tools.gzip"
+end
 local response_common = {}
 
 response_common.calculator_Request = [[
@@ -246,6 +253,10 @@ response_common.calculator_Request_XSLT_AFTER = [[
 response_common.calculator_Response_XML = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <AddResponse><KongResult>13</KongResult></AddResponse>]]
+
+response_common.calculator_Response_XML_18 = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<AddResponse><KongResult>18</KongResult></AddResponse>]]
 
 response_common.calculator_Response_XSLT_AFTER_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>

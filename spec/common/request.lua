@@ -378,10 +378,10 @@ request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH = [[
     <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
   </xsl:template>
   <xsl:template match="//*[local-name()='intA']">
-    <a><xsl:apply-templates select="@*|node()" /></a>
+    <intA>10</intA>
   </xsl:template>
   <xsl:template match="//*[local-name()='intB']">
-    <b><xsl:apply-templates select="@*|node()" /></b>
+    <intB><xsl:apply-templates select="@*|node()" /></intB>
   </xsl:template>
 </xsl:stylesheet>
 ]]
@@ -990,10 +990,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	local upstream_ecs_syr_edu = blue_print.upstreams:insert()
+	local upstream_ws_soap_calculator = blue_print.upstreams:insert()
 	blue_print.targets:insert({
-		upstream = upstream_ecs_syr_edu,
-		target = "ecs.syr.edu:443",
+		upstream = upstream_ws_soap_calculator,
+		target = "ws.soap.calculator:8080",
 	})
 
 	local calculatorRoutingByXPath_upstream_route = blue_print.routes:insert{
@@ -1009,9 +1009,9 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "https://" .. upstream_ecs_syr_edu.name .. "/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteToPath = "http://" .. upstream_ws_soap_calculator.name .. "/ws",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -1028,9 +1028,9 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteToPath = "http://ws.soap.calculator:8080/ws",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -1048,8 +1048,8 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
 			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -1067,8 +1067,8 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
 			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -1573,8 +1573,8 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_upstream_entity_Ok (asser
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches('<AddResult>13</AddResult>', body)
+	assert.equal("text/xml;charset=utf-8", content_type)
+	assert.matches('<AddResult>18</AddResult>', body)
 end
 
 function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, client)		
@@ -1589,8 +1589,8 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, clie
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches('<AddResult>13</AddResult>', body)
+	assert.equal("text/xml;charset=utf-8", content_type)
+	assert.matches('<AddResult>18</AddResult>', body)
 end
 
 function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)

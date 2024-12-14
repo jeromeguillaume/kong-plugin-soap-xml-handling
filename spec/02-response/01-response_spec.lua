@@ -74,17 +74,17 @@ for _, strategy in helpers.all_strategies() do
 				response_common._5_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Verbose (assert, client)
 			end)
 
-      --it ("5|XSLT (BEFORE XSD) - 'gzip' Content-encoding - Ok", function()
-			--	response_common._5_XSLT_BEFORE_XSD_gzip_Content_Encoding_Ok (assert, client)
-			--end)
+      it ("5|XSLT (BEFORE XSD) - 'gzip' Content-encoding - Ok", function()
+				response_common._5_XSLT_BEFORE_XSD_gzip_Content_Encoding_Ok (assert, client)
+			end)
 
-      --it ("5|XSLT (BEFORE XSD) - Content-encoding - Unknown encoding", function()
-			--	response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding (assert, client)
-			--end)
+      it ("5|XSLT (BEFORE XSD) - Content-encoding - Unknown encoding", function()
+				response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding (assert, client)
+			end)
 
-      --it ("5|XSLT (BEFORE XSD) - Content-encoding - Unknown encoding with verbose", function()
-			--	response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding_with_verbose (assert, client)
-			--end)
+      it ("5|XSLT (BEFORE XSD) - Content-encoding - Unknown encoding with verbose", function()
+				response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding_with_verbose (assert, client)
+			end)
      
       it("5+6|XSD Validation - Ok", function()
 				response_common._5_6_XSD_Validation_Ok (assert, client)

@@ -1,7 +1,6 @@
 kong/plugins/.DS_Store
 kong/saxon/notes.txt
 .DS_Store
-.pongo/
 servroot/
 .busted
 .editorconfig

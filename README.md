@@ -991,7 +991,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas in the plugin configuration (without download external entity)
   - Enhance the documentation for Kubernetes, Konnect and KIC
 - v1.0.10:
-  - Due to Kong v3.7+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
+  - Due to Kong v3.6+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
 - v1.0.11:
   - Add `pongo` tests
 - v1.1.0:
@@ -1030,3 +1030,6 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `xmlgeneral.addNamespaces`: fix a memory issue when the prefix is NULL (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`)
   - Send the correct detailed error message (instead `Ko`) in case there is no Operation in `<soap:Body>`  
   - Optimize the `WSDL` validation (in case of multiple `<xs:schema>`): match the Operation in `<soap:Body>` with its associated `<xs:element name=` in `<xs:schema>`
+  - Have a dynamic loading of the Kong's library used for gzip compression regarding the Kong version: `kong.tools.utils` for version < 3.6 and `kong.tools.gzip`for version >= 3.6
+  - Include the Kong version in the docker images related to `saxon` (example: `jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5`)
+  - Include the Lua code of the plugins in the docker images related to `saxon`

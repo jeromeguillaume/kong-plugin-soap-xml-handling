@@ -3,7 +3,6 @@
 -- ( ) . % + - * ? [ ^ $
 
 local helpers = require "spec.helpers"
-local split   = require("kong.tools.string").split
 local saxon_common = {}
 
 saxon_common.calculator_Request= {
@@ -275,10 +274,9 @@ saxon_common.httpbin_Response_XSLT_BEFORE = [[
 ---------------------------------------------------------------------------------------------------
 function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
-  local plugins = split(PLUGIN_NAME, ',')
-  local pluginRequest  = plugins[1]
-  local pluginResponse = plugins[2]
-
+  local pluginRequest  = "soap-xml-request-handling"
+  local pluginResponse = "soap-xml-response-handling"
+  
 	local calculator_service = blue_print.services:insert({
 		protocol = "http",
 		host = "www.dneonline.com",

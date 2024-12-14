@@ -141,7 +141,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
         else
             port = parsed.port
         end
-        -- First, consider that the Host is a Kong Upstream 
+        -- First, consider that the Host is a Kong Upstream
         local ok, err = kong.service.set_upstream(parsed.host)
         -- If there is an error it means that the Host is not a Kong Upstream
         if not ok then
