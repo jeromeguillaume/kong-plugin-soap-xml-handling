@@ -3,19 +3,17 @@ local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
 local response_common = require "spec.common.response"
 local soap12_common   = require "spec.common.soap12"
-local split           = require("kong.tools.string").split
 
 -- matches our plugin name defined in the plugins's schema.lua
-local PLUGIN_NAME = "soap-xml-request-handling,soap-xml-response-handling"
-local plugins = split(PLUGIN_NAME, ',')
+local pluginRequest  = "soap-xml-request-handling"
+local pluginResponse = "soap-xml-response-handling"
+local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary = "libxslt"
-local pluginRequest  = plugins[1]
-local pluginResponse = plugins[2]
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test

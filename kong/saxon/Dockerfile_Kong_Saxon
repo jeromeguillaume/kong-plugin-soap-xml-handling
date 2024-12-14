@@ -1,9 +1,14 @@
-FROM kong/kong-gateway:3.8.0.0 as base
+FROM kong/kong-gateway:3.6.0.0 as base
 
 ARG TARGETARCH
 
-COPY ../so/$TARGETARCH /usr/local/lib/kongsaxon
-COPY ./notices /usr/local/lib/kongsaxon/notices
-COPY ./conf /usr/local/lib/kongsaxon/conf
+COPY ./saxon/so/$TARGETARCH /usr/local/lib/kongsaxon
+COPY ./saxon/notices /usr/local/lib/kongsaxon/notices
+COPY ./saxon/conf /usr/local/lib/kongsaxon/conf
+
+COPY ./plugins/soap-xml-handling-lib      /usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib
+COPY ./plugins/soap-xml-request-handling  /usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
+COPY ./plugins/soap-xml-response-handling /usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling
 
 ENV LD_LIBRARY_PATH=/usr/local/lib/kongsaxon
+ENV KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling

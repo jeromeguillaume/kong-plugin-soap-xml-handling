@@ -2,6 +2,6 @@ FROM alpine as base
 
 ARG TARGETARCH
 
-COPY ./so/$TARGETARCH /kongsaxon
-COPY notices/ /kongsaxon/notices/
-COPY conf/ /kongsaxon/conf/
+COPY ./saxon/so/$TARGETARCH /kongsaxon
+COPY ./saxon/notices/ /kongsaxon/notices/
+COPY ./saxon/conf/ /kongsaxon/conf/

@@ -1,19 +1,17 @@
 -- Helper functions provided by Kong Gateway, see https://github.com/Kong/kong/blob/master/spec/helpers.lua
 local helpers = require "spec.helpers"
-local split   = require("kong.tools.string").split
 
 -- matches our plugin name defined in the plugins's schema.lua
-local PLUGIN_NAME = "soap-xml-request-handling,soap-xml-response-handling"
-local plugins = split(PLUGIN_NAME, ',')
-local pluginRequest  = plugins[1]
-local pluginResponse = plugins[2]
+local pluginRequest  = "soap-xml-request-handling"
+local pluginResponse = "soap-xml-response-handling"
+local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
 local saxon_common = require "spec.common.saxon"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test

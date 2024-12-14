@@ -14,7 +14,9 @@
 #-------------------------------------------------------------
 # Execute the tests with the customized Kong image with Saxon
 #-------------------------------------------------------------
-KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.0.0-12.5 pongo run --lpath=$PWD/spec/common
+#KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.0.0-12.5 pongo run --lpath=$PWD/spec/common
+pongo up
+KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5 pongo run
 
 #---------------------------------------------------------
 # Loop tests

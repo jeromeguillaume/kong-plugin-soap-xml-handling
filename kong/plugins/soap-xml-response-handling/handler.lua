@@ -1,13 +1,12 @@
-local KongGzip = require("kong.tools.gzip")
-
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.2.0",
+    VERSION = "1.2.1",
   }
 
 local xmlgeneral = nil
 local libxml2ex  = nil
+local KongGzip   = nil
 
 -----------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML response Before (XSD VALIDATION)
@@ -104,6 +103,13 @@ function plugin:init_worker ()
 
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
+
+  -- Compare version strings
+  if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
+    KongGzip = require "kong.tools.utils"
+  else
+    KongGzip = require "kong.tools.gzip"
+  end
 
 end
 

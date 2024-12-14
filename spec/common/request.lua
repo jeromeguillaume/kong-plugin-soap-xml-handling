@@ -28,6 +28,20 @@ request_common.calculator_Full_Request= [[
 </soap:Envelope>
 ]]
 
+request_common.calculator_Request_SOAP_No_soapBody_ko= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+</soap:Envelope>
+]]
+
+request_common.calculator_Request_SOAP_No_Operation_ko= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+  </soap:Body>
+</soap:Envelope>
+]]
+
 request_common.calculator_Request_SOAP_ko= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope2 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -56,6 +70,18 @@ request_common.calculator_Subtract_Request = [[
 	<soap:Body>
 		<Subtract xmlns="http://tempuri.org/">
 			<intA>5</intA>
+		</Subtract>
+	</soap:Body>
+</soap:Envelope>
+]]
+
+request_common.calculator_Subtract_Full_Request = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<Subtract xmlns="http://tempuri.org/">
+			<intA>5</intA>
+			<intB>1</intB>
 		</Subtract>
 	</soap:Body>
 </soap:Envelope>
@@ -260,6 +286,42 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_empty_SOAP_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>XSD validation %- Unable to find the 'soap:Envelope'</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Error Node: Envelope, Error code: 1871, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': Missing child element%(s%). Expected is one of %( {http://schemas.xmlsoap.org/soap/envelope/}Header, {http://schemas.xmlsoap.org/soap/envelope/}Body %).</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>XSD validation %- Unable to find the Operation tag in the 'soap:Body'</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
 request_common.calculator_Request_XSLT_AFTER = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -316,10 +378,10 @@ request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH = [[
     <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
   </xsl:template>
   <xsl:template match="//*[local-name()='intA']">
-    <a><xsl:apply-templates select="@*|node()" /></a>
+    <intA>10</intA>
   </xsl:template>
   <xsl:template match="//*[local-name()='intB']">
-    <b><xsl:apply-templates select="@*|node()" /></b>
+    <intB><xsl:apply-templates select="@*|node()" /></intB>
   </xsl:template>
 </xsl:stylesheet>
 ]]
@@ -415,6 +477,216 @@ request_common.calculatorWSDL_with_async_download_Failed = [[
   </wsdl:types>
 </wsdl:definitions>
 ]]
+
+request_common.calculatorWSDL_no_import_multiple_xsd_ok = [[
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema">
+      <s:element name="Divide">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Add">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema">
+      <s:element name="Add">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Mutliple">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Subtract">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+            <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok = [[
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
+<!-- WSDL v2 with <description> tag -->
+<!-- 'wsdl' Namespace is the default Namespace and there is no prefix => xmlns   ="http://www.w3.org/ns/wsdl"         -->
+<!-- 'xs'   Namespace has a prefix                                    => xmlns:xs="http://www.w3.org/2001/XMLSchema"> -->
+<description
+    xmlns=           "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/"
+    xmlns:tns=       "http://tempuri.org/"
+    xmlns:stns =     "http://tempuri.org/"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns:xs=        "http://www.w3.org/2001/XMLSchema">
+
+  <documentation>
+    This is the web service documentation.
+  </documentation>
+
+  <types>
+    <xs:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xs:element name="Add" type="typeAdd" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeAdd">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="intA" type="xs:int" />
+          <xs:element minOccurs="1" maxOccurs="1" name="intB" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+ 
+      <xs:element name="AddResponse" type="typeAddResponse" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeAddResponse">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="AddResult" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+
+    </xs:schema>
+  </types>
+
+  <interface  name = "AddInterface" >
+    <fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
+    <operation name="calculatorOperation" pattern="http://www.w3.org/ns/wsdl/in-out" style="http://www.w3.org/ns/wsdl/style/iri" wsdlx:safe = "true">
+      <input    messageLabel="In"  element="stns:Add" />
+      <output   messageLabel="Out" element="stns:AddResponse" />
+      <outfault messageLabel="Out" ref    ="tns:invalidAddFault" />    
+    </operation>
+  </interface>
+
+  <binding name="calculatorSOAPBinding"
+          interface="tns:AddInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+    <fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
+    <operation ref="tns:calculatorOperation"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+  </binding>
+
+  <service name ="calculatorService" interface="tns:AddInterface">
+     <endpoint name ="calculatorEndpoint" binding ="tns:calculatorSOAPBinding" address ="http://www.dneonline.com/calculator.asmx"/>
+  </service>
+
+</description>]]
+
+request_common.calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok= [[
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
+<!-- WSDL v2 with <description> tag -->
+<!-- 'wsdl' Namespace has a prefix                                    => xmlns:wsdl="http://www.w3.org/ns/wsdl"         -->
+<!-- 'xsd'  Namespace is the default Namespace and there is no prefix => xmlns     ="http://www.w3.org/2001/XMLSchema"> -->
+<wsdl2:description
+    xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/"
+    xmlns:tns=       "http://tempuri.org/"
+    xmlns:stns =     "http://tempuri.org/"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns=           "http://www.w3.org/2001/XMLSchema">
+
+  <wsdl2:documentation>
+    This is the web service documentation.
+  </wsdl2:documentation>
+
+  <wsdl2:types>
+    <schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <element name="Add" type="tempuri:typeAdd" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeAdd">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="intA" type="int" />
+          <element minOccurs="1" maxOccurs="1" name="intB" type="int" />
+        </sequence>
+      </complexType>
+ 
+      <element name="AddResponse" type="tempuri:typeAddResponse" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeAddResponse">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="AddResult" type="int" />
+        </sequence>
+      </complexType>
+
+    </schema>
+  </wsdl2:types>
+
+  <wsdl2:interface  name = "AddInterface" >
+
+    <wsdl2:fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
+
+    <wsdl2:operation name="calculatorOperation"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+
+      <wsdl2:input    messageLabel="In"  element="stns:Add" />
+      <wsdl2:output   messageLabel="Out" element="stns:AddResponse" />
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
+    
+    </wsdl2:operation>
+
+  </wsdl2:interface>
+
+  <wsdl2:binding name="calculatorSOAPBinding"
+          interface="tns:AddInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+
+    <wsdl2:fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
+
+    <wsdl2:operation ref="tns:calculatorOperation"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+
+  </wsdl2:binding>
+
+  <wsdl2:service
+       name     ="calculatorService"
+       interface="tns:AddInterface">
+
+     <wsdl2:endpoint name ="calculatorEndpoint"
+            binding ="tns:calculatorSOAPBinding"
+            address ="http://www.dneonline.com/calculator.asmx"/>
+
+  </wsdl2:service>
+
+</wsdl2:description>
+]]
+
+request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_missing_intB_Add_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Error Node: Add, Error code: 1871, Line: 4, Message%: Element '{http://tempuri.org/}Add': Missing child element%(s%). Expected is %( {http://tempuri.org/}intB %).</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
 
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
@@ -718,10 +990,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	local upstream_ecs_syr_edu = blue_print.upstreams:insert()
+	local upstream_ws_soap_calculator = blue_print.upstreams:insert()
 	blue_print.targets:insert({
-		upstream = upstream_ecs_syr_edu,
-		target = "ecs.syr.edu:443",
+		upstream = upstream_ws_soap_calculator,
+		target = "ws.soap.calculator:8080",
 	})
 
 	local calculatorRoutingByXPath_upstream_route = blue_print.routes:insert{
@@ -737,9 +1009,9 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "https://" .. upstream_ecs_syr_edu.name .. "/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteToPath = "http://" .. upstream_ws_soap_calculator.name .. "/ws",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -756,9 +1028,9 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteToPath = "http://ws.soap.calculator:8080/ws",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -776,8 +1048,8 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
 			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -795,8 +1067,8 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
 			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-			RouteXPathCondition = "5",
+			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+			RouteXPathCondition = "10",
 		}
 	}
 
@@ -820,7 +1092,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		name = PLUGIN_NAME,
 		route = calculator_wsdl_ok,
 		config = {
-			VerboseRequest = false,
+			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
@@ -871,6 +1143,67 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
 		}
 	}
+	
+	local calculator_wsdl_no_import_mutliple_xsd_add_in_xsd1_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_no_import_mutliple_xsd_add_in_xsd1_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
+	local calculator_wsdl_no_import_mutliple_xsd_subtract_in_xsd2_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_no_import_mutliple_xsd_subtract_in_xsd2_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
+	local calculator_wsdl_v2_no_import_wsdl_defaultNS_xsd_schema_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_v2_no_import_wsdl_defaultNS_xsd_schema_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok
+		}
+	}
+
+	local calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok
+		}
+	}
+
 end
 
 ------------------------------------------
@@ -1148,6 +1481,38 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (as
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose, body)
 end
 
+function request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_ok_verbose", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request_SOAP_No_soapBody_ko,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed_verbose, body)
+end
+
+function request_common._1_2_XSD_Validation_Invalid_API_request_without_Operation_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_ok_verbose", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request_SOAP_No_Operation_ko,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
+end
+
 function request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_afterXSD_ok", {
@@ -1208,8 +1573,8 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_upstream_entity_Ok (asser
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches('<AddResult>13</AddResult>', body)
+	assert.equal("text/xml;charset=utf-8", content_type)
+	assert.matches('<AddResult>18</AddResult>', body)
 end
 
 function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, client)		
@@ -1224,8 +1589,8 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, clie
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
-	assert.matches('<AddResult>13</AddResult>', body)
+	assert.equal("text/xml;charset=utf-8", content_type)
+	assert.matches('<AddResult>18</AddResult>', body)
 end
 
 function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)
@@ -1319,6 +1684,86 @@ function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, c
 	})
 
 	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_WSDL_Validation_Invalid_SOAP_request_Empty_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_async_download_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = '',
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_empty_SOAP_Failed_verbose, body)
+end
+
+function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Add_in_XSD1_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_missing_intB_Add_Failed_verbose, body)
+end
+
+function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XSD2_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("<SubtractResult>4</SubtractResult>", body)
+end
+
+function request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schema_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)

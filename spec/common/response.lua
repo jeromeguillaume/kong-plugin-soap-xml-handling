@@ -4,7 +4,14 @@
 
 local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
-local KongGzip        = require "kong.tools.gzip"
+local xmlgeneral 			= require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
+local KongGzip				= nill
+-- Compare version strings
+if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
+	KongGzip = require "kong.tools.utils"
+else
+	KongGzip = require "kong.tools.gzip"
+end
 local response_common = {}
 
 response_common.calculator_Request = [[
@@ -247,6 +254,10 @@ response_common.calculator_Response_XML = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <AddResponse><KongResult>13</KongResult></AddResponse>]]
 
+response_common.calculator_Response_XML_18 = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<AddResponse><KongResult>18</KongResult></AddResponse>]]
+
 response_common.calculator_Response_XSLT_AFTER_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -270,6 +281,53 @@ response_common.calculator_Response_XSLT_AFTER_Failed_verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculator_Response_No_soapBody = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+</soap:Envelope>]]
+
+response_common.calculator_Response_No_Operation = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+<soap:Body/>
+</soap:Envelope>]]
+
+
+response_common.calculator_Response_XSD_SOAP_VALIDATION_blank_soap_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Response %- XSD validation failed</faultstring>
+      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_XSD_SOAP_VALIDATION_no_soapBody_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Response %- XSD validation failed</faultstring>
+      <detail>Error Node: Envelope, Error code: 1871, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': Missing child element%(s%). Expected is one of %( {http://schemas.xmlsoap.org/soap/envelope/}Header, {http://schemas.xmlsoap.org/soap/envelope/%}Body %). SOAP/XML Web Service %- HTTP code: 200</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Response %- XSD validation failed</faultstring>
+      <detail>XSD validation %- Unable to find the Operation tag in the 'soap:Body'. SOAP/XML Web Service %- HTTP code: 200</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
 
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
@@ -656,6 +714,99 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+		}
+	}
+
+	local local_res_termination_blank_soap_route = blue_print.routes:insert{
+		paths = { "/local_calculator_res_termination_blank_soap" }
+	}
+	blue_print.plugins:insert {
+		name = "request-termination",
+		route = local_res_termination_blank_soap_route,
+		config = {
+			status_code = 200,
+			content_type = "text/xml; charset=utf-8",
+			body = ' '
+		}	
+	}
+	local calculator_local_blank_soap_service = blue_print.services:insert({
+		protocol = "http",
+		host = "localhost",
+		port = 9000,
+		path = "/local_calculator_res_termination_blank_soap",
+	})
+	local calculator_wsdl_blank_soap_route = blue_print.routes:insert{
+		service = calculator_local_blank_soap_service,
+		paths = { "/calculatorWSDL_blank_soap_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_blank_soap_route,
+		config = {
+			VerboseResponse = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
+	local local_res_termination_no_soapBody_route = blue_print.routes:insert{
+		paths = { "/local_calculator_res_termination_no_soapBody" }
+	}
+	blue_print.plugins:insert {
+		name = "request-termination",
+		route = local_res_termination_no_soapBody_route,
+		config = {
+			status_code = 200,
+			content_type = "text/xml; charset=utf-8",
+			body = response_common.calculator_Response_No_soapBody
+		}	
+	}
+	local calculator_local_no_soapBody_service = blue_print.services:insert({
+		protocol = "http",
+		host = "localhost",
+		port = 9000,
+		path = "/local_calculator_res_termination_no_soapBody",
+	})
+	local calculator_wsdl_no_soapBody_route = blue_print.routes:insert{
+		service = calculator_local_no_soapBody_service,
+		paths = { "/calculatorWSDL_no_soapBody_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_no_soapBody_route,
+		config = {
+			VerboseResponse = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
+	local local_res_termination_api_no_operation_route = blue_print.routes:insert{
+		paths = { "/local_calculator_res_termination_api_no_operation" }
+	}
+	blue_print.plugins:insert {
+		name = "request-termination",
+		route = local_res_termination_api_no_operation_route,
+		config = {
+			status_code = 200,
+			content_type = "text/xml; charset=utf-8",
+			body = response_common.calculator_Response_No_Operation
+		}	
+	}
+	local calculator_local_api_no_operation = blue_print.services:insert({
+		protocol = "http",
+		host = "localhost",
+		port = 9000,
+		path = "/local_calculator_res_termination_api_no_operation",
+	})
+	local calculator_wsdl_api_no_operation_route = blue_print.routes:insert{
+		service = calculator_local_api_no_operation,
+		paths = { "/calculatorWSDL_API_without_operation_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_api_no_operation_route,
+		config = {
+			VerboseResponse = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
 		}
 	}
 
@@ -1056,6 +1207,54 @@ function response_common._6_WSDL_Validation_with_import_no_download_Ok (assert, 
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.equal("text/xml; charset=utf-8", content_type)
 	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function response_common._6_WSDL_Validation_Invalid_SOAP_response_Blank_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_blank_soap_ko", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(response_common.calculator_Response_XSD_SOAP_VALIDATION_blank_soap_Failed_verbose, body)
+end
+
+function response_common._6_WSDL_Validation_Invalid_SOAP_response_without_soapBody_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_no_soapBody_ko", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(response_common.calculator_Response_XSD_SOAP_VALIDATION_no_soapBody_Failed_verbose, body)
+end
+
+function response_common._6_WSDL_Validation_Invalid_API_response_without_operation_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_API_without_operation_ko", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches(response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
 end
 
 return response_common

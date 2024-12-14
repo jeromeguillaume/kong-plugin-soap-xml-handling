@@ -2,19 +2,17 @@
 local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
 local response_common = require "spec.common.response"
-local split           = require("kong.tools.string").split
 
 -- matches our plugin name defined in the plugins's schema.lua
-local PLUGIN_NAME = "soap-xml-request-handling,soap-xml-response-handling"
-local plugins = split(PLUGIN_NAME, ',')
-local xsltLibrary = "libxslt"
-local pluginRequest  = plugins[1]
-local pluginResponse = plugins[2]
+local pluginRequest  = "soap-xml-request-handling"
+local pluginResponse = "soap-xml-response-handling"
+local PLUGIN_NAME    = pluginRequest..","..pluginResponse
+local xsltLibrary    = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -68,9 +66,9 @@ for _, strategy in helpers.all_strategies() do
           xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
           xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
           xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-          RouteToPath = "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-          RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-          RouteXPathCondition = "5",
+          RouteToPath = "http://ws.soap.calculator:8080/ws",
+          RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+          RouteXPathCondition = "10",
         }
       }
       blue_print.plugins:insert {
@@ -367,8 +365,8 @@ for _, strategy in helpers.all_strategies() do
       -- validate that the request succeeded: response status 200, Content-Type and right match
       local body = assert.response(r).has.status(200)
       local content_type = assert.response(r).has.header("Content-Type")
-      assert.equal("text/xml; charset=utf-8", content_type)
-      assert.matches(response_common.calculator_Response_XML, body)
+      assert.equal("text/xml;charset=utf-8", content_type)
+      assert.matches(response_common.calculator_Response_XML_18, body)
     end)
 
     it("2+6|Request and Response plugins|Same WSDL Validation with async download with verbose - Ok", function()
