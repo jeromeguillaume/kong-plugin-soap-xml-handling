@@ -54,15 +54,15 @@ rm ./include/php8*
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
 - Adapt the version of the initContainer, Plugins or saxon (exemple: `kong-saxon-local-lib:1.0.3-1.2.1-12.5`) in the following file:
   - [Makefile](/kong/Makefile)
-- Build and Push on Docker Hub a `<your_docker_account>/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
-```sh
-cd ./kong-plugin-soap-xml-handling/kong
-make kong_saxon_docker_hub
-```
 - Build all
 ```sh
 cd saxon
 make
+```
+- Build and Push on Docker Hub a `<your_docker_account>/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
+```sh
+cd ./kong-plugin-soap-xml-handling/kong
+make kong_saxon_docker_hub
 ```
 - Extract and Build the `saxon` libraries. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
   - `arm64`
