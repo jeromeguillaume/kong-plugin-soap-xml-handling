@@ -394,40 +394,21 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 ### Example #4: Request | `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 The plugin searches the XPath entry and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route.
 
-This example uses a new backend Web Service (https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx), which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
+This example uses a new backend Web Service (https://calculator.apim.eu:443/ws), which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
 
-Add a Kong `Upstream` named `ecs.syr.edu` and defines a `target` with `ecs.syr.edu:443` value. 
+Add a Kong `Upstream` named `calculator.apim.eu` and defines a `target` with `calculator.apim.eu:443` value. 
 Open `soap-xml-request-handling` plugin and configure the plugin with:
-- `RouteToPath` property with the value `https://ecs.syr.edu/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx`
-- `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']`
-- `RouteXPathCondition` property with the value `5`
+- `RouteToPath` property with the value `https://calculator.apim.eu:443/ws`
+- `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
+- `RouteXPathCondition` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
-- `xsltTransformAfter` property with the following XSLT definition (the `ecs.syr.edu` uses `a` and `b` parameters instead of `ìntA` and `intB` so we have to change the XSLT transformation to make the proper call):
-
+Use command defined at Example #3, the expected result is `13`. Pay attention to the `X-SOAP-Region` (http header in the response) added by `calculator.apim.eu`
 ```xml
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">   
-  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-  <xsl:strip-space elements="*"/>
-  <xsl:template match="node()|@*">
-    <xsl:copy>
-  <xsl:apply-templates select="node()|@*"/>
-    </xsl:copy>
-  </xsl:template>
-  <xsl:template match="//*[local-name()='Subtract']">
-    <Add xmlns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></Add>
-  </xsl:template>
-  <xsl:template match="//*[local-name()='intA']">
-    <a><xsl:apply-templates select="@*|node()" /></a>
-  </xsl:template>
-  <xsl:template match="//*[local-name()='intB']">
-    <b><xsl:apply-templates select="@*|node()" /></b>
-  </xsl:template>
-</xsl:stylesheet>
-```
-Use command defined at Example #3, the expected result is `13`:
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+HTTP/1.1 200 
+X-SOAP-Region: soap1.apim.eu
+...
+<?xml version="1.0" encoding="utf-8" ?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <soap:Body>
     <AddResponse xmlns="http://tempuri.org/">
       <AddResult>13</AddResult>
@@ -435,7 +416,7 @@ Use command defined at Example #3, the expected result is `13`:
   </soap:Body>
 </soap:Envelope>
 ```
-For testing purposes only: one can play with the `RouteToPath` to raise a 503 error by temporarily replacing `ecs.syr.edu` by `ecs.syr.edu.WXYZ`
+For testing purposes only: one can play with the `RouteToPath` to raise a 503 error by temporarily replacing `calculator.apim.eu` by `calculator.apim.eu.WXYZ`
 
 <a id="Main_Example_5"></a>
 
