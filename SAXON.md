@@ -87,7 +87,7 @@ make kong_saxon_initcontainer_docker_hub
 - Full example here: [start-kong.sh](start-kong.sh)
 
 ### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
-The image includes the kong-gateway, the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
+The image is based on `kong-gateway` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
 - Docker
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
