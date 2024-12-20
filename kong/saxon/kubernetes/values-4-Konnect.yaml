@@ -12,16 +12,16 @@ env:
   role: data_plane
   database: "off"
   cluster_mtls: pki
-  cluster_control_plane: ba704b38aa.eu.cp0.konghq.com:443
-  cluster_server_name: ba704b38aa.eu.cp0.konghq.com
-  cluster_telemetry_endpoint: ba704b38aa.eu.tp0.konghq.com:443
-  cluster_telemetry_server_name: ba704b38aa.eu.tp0.konghq.com
+  cluster_control_plane: 4e2f969852.eu.cp0.konghq.com:443
+  cluster_server_name: 4e2f969852.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: 4e2f969852.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: 4e2f969852.eu.tp0.konghq.com
   cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
   cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
   lua_ssl_trusted_certificate: system
   konnect_mode: "on"
   vitals: "off"
-  nginx_worker_processes: "4"
+  nginx_worker_processes: "1"
   upstream_keepalive_max_requests: "100000"
   nginx_http_keepalive_requests: "100000"
   proxy_access_log: "off"

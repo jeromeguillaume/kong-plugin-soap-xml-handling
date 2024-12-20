@@ -26,3 +26,5 @@ kong/saxon/include/*.h
 backup/
 .VSCodeCounter/
 to_do.txt
+kong/saxon/kubernetes/tls.crt
+kong/saxon/kubernetes/tls.key

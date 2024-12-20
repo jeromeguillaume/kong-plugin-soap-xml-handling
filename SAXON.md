@@ -22,15 +22,11 @@ Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip)
 - General download page:
 [here](https://www.saxonica.com/html/download/c.html)
-2) Do a git clone of this repository
-```sh
-git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
-```
-3) Go in the directory
+2) Fork this repository
+3) Go in the directory of the forked repository
 ```sh
 cd kong-plugin-soap-xml-handling/kong/saxon
 ```
-
 ## Extract/Build the `Saxon` Shared Objects and the Docker images
 - The `Saxon - Kong` integration requires 2 Shared Objects that are extracted and built with the `make` command:
   - `libsaxon-hec-12.5.0.so`: C++ shared object extracted from `libsaxon-HEC-linux-<arch>-v12.5.0.zip`
@@ -98,11 +94,13 @@ docker run -d --name kong-gateway-soap-xml-handling \
 ...
 jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5
 ```
-- Kubernetes: Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
-
+- Kubernetes:
+  - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
+  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+  
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
-- See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
-- Prepare a `values.yaml`. Pay attention to `customEnv.LD_LIBRARY_PATH` and `deployment.initContainers`
+- Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
+- Prepare a `values.yaml`. Pay attention to `env.plugins`, `customEnv.LD_LIBRARY_PATH` and `deployment.initContainers`
 ```yaml
 image:
   repository: kong/kong-gateway
@@ -118,7 +116,11 @@ deployment:
   initContainers:
   - name: kongsaxon
     image: jeromeguillaume/kong-saxon-initcontainer:1.0.3-1.2.1-12.5
-    command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
+    command:
+    - "/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"
+    - "/bin/sh", "-c", "cp -r /kong/plugins/soap-xml-request-handling  /usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling"
+    - "/bin/sh", "-c", "cp -r /kong/plugins/soap-xml-response-handling /usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling"
+    - "/bin/sh", "-c", "cp -r /kong/plugins/soap-xml-handling-lib      /usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib"
     volumeMounts:
     - name: kongsaxon-vol
       mountPath: /usr/local/lib/kongsaxon

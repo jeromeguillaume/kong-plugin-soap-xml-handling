@@ -1,6 +1,6 @@
 image:
   repository: kong/kong-gateway
-  tag: "3.8.0.0"
+  tag: "3.9.0.0"
 
 secretVolumes:
 - kong-cluster-cert
@@ -36,7 +36,14 @@ deployment:
   - name: kongsaxon
     image: jeromeguillaume/kong-saxon-initcontainer:1.0.1-12.5
     imagePullPolicy: Always
-    command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
+    command:
+    - /bin/sh
+    - -c
+    - |
+      cp -r /kongsaxon/* /usr/local/lib/kongsaxon
+      cp -r /kong/plugins/soap-xml-request-handling  /usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
+      cp -r /kong/plugins/soap-xml-response-handling /usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling
+      cp -r /kong/plugins/soap-xml-handling-lib      /usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib
     volumeMounts:
     - name: kongsaxon-vol
       mountPath: /usr/local/lib/kongsaxon
