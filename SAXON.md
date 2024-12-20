@@ -108,6 +108,7 @@ jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5
 ```yaml
 image:
   repository: kong/kong-gateway
+  tag: "3.9.0.0"
   ...
 env:
   lua_package_path: "/usr/local/lib/kongsaxon/?.lua;;"
