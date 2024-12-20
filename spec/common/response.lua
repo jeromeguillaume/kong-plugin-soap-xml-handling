@@ -413,54 +413,6 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}	
 	}
 
-  local calculatorXSLT_beforeXSD_unknown_content_type_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorXSLT_beforeXSD_unknown_content_type" }
-		}
-	blue_print.plugins:insert {
-		name = PLUGIN_NAME,
-		route = calculatorXSLT_beforeXSD_unknown_content_type_route,
-		config = {
-			VerboseResponse = false,
-			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
-		}
-	}
-  blue_print.plugins:insert {
-		name = 'response-transformer',
-		route = calculatorXSLT_beforeXSD_unknown_content_type_route,
-		config = {
-			replace = {
-        headers = 
-        {'Content-Encoding:deflate'}
-      }
-		}
-	}
-
-  local calculatorXSLT_beforeXSD_unknown_content_type_verbose_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorXSLT_beforeXSD_unknown_content_type_verbose" }
-		}
-	blue_print.plugins:insert {
-		name = PLUGIN_NAME,
-		route = calculatorXSLT_beforeXSD_unknown_content_type_verbose_route,
-		config = {
-			VerboseResponse = true,
-			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
-		}
-	}
-  blue_print.plugins:insert {
-		name = 'response-transformer',
-		route = calculatorXSLT_beforeXSD_unknown_content_type_verbose_route,
-		config = {
-			replace = {
-        headers = 
-        {'Content-Encoding:deflate'}
-      }
-		}
-	}
-
   local calculatorXSD_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSD_ok" }
@@ -810,6 +762,73 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local local_calculator_service = blue_print.services:insert({
+		protocol = "http",
+		host = "ws.soap.calculator",
+		port = 8080,
+		path = "/ws",
+	})
+	local local_calculator_XSLT_beforeXSD_route = blue_print.routes:insert{
+		service = local_calculator_service,
+		paths = { "/localCalculatorXSLT_beforeXSD_ok" }
+		}
+	blue_print.plugins:insert {
+			name = PLUGIN_NAME,
+			route = local_calculator_XSLT_beforeXSD_route,
+			config = {
+				VerboseResponse = false,
+				xsltLibrary = xsltLibrary,
+				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
+			}
+	}
+  local local_calculator_XSLT_beforeXSD_unknown_content_type_route = blue_print.routes:insert{
+		service = local_calculator_service,
+		paths = { "/localCalculatorXSLT_beforeXSD_unknown_content_type" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = local_calculator_XSLT_beforeXSD_unknown_content_type_route,
+		config = {
+			VerboseResponse = false,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
+		}
+	}
+  blue_print.plugins:insert {
+		name = 'response-transformer',
+		route = local_calculator_XSLT_beforeXSD_unknown_content_type_route,
+		config = {
+			replace = {
+        headers = 
+        {'Content-Encoding:deflate'}
+      }
+		}
+	}
+  local local_calculator_XSLT_beforeXSD_unknown_content_type_verbose_route = blue_print.routes:insert{
+		service = local_calculator_service,
+		paths = { "/localCalculatorXSLT_beforeXSD_unknown_content_type_verbose" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = local_calculator_XSLT_beforeXSD_unknown_content_type_verbose_route,
+		config = {
+			VerboseResponse = true,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
+		}
+	}
+  blue_print.plugins:insert {
+		name = 'response-transformer',
+		route = local_calculator_XSLT_beforeXSD_unknown_content_type_verbose_route,
+		config = {
+			replace = {
+        headers = 
+        {'Content-Encoding:deflate'}
+      }
+		}
+	}
+
+
 end
 
 -------------------------------------------
@@ -897,7 +916,7 @@ end
 
 function response_common._5_XSLT_BEFORE_XSD_gzip_Content_Encoding_Ok (assert, client)
   -- invoke a test request
-  local r = client:post("/calculatorXSLT_beforeXSD_ok", {
+  local r = client:post("/localCalculatorXSLT_beforeXSD_ok", {
     headers = {
       ["Content-Type"] = "text/xml; charset=utf-8",
       ["Accept-Encoding"] = "gzip",
@@ -908,7 +927,7 @@ function response_common._5_XSLT_BEFORE_XSD_gzip_Content_Encoding_Ok (assert, cl
   -- validate that the request succeeded: response status 200, Content-Type and right match
   local body = assert.response(r).has.status(200)
   local content_type = assert.response(r).has.header("Content-Type")
-  assert.equal("text/xml; charset=utf-8", content_type)
+  assert.equal("text/xml;charset=utf-8", content_type)
   local content_encoding = assert.response(r).has.header("Content-Encoding")
   assert.equal("gzip", content_encoding)
   local bodyDeflated, err = KongGzip.inflate_gzip(body)
@@ -917,7 +936,7 @@ end
 
 function response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding (assert, client)
   -- invoke a test request
-  local r = client:post("/calculatorXSLT_beforeXSD_unknown_content_type", {
+  local r = client:post("/localCalculatorXSLT_beforeXSD_unknown_content_type", {
     headers = {
       ["Content-Type"] = "text/xml; charset=utf-8",
       ["Accept-Encoding"] = "gzip",
@@ -928,7 +947,7 @@ function response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding (a
   -- validate that the request failed: response status 500, Content-Type and right match
   local body = assert.response(r).has.status(500)
   local content_type = assert.response(r).has.header("Content-Type")
-  assert.equal("text/xml; charset=utf-8", content_type)
+  assert.equal("text/xml;charset=utf-8", content_type)
   local content_encoding = assert.response(r).has.no_header("Content-Encoding")
   assert.matches(response_common.calculator_Response_General_Failed, body)
   
@@ -936,7 +955,7 @@ end
 
 function response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding_with_verbose (assert, client)
   -- invoke a test request
-  local r = client:post("/calculatorXSLT_beforeXSD_unknown_content_type_verbose", {
+  local r = client:post("/localCalculatorXSLT_beforeXSD_unknown_content_type_verbose", {
     headers = {
       ["Content-Type"] = "text/xml; charset=utf-8",
       ["Accept-Encoding"] = "gzip",
@@ -947,7 +966,7 @@ function response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding_wi
   -- validate that the request failed: response status 500, Content-Type and right match
   local body = assert.response(r).has.status(500)
   local content_type = assert.response(r).has.header("Content-Type")
-  assert.equal("text/xml; charset=utf-8", content_type)
+  assert.equal("text/xml;charset=utf-8", content_type)
   local content_encoding = assert.response(r).has.no_header("Content-Encoding")
   assert.matches(response_common.calculator_Response_General_Failed_verbose, body)
 end
