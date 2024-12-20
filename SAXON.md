@@ -56,12 +56,11 @@ rm ./include/php8*
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
-cd saxon
+cd ./kong-plugin-soap-xml-handling/kong
 make
 ```
 - Build and Push on Docker Hub a `<your_docker_account>/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
-cd ./kong-plugin-soap-xml-handling/kong
 make kong_saxon_docker_hub
 ```
 - Extract and Build the `saxon` libraries. The libaries are built in `./saxon/so/<arch>` depending of the architecture:
