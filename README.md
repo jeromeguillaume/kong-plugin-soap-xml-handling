@@ -74,7 +74,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
-|config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
+|config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It's the **recommended** option instead of using `ExternalEntityLoader_Async`|
 |config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
 |config.xsdSoapSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
@@ -536,79 +536,65 @@ Use command defined at Example #3, the expected result is:
 <a id="Miscellaneous_example_A"></a>
 
 ### Example (A): Response | Use a SOAP/XML WebService with a `Content-Encondig: gzip`
-With `Content-Encondig: gzip` the SOAP/XML Response body is zipped. So the `soap-xml-response-handling` has to unzip the SOAP/XML Response body, apply XSD and XSLT handling and re-zip the SOAP/XML Response body.
+With `Content-Encondig: gzip` the SOAP/XML Response body is zipped. So the `soap-xml-response-handling` has to unzip the SOAP/XML Response body, applies XSD and XSLT handling and re-zips the SOAP/XML Response body.
 
-In this example the XSLT **changes the Tag names**:
--  from `<m:NumberToWordsResult>...</m:NumberToWordsResult>` (present in the response) to **`<KongResult>...</KongResult>`**
+In this example the XSLT converts the response from SOAP to XML
 
-1) Create a Kong Service named `dataAccess` with this URL: https://www.dataaccess.com/webservicesserver/NumberConversion.wso. This simple backend Web Service converts a digit number to a number in full
+1) Create a new Kong Service named `apim.eu.calculator` with this URL: https://calculator.apim.eu:443/ws, which provides the `gzip` support and the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1
 
-2) Create a Route on the Service `dataAccess` with the `path` value `/dataAccess`
+2) Create a Route on the Service `apim.eu.calculator` with the `path` value `/apim.eu.calculator`
 
-3) Call the `dataAccess` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
+3) Add `soap-xml-response-handling` plugin and configure the plugin with:
+- `xsltTransformAfter` property with this XSLT definition:
+```xml
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" exclude-result-prefixes="soapenv">
+  <xsl:strip-space elements="*"/>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <!-- remove all elements in the soapenv namespace -->
+  <xsl:template match="soapenv:*">
+    <xsl:apply-templates select="node()"/>
+  </xsl:template>
+  <!-- for the remaining elements (i.e. elements in the default namespace) ... -->
+  <xsl:template match="*">
+      <!-- ... create a new element with similar name in no-namespace -->
+      <xsl:element name="{local-name()}">
+          <xsl:apply-templates select="@*|node()"/>
+      </xsl:element>
+  </xsl:template>
+  <!-- convert attributes to elements -->
+  <xsl:template match="@*">
+      <xsl:element name="{local-name()}">
+          <xsl:value-of select="." />
+      </xsl:element>
+  </xsl:template>
+</xsl:stylesheet>
 ```
-http 'http://localhost:8000/dataAccess' \
-Content-Type:'text/xml; charset=utf-8' \
-Accept-Encoding:'gzip' \
+4) Call the `apim.eu.calculator` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
+```
+http POST http://localhost:8000/apim.eu.calculator \
+Content-Type:"text/xml; charset=utf-8" \
 --raw '<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <NumberToWords xmlns="http://www.dataaccess.com/webservicesserver/">
-      <ubiNum>500</ubiNum>
-    </NumberToWords>
+    <Multiply xmlns="http://tempuri.org/">
+      <intA>5</intA>
+      <intB>7</intB>
+    </Multiply>
   </soap:Body>
 </soap:Envelope>'
 ```
 
-The expected result is zipped with `Content-Encoding: gzip` header and we get `<m:NumberToWordsResult>five hundred </m:NumberToWordsResult>`
+The expected result is zipped with `Content-Encoding: gzip` header and we get an XML response (without SOAP tags)
 ```xml
 ...
-Connection: keep-alive
+HTTP/1.1 200 OK
 Content-Encoding: gzip
-Content-Length: 213
 ...
 <?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
-      <m:NumberToWordsResult>five hundred </m:NumberToWordsResult>
-    </m:NumberToWordsResponse>
-  </soap:Body>
-</soap:Envelope>
+<MultiplyResponse>
+  <MultiplyResult>35</MultiplyResult>
+</MultiplyResponse>
 ```
-4) Add `soap-xml-response-handling` plugin and and configure the plugin with:
-- `xsltTransformBefore` property with this value:
-```xml
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-  <xsl:template match="@*|node()">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()" />
-    </xsl:copy>
-  </xsl:template>
-   <xsl:template match="//*[local-name()='NumberToWordsResult']">
-    <KongResult>
-      <xsl:apply-templates select="@*|node()" />
-    </KongResult>
-  </xsl:template>
-</xsl:stylesheet>
-```
-Use command defined at step #3, the expected result is zipped with `Content-Encoding: gzip` header and we get `<KongResult>five hundred </KongResult>`
-```xml
-Connection: keep-alive
-Content-Encoding: gzip
-Content-Length: 185
-...
-<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
-    <m:NumberToWordsResponse xmlns:m="http://www.dataaccess.com/webservicesserver/">
-      <KongResult>five hundred </KongResult>
-    </m:NumberToWordsResponse>
-  </soap:Body>
-</soap:Envelope>
-```
-
 <a id="Miscellaneous_example_B"></a>
 
 ### Example (B): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from an external entity (i.e.: http(s)://)
