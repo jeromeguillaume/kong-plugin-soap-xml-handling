@@ -48,7 +48,7 @@ rm ./include/php8*
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (exemple: `kong-saxon-local-lib:1.0.3-1.2.1-12.5`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (exemple: `kong-saxon-local-lib:1.0.5-1.2.1-12.5`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -106,6 +106,7 @@ image:
   repository: kong/kong-gateway
   ...
 env:
+  lua_package_path: "/usr/local/lib/kongsaxon/?.lua;;"
   plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
 ...
 # *** Specific properties for Saxon ***
@@ -115,12 +116,8 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.3-1.2.1-12.5
-    command:
-    - "/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"
-    - "/bin/sh", "-c", "cp -r /kong/plugins/soap-xml-request-handling  /usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling"
-    - "/bin/sh", "-c", "cp -r /kong/plugins/soap-xml-response-handling /usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling"
-    - "/bin/sh", "-c", "cp -r /kong/plugins/soap-xml-handling-lib      /usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib"
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.5-1.2.1-12.5
+    command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
       mountPath: /usr/local/lib/kongsaxon

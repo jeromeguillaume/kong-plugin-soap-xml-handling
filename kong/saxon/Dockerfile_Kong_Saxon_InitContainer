@@ -4,10 +4,10 @@ ARG TARGETARCH
 
 # saxon: libraries, configuration and notices files
 COPY ./saxon/so/$TARGETARCH /kongsaxon
-COPY ./saxon/conf/ /kongsaxon/conf/
-COPY ./saxon/notices/ /kongsaxon/notices/
+COPY ./saxon/conf/          /kongsaxon/conf/
+COPY ./saxon/notices/       /kongsaxon/notices/
 
 # SOAP/XML plugins
-COPY ./plugins/soap-xml-request-handling  /kong/plugins/soap-xml-request-handling
-COPY ./plugins/soap-xml-response-handling /kong/plugins/soap-xml-request-handling
-COPY ./plugins/soap-xml-response-handling /kong/plugins/soap-xml-handling-lib
+COPY ./plugins/soap-xml-request-handling  /kongsaxon/kong/plugins/soap-xml-request-handling
+COPY ./plugins/soap-xml-response-handling /kongsaxon/kong/plugins/soap-xml-response-handling
+COPY ./plugins/soap-xml-handling-lib      /kongsaxon/kong/plugins/soap-xml-handling-lib
