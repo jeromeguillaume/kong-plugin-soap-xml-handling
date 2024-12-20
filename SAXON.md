@@ -100,7 +100,11 @@ jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
-- Prepare a `values.yaml`. Pay attention to `env.plugins`, `customEnv.LD_LIBRARY_PATH` and `deployment.initContainers`
+- Prepare a `values.yaml` and pay attention to:
+  - `env.lua_package_path`
+  - `env.plugins`
+  - `customEnv.LD_LIBRARY_PATH`
+  - `deployment.initContainers`
 ```yaml
 image:
   repository: kong/kong-gateway
