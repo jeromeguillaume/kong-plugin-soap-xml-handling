@@ -1,6 +1,6 @@
 image:
   repository: jeromeguillaume/kong-saxon
-  tag: "3.8.0.0-12.5"
+  tag: "3.9.0.0-1.2.1-12.5"
 
 secretVolumes:
 - kong-cluster-cert
@@ -26,21 +26,6 @@ env:
   nginx_http_keepalive_requests: "100000"
   proxy_access_log: "off"
   dns_stale_ttl: "3600"
-  plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
-  
-plugins:
-  configMaps:
-  - pluginName: soap-xml-request-handling
-    name: soap-xml-request-handling
-  - pluginName: soap-xml-response-handling
-    name: soap-xml-response-handling
-  - pluginName: soap-xml-handling-lib
-    name: soap-xml-handling-lib
-    subdirectories:
-    - name: libxml2ex
-      path: libxml2ex
-    - name: libxslt
-      path: libxslt
 
 ingressController:
   enabled: false

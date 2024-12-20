@@ -8,6 +8,6 @@ COPY ./saxon/conf/ /kongsaxon/conf/
 COPY ./saxon/notices/ /kongsaxon/notices/
 
 # SOAP/XML plugins
-COPY ./plugins/soap-xml-request-handling  /usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
-COPY ./plugins/soap-xml-response-handling /usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
-COPY ./plugins/soap-xml-response-handling /usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib
+COPY ./plugins/soap-xml-request-handling  /kong/plugins/soap-xml-request-handling
+COPY ./plugins/soap-xml-response-handling /kong/plugins/soap-xml-request-handling
+COPY ./plugins/soap-xml-response-handling /kong/plugins/soap-xml-handling-lib

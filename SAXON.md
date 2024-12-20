@@ -91,13 +91,14 @@ make kong_saxon_initcontainer_docker_hub
 - Full example here: [start-kong.sh](start-kong.sh)
 
 ### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-saxon`
+The image includes the kong-gateway, the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
 - Docker
 ```sh
 docker run -d --name kong-gateway-soap-xml-handling \
 ...
-jeromeguillaume/kong-saxon:3.8.0.0-12.5
+jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5
 ```
-- Kubernetes: see [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes). Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.8.0.0-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+- Kubernetes: Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
 - See [How to deploy SOAP/XML Handling plugins in Kong Gateway (Data Plane) | Kubernetes](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#how-to-deploy-soapxml-handling-plugins-in-kong-gateway-data-plane--kubernetes)
@@ -109,20 +110,6 @@ image:
 env:
   plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
 ...
-plugins:
-  configMaps:
-  - pluginName: soap-xml-request-handling
-    name: soap-xml-request-handling
-  - pluginName: soap-xml-response-handling
-    name: soap-xml-response-handling
-  - pluginName: soap-xml-handling-lib
-    name: soap-xml-handling-lib
-    subdirectories:
-    - name: libxml2ex
-      path: libxml2ex
-    - name: libxslt
-      path: libxslt
-...
 # *** Specific properties for Saxon ***
 customEnv:
   LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
@@ -130,7 +117,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.1-12.5
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.3-1.2.1-12.5
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
