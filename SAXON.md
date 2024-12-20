@@ -15,13 +15,21 @@ The `SaxonC` documentation is [here](https://www.saxonica.com/saxon-c/documentat
 Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
 
 ## Prerequisite: download the `SaxonC-HE` Zip package
-The `SaxonC-HE` v12.5.0 is used
+1) The `SaxonC-HE` v12.5.0 is used
 - Linux AArch64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip)
 - Linux Intel x86_64:
 [https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip)
 - General download page:
 [here](https://www.saxonica.com/html/download/c.html)
+2) Do a git clone of this repository
+```sh
+git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
+```
+3) Go in the directory
+```sh
+cd kong-plugin-soap-xml-handling/kong/saxon
+```
 
 ## Extract/Build the `Saxon` Shared Objects and the Docker images
 - The `Saxon - Kong` integration requires 2 Shared Objects that are extracted and built with the `make` command:
@@ -40,8 +48,15 @@ cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h ./include
 cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h ./include
 rm ./include/php8*
 ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
+- Adapt the version of Kong image (exemple: `kong/kong-gateway:3.9.0.0`) in the following files:
+  - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
+  - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
+  - [Makefile](/kong/saxon/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
+- Adapt the version of the initContainer, Plugins or saxon (exemple: `kong-saxon-local-lib:1.0.3-1.2.1-12.5`) in the following file:
+  - [Makefile](/kong/saxon/Makefile)
+- Build and Push on Docker Hub a `<your_docker_account>/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
+cd ./kong-plugin-soap-xml-handling/kong
 make kong_saxon_docker_hub
 ```
 - Build all
@@ -58,7 +73,7 @@ make
   ```sh
   make local_lib_amd64
   ```
-- Build and Push on Docker Hub a `jeromeguillaume/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `<your_docker_account>/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
 ```
