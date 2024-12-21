@@ -1,7 +1,7 @@
 services:
-  ws-soap-calculator:
-    hostname: ws.soap.calculator
-    image: jeromeguillaume/ws-soap-calculator:1.0.0
+  ws-soap1-calculator:
+    hostname: ws.soap1.calculator
+    image: jeromeguillaume/ws-soap-calculator:1.0.1
     healthcheck:
       interval: 5s
       retries: 10
@@ -13,4 +13,6 @@ services:
     networks:
       - ${NETWORK_NAME}
     expose:
-    - "8080"
+      - "8080"
+    environment:
+      X_SOAP_REGION: soap1

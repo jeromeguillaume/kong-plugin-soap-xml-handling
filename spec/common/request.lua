@@ -695,9 +695,9 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
 	local calculator_service = blue_print.services:insert({
 		protocol = "http",
-		host = "www.dneonline.com",
-		port = 80,
-		path = "/calculator.asmx",
+		host = "ws.soap1.calculator",
+		port = 8080,
+		path = "/ws",
 	})
 
 	local calculatorXSLT_beforeXSD_route = blue_print.routes:insert{
@@ -1213,7 +1213,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 		-- invoke a test request
 		local r = client:post("/calculatorXSLT_beforeXSD_ok", {
 			headers = {
-				["Content-Type"] = "text/xml; charset=utf-8",
+				["Content-Type"] = "text/xml;charset=utf-8",
 			},
 			body = request_common.calculator_Request,
 		})
@@ -1221,7 +1221,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 		-- validate that the request succeeded: response status 200, Content-Type and right match
 		local body = assert.response(r).has.status(200)
 		local content_type = assert.response(r).has.header("Content-Type")
-		assert.equal("text/xml; charset=utf-8", content_type)
+		assert.equal("text/xml;charset=utf-8", content_type)
 		assert.matches('<AddResult>13</AddResult>', body)	
 end
 
