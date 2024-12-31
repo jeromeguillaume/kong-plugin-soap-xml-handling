@@ -932,11 +932,11 @@ for _, strategy in helpers.all_strategies() do
       local blue_print = helpers.get_db_utils(strategy, nil, { PLUGIN_NAME })
       
       local calculator_service = blue_print.services:insert({
-          protocol = "http",
-          host = "www.dneonline.com",
-          port = 80,
-          path = "/calculator.asmx",
-        })
+        protocol = "http",
+        host = "ws.soap1.calculator",
+        port = 8080,
+        path = "/ws",
+      })
       
      
       local calculator_wsdl_soap11_ok = blue_print.routes:insert{
@@ -1069,7 +1069,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.equal("text/xml;charset=utf-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
@@ -1085,7 +1085,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
@@ -1102,7 +1102,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
@@ -1119,7 +1119,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
@@ -1136,7 +1136,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.equal("text/xml;charset=utf-8", content_type)
         assert.matches('<SubtractResult>7</SubtractResult>', body)
       end)
 
@@ -1152,7 +1152,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.equal("text/xml;charset=utf-8", content_type)
         assert.matches('<SubtractResult>7</SubtractResult>', body)
       end)
 
@@ -1169,7 +1169,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Subtract_XSD_VALIDATION_Failed_Empty_Header, body)
       end)
 
@@ -1186,7 +1186,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Subtract_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
@@ -1203,7 +1203,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.equal("text/xml;charset=utf-8", content_type)
         assert.matches('<MultiplyResult>32</MultiplyResult>', body)
       end)
 
@@ -1219,7 +1219,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.equal("text/xml;charset=utf-8", content_type)
         assert.matches('<MultiplyResult>32</MultiplyResult>', body)
       end)
       
@@ -1236,7 +1236,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Multiply_XSD_VALIDATION_Failed_Empty_Header, body)
       end)
 
@@ -1253,7 +1253,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Multiply_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
@@ -1270,7 +1270,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.equal("text/xml;charset=utf-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
@@ -1286,7 +1286,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
@@ -1306,7 +1306,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
@@ -1322,7 +1322,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
@@ -1339,7 +1339,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
@@ -1356,7 +1356,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_Add_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
@@ -1373,7 +1373,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<SubtractResult>7</SubtractResult>', body)
       end)
 
@@ -1389,7 +1389,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<SubtractResult>7</SubtractResult>', body)
       end)
 
@@ -1406,7 +1406,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_Subtract_XSD_VALIDATION_Failed_Empty_Header, body)
       end)
 
@@ -1423,7 +1423,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_Subtract_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
@@ -1440,7 +1440,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<MultiplyResult>32</MultiplyResult>', body)
       end)
 
@@ -1456,7 +1456,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<MultiplyResult>32</MultiplyResult>', body)
       end)
       
@@ -1473,7 +1473,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_Multiply_XSD_VALIDATION_Failed_Empty_Header, body)
       end)
 
@@ -1490,7 +1490,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_Multiply_XSD_VALIDATION_Failed_Mismatch_Header, body)
       end)
 
@@ -1507,7 +1507,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
@@ -1523,7 +1523,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
       
@@ -1543,7 +1543,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap_XSD_VALIDATION_Failed_NO_WSDL_Definition, body)        
       end)
 
@@ -1560,7 +1560,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL, body)        
       end)
 
@@ -1577,7 +1577,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
@@ -1593,7 +1593,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
@@ -1610,7 +1610,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
@@ -1627,7 +1627,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Divide_XSD_VALIDATION_Failed_sopAction_attibute_is_empty, body)
       end)
 
@@ -1644,7 +1644,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_Power_XSD_VALIDATION_Failed_sopAction_attibute_is_not_defined, body)
       end)
 

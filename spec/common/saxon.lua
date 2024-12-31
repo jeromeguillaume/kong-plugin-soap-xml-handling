@@ -278,17 +278,16 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
   local pluginResponse = "soap-xml-response-handling"
   
 	local calculator_service = blue_print.services:insert({
-		protocol = "http",
-		host = "www.dneonline.com",
-		port = 80,
-		path = "/calculator.asmx",
-    name = "calculator"
-	})
+    protocol = "http",
+    host = "ws.soap1.calculator",
+    port = 8080,
+    path = "/ws",
+  })
 
 	local httpbin_service = blue_print.services:insert({
 		protocol = "http",
-		host = "httpbin.apim.eu",
-		port = 80,
+		host = "httpbin",
+		port = 8080,
 		path = "/anything",
     name = "httpbin"
 	})

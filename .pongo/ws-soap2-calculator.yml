@@ -1,6 +1,6 @@
 services:
-  ws-soap1-calculator:
-    hostname: ws.soap1.calculator
+  ws-soap2-calculator:
+    hostname: ws.soap2.calculator
     image: jeromeguillaume/ws-soap-calculator:1.0.2
     healthcheck:
       interval: 5s
@@ -15,4 +15,4 @@ services:
     expose:
       - "8080"
     environment:
-      X_SOAP_REGION: soap1
+      X_SOAP_REGION: soap2
