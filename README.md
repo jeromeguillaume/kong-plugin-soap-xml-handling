@@ -249,12 +249,12 @@ docker run --network=kong-net -d --name ws-soap-calulator --env X_SOAP_REGION=so
 
 <a id="Quick_Test_KIC_online"></a>
 
-### How to configure and test onine `calculator` Web Service in Kong Ingress Controller (KIC)
+### How to configure and test online `calculator` Web Service in Kong Ingress Controller (KIC)
 1) Configure a Kubernetes `External Service` (to http://www.dneonline.com:80/calculator.asmx) with [kic/extService-Calculator-Ingress.yaml](kic/extService-Calculator-Ingress.yaml) and a related `Ingress` kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
-2) Call the `calculator` through the Kong Ingress. See example in topic above (How to configure and test onine `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
+2) Call the `calculator` through the Kong Ingress. See example in topic above (How to configure and test online `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 <a id="Main_Example"></a>
 
