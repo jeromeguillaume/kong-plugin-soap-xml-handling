@@ -32,8 +32,9 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
     3. [Schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
     4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
 3. [Quick Test: How to test an XML calculator Web Service without the plugins](#Quick_Test)
-    1. [Kong Gateway](#Quick_Test_Kong_Gateway)
-    2. [Kong Ingress Controller (KIC)](#Quick_Test_KIC)
+    1. [Kong Gateway - online calculator](#Quick_Test_Kong_Gateway_online)
+    2. [Kong Gateway - local Docker calculator](#Quick_Test_Kong_Gateway_local_Docker)
+    3. [Kong Ingress Controller (KIC) - online calculator](#Quick_Test_KIC_online)
 4. [Main Example: How to test XML Handling plugins with calculator](#Main_Example)
     1. [Example #1: Request | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_1)
     2. [Example #2: Request | XSD VALIDATION](#Main_Example_2)
@@ -199,9 +200,9 @@ helm install kong kong/kong -n kong --values ./values.yaml
 
 ## Quick Test: How to test an XML `calculator` Web Service without the plugins
 
-<a id="Quick_Test_Kong_Gateway"></a>
+<a id="Quick_Test_Kong_Gateway_online"></a>
 
-### How to configure and test `calculator` Web Service in Kong Gateway
+### How to configure and test online `calculator` Web Service in Kong Gateway
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
@@ -233,14 +234,27 @@ The expected result is `12`:
   </soap:Body>
 </soap:Envelope>
 ```
-<a id="Quick_Test_KIC"></a>
 
-### How to configure and test `calculator` Web Service in Kong Ingress Controller (KIC)
+<a id="Quick_Test_Kong_Gateway_local_Docker"></a>
+
+### How to configure and test local Docker `calculator` Docker Web Service in Kong Gateway
+If you prefer to use the `calculator` Web Service deployed locally in Docker:
+1) Create a `calculator` container
+```shell
+docker run --network=kong-net -d --name ws-soap-calulator --env X_SOAP_REGION=soap1 -p 8080:8080 jeromeguillaume/ws-soap-calculator
+```
+2) Create a Kong Gateway Service named `calculator` with this URL: http://ws-soap-calulator:8080/ws
+3) Create a Route on the Service `calculator` with the `path` value `/calculator`
+4) Call the `calculator` by seeing example in topic above (How to configure and test online `calculator` Web Service in Kong Gateway)
+
+<a id="Quick_Test_KIC_online"></a>
+
+### How to configure and test onine `calculator` Web Service in Kong Ingress Controller (KIC)
 1) Configure a Kubernetes `External Service` (to http://www.dneonline.com:80/calculator.asmx) with [kic/extService-Calculator-Ingress.yaml](kic/extService-Calculator-Ingress.yaml) and a related `Ingress` kind:
 ```sh
 kubectl apply -f kic/extService-Calculator-Ingress.yaml
 ```
-2) Call the `calculator` through the Kong Ingress. See example in topic above (How to configure and test `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
+2) Call the `calculator` through the Kong Ingress. See example in topic above (How to configure and test onine `calculator` Web Service in Kong Gateway). Replace `localhost:8000` by the `hostname:port` of the Kong gateway in Kurbenetes
 
 <a id="Main_Example"></a>
 
@@ -1001,4 +1015,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Replace the usage of `https://ecs.syr.edu` by a local calculator
   - Include the Kong version in the docker image related to `saxon` (example: `jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5`)
   - Include the Lua code SOAP/XML plugins in the docker images related to `saxon`
+  - Pongo (Tests): remove the external dependencies (from `http://www.dneonline.com:80/calculator.asmx` to `jeromeguillaume/ws-soap-calculator` Docker image and from `http://httpbin.apim.eu` to `svenwal/httpbin` Docker image)
   

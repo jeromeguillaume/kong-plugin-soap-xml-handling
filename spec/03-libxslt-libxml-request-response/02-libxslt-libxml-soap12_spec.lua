@@ -49,9 +49,9 @@ for _, strategy in helpers.all_strategies() do
       
       local calculator_service = blue_print.services:insert({
           protocol = "http",
-          host = "www.dneonline.com",
-          port = 80,
-          path = "/calculator.asmx",
+          host = "ws.soap1.calculator",
+          port = 8080,
+          path = "/ws",
         })
 
       local tempui_org_request_response_xsd = blue_print.routes:insert{
@@ -139,7 +139,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculator_soap12_XSD_with_import_no_download_ok", {
           headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
           },
           body = soap12_common.calculator_soap12_Request,
         })
@@ -147,7 +147,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
       
@@ -155,7 +155,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculator_soap12_XSD_with_async_download_ok", {
           headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
           },
           body = soap12_common.calculator_soap12_Request,
         })
@@ -163,7 +163,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("application/soap+xml; charset=utf-8", content_type)
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
   

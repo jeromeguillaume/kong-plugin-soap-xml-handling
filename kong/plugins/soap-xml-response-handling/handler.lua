@@ -187,7 +187,7 @@ function plugin:header_filter(plugin_conf)
   -- In case of error set by SOAP/XML plugin, we don't do anything to avoid an issue.
   -- If we call get_raw_body (), without calling request.enable_buffering(), it will raise an error and 
   -- it happens when a previous plugin called kong.response.exit(): in this case all 'header_filter' and 'body_filter'
-  -- are called (and the 'access' is not called which enables the enable_buffering())
+  -- are called (and the 'access' is not called that enables the enable_buffering())
   if kong.ctx.shared.xmlSoapHandlingFault and 
      kong.ctx.shared.xmlSoapHandlingFault.error then
     kong.log.debug("A pending error has been set by other SOAP/XML plugin: we do nothing in this plugin")
@@ -261,6 +261,7 @@ function plugin:header_filter(plugin_conf)
     if kong.response.get_header("Content-Encoding") then
       kong.response.clear_header("Content-Encoding")
     end
+kong.log.notice("**jerome response.get_source=" .. kong.response.get_source())    
     -- When the response was originated by successfully contacting the proxied Service
     if kong.response.get_source() == "service" then
       -- Change the HTTP Status and Return a Fault code to Client
@@ -275,6 +276,10 @@ function plugin:header_filter(plugin_conf)
     if kong.ctx.shared.contentTypeJSON.request == true then
       kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
       kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON")
+    -- Else if the Content-Type sent by the Service is JSON and the Request-Content-type is XML
+    elseif string.find (kong.response.get_header("Content-Type"), xmlgeneral.JSONContentType) then
+      -- Force the XML Content-Type
+      kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
     end
 
     -- Set the Global Fault Code to Request and Response XLM/SOAP plugins 

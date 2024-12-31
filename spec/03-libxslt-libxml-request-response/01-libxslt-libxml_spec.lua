@@ -45,14 +45,14 @@ for _, strategy in helpers.all_strategies() do
       -- This function also truncates any existing data in an existing db.
       -- The custom plugin name is provided to this function so it mark as loaded
       local blue_print = helpers.get_db_utils(strategy, nil, { pluginRequest,  pluginResponse })
-      
+            
       local calculator_service = blue_print.services:insert({
           protocol = "http",
-          host = "www.dneonline.com",
-          port = 80,
-          path = "/calculator.asmx",
+          host = "ws.soap1.calculator",
+          port = 8080,
+          path = "/ws",
         })
-        
+      
       local calculator_fullSoapXml_handling_Request_Response_route = blue_print.routes:insert{
         service = calculator_service,
         paths = { "/calculator_fullSoapXml_handling_Request_Response_ok" }
@@ -66,7 +66,7 @@ for _, strategy in helpers.all_strategies() do
           xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
           xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
           xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-          RouteToPath = "http://ws.soap.calculator:8080/ws",
+          RouteToPath = "http://ws.soap2.calculator:8080/ws",
           RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
           RouteXPathCondition = "10",
         }
@@ -365,7 +365,9 @@ for _, strategy in helpers.all_strategies() do
       -- validate that the request succeeded: response status 200, Content-Type and right match
       local body = assert.response(r).has.status(200)
       local content_type = assert.response(r).has.header("Content-Type")
-      assert.equal("text/xml;charset=utf-8", content_type)
+      local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+      assert.equal("soap2", x_soap_region)
       assert.matches(response_common.calculator_Response_XML_18, body)
     end)
 
@@ -381,7 +383,7 @@ for _, strategy in helpers.all_strategies() do
       -- validate that the request failed: response status 500, Content-Type and right match
       local body = assert.response(r).has.status(200)
       local content_type = assert.response(r).has.header("Content-Type")
-      assert.equal("text/xml; charset=utf-8", content_type)
+      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
       assert.matches('<AddResult>12</AddResult>', body)
     end)
 
@@ -397,7 +399,7 @@ for _, strategy in helpers.all_strategies() do
       -- validate that the request failed: response status 500, Content-Type and right match
       local body = assert.response(r).has.status(200)
       local content_type = assert.response(r).has.header("Content-Type")
-      assert.equal("text/xml; charset=utf-8", content_type)
+      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
       assert.matches('<AddResult>12</AddResult>', body)
     end)
 
@@ -413,7 +415,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
         assert.matches("<detail>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
     end)
@@ -430,7 +432,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed_shortened, body)
         assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
     end)
@@ -447,7 +449,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed, body)
     end)
 
@@ -463,7 +465,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
     end)
 
@@ -479,7 +481,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed, body)
     end)
 
@@ -495,7 +497,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
-        assert.equal("text/xml; charset=utf-8", content_type)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed_verbose, body)
     end)
 

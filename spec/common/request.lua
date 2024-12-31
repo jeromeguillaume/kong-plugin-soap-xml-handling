@@ -695,9 +695,9 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
 	local calculator_service = blue_print.services:insert({
 		protocol = "http",
-		host = "www.dneonline.com",
-		port = 80,
-		path = "/calculator.asmx",
+		host = "ws.soap1.calculator",
+		port = 8080,
+		path = "/ws",
 	})
 
 	local calculatorXSLT_beforeXSD_route = blue_print.routes:insert{
@@ -787,7 +787,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = local_req_termination_route,
 		config = {
 			status_code = 200,
-			content_type = "text/xml; charset=utf-8",
+			content_type = "text/xml;charset=utf-8",
 			body = request_common.calculator_Response
 		}	
 	}
@@ -990,10 +990,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	local upstream_ws_soap_calculator = blue_print.upstreams:insert()
+	local upstream_ws_soap2_calculator = blue_print.upstreams:insert()
 	blue_print.targets:insert({
-		upstream = upstream_ws_soap_calculator,
-		target = "ws.soap.calculator:8080",
+		upstream = upstream_ws_soap2_calculator,
+		target = "ws.soap2.calculator:8080",
 	})
 
 	local calculatorRoutingByXPath_upstream_route = blue_print.routes:insert{
@@ -1009,7 +1009,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "http://" .. upstream_ws_soap_calculator.name .. "/ws",
+			RouteToPath = "http://" .. upstream_ws_soap2_calculator.name .. "/ws",
 			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
 			RouteXPathCondition = "10",
 		}
@@ -1028,7 +1028,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "http://ws.soap.calculator:8080/ws",
+			RouteToPath = "http://ws.soap2.calculator:8080/ws",
 			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
 			RouteXPathCondition = "10",
 		}
@@ -1080,7 +1080,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = tempui_org_request_response_xsd,
 		config = {
 			status_code = 200,
-			content_type = "text/xml; charset=utf-8",
+			content_type = "text/xml;charset=utf-8",
 			body = request_common.calculator_Request_Response_XSD_VALIDATION
 		}	
 	}
@@ -1213,7 +1213,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 		-- invoke a test request
 		local r = client:post("/calculatorXSLT_beforeXSD_ok", {
 			headers = {
-				["Content-Type"] = "text/xml; charset=utf-8",
+				["Content-Type"] = "text/xml;charset=utf-8",
 			},
 			body = request_common.calculator_Request,
 		})
@@ -1221,7 +1221,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 		-- validate that the request succeeded: response status 200, Content-Type and right match
 		local body = assert.response(r).has.status(200)
 		local content_type = assert.response(r).has.header("Content-Type")
-		assert.equal("text/xml; charset=utf-8", content_type)
+		assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 		assert.matches('<AddResult>13</AddResult>', body)	
 end
 
@@ -1229,7 +1229,7 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_input(assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_invalid", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1237,7 +1237,7 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_input(assert, client)
 	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed, body)
 end
 
@@ -1245,7 +1245,7 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_with_Verbose (assert, cl
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_invalid_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1253,7 +1253,7 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_with_Verbose (assert, cl
 	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
 end
 
@@ -1261,7 +1261,7 @@ function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported(assert, 
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_xslt2", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1269,7 +1269,7 @@ function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported(assert, 
 	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed, body)
 end
 
@@ -1277,7 +1277,7 @@ function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Ver
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_xslt2_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1285,7 +1285,7 @@ function request_common._1_XSLT_BEFORE_XSD_XSLT_2_0_input_Not_supported_with_Ver
 	-- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose, body)
 end
 
@@ -1293,7 +1293,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_request_ter
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_request_termination", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1301,7 +1301,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_request_ter
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>13</AddResult>', body)
 end
 
@@ -1309,7 +1309,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_basic_auth_
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_basic_auth", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1317,7 +1317,7 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_basic_auth_
 	-- validate that the request failed: response status 401, Content-Type and right Match
 	local body = assert.response(r).has.status(401)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose, body)
 end
 
@@ -1325,7 +1325,7 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Ver
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_invalid_host", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1333,7 +1333,7 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Ver
 	-- validate that the request failed: response status 502, Content-Type and right match
 	local body = assert.response(r).has.status(502)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose, body)
 end
 
@@ -1341,7 +1341,7 @@ function request_common._1_2_XSD_Validation_Ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1349,7 +1349,7 @@ function request_common._1_2_XSD_Validation_Ok (assert, client)
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>13</AddResult>', body)
 end
 
@@ -1357,7 +1357,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input (assert, clie
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_SOAP_invalid", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1365,7 +1365,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input (assert, clie
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
 end
 
@@ -1373,7 +1373,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose 
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_SOAP_invalid_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1381,7 +1381,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose 
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose, body)
 end
 
@@ -1389,7 +1389,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_XSD_input (assert, clien
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_API_invalid", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1397,7 +1397,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_XSD_input (assert, clien
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
 end
 
@@ -1405,7 +1405,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_XSD_input_with_verbose (
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_API_invalid_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1413,7 +1413,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_XSD_input_with_verbose (
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose, body)
 end
 
@@ -1421,7 +1421,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request_SOAP_ko,
 	})
@@ -1429,7 +1429,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
 end
 
@@ -1437,7 +1437,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (a
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request_SOAP_ko,
 	})
@@ -1445,7 +1445,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (a
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_verbose, body)
 end
 
@@ -1453,7 +1453,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request_API_ko,
 	})
@@ -1461,7 +1461,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
 end
 
@@ -1469,7 +1469,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (as
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request_API_ko,
 	})
@@ -1477,7 +1477,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (as
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose, body)
 end
 
@@ -1485,7 +1485,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBod
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request_SOAP_No_soapBody_ko,
 	})
@@ -1493,7 +1493,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBod
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed_verbose, body)
 end
 
@@ -1501,7 +1501,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_without_Operatio
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request_SOAP_No_Operation_ko,
 	})
@@ -1509,7 +1509,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_without_Operatio
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
 end
 
@@ -1517,7 +1517,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_afterXSD_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1525,7 +1525,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>13</AddResult>', body)
 end
 
@@ -1533,7 +1533,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_afterXSD_invalid", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1541,7 +1541,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_AFTER_Failed, body)
 end
 
@@ -1549,7 +1549,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (a
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_afterXSD_invalid_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1557,7 +1557,7 @@ function request_common._1_2_3_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (a
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_AFTER_Failed_verbose, body)
 end
 
@@ -1565,7 +1565,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_upstream_entity_Ok (asser
 	-- invoke a test request
 	local r = client:post("/calculatorRoutingByXPath_upstream_entity_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1573,7 +1573,9 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_upstream_entity_Ok (asser
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml;charset=utf-8", content_type)
+	local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.equal("soap2", x_soap_region)
 	assert.matches('<AddResult>18</AddResult>', body)
 end
 
@@ -1581,7 +1583,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, clie
 	-- invoke a test request
 	local r = client:post("/calculatorRoutingByXPath_hostname_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1589,7 +1591,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, clie
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml;charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>18</AddResult>', body)
 end
 
@@ -1597,7 +1599,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 	-- invoke a test request
 	local r = client:post("/calculatorRoutingByXPath_hostname_invalid", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1605,7 +1607,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 	-- validate that the request failed: response status 503, Content-Type and right match
 	local body = assert.response(r).has.status(503)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503, body)
 end
 
@@ -1613,7 +1615,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 	-- invoke a test request
 	local r = client:post("/calculatorRoutingByXPath_hostname_invalid_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Request,
 	})
@@ -1621,7 +1623,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 	-- validate that the request failed: response status 503, Content-Type and right match
 	local body = assert.response(r).has.status(503)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose, body)
 end
 
@@ -1629,7 +1631,7 @@ function request_common._2_WSDL_Validation_with_async_download_Ok (assert, clien
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_async_download_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Full_Request,
 	})
@@ -1637,7 +1639,7 @@ function request_common._2_WSDL_Validation_with_async_download_Ok (assert, clien
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
@@ -1645,7 +1647,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import (a
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Full_Request,
 	})
@@ -1653,7 +1655,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import (a
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
 end
 
@@ -1661,7 +1663,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_async_download_invalid_import_verbose", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Full_Request,
 	})
@@ -1669,7 +1671,7 @@ function request_common._2_WSDL_Validation_with_async_download_Invalid_Import_wi
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
 	assert.matches("<detail>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
 end
@@ -1678,7 +1680,7 @@ function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, c
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_import_no_download_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Full_Request,
 	})
@@ -1686,7 +1688,7 @@ function request_common._2_WSDL_Validation_with_import_no_download_Ok (assert, c
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
@@ -1694,7 +1696,7 @@ function request_common._2_WSDL_Validation_Invalid_SOAP_request_Empty_with_verbo
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_async_download_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = '',
 	})
@@ -1702,7 +1704,7 @@ function request_common._2_WSDL_Validation_Invalid_SOAP_request_Empty_with_verbo
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_empty_SOAP_Failed_verbose, body)
 end
 
@@ -1710,7 +1712,7 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Add_in_XSD1_wi
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Request,
 	})
@@ -1718,7 +1720,7 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Add_in_XSD1_wi
 	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_missing_intB_Add_Failed_verbose, body)
 end
 
@@ -1726,7 +1728,7 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XS
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Subtract_Full_Request,
 	})
@@ -1734,7 +1736,7 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XS
 	-- validate that the request failed: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches("<SubtractResult>4</SubtractResult>", body)
 end
 
@@ -1742,7 +1744,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schem
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_v2_no_import_wsdl_defaultNS_xsd_schema_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Full_Request,
 	})
@@ -1750,7 +1752,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schem
 	-- validate that the request failed: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
@@ -1758,7 +1760,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_de
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_v2_no_import_wsdl2_description_xsd_defaultNS_ok", {
 		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
+			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = request_common.calculator_Full_Request,
 	})
@@ -1766,7 +1768,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_de
 	-- validate that the request failed: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
-	assert.equal("text/xml; charset=utf-8", content_type)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 

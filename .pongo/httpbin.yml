@@ -1,11 +1,11 @@
 services:
-  ws-soap-calculator:
-    hostname: ws.soap.calculator
-    image: jeromeguillaume/ws-soap-calculator:1.0.0
+  httpbin:
+    hostname: httpbin
+    image: svenwal/httpbin:0.9.2
     healthcheck:
       interval: 5s
-      retries: 10
-      test: curl --fail http://localhost:8080/ws/calculator.wsdl || exit 1
+      retries: 100
+      test: ps -ef|grep "/gunicorn -b 0.0.0.0:8080 httpbin:app"|[ `wc -l` -gt 1 ] || exit 1
       timeout: 10s
       disable: ${SERVICE_DISABLE_HEALTHCHECK:-false}
     restart: on-failure
@@ -13,4 +13,4 @@ services:
     networks:
       - ${NETWORK_NAME}
     expose:
-    - "8080"
+      - "8080"
