@@ -22,6 +22,8 @@ xmlgeneral.XSLTError          = "XSLT transformation failed"
 xmlgeneral.XSDError           = "XSD validation failed"
 xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
+xmlgeneral.invalidXML         = "Invalid XML input"
+xmlgeneral.invalidXSLT        = "Invalid XSLT definition"
 
 xmlgeneral.schemaWSDL             = "http://schemas.xmlsoap.org/wsdl/"
 xmlgeneral.schemaHttpTransport    = "http://schemas.xmlsoap.org/soap/http"
@@ -725,7 +727,10 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
     -- Compile the XSLT document
     context, errMessage = libsaxon4kong.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor, 
                                                           kong.xmlSoapSaxon.xslt30Processor, 
-                                                          XSLT)
+                                                          XSLT)    
+    if errMessage then
+      errMessage = xmlgeneral.invalidXSLT .. ". " .. errMessage    
+    end                                                  
   end
 
   if not errMessage then
@@ -748,6 +753,11 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
                                             context,
                                             XMLtoTransform
                                           )
+      
+      if not errMessage then 
+        -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
+        xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
+      end
     end
   end
   
@@ -795,7 +805,12 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
     elseif errMessage == nil then
       -- Load the complete XML document (with <soap:Envelope>)
       xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options, verbose)
+      if errMessage ~= nil then
+        errMessage = xmlgeneral.invalidXML .. ". " .. errMessage
+      end
     end
+  else
+    errMessage = xmlgeneral.invalidXSLT .. ". " .. errMessage
   end
 
   -- If the XSLT and the XML are correctly loaded and parsed
@@ -1188,7 +1203,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   
   -- Create XSD schema
   local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
-  -- If it's a Prefetch we just have to parse the XSD which downloads XSD in cascade 
+  -- If it's a Prefetch we just have to parse the XSD, which downloads XSD in cascade 
   if prefech then
     return errMessage
   end

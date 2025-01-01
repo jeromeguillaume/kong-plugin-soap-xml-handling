@@ -86,7 +86,7 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -276,7 +276,7 @@ response_common.calculator_Response_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]

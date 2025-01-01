@@ -1016,4 +1016,6 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Include the Kong version in the docker image related to `saxon` (example: `jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5`)
   - Include the Lua code SOAP/XML plugins in the docker images related to `saxon`
   - Pongo (Tests): remove the external dependencies (from `http://www.dneonline.com:80/calculator.asmx` to `jeromeguillaume/ws-soap-calculator` Docker image and from `http://httpbin.apim.eu` to `svenwal/httpbin` Docker image)
-  
+- v1.2.2
+  - XSLTransformation `saxon`: remove empty Namespace (example: `xmlns=""`)
+  - Improve error message in case XSLT definition or XML input is not correct

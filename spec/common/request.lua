@@ -116,7 +116,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -360,7 +360,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
