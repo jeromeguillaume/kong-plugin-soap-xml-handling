@@ -17,7 +17,7 @@
 pongo up
 
 # Run pongo tests by using the code of plugins stored locally
-KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.1.0-1.2.2-12.5 pongo run --lpath=$PWD/spec/common
+KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.0-1.2.2-12.5 pongo run --lpath=$PWD/spec/common
 
 # Run pongo tests by using the code of plugins included in the Docker image
 # KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.0-1.2.1-12.5 pongo run
