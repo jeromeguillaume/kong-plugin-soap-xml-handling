@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.2.2",
+    VERSION = "1.2.3",
   }
 
 local xmlgeneral = nil
@@ -83,10 +83,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   -- => Validate the 'SOAPAction' header
   if soapFaultBody == nil then
     
-    local SOAPAction_header = kong.request.get_header(xmlgeneral.SOAPAction)
-
     -- Validate the API XML with its schema
-    errMessage = xmlgeneral.validateSOAPAction_Header (soapEnvelope_transformed, SOAPAction_header, plugin_conf.xsdApiSchema, plugin_conf.SOAPAction_Header, plugin_conf.VerboseRequest)
+    errMessage = xmlgeneral.validateSOAPAction_Header (soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.SOAPAction_Header, plugin_conf.VerboseRequest)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client

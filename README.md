@@ -71,7 +71,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`)|
-|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL including `<wsdl:binding>` and the `soapAction` attribute; the optional `soapActionRequired` attribute is considered. If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present|
+|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL v1 including `<wsdl:binding>` and the `soapAction` attribute; the optional `soapActionRequired` attribute is considered. If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
@@ -211,7 +211,7 @@ This simple backend Web Service adds or subtracts 2 numbers.
 3) Call the `calculator` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -352,7 +352,7 @@ In this example we **change the Tag name from `<Subtract>...</Subtract>`** (pres
 **Without XSLT**: Use command defined at step #3, rename the Tag `<Add>...</Add>`, to `<Subtract>...</Subtract>`, remove `<b>7</b>`, so the new command is:
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 --raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
   <soap:Body>
@@ -567,7 +567,7 @@ In this example the XSLT converts the response from SOAP to XML
 4) Call the `apim.eu.calculator` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
 http POST http://localhost:8000/apim.eu.calculator \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -670,7 +670,7 @@ Note:
 6) Call the `calculator` through the Kong Gateway Route
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -826,6 +826,7 @@ Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD 
 4) Call the `calculator` through the Kong Gateway Route
 ```
 http POST http://localhost:8000/calculator \
+Content-Type:'application/soap+xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
   <soap12:Body>
@@ -858,7 +859,7 @@ Call correctly `calculator` by setting the expected `SOAPAction` Http header
 3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 SOAPAction:"http://tempuri.org/Add" \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -896,7 +897,7 @@ HTTP/1.1 500 Internal Server Error
 6) If the `SOAPAction` is not set but there is `soapActionRequired="false"` (in the WSDL) for `Subtract` operation, the plugin allows the request
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -933,12 +934,13 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - If the WSDL/XSD schema imports an XSD from external entity, it uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`). As it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
   - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or 
   - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude`
-- If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The reommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
+- If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The recommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
 5) The MIME type of the request's `Content-Type` is not checked by the plugin
 - For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
+6) The validation of `SOAPAction` works only for WSDL 1.0 (no support for WSDL 2.0)
 
 <a id="Changelog"></a>
 
