@@ -32,15 +32,15 @@ xmlgeneral.schemaSOAP1_2          = "http://www.w3.org/2003/05/soap-envelope"
 xmlgeneral.schemaWSDL1_1_SOAP1_1  = "http://schemas.xmlsoap.org/wsdl/soap/"
 xmlgeneral.schemaWSDL1_1_SOAP1_2  = "http://schemas.xmlsoap.org/wsdl/soap12/"
 xmlgeneral.xmlnsXsdHref           = "http://www.w3.org/2001/XMLSchema"
-xmlgeneral.xsdSchema          = "schema"
-xmlgeneral.schemaTypeSOAP     = 0
-xmlgeneral.schemaTypeAPI      = 2
-xmlgeneral.XMLContentType     = "text/xml; charset=utf-8"
-xmlgeneral.JSONContentType    = "application/json"
-xmlgeneral.SOAPAction         = "SOAPAction"
-xmlgeneral.SOAPAction_Header_No        = "no"
-xmlgeneral.SOAPAction_Header_Yes_Null  = "yes_null_allowed"
-xmlgeneral.SOAPAction_Header_Yes       = "yes"
+xmlgeneral.xsdSchema              = "schema"
+xmlgeneral.schemaTypeSOAP         = 0
+xmlgeneral.schemaTypeAPI          = 2
+xmlgeneral.XMLContentType         = "text/xml; charset=utf-8"
+xmlgeneral.JSONContentType        = "application/json"
+xmlgeneral.SOAPAction             = "SOAPAction"
+xmlgeneral.SOAPAction_Header_No       = "no"
+xmlgeneral.SOAPAction_Header_Yes_Null = "yes_null_allowed"
+xmlgeneral.SOAPAction_Header_Yes      = "yes"
 
 xmlgeneral.XMLContentTypeBody     = 1
 xmlgeneral.JSONContentTypeBody    = 2
@@ -53,6 +53,8 @@ xmlgeneral.prefetchStatusKo       = 3
 xmlgeneral.prefetchQueueTimeout   = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
 xmlgeneral.prefetchReqQueueName   = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName   = "-prefetch-response-schema"
+
+xmlgeneral.libxmlNoMatchGlobalDecl  = 1845  -- No matching global declaration available for the validation root
 
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
@@ -978,7 +980,6 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   local firstErrMessage  = nil
   local xsdSchema        = nil
   local currentNode      = nil
-  local elementNode      = nil
   local xmlNsXsdPrefix   = nil
   local wsdlNodeFound    = false
   local typesNodeFound   = false
@@ -1081,7 +1082,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   -- If prefetch is not enabled
   if not prefetch then
     -- Try to get the Operation Name in the <soap:Body>
-    -- Note: if there is an XML syntax error the operationName can't found and is nil
+    -- Note: if there is an XML syntax error, the operationName can't be found and it's nil
     operationName = xmlgeneral.getOperationNameFromSOAPEnvelope(XMLtoValidate, verbose)
     kong.log.debug("XMLValidateWithWSDL, operationName='"..(operationName or 'Not_Found').."' in XML")    
   end
@@ -1105,37 +1106,10 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
         
         -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
         xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)
-        
-        -- If prefetch is NOT enabled 
-        --   AND
-        -- If there is an 'operationName'
-        if not prefetch and operationName then
-          elementNode  = libxml2.xmlFirstElementChild(currentNode)                    
-          -- Search the '<xs:element>' related to the Operation Name and 
-          -- stop the main loop if the <xsd:schema> is related to the Operation Name
-          -- Example:
-          --  XSD => <xs:element name="Add">
-          --  XML => <Add xmlns="http://tempuri.org/">
-          while elementNode ~= ffi.NULL do
-            
-            if tonumber(elementNode.type) == ffi.C.XML_ELEMENT_NODE and 
-               elementNode.name ~= ffi.NULL                         and
-               ffi.string(elementNode.name) == 'element'            then
-              local propName = libxml2.xmlGetProp (elementNode, "name")
-              if propName ~= ffi.NULL and ffi.string(propName) == operationName then
-                -- The Operation Name is found in the XSD Schema
-                XMLXSDMatching = true
-                kong.log.debug("XMLValidateWithWSDL, operationName '"..operationName.."' (from XML) was found in this XSD schema")
-                break
-              end
-            end
-            -- Go to the next '<xs:element' Node
-            elementNode = ffi.cast("xmlNode *", elementNode.next)
-          end
-        end
+
         errMessage = nil
         -- Validate the XML with the <xs:schema>'
-        errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, xsdSchema, verbose, prefetch)
+        errMessage, XMLXSDMatching = xmlgeneral.XMLValidateWithXSD (child, XMLtoValidate, xsdSchema, verbose, prefetch)
         
         local msgDebug = errMessage or "Ok"
         kong.log.debug ("Validation for schema #" .. index .. " Message: '" .. msgDebug .. "'")
@@ -1177,16 +1151,17 @@ end
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
-function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSchema, verbose, prefech)
-  local xml_doc       = nil
-  local errMessage    = nil
-  local err           = nil
-  local is_valid      = 0
-  local schemaType    = ""
-  local bodyNodeFound = nil
-  local currentNode   = nil
-  local nodeName      = ""
-  local libxml2       = require("xmlua.libxml2")
+function xmlgeneral.XMLValidateWithXSD (child, XMLtoValidate, XSDSchema, verbose, prefech)
+  local xml_doc         = nil
+  local errMessage      = nil
+  local err             = nil
+  local is_valid        = 0
+  local schemaType      = ""
+  local bodyNodeFound   = nil
+  local currentNode     = nil
+  local XMLXSDMatching  = false
+  local nodeName        = ""
+  local libxml2         = require("xmlua.libxml2")
 
   -- Prepare the error Message
   if child == xmlgeneral.schemaTypeSOAP then
@@ -1201,11 +1176,11 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
   -- Create Parser Context
   local xsd_context = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
   
-  -- Create XSD schema
+  -- Parse XSD schema
   local xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
   -- If it's a Prefetch we just have to parse the XSD, which downloads XSD in cascade 
   if prefech then
-    return errMessage
+    return errMessage, XMLXSDMatching
   end
 
   -- If there is no error loading the XSD schema
@@ -1213,11 +1188,11 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
     -- Create Validation context of XSD Schema
     local validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
     xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options, verbose)
-    
+     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
       -- The Error processing is done at the End of the function, so we do nothing...
-    -- Else if we have to find the 1st Child of API which is this example <Add ... /"> (and not the <soap> root)
+    -- Else if we have to find the 1st Child of API, which is in this example <Add ... /"> (and not the <soap> root)
     elseif child ~= xmlgeneral.schemaTypeSOAP then
       -- Example:
       -- <soap:Envelope xmlns:xsi=....">
@@ -1251,7 +1226,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
       if not bodyNodeFound then
         errMessage = "XSD validation - Unable to find the 'soap:Body'"
         kong.log.err (errMessage)
-        return errMessage
+        return errMessage, XMLXSDMatching
       end
 
       -- Get WebService Child Element, which is, for instance, <Add xmlns="http://tempuri.org/">
@@ -1261,7 +1236,7 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
         -- Dump in a String the WebService part
         kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
         -- Check validity of One element with its XSD schema
-        is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)
+        is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)        
       else
         errMessage = "XSD validation - Unable to find the Operation tag in the 'soap:Body'"
       end      
@@ -1272,24 +1247,32 @@ function xmlgeneral.XMLValidateWithXSD (plugin_conf, child, XMLtoValidate, XSDSc
         kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
         
         -- Check validity of XML with its XSD schema
-        is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
-        kong.log.debug ("XSD validation - is_valid: " .. is_valid)
+        is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)        
       else
         errMessage = "XSD validation - Unable to find the 'soap:Envelope'"
       end
     end
   end
 
+  -- If 'is_valid' returns a 'No matching global declaration available for the validation root' => returns false (wrong schema)
+  -- Else => returns true that indicates that the right schema is found
+  if  is_valid == xmlgeneral.libxmlNoMatchGlobalDecl then
+     XMLXSDMatching = false 
+  else 
+    XMLXSDMatching = true
+  end
+    
   if not errMessage and is_valid == 0 then
-    kong.log.debug ("XSD validation of ".. schemaType .." schema: Ok")
+    kong.log.debug ("XSD validation of " ..schemaType.. " schema: Ok")
   elseif errMessage then
-    kong.log.debug ("XSD validation of "..  schemaType .." schema: Ko, " .. errMessage)
+    kong.log.debug ("XSD validation of " ..schemaType.. " RC: " ..is_valid..
+                    " matching of XML and XSD: " .. tostring (XMLXSDMatching) .. ", schema: Ko, " .. errMessage)
   else
     errMessage = "Ko"
-    kong.log.debug ("XSD validation of ".. schemaType .." schema: " .. errMessage)
+    kong.log.debug ("XSD validation of " .. schemaType .. " schema: " .. errMessage)
   end
 
-  return errMessage
+  return errMessage, XMLXSDMatching
 end
 
 --------------------------------------------------------------------------------------------------------

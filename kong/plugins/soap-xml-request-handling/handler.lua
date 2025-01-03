@@ -16,6 +16,7 @@ local libxml2ex  = nil
 function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSON)
   local soapEnvelope_transformed
   local errMessage
+  local XMLXSDMatching
   local soapFaultBody
   local sleepForPrefetchEnd = false
   
@@ -45,7 +46,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
       sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
     end
     
-    errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
+    -- Validate the SOAP envelope with its schema    
+    errMessage, XMLXSDMatching = xmlgeneral.XMLValidateWithXSD (xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
