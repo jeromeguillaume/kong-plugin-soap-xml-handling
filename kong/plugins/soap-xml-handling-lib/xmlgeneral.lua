@@ -24,6 +24,8 @@ xmlgeneral.BeforeXSD          = " (before XSD validation)"
 xmlgeneral.AfterXSD           = " (after XSD validation)"
 xmlgeneral.invalidXML         = "Invalid XML input"
 xmlgeneral.invalidXSLT        = "Invalid XSLT definition"
+xmlgeneral.invalidXSD         = "Invalid XSD schema"
+xmlgeneral.invalidWSDL_XSD    = "Invalid WSDL/XSD schema"
 
 xmlgeneral.schemaWSDL             = "http://schemas.xmlsoap.org/wsdl/"
 xmlgeneral.schemaHttpTransport    = "http://schemas.xmlsoap.org/soap/http"
@@ -1021,7 +1023,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
   -- Parse an XML in-memory document and build a tree
   xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose)
   if errMessage then
-    errMessage = "WSDL validation - errMessage " .. errMessage
+    errMessage =  xmlgeneral.invalidWSDL_XSD .. ". " .. errMessage
     kong.log.err (errMessage)
     return errMessage
   end
@@ -1191,7 +1193,7 @@ function xmlgeneral.XMLValidateWithXSD (child, XMLtoValidate, XSDSchema, verbose
      
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
-      -- The Error processing is done at the End of the function, so we do nothing...
+      errMessage = xmlgeneral.invalidXML .. ". " .. errMessage
     -- Else if we have to find the 1st Child of API, which is in this example <Add ... /"> (and not the <soap> root)
     elseif child ~= xmlgeneral.schemaTypeSOAP then
       -- Example:
@@ -1252,6 +1254,8 @@ function xmlgeneral.XMLValidateWithXSD (child, XMLtoValidate, XSDSchema, verbose
         errMessage = "XSD validation - Unable to find the 'soap:Envelope'"
       end
     end
+  else
+    errMessage = xmlgeneral.invalidXSD .. ". " .. errMessage
   end
 
   -- If 'is_valid' returns a 'No matching global declaration available for the validation root' => returns false (wrong schema)

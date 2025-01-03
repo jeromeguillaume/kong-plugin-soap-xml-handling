@@ -16,7 +16,6 @@ local KongGzip   = nil
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSON)
   local soapEnvelopeTransformed
   local soapFaultBody
-  local sleepForPrefetchEnd = false
   local errMessage
   local XMLXSDMatching  
   
@@ -40,11 +39,6 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- => We validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
     
-    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
-    end
-
     -- Validate the SOAP envelope with its schema
     errMessage, XMLXSDMatching = xmlgeneral.XMLValidateWithXSD (xmlgeneral.schemaTypeSOAP, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
@@ -61,11 +55,6 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- => Validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
   
-    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
-    end
-
     local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, xmlgeneral.schemaTypeAPI, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client

@@ -1017,5 +1017,8 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Include the Lua code SOAP/XML plugins in the docker images related to `saxon`
   - Pongo (Tests): remove the external dependencies (from `http://www.dneonline.com:80/calculator.asmx` to `jeromeguillaume/ws-soap-calculator` Docker image and from `http://httpbin.apim.eu` to `svenwal/httpbin` Docker image)
 - v1.2.2
-  - `saxon` XSLTransformation: remove empty Namespace (example: `xmlns=""`)
+  - `saxon` - `XSLT Transformation`: remove empty Namespace (example: `xmlns=""`)
   - `XSLT Transformation`: Improve error message in case XSLT definition or XML input is not correct
+  - `WSDL/XSD Validation`: Improve error message in case WSDL/XSD schema or XML input is not correct
+  - `WSDL/XSD Validation`: Improve the validation mechanism in case of multiple schemas to have a better match between the XML ad its WSDL/XSD schema (by leveraging the error code `1845` - `No matching global declaration available for the validation root` on `xmlSchemaValidateOneElement` call)
+  - `soap-xml-response-handling`: remove the call of `xmlgeneral.sleepForPrefetchEnd` due to `ngx.sleep` that is not allowed in `header` phase
