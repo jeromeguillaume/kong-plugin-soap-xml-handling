@@ -67,7 +67,7 @@ saxon_common.error_message_Request_XSLT_transfo_before_XSD_val = {
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_val_verbose = {
   message = 'Request - XSLT transformation failed (before XSD validation)',
-  message_verbose = 'SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.'
+  message_verbose = 'Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.'
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Template_val_verbose = {
@@ -81,7 +81,7 @@ saxon_common.error_message_Response_XSLT_transfo_after_XSD_val = {
 
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
   message = 'Response - XSLT transformation failed (after XSD validation)',
-  message_verbose = 'SXXP0003:  Error reported by XML parser: Content is not allowed in prolog. SOAP/XML Web Service - HTTP code: 200'
+  message_verbose = 'Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog. SOAP/XML Web Service - HTTP code: 200'
 }
 
 saxon_common.error_message_Saxon_Library_not_Found_val_verbose = {

@@ -53,6 +53,7 @@ for _, strategy in helpers.all_strategies() do
 				}))
 		
     	end)
+
 			it ("1|XSLT (BEFORE XSD) - Valid transformation", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 			end)
@@ -185,10 +186,25 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XSD2_with_verbose_ok (assert, client)
 			end)
 
-			it("2|WSDL (v2) Validation with no import - 'wsdl' default Namespace - 'xs:schema' - Ok", function()
-				request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schema_with_verbose_ok (assert, client)
+			it("2|WSDL Validation with multiple XSD imported no download - Add in XSD#1 - Ok", function()
+				request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Add_in_XSD1_with_verbose_ok (assert, client)
 			end)
 
+			it("2|WSDL Validation with multiple XSD imported no download - Subtract in XSD#2 - Ok", function()
+				request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Subtract_in_XSD2_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple XSD imported no download - Add in XSD#1 - Ko", function()
+				request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Add_in_XSD1_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple XSD imported no download - Subtract in XSD#2 - Ko", function()
+				request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Subtract_in_XSD2_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL (v2) Validation with no import - 'wsdl' default Namespace - 'xs:schema' - Ok", function()
+				request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schema_with_verbose_ok (assert, client)
+			end)--
 			it("2|WSDL (v2) Validation with no import - 'wsdl2:description' - 'schema' default Namespace - Ok", function()
 				request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
 			end)

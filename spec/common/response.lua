@@ -86,7 +86,7 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -171,7 +171,7 @@ response_common.calculator_Response_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -183,7 +183,7 @@ response_common.calculator_Response_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-      <detail>WSDL validation %- errMessage Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -276,7 +276,7 @@ response_common.calculator_Response_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -300,7 +300,7 @@ response_common.calculator_Response_XSD_SOAP_VALIDATION_blank_soap_Failed_verbos
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Response %- XSD validation failed</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
+      <detail>Invalid XML input. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. SOAP/XML Web Service %- HTTP code: 200</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]

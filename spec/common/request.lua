@@ -116,7 +116,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -218,6 +218,40 @@ request_common.calculator_Request_Response_XSD_VALIDATION = [[
   </xs:complexType>
 </xs:schema>]]
 
+request_common.calculator_Request_Response_Add_XSD_VALIDATION = [[
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddType">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="AddResponseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="AddResult"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>]]
+
+request_common.calculator_Request_Response_Subtract_XSD_VALIDATION = [[
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="SubtractType">
+    <xs:sequence>
+      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
+      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="SubtractResponse" type="tem:SubtractResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xs:complexType name="SubtractResponseType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="SubtractResult"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>]]
+
 request_common.calculator_Request_XSD_API_VALIDATION_invalid = [[
 s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:s="http://www.w3.org/2001/XMLSchema">
 </s:schema>
@@ -245,7 +279,7 @@ request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
+      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -257,7 +291,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>WSDL validation %- errMessage Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -282,6 +316,30 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose = [[
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>Error Node: intC, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}intC': This element is not expected. Expected is %( {http://tempuri.org/}intA %).</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Add_Expected_intB_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Error Node: Add, Error code: 1871, Line: 4, Message: Element '{http://tempuri.org/}Add': Missing child element%(s%). Expected is %( {http://tempuri.org/}intB %).</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Subtract_Expected_intB_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>Error Node: Subtract, Error code: 1871, Line: 4, Message: Element '{http://tempuri.org/}Subtract': Missing child element%(s%). Expected is %( {http://tempuri.org/}intB %).</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -360,7 +418,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -409,7 +467,7 @@ request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose
   </soap:Body>
 </soap:Envelope>]]
 
-request_common.calculatorWSDL_with_async_download_Ok = [[
+request_common.calculatorWSDL_with_async_download_verbose_ok = [[
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
                   xmlns:tns="http://tempuri.org/"
@@ -450,6 +508,37 @@ request_common.calculatorWSDL_req_only_with_async_download_Ok = [[
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
       <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.request.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL_req_res_multiple_imports_Ok = [[
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="tempuri.org"
+                  targetNamespace="http://tempuri.org/">
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
+  </wsdl:documentation>
+  <wsdl:types>
+    	<!-- XSD schema for Add (Request and Response) -->
+      <xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.req.res.add.xsd"/>
+    </xsd:schema>
+		<!-- XSD schema for Subtract (Request and Response) -->
+      <xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.req.res.subtract.xsd"/>
     </xsd:schema>
   </wsdl:types>
 </wsdl:definitions>
@@ -1086,7 +1175,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 	}
 	local calculator_wsdl_ok = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculatorWSDL_with_async_download_ok" }
+		paths = { "/calculatorWSDL_with_async_download_verbose_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
@@ -1095,7 +1184,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
-			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+			xsdApiSchema = request_common.calculatorWSDL_with_async_download_verbose_ok
 		}
 	}
 	
@@ -1140,13 +1229,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchemaInclude = {
 				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
-			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+			xsdApiSchema = request_common.calculatorWSDL_with_async_download_verbose_ok
 		}
 	}
 	
 	local calculator_wsdl_no_import_mutliple_xsd_add_in_xsd1_ok = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_ok" }
+		paths = { "/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_verbose_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
@@ -1161,7 +1250,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
 	local calculator_wsdl_no_import_mutliple_xsd_subtract_in_xsd2_ok = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_ok" }
+		paths = { "/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_verbose_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
@@ -1171,6 +1260,25 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
 			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
+	local calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 15,
+			ExternalEntityLoader_Async = true,
+			xsdApiSchema = request_common.calculatorWSDL_req_res_multiple_imports_Ok,
+			xsdApiSchemaInclude = {
+				["http://localhost:9000/tempuri.org.req.res.add.xsd"] = request_common.calculator_Request_Response_Add_XSD_VALIDATION,
+				["http://localhost:9000/tempuri.org.req.res.subtract.xsd"] = request_common.calculator_Request_Response_Subtract_XSD_VALIDATION,
+			},
 		}
 	}
 
@@ -1629,7 +1737,7 @@ end
 
 function request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 	-- invoke a test request
-	local r = client:post("/calculatorWSDL_with_async_download_ok", {
+	local r = client:post("/calculatorWSDL_with_async_download_verbose_ok", {
 		headers = {
 			["Content-Type"] = "text/xml;charset=utf-8",
 		},
@@ -1694,7 +1802,7 @@ end
 
 function request_common._2_WSDL_Validation_Invalid_SOAP_request_Empty_with_verbose_ko (assert, client)
 	-- invoke a test request
-	local r = client:post("/calculatorWSDL_with_async_download_ok", {
+	local r = client:post("/calculatorWSDL_with_async_download_verbose_ok", {
 		headers = {
 			["Content-Type"] = "text/xml;charset=utf-8",
 		},
@@ -1710,7 +1818,7 @@ end
 
 function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Add_in_XSD1_with_verbose_ko (assert, client)
 	-- invoke a test request
-	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_ok", {
+	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Add_in_XSD1_verbose_ok", {
 		headers = {
 			["Content-Type"] = "text/xml;charset=utf-8",
 		},
@@ -1726,7 +1834,7 @@ end
 
 function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XSD2_with_verbose_ok (assert, client)
 	-- invoke a test request
-	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_ok", {
+	local r = client:post("/calculatorWSDL_no_import_multiple_XSD_Subtract_in_XSD2_verbose_ok", {
 		headers = {
 			["Content-Type"] = "text/xml;charset=utf-8",
 		},
@@ -1738,6 +1846,70 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XS
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches("<SubtractResult>4</SubtractResult>", body)
+end
+
+function request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Add_in_XSD1_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Subtract_in_XSD2_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("<SubtractResult>4</SubtractResult>", body)
+end
+
+function request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Add_in_XSD1_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Add_Expected_intB_Failed_verbose, body)
+end
+
+function request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Subtract_in_XSD2_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Subtract_Expected_intB_Failed_verbose, body)
 end
 
 function request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schema_with_verbose_ok (assert, client)

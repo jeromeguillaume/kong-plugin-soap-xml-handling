@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.2.1",
+    VERSION = "1.2.2",
   }
 
 local xmlgeneral = nil
@@ -16,12 +16,12 @@ local KongGzip   = nil
 function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSON)
   local soapEnvelopeTransformed
   local soapFaultBody
-  local sleepForPrefetchEnd = false
+  local errMessage
+  local XMLXSDMatching  
   
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) Before
   if plugin_conf.xsltTransformBefore then
-    local errMessage
     soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -39,13 +39,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- => We validate the SOAP XML with its schema
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
     
-    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
-    end
-
     -- Validate the SOAP envelope with its schema
-    local errMessage = xmlgeneral.XMLValidateWithXSD (plugin_conf, xmlgeneral.schemaTypeSOAP, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
+    errMessage, XMLXSDMatching = xmlgeneral.XMLValidateWithXSD (xmlgeneral.schemaTypeSOAP, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -60,11 +55,6 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- => Validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
   
-    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
-    end
-
     local errMessage = xmlgeneral.XMLValidateWithWSDL (plugin_conf, xmlgeneral.schemaTypeAPI, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -79,7 +69,6 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJS
   -- If there is 'XSLT Transformation After XSD' configuration then
   -- => we apply XSL Transformation (XSLT) After
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
-    local errMessage
     soapEnvelopeTransformed, errMessage = xmlgeneral.XSLTransform(plugin_conf, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -261,7 +250,7 @@ function plugin:header_filter(plugin_conf)
     if kong.response.get_header("Content-Encoding") then
       kong.response.clear_header("Content-Encoding")
     end
-kong.log.notice("**jerome response.get_source=" .. kong.response.get_source())    
+
     -- When the response was originated by successfully contacting the proxied Service
     if kong.response.get_source() == "service" then
       -- Change the HTTP Status and Return a Fault code to Client
