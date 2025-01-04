@@ -1628,12 +1628,16 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
   if SOAPAction11_Header_Value then
     SOAPAction_Header_Value = SOAPAction11_Header_Value
   elseif SOAPAction12_Header_Value then
-    -- Remove leading double-quote
+    -- If required remove leading double-quote
     if string.sub(SOAPAction12_Header_Value, 1 , 1) == '"' then
       SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 2)
-      -- Remove trailing double-quote (don't check if it's really there)
+      -- Remove trailing double-quote and don't check if it's really there;
+      -- by doing that it will raise an error if there is a leading but no trailing double quote
       SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 1, #SOAPAction12_Header_Value - 1)
-    end 
+    elseif string.sub(SOAPAction12_Header_Value, 1 , 1) == '\'' then
+      SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 2)
+      SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 1, #SOAPAction12_Header_Value - 1)
+    end    
     SOAPAction_Header_Value = SOAPAction12_Header_Value
   end
 
@@ -1695,7 +1699,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
       errMessage = "Found a SOAP 1.2 envelope and a 'SOAPAction' header linked with for SOAP 1.1"
     end
   end
-  
+
   -- Get the Operation Name in '<soap:Body>' (for instance '<Add>')
   if not errMessage then
     currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)

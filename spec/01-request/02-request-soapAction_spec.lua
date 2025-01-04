@@ -1345,7 +1345,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Subtract"',
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Subtract"',
           },
           body = calculator_soap12_Add_Request,
         })
@@ -1361,7 +1361,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Subtract"',
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Subtract"',
           },
           body = calculator_soap12_Subtract_Request,
         })
@@ -1409,7 +1409,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Add"',
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"',
           },
           body = calculator_soap12_Subtract_Request,
         })
@@ -1425,7 +1425,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Multiply"',
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Multiply"',
           },
           body = calculator_soap12_Multiply_Request,
         })
