@@ -895,9 +895,9 @@ local calculatorWSDL_kong_wsdl_kong11_kong12= [[
 ]]
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -1297,8 +1297,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"',
           },
           body = calculator_soap12_Add_Request,
         })
@@ -1330,8 +1329,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = ""
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action=""',
           },
           body = calculator_soap12_Add_Request,
         })
@@ -1347,8 +1345,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Subtract"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Subtract"',
           },
           body = calculator_soap12_Add_Request,
         })
@@ -1364,8 +1361,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Subtract"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Subtract"',
           },
           body = calculator_soap12_Subtract_Request,
         })
@@ -1397,8 +1393,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = ""
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action=""',
           },
           body = calculator_soap12_Subtract_Request,
         })
@@ -1414,8 +1409,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Add"',
           },
           body = calculator_soap12_Subtract_Request,
         })
@@ -1431,8 +1425,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Multiply"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8, action="http://tempuri.org/Multiply"',
           },
           body = calculator_soap12_Multiply_Request,
         })
@@ -1464,8 +1457,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = ""
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action=""',
           },
           body = calculator_soap12_Multiply_Request,
         })
@@ -1481,8 +1473,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"',
           },
           body = calculator_soap12_Multiply_Request,
         })
@@ -1498,8 +1489,7 @@ for _, strategy in helpers.all_strategies() do
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_kong_wsdl_kong12_ok", {
           headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
+            ["Content-Type"] = 'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"',
           },
           body = calculator_soap12_Add_Request,
         })
@@ -1526,10 +1516,10 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
-      
-      --------------------------------------------------------------------------------------------------
-      -- SOAP 1.1/1.2 Miscellaneous
-      --------------------------------------------------------------------------------------------------
+--      
+--      --------------------------------------------------------------------------------------------------
+--      -- SOAP 1.1/1.2 Miscellaneous
+--      --------------------------------------------------------------------------------------------------
       it("2|WSDL Validation - 'SOAPAction' Http header - WSDL not defined in the plugin - Ko", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_SOAPAction_wsdl_not_defined_in_plugin_ko", {

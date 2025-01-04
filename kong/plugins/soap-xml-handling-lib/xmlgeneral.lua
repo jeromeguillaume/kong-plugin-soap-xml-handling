@@ -1611,7 +1611,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
       end
     end
   end
-  
+
   -- If multiple 'action' have been found 
   --   OR
   -- If one 'action' has ben found but it isn't defined correctly
@@ -1631,11 +1631,9 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
     -- Remove leading double-quote
     if string.sub(SOAPAction12_Header_Value, 1 , 1) == '"' then
       SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 2)
-    end
-    -- Remove trailing double-quote
-    if string.sub(SOAPAction12_Header_Value, #SOAPAction12_Header_Value) == '"' then
+      -- Remove trailing double-quote (don't check if it's really there)
       SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 1, #SOAPAction12_Header_Value - 1)
-    end
+    end 
     SOAPAction_Header_Value = SOAPAction12_Header_Value
   end
 
@@ -1691,13 +1689,13 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
 
   -- Check the right usage of SOAPAction/action regarding the Namespace (SOAP 1.1 / SOAP 1.2)
   if not errMessage then
-    if  nsSOAP_11_12_found == xmlgeneral.SOAP1_1 and not SOAPAction11_Header_Value then
-      errMessage = "Found a SOAP 1.1 envelope and no 'SOAPAction' header"
-    elseif nsSOAP_11_12_found == xmlgeneral.SOAP1_2 and not SOAPAction12_Header_Value then
-      errMessage = "Found a SOAP 1.2 envelope and no 'action' property in the 'Content-Type' header"
+    if  nsSOAP_11_12_found == xmlgeneral.SOAP1_1 and SOAPAction12_Header_Value then
+      errMessage = "Found a SOAP 1.1 envelope and an 'action' field in the 'Content-Type' header linked with for SOAP 1.2"
+    elseif nsSOAP_11_12_found == xmlgeneral.SOAP1_2 and SOAPAction11_Header_Value then
+      errMessage = "Found a SOAP 1.2 envelope and a 'SOAPAction' header linked with for SOAP 1.1"
     end
   end
-
+  
   -- Get the Operation Name in '<soap:Body>' (for instance '<Add>')
   if not errMessage then
     currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
