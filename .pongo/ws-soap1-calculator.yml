@@ -1,7 +1,7 @@
 services:
   ws-soap1-calculator:
     hostname: ws.soap1.calculator
-    image: jeromeguillaume/ws-soap-calculator:1.0.2
+    image: jeromeguillaume/ws-soap-calculator:1.0.3
     healthcheck:
       interval: 5s
       retries: 10

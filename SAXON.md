@@ -351,7 +351,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 5) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request
 ```xml
 http POST http://localhost:8000/httpbin/anything \
-Content-Type:"text/xml; charset=utf-8" \
+Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <root>
   <companyName>KongHQ</companyName>

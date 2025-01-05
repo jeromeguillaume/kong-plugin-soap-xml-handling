@@ -39,7 +39,10 @@ xmlgeneral.schemaTypeSOAP         = 0
 xmlgeneral.schemaTypeAPI          = 2
 xmlgeneral.XMLContentType         = "text/xml; charset=utf-8"
 xmlgeneral.JSONContentType        = "application/json"
-xmlgeneral.SOAPAction             = "SOAPAction"
+xmlgeneral.SOAP1_1                = 11            -- SOAP 1.1
+xmlgeneral.SOAP1_2                = 12            -- SOAP 1.2
+xmlgeneral.SOAPAction             = "SOAPAction"  -- SOAP 1.1
+xmlgeneral.action                 = "action"      -- SOAP 1.2
 xmlgeneral.SOAPAction_Header_No       = "no"
 xmlgeneral.SOAPAction_Header_Yes_Null = "yes_null_allowed"
 xmlgeneral.SOAPAction_Header_Yes      = "yes"
@@ -1330,13 +1333,28 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
       while wsdlRaw_namespaces and wsdlRaw_namespaces[i] ~= ffi.NULL do
         -- WSDL namespace (example: wsdl)
         if     ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL then
-          wsdlNS = ffi.string(wsdlRaw_namespaces[i].prefix)
-        -- SOAP 1.1 namespace (example: soap)        
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'wsdl' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS = "wsdl_kong"
+          end
+        -- SOAP 1.1 NameSpace (example: soap)        
         elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1_SOAP1_1 then
-          wsdlNS_SOAP1_1 = ffi.string(wsdlRaw_namespaces[i].prefix)
-        -- SOAP 1.2 namespace (example: soap12)
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS_SOAP1_1 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'SOAP 1.1' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS_SOAP1_1 = "soap11_kong"
+          end
+        -- SOAP 1.2 NameSpace (example: soap12)
         elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1_SOAP1_2 then
-          wsdlNS_SOAP1_2 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS_SOAP1_2 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'SOAP 1.1' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS_SOAP1_2 = "soap12_kong"
+          end
         end
         i = i + 1
       end
@@ -1399,7 +1417,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
       wsdlNS_SOAP = wsdlNS_SOAP1_1
       rc = libxml2.xmlXPathRegisterNs(context, wsdlNS_SOAP1_1, xmlgeneral.schemaWSDL1_1_SOAP1_1)
     end
-    -- If we found the SOAP 1.2 in WSDL and If we have to register the SOAP 1.2 Namespace (in relation with <soap:Envelope> Request)
+    -- If we found the SOAP 1.2 in WSDL and If we have to register the SOAP 1.2 Namespace (in relation with <soap12:Envelope> Request)
     if rc and wsdlNS_SOAP1_2 and xmlnsSOAPEnvelope_hRef == xmlgeneral.schemaSOAP1_2 then
       wsdlNS_SOAP = wsdlNS_SOAP1_2
       rc = libxml2.xmlXPathRegisterNs(context, wsdlNS_SOAP1_2, xmlgeneral.schemaWSDL1_1_SOAP1_2)
@@ -1413,7 +1431,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
   -- Check the NameSpaces prefix in the WSDL
   if not errMessage then
     -- If the WSDL Namespace prefix is not defined in the WSDL
-    if not wsdlNS then
+    if wsdlNS == nil then
       errMessage = "Unable to find (in the WSDL) the Namespace prefix linked with the WSDL: '" .. xmlgeneral.schemaWSDL .. "'"  
     -- Else If the SOAP Namespace of the <soap:Envelope> Request is SOAP 1.1 and the SOAP 1.1 Namespace is not found in the WSDL
     elseif xmlnsSOAPEnvelope_hRef == xmlgeneral.schemaSOAP1_1 and not wsdlNS_SOAP1_1 then
@@ -1435,9 +1453,10 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
                         "/parent::"..wsdlNS..":binding/"..wsdlNS..":operation[@name=\"" .. request_OperationName .. "\"]/"..wsdlNS_SOAP..":operation/"
     xpathReqRequired   = xpathReqRoot .. "@soapActionRequired"
     xpathReqSoapAction = xpathReqRoot .. "@soapAction"
-    kong.log.debug("getSOAPActionFromWSDL: the XPath request to get (from the WSDL) 'soapAction'= '"..xpathReqRoot.."', " ..
+    --xpathReqSoapAction = "/"..wsdlNS.."definitions/"..wsdlNS.."binding/@name"
+    kong.log.debug("getSOAPActionFromWSDL: the XPath request to get (from the WSDL) 'soapAction'= '"..xpathReqSoapAction.."', " ..
                     "'xpathReqRequired'= '"..xpathReqRequired .."'")
-
+    
     -- Execute the XPath request to find the 'soapActionRequired' optional attribute
     object = libxml2.xmlXPathEvalExpression(xpathReqRequired, context)    
     local errXPathSoapAction = " | XPath request='".. xpathReqRequired.. "'"
@@ -1480,12 +1499,11 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
           errMessage = "Unable to get the value of '"..wsdlNS_SOAP..":operation soapAction' attribute in the WSDL linked with '" ..request_OperationName.. "' Operation name"
           kong.log.err(errMessage ..  errXPathSoapAction)
         end
-      end      
-    else
-      errMessage = "Invalid XPath request 'soapAction'"
-      kong.log.err(errMessage .. errXPathSoapAction)
+      else
+        errMessage = "Invalid XPath request 'soapAction'"
+        kong.log.err(errMessage .. errXPathSoapAction)
+      end
     end
-  
   end
 
   return wsdlSoapAction_Value, wsdlRequired_Value, errMessage
@@ -1547,8 +1565,9 @@ end
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
-function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Value, WSDL, SOAPAction_Header, verbose)
+function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Header, verbose)
   local i
+  local temp
   local xmlRequest_doc
   local xmlWSDL_doc
   local errMessage
@@ -1557,29 +1576,100 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
   local xmlWSDLNodePtrRoot
   local currentNode
   local nodeName
+  local SOAPAction11_Header_Value
+  local SOAPAction12_Header_Value
+  local tContent = {}
+  local tAction = {}
+  local SOAPAction_Header_Value
   local wsdlSOAPAction_Header_Value
   local request_OperationName
+  local action12_found        = 0
+  local nsSOAP_11_12_found    = 0
   local wsdlRequired_Value    = false
   local soapBody_found        = false
-  local nsSOAP_11_12_found    = false
   local wsdlDefinitions_found = false
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
 
   -- If 'SOAPAction' header doesn't have to be validated 
-  --   OR
-  -- If 'SOAPAction' header is null and it's allowed by the plugin configuration
-  if SOAPAction_Header == xmlgeneral.SOAPAction_Header_No or
-    (SOAPAction_Header == xmlgeneral.SOAPAction_Header_Yes_Null and
-    (SOAPAction_Header_Value == nil))
-      then
+  if SOAPAction_Header == xmlgeneral.SOAPAction_Header_No then
     -- The validation of 'SOAPAction' header is not required. Return 'no error'
     return nil
   end
 
+  -- Get 'SOAPAction' header for SOAP 1.1
+  SOAPAction11_Header_Value = kong.request.get_header(xmlgeneral.SOAPAction)
+
+  -- Get 'action' in Content-Type header for SOAP 1.2
+  temp = kong.request.get_header("Content-Type")
+  if temp ~= nil then    
+    -- Split the Content-Type with semicolon character (;)
+    -- Example: Content-Type:'text/xml;charset=utf-8;action="http://tempuri.org/Add"'
+    for part in temp:gmatch("([^;%s]+)") do
+      table.insert(tContent, part)
+    end
+    for i, entryContent in ipairs(tContent) do
+      if string.find(entryContent, xmlgeneral.action .. "=") then
+        action12_found = action12_found + 1
+        -- We found 2 (or more) 'action'
+        if action12_found > 1 then
+          break
+        end
+        
+        -- Split the 'action' with equal character (=)
+        for part in (entryContent .. "="):gmatch('([^=]*)=') do
+          table.insert(tAction, part)
+        end
+        if #tAction == 2 then
+          SOAPAction12_Header_Value = tAction[2]
+        end
+      end
+    end
+  end
+
+  -- If multiple 'action' have been found 
+  --   OR
+  -- If one 'action' has ben found but it isn't defined correctly
+  if action12_found >= 2 or (action12_found == 1 and SOAPAction12_Header_Value == nil) then
+    errMessage = "'action' has been found in Content-Type header but it's not correctly defined"
+  end
+
+  if not errMessage then
+    if SOAPAction11_Header_Value and SOAPAction12_Header_Value then
+      errMessage = "'SOAPAction' for SOAP 1.1 and 'action' for SOAP 1.2 have been defined simultaneously"
+    end
+  end
+
+  if SOAPAction11_Header_Value then
+    SOAPAction_Header_Value = SOAPAction11_Header_Value
+  elseif SOAPAction12_Header_Value then
+    -- If required remove leading double-quote
+    if string.sub(SOAPAction12_Header_Value, 1 , 1) == '"' then
+      SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 2)
+      -- Remove trailing double-quote and don't check if it's really there;
+      -- by doing that it will raise an error if there is a leading but no trailing double quote
+      SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 1, #SOAPAction12_Header_Value - 1)
+    elseif string.sub(SOAPAction12_Header_Value, 1 , 1) == '\'' then
+      SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 2)
+      SOAPAction12_Header_Value = string.sub(SOAPAction12_Header_Value, 1, #SOAPAction12_Header_Value - 1)
+    end    
+    SOAPAction_Header_Value = SOAPAction12_Header_Value
+  end
+
+  -- If 'SOAPAction' header is null and it's allowed by the plugin configuration
+  if not errMessage then
+    if SOAPAction_Header == xmlgeneral.SOAPAction_Header_Yes_Null and
+      (SOAPAction_Header_Value == nil) then
+      -- The validation of 'SOAPAction' header is not required. Return 'no error'
+      return nil
+    end
+  end
+
   -- If there is no WSDL definition in the plugin configuration 
-  if not WSDL then
-    errMessage = "No WSDL definition found: it's mandatory to validate the 'SOAPAction' header"
+  if not errMessage then
+    if not WSDL then
+      errMessage = "No WSDL definition found: it's mandatory to validate the 'SOAPAction' header"
+    end
   end
   
   -- Parse an XML in-memory document from the SOAP Request and build a tree
@@ -1591,7 +1681,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
   if not errMessage then
     xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xmlRequest_doc)
     if not xmlNodePtrRoot or ffi.string(xmlNodePtrRoot.name) ~= "Envelope"  then
-      errMessage = "Unable to find 'soap:Envelope'"
+      errMessage = "Unable to find 'Envelope' tag"
     end
   end
 
@@ -1600,16 +1690,28 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
     raw_namespaces = libxml2.xmlGetNsList(xmlRequest_doc, xmlNodePtrRoot)
     i = 0
     while raw_namespaces and raw_namespaces[i] ~= ffi.NULL do
-      if  ffi.string(raw_namespaces[i].href) == xmlgeneral.schemaSOAP1_1 or
-          ffi.string(raw_namespaces[i].href) == xmlgeneral.schemaSOAP1_2 then
-            nsSOAP_11_12_found = true
+      if  ffi.string(raw_namespaces[i].href) == xmlgeneral.schemaSOAP1_1 then
+        nsSOAP_11_12_found = xmlgeneral.SOAP1_1
+      elseif ffi.string(raw_namespaces[i].href) == xmlgeneral.schemaSOAP1_2 then
+        nsSOAP_11_12_found = xmlgeneral.SOAP1_2
+      end
+      if nsSOAP_11_12_found ~= 0 then
         break
       end
       i = i + 1
     end
-    if not nsSOAP_11_12_found then
-      errMessage = "Unable to find the namespace of 'soap:Envelope'. The expected values are '" .. 
+    if nsSOAP_11_12_found == 0 then
+      errMessage = "Unable to find the namespace of 'Envelope' tag. The expected values are '" .. 
                     xmlgeneral.schemaSOAP1_1 .. "'' or '" .. xmlgeneral.schemaSOAP1_2 .. "'"
+    end
+  end
+
+  -- Check the right usage of SOAPAction/action regarding the Namespace (SOAP 1.1 / SOAP 1.2)
+  if not errMessage then
+    if  nsSOAP_11_12_found == xmlgeneral.SOAP1_1 and SOAPAction12_Header_Value then
+      errMessage = "Found a SOAP 1.1 envelope and an 'action' field in the 'Content-Type' header linked with for SOAP 1.2"
+    elseif nsSOAP_11_12_found == xmlgeneral.SOAP1_2 and SOAPAction11_Header_Value then
+      errMessage = "Found a SOAP 1.2 envelope and a 'SOAPAction' header linked with for SOAP 1.1"
     end
   end
 
@@ -1633,10 +1735,10 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, SOAPAction_Header_Va
         request_OperationName = ffi.string(currentNode.name)
         kong.log.debug("validate 'SOAPAction' Header - Found in SOAP Request: operationName=" .. request_OperationName)
       else
-        errMessage = "Unable to find the Operation Name inside 'soap:Body'"
+        errMessage = "Unable to find the Operation Name inside 'Body' tag"
       end
     else
-      errMessage = "Unable to find 'soap:Body'"
+      errMessage = "Unable to find 'Body' tag"
     end
   end
 
