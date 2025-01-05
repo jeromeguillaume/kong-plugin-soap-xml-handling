@@ -11,7 +11,7 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 **soap-xml-request-handling** plugin to handle Request:
 
 1) `XSLT TRANSFORMATION - BEFORE XSD`: Transform the XML request with XSLT (XSLTransformation) before step #2
-2) `WSDL/XSD VALIDATION`: Validate XML request with its WSDL/XSD schema
+2) `WSDL/XSD VALIDATION`: Validate XML request with its WSDL/XSD schema (and optionnaly validate the `SOAPAction` header)
 3) `XSLT TRANSFORMATION - AFTER XSD`: Transform the XML request with XSLT (XSLTransformation) after step #2
 4) `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
 
@@ -71,7 +71,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`)|
-|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL v1 including `<wsdl:binding>` and the `soapAction` attribute; the optional `soapActionRequired` attribute is considered. If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present|
+|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined in a WSDL v1 including `<wsdl:binding>` and `soapAction` attribute; the optional `soapActionRequired` attribute is considered. If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
@@ -848,7 +848,11 @@ The expected result is:
 <a id="Miscellaneous_example_F"></a>
 
 ### Example (F): Request | `WSDL VALIDATION`: validate the `SOAPAction` Http header
-Call correctly `calculator` by setting the expected `SOAPAction` Http header
+Call correctly `calculator` by setting the expected `SOAPAction` Http header. The header name depends of the SOAP version:
+- SOAP 1.1: `SOAPAction` Http header
+- SOAP 1.2: `action` in `Content-Type` Http header
+
+For SOAP 1.1:
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -912,6 +916,40 @@ The expected result is:
 ```xml
 ...
 <SubtractResult>-2</SubtractResult>
+...
+```
+
+For SOAP 1.2:
+1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
+
+2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseRequest` enabled
+- `xsdSoapSchema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoapSchemaInclude` property with this value:
+  - key: `http://www.w3.org/2001/xml.xsd`
+  - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
+- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
+- `SOAPAction_Header` property with the value `yes`
+
+3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `action` has the `http://tempuri.org/Add` value as defined in the WSDL
+```
+http POST http://localhost:8000/calculator \
+Content-Type:'application/soap+xml; charset=utf-8; action=http://tempuri.org/Add"' \
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>5</intA>
+      <intB>7</intB>
+    </Add>
+  </soap:Body>
+</soap:Envelope>'
+```
+
+The expected result is: 
+```xml
+...
+<AddResult>12</AddResult>
 ...
 ```
 
@@ -1024,3 +1062,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `WSDL/XSD Validation`: Improve error message in case WSDL/XSD schema or XML input is not correct
   - `WSDL/XSD Validation`: Improve the validation mechanism in case of multiple schemas to have a better match between the XML ad its WSDL/XSD schema (by leveraging the error code `1845` - `No matching global declaration available for the validation root` on `xmlSchemaValidateOneElement` call)
   - `soap-xml-response-handling`: remove the call of `xmlgeneral.sleepForPrefetchEnd` due to `ngx.sleep` that is not allowed in `header` phase
+- v1.2.3
+  - Validation of `SOAPAction` Http header: fix the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
+  - Validation of `SOAPAction` Http header: handle the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
+ 
