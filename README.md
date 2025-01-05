@@ -943,7 +943,7 @@ Content-Type:'application/soap+xml; charset=utf-8; action=http://tempuri.org/Add
       <intB>7</intB>
     </Add>
   </soap12:Body>
-</soap12:Envelope>''
+</soap12:Envelope>'
 ```
 
 The expected result is: 
