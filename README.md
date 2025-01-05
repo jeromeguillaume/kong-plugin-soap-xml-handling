@@ -934,7 +934,7 @@ For SOAP 1.2:
 3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `action` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:'application/soap+xml; charset=utf-8; action=http://tempuri.org/Add"' \
+Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
   <soap12:Body>
