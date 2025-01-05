@@ -936,14 +936,14 @@ For SOAP 1.2:
 http POST http://localhost:8000/calculator \
 Content-Type:'application/soap+xml; charset=utf-8; action=http://tempuri.org/Add"' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-  <soap:Body>
+<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+  <soap12:Body>
     <Add xmlns="http://tempuri.org/">
       <intA>5</intA>
       <intB>7</intB>
     </Add>
-  </soap:Body>
-</soap:Envelope>'
+  </soap12:Body>
+</soap12:Envelope>''
 ```
 
 The expected result is: 
