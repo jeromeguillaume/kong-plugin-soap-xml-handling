@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
 <!-- WSDL v2 with <description> tag -->
 <!-- 'wsdl' Namespace is the default Namespace and there is no prefix => xmlns   ="http://www.w3.org/ns/wsdl"         -->
 <!-- 'xsd'  Namespace has a prefix                                    => xmlns:xs="http://www.w3.org/2001/XMLSchema"> -->
@@ -11,7 +10,8 @@
     xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
     xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
     xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
-    xmlns:xs=        "http://www.w3.org/2001/XMLSchema">
+    xmlns:xs=        "http://www.w3.org/2001/XMLSchema"
+    xmlns:wsam=		 "http://www.w3.org/2007/05/addressing/metadata">
 
   <documentation>
     This is the web service documentation.
@@ -26,54 +26,44 @@
           <xs:element minOccurs="1" maxOccurs="1" name="intB" type="xs:int" />
         </xs:sequence>
       </xs:complexType>
- 
       <xs:element name="AddResponse" type="typeAddResponse" xmlns="http://tempuri.org/"/>
       <xs:complexType name="typeAddResponse">
         <xs:sequence>
           <xs:element minOccurs="1" maxOccurs="1" name="AddResult" type="xs:int" />
         </xs:sequence>
       </xs:complexType>
-
     </xs:schema>
   </types>
 
   <interface  name = "AddInterface" >
-
     <fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
-
-    <operation name="calculatorOperation"
+    <operation name="Add"
             pattern="http://www.w3.org/ns/wsdl/in-out"
             style="http://www.w3.org/ns/wsdl/style/iri"
             wsdlx:safe = "true">
-
-      <input    messageLabel="In"  element="stns:Add" />
-      <output   messageLabel="Out" element="stns:AddResponse" />
+      <!-- https://docs.imposter.sh/soap_plugin/ -->
+      <!-- <wsoap:operation soapAction="http://tempuri.org/Add" style="document"/> -->
+      <input    messageLabel="In"  element="stns:AddSoapIn"  wsam:Action="http://tempuri.org/Add"/>
+      <output   messageLabel="Out" element="stns:AddSoapOut" wsam:Action="http://tempuri.org/AddResponse"/>
       <outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
-    
     </operation>
-
   </interface>
 
   <binding name="calculatorSOAPBinding"
           interface="tns:AddInterface"
           type="http://www.w3.org/ns/wsdl/soap"
           wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
-
     <fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
-
-    <operation ref="tns:calculatorOperation"
+    <operation ref="tns:Add"
       wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
-
   </binding>
 
   <service
        name     ="calculatorService"
        interface="tns:AddInterface">
-
      <endpoint name ="calculatorEndpoint"
             binding ="tns:calculatorSOAPBinding"
             address ="http://www.dneonline.com/calculator.asmx"/>
-
   </service>
 
 </description>

@@ -20,20 +20,20 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" \
 -e "KONG_PROXY_ERROR_LOG=/dev/stderr" \
 -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" \
--e "KONG_PROXY_LISTEN=0.0.0.0:7000, 0.0.0.0:7443 ssl http2" \
--e "KONG_ADMIN_LISTEN=0.0.0.0:7001, 0.0.0.0:7444 ssl http2" \
--e "KONG_ADMIN_GUI_LISTEN=0.0.0.0:7002, 0.0.0.0:7445 ssl" \
--e "KONG_ADMIN_GUI_URL=http://localhost:7002" \
+-e "KONG_PROXY_LISTEN=0.0.0.0:9000, 0.0.0.0:9443 ssl http2" \
+-e "KONG_ADMIN_LISTEN=0.0.0.0:9001, 0.0.0.0:9444 ssl http2" \
+-e "KONG_ADMIN_GUI_LISTEN=0.0.0.0:9002, 0.0.0.0:9445 ssl" \
+-e "KONG_ADMIN_GUI_URL=http://localhost:9002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
 -e "KONG_LOG_LEVEL=debug" \
 -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e KONG_LICENSE_DATA \
--p 7000:7000 \
--p 7443:7443 \
--p 7001:7001 \
--p 7002:7002 \
--p 7444:7444 \
+-p 9000:9000 \
+-p 9443:9443 \
+-p 9001:9001 \
+-p 9002:9002 \
+-p 9444:9444 \
 --platform linux/$ARCHITECTURE \
 kong/kong-gateway:3.9.0.0
 

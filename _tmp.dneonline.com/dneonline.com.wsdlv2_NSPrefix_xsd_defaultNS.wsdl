@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
-<!-- WSDL v2 with <description> tag -->
-<!-- 'wsdl' Namespace has a prefix                                    => xmlns:wsdl="http://www.w3.org/ns/wsdl"         -->
-<!-- 'xsd'  Namespace is the default Namespace and there is no prefix => xmlns     ="http://www.w3.org/2001/XMLSchema"> -->
 <wsdl2:description
     xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
     targetNamespace= "http://tempuri.org/"
@@ -11,7 +7,8 @@
     xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
     xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
     xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
-    xmlns=           "http://www.w3.org/2001/XMLSchema">
+    xmlns=           "http://www.w3.org/2001/XMLSchema"
+    xmlns:wsam=      "http://www.w3.org/2007/05/addressing/metadata">
 
   <wsdl2:documentation>
     This is the web service documentation.
@@ -38,22 +35,17 @@
   </wsdl2:types>
 
   <wsdl2:interface  name = "AddInterface" >
-
     <wsdl2:fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
-
-    <wsdl2:operation name="calculatorOperation"
+    <wsdl2:operation name="Add"
             pattern="http://www.w3.org/ns/wsdl/in-out"
             style="http://www.w3.org/ns/wsdl/style/iri"
             wsdlx:safe = "true">
-
-      <wsdl2:input    messageLabel="In"  element="stns:Add" />
-      <wsdl2:output   messageLabel="Out" element="stns:AddResponse" />
-      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
-    
+      <wsdl2:input    messageLabel="In"  element="stns:AddSoapIn"  wsam:Action="http://tempuri.org/Add" />
+      <wsdl2:output   messageLabel="Out" element="stns:AddSoapOut" wsam:Action="http://tempuri.org/AddResponse"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />    
     </wsdl2:operation>
-
   </wsdl2:interface>
-
+  
   <wsdl2:binding name="calculatorSOAPBinding"
           interface="tns:AddInterface"
           type="http://www.w3.org/ns/wsdl/soap"
@@ -61,7 +53,7 @@
 
     <wsdl2:fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
 
-    <wsdl2:operation ref="tns:calculatorOperation"
+    <wsdl2:operation ref="tns:Add"
       wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
 
   </wsdl2:binding>
