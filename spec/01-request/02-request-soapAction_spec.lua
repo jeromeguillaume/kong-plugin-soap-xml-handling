@@ -1529,9 +1529,9 @@ local calculatorWSDL20_defaultNS_wsdl= [[
 ]]
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test

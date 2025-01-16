@@ -959,8 +959,8 @@ The expected result is:
 ## W3C Compatibility Matrix
 |SOAP/XML            |Plugin         |libxml         |libxlt         |saxon          |W3C URL        |Comment        |
 |:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|
-|SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml`|
-|SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml`|
+|SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml` for SOAP 1.1|
+|SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml` for SOAP 1.2|
 |XSLT 1.0|`XSLT TRANSFORMATION`|N/A|✅|✅|http://www.w3.org/1999/XSL/Transform|See `version=1.0` attribute in XSLT|
 |XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|`version=2.0` or `version=3.0` attribute in XSLT|
 |Schema XML 1.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/2001/XMLSchema|
@@ -998,7 +998,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
 5) The MIME type of the request's `Content-Type` is not checked by the plugin
-- For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
+- For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins send back to the consumer a generic `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
 
 <a id="Changelog"></a>
 
