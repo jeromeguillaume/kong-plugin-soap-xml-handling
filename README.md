@@ -962,10 +962,10 @@ The expected result is:
 |SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml` for SOAP 1.1|
 |SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml` for SOAP 1.2|
 |XSLT 1.0|`XSLT TRANSFORMATION`|N/A|✅|✅|http://www.w3.org/1999/XSL/Transform|See `version=1.0` attribute in XSLT|
-|XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|`version=2.0` or `version=3.0` attribute in XSLT|
+|XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|See `version=2.0` or `version=3.0` attribute in XSLT|
 |Schema XML 1.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/2001/XMLSchema|
-|WSDL 1.1|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/|see `<definitions>` in WSDL 1.0|
-|WSDL 2.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/ns/wsdl|see `<description>` in WSDL 2.0|
+|WSDL 1.1|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/|See `<definitions>` in WSDL 1.0|
+|WSDL 2.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/ns/wsdl|See `<description>` in WSDL 2.0|
 |SOAPAction|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/ (WSDL 1.1) and http://www.w3.org/ns/wsdl (WSDL 2.0)|`SOAPAction` Http header for SOAP 1.1 and `action` in `Content-Type` Http header for SOAP 1.2|
 |XPath 1.0|`ROUTING BY XPATH`|✅|N/A|⬛|https://www.w3.org/TR/xpath-10/||
 
