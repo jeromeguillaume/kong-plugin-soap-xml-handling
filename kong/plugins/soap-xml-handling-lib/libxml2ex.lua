@@ -151,7 +151,7 @@ end
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local ret = nil
-  local entity_url = ffi.string(URL)
+  local entity_url = nil
   local response_body
   local err = nil
   local cache_entity = nil
@@ -161,8 +161,13 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local xsdApiSchemaInclude
   local xsdSoapSchemaInclude
   local streamListen = false
-  local url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
+  local url_cache_key = nil
   
+  if URL ~= ffi.NULL then
+    entity_url = ffi.string(URL)
+  end
+  url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
+
   -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
   if #kong.configuration.stream_listeners > 0 then
     err = libxml2ex.stream_listen_err ..
@@ -454,7 +459,12 @@ function libxml2ex.formatErrMsg(xmlError)
     return errMessage
   end
 
-  local xmlErrorMsg = ffi.string(xmlError.message)
+  local xmlErrorMsg
+  if xmlError.message ~= ffi.NULL then
+    xmlErrorMsg = ffi.string(xmlError.message)
+  else
+    xmlErrorMsg = ""
+  end
   -- If the last character is Return Line
   if xmlErrorMsg:sub(-1) == '\n' then
     -- Remove the Return Line
@@ -464,7 +474,9 @@ function libxml2ex.formatErrMsg(xmlError)
   -- If there is a node information
   if xmlError.node ~= ffi.NULL then
     local ptrNode = ffi.cast("xmlNode *", xmlError.node)
-    errMessage = "Error Node: " .. ffi.string(ptrNode.name) .. ", "
+    if ptrNode.name ~= ffi.NULL then
+      errMessage = "Error Node: " .. ffi.string(ptrNode.name) .. ", "
+    end
   end
 
   errMessage =  errMessage .. 
@@ -508,7 +520,7 @@ function libxml2ex.xmlNodeDump	(xmlDocPtr, xmlNodePtr, level, format)
   if xmlBuffer ~= ffi.NULL then
     local rc = xml2.xmlNodeDump(xmlBuffer, xmlDocPtr, xmlNodePtr, level, format)
     -- if we succeeded dumping XML
-    if tonumber(rc) ~= -1 then
+    if tonumber(rc) ~= -1 and xmlBuffer.content ~= ffi.NULL then
       xmlDump = ffi.string(xmlBuffer.content)
       -- No error
       errDump = 0

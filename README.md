@@ -51,9 +51,10 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
     5. [Example (D) : Request and Response | XSLT with the saxon library](#Miscellaneous_example_D)
     6. [Example (E) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_E)
     7. [Example (F) : Request | validate the SOAPAction Http header](#Miscellaneous_example_F)
-6. [Plugins Testing](#Plugins_Testing)
-7. [Known Limitations](#Known_Limitations)
-8. [Changelog](#Changelog)
+6. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
+7. [Plugins Testing](#Plugins_Testing)
+8. [Known Limitations](#Known_Limitations)
+9. [Changelog](#Changelog)
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -70,8 +71,8 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname:port/path`|
 |config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
 |config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
-|config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`)|
-|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined in a WSDL v1 including `<wsdl:binding>` and `soapAction` attribute; the optional `soapActionRequired` attribute is considered. If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present|
+|config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`). If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a a fake prefix like `myprefix,http://...`|
+|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attributes). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
@@ -953,6 +954,26 @@ The expected result is:
 ...
 ```
 
+<a id="W3C_Compatibility_Matrix"></a>
+
+## W3C Compatibility Matrix
+|SOAP/XML            |Plugin         |libxml         |libxlt         |saxon          |W3C URL        |Comment        |
+|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|
+|SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml` for SOAP 1.1|
+|SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml` for SOAP 1.2|
+|XSLT 1.0|`XSLT TRANSFORMATION`|N/A|✅|✅|http://www.w3.org/1999/XSL/Transform|See `version=1.0` attribute in XSLT|
+|XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|`version=2.0` or `version=3.0` attribute in XSLT|
+|Schema XML 1.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/2001/XMLSchema|
+|WSDL 1.1|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/|see `<definitions>` in WSDL 1.0|
+|WSDL 2.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/ns/wsdl|see `<description>` in WSDL 2.0|
+|SOAPAction|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/ (WSDL 1.1) and http://www.w3.org/ns/wsdl (WSDL 2.0)|`SOAPAction` Http header for SOAP 1.1 and `action` in `Content-Type` Http header for SOAP 1.2|
+|XPath 1.0|`ROUTING BY XPATH`|✅|N/A|⬛|https://www.w3.org/TR/xpath-10/||
+
+- ✅: supported by the library
+- ❌: not supported by the library
+- ⬛: supported by the library but not available due to license restiction
+- N/A: not applicable
+
 <a id="Plugins_Testing"></a>
 
 ## Plugins Testing
@@ -977,8 +998,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
 5) The MIME type of the request's `Content-Type` is not checked by the plugin
-- For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
-6) The validation of `SOAPAction` works only for WSDL 1.0 (no support for WSDL 2.0)
+- For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins send back to the consumer a generic `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
 
 <a id="Changelog"></a>
 
@@ -1065,4 +1085,8 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - v1.2.3
   - Validation of `SOAPAction` Http header: fix the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
   - Validation of `SOAPAction` Http header: handle the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
- 
+- v1.2.4
+  - Validation of `SOAPAction` Http header: added WSDL 2.0 support
+  - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
+  - Add a `W3C Compatibility Matrix` section in the README.md
+  

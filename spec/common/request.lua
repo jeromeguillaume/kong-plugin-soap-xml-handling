@@ -116,7 +116,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -279,7 +279,7 @@ request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
+      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -291,7 +291,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -418,7 +418,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]

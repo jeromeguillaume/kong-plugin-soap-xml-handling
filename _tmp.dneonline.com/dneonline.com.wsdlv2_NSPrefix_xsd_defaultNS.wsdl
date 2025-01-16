@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<!-- Content from https://jenkov.com/tutorials/wsdl/overview.html -->
 <!-- WSDL v2 with <description> tag -->
-<!-- 'wsdl' Namespace has a prefix                                    => xmlns:wsdl="http://www.w3.org/ns/wsdl"         -->
-<!-- 'xsd'  Namespace is the default Namespace and there is no prefix => xmlns     ="http://www.w3.org/2001/XMLSchema"> -->
+<!-- 'wsdl' Namespace Namespace has a prefix (wsdl2)                  => xmlns:wsdl2="http://www.w3.org/ns/wsdl          -->
+<!-- 'xsd'  Namespace is the default Namespace and there is no prefix => xmlns      ="http://www.w3.org/2001/XMLSchema"> -->
+<!-- Add      has    'wsam:Action="http://tempuri.org/Add"' -->
+<!-- Subtract has no 'wsam:Action'                          -->
+<!-- Multiply has no 'wsam:Action' and invalid pattern URL  -->
 <wsdl2:description
     xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
     targetNamespace= "http://tempuri.org/"
     xmlns:tns=       "http://tempuri.org/"
-    xmlns:stns =     "http://tempuri.org/"
     xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
     xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
     xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
-    xmlns=           "http://www.w3.org/2001/XMLSchema">
+    xmlns=           "http://www.w3.org/2001/XMLSchema"
+    xmlns:wsam=      "http://www.w3.org/2007/05/addressing/metadata">
 
   <wsdl2:documentation>
     This is the web service documentation.
@@ -25,55 +27,110 @@
           <element minOccurs="1" maxOccurs="1" name="intA" type="int" />
           <element minOccurs="1" maxOccurs="1" name="intB" type="int" />
         </sequence>
-      </complexType>
- 
+      </complexType> 
       <element name="AddResponse" type="tempuri:typeAddResponse" xmlns:tempuri="http://tempuri.org/"/>
       <complexType name="typeAddResponse">
         <sequence>
           <element minOccurs="1" maxOccurs="1" name="AddResult" type="int" />
         </sequence>
       </complexType>
-
+      <element name="Subtract" type="tempuri:typeSubtract" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeSubtract">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="intA" type="int" />
+          <element minOccurs="1" maxOccurs="1" name="intB" type="int" />
+        </sequence>
+      </complexType> 
+      <element name="SubtractResponse" type="tempuri:typeSubtractResponse" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeSubtractResponse">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="SubtractResult" type="int" />
+        </sequence>
+      </complexType>
+      <element name="Multiply" type="tempuri:typeMultiply" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeMultiply">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="intA" type="int" />
+          <element minOccurs="1" maxOccurs="1" name="intB" type="int" />
+        </sequence>
+      </complexType> 
+      <element name="MultiplyResponse" type="tempuri:typeMultiplyResponse" xmlns:tempuri="http://tempuri.org/"/>
+      <complexType name="typeMultiplyResponse">
+        <sequence>
+          <element minOccurs="1" maxOccurs="1" name="MultiplyResult" type="int" />
+        </sequence>
+      </complexType>
     </schema>
   </wsdl2:types>
-
-  <wsdl2:interface  name = "AddInterface" >
-
-    <wsdl2:fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
-
-    <wsdl2:operation name="calculatorOperation"
+  
+    <wsdl2:interface  name = "AddInterface" >
+    <wsdl2:fault name = "invalidAddFault"  element = "tns:invalidAddError"/>
+    <wsdl2:operation name="Add"
             pattern="http://www.w3.org/ns/wsdl/in-out"
             style="http://www.w3.org/ns/wsdl/style/iri"
             wsdlx:safe = "true">
-
-      <wsdl2:input    messageLabel="In"  element="stns:Add" />
-      <wsdl2:output   messageLabel="Out" element="stns:AddResponse" />
-      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
-    
+      <wsdl2:input    messageLabel="In"  element="tns:AddSoapIn"  wsam:Action="http://tempuri.org/Add" />
+      <wsdl2:output   messageLabel="Out" element="tns:AddSoapOut" wsam:Action="http://tempuri.org/AddResponse"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />    
     </wsdl2:operation>
-
+  </wsdl2:interface>
+  
+  <wsdl2:interface  name = "SubtractInterface" >
+    <wsdl2:fault name = "invalidSubtractFault"  element = "tns:invalidSubtractError"/>
+    <wsdl2:operation name="Subtract"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <wsdl2:input    messageLabel="In"  element="tns:SubtractSoapIn"/>
+      <wsdl2:output   messageLabel="Out" element="tns:SubtractSoapOut"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidSubtractFault" />    
+    </wsdl2:operation>
   </wsdl2:interface>
 
-  <wsdl2:binding name="calculatorSOAPBinding"
+  <wsdl2:interface  name = "MultiplytInterface" >
+    <wsdl2:fault name = "invalidMultiplyFault"  element = "tns:invalidMultiplyError"/>
+    <wsdl2:operation name="Multiply"
+            pattern="http://www.w3.org/ns/wsdl/in-out-INVALID-URL-FOR-TEST-ONLY"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <wsdl2:input    messageLabel="In"  element="tns:MultiplySoapIn"/>
+      <wsdl2:output   messageLabel="Out" element="tns:MultiplySoapOut"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidMultiplyFault" />    
+    </wsdl2:operation>
+  </wsdl2:interface>
+
+  <wsdl2:binding name="AddSOAPBinding"
           interface="tns:AddInterface"
           type="http://www.w3.org/ns/wsdl/soap"
           wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
-
     <wsdl2:fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
-
-    <wsdl2:operation ref="tns:calculatorOperation"
+    <wsdl2:operation ref="tns:Add"
       wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+  </wsdl2:binding>
 
+  <wsdl2:binding name="SubtractSOAPBinding"
+          interface="tns:SubtractInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+    <wsdl2:fault ref="tns:invalidSubtractFault" wsoap:code="soap:Sender"/>
+    <wsdl2:operation ref="tns:Subtract"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
   </wsdl2:binding>
 
   <wsdl2:service
-       name     ="calculatorService"
+       name     ="AddCalculatorService"
        interface="tns:AddInterface">
+     <wsdl2:endpoint name ="AddCalculatorEndpoint"
+            binding ="tns:AddSOAPBinding"
+            address ="http://localhost:8080/ws"/>
+  </wsdl2:service>
 
-     <wsdl2:endpoint name ="calculatorEndpoint"
-            binding ="tns:calculatorSOAPBinding"
-            address ="http://www.dneonline.com/calculator.asmx"/>
-
+  <wsdl2:service
+       name     ="SubtractCalculatorService"
+       interface="tns:SubtractInterface">
+     <wsdl2:endpoint name ="SubtractCalculatorEndpoint"
+            binding ="tns:SubtractSOAPBinding"
+            address ="http://localhost:8080/ws"/>
   </wsdl2:service>
 
 </wsdl2:description>
