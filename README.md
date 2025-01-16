@@ -1065,6 +1065,6 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Validation of `SOAPAction` Http header: fix the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
   - Validation of `SOAPAction` Http header: handle the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
  - v1.2.4
-  - Validation of `SOAPAction` Http header: works for WSDL 2.0
+  - Validation of `SOAPAction` Http header: added WSDL 2.0 support
   - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
   
