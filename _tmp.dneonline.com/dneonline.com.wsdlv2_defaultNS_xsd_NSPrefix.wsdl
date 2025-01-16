@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!-- WSDL v2 with <description> tag -->
 <!-- 'wsdl' Namespace is the default Namespace and there is no prefix => xmlns   ="http://www.w3.org/ns/wsdl"         -->
-<!-- 'xsd'  Namespace has a prefix                                    => xmlns:xs="http://www.w3.org/2001/XMLSchema"> -->
+<!-- 'xsd'  Namespace has a prefix (xs)                               => xmlns:xs="http://www.w3.org/2001/XMLSchema"> -->
+<!-- Add      has    'wsam:Action="http://tempuri.org/Add"' -->
+<!-- Subtract has no 'wsam:Action'                          -->
+<!-- Multiply has    'wsam:Action' and invalid pattern URL  -->
 <description
     xmlns=           "http://www.w3.org/ns/wsdl"
     targetNamespace= "http://tempuri.org/"
     xmlns:tns=       "http://tempuri.org/"
-    xmlns:stns =     "http://tempuri.org/"
     xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
     xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
     xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
     xmlns:xs=        "http://www.w3.org/2001/XMLSchema"
-    xmlns:wsam=		 "http://www.w3.org/2007/05/addressing/metadata">
+    xmlns:wsam=		   "http://www.w3.org/2007/05/addressing/metadata">
 
   <documentation>
     This is the web service documentation.
@@ -32,24 +34,72 @@
           <xs:element minOccurs="1" maxOccurs="1" name="AddResult" type="xs:int" />
         </xs:sequence>
       </xs:complexType>
+      <xs:element name="Subtract" type="typeSubtract" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeSubtract">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="intA" type="xs:int" />
+          <xs:element minOccurs="1" maxOccurs="1" name="intB" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="SubtractResponse" type="typeSubtractResponse" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeSubtractResponse">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="SubtractResult" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="Multiply" type="typeSubtract" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeMultiply">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="intA" type="xs:int" />
+          <xs:element minOccurs="1" maxOccurs="1" name="intB" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
+      <xs:element name="MultiplyResponse" type="typeMultiplyResponse" xmlns="http://tempuri.org/"/>
+      <xs:complexType name="typeMultiplyResponse">
+        <xs:sequence>
+          <xs:element minOccurs="1" maxOccurs="1" name="MultiplyResult" type="xs:int" />
+        </xs:sequence>
+      </xs:complexType>
     </xs:schema>
   </types>
 
   <interface  name = "AddInterface" >
-    <fault name = "invalidAddFault"  element = "stns:invalidAddError"/>
+    <fault name = "invalidAddFault"  element = "tns:invalidAddError"/>
     <operation name="Add"
             pattern="http://www.w3.org/ns/wsdl/in-out"
             style="http://www.w3.org/ns/wsdl/style/iri"
             wsdlx:safe = "true">
-      <!-- https://docs.imposter.sh/soap_plugin/ -->
-      <!-- <wsoap:operation soapAction="http://tempuri.org/Add" style="document"/> -->
-      <input    messageLabel="In"  element="stns:AddSoapIn"  wsam:Action="http://tempuri.org/Add"/>
-      <output   messageLabel="Out" element="stns:AddSoapOut" wsam:Action="http://tempuri.org/AddResponse"/>
+      <input    messageLabel="In"  element="tns:AddSoapIn"  wsam:Action="http://tempuri.org/Add"/>
+      <output   messageLabel="Out" element="tns:AddSoapOut" wsam:Action="http://tempuri.org/AddResponse"/>
       <outfault messageLabel="Out" ref    ="tns:invalidAddFault" />
     </operation>
   </interface>
 
-  <binding name="calculatorSOAPBinding"
+  <interface  name = "SubtractInterface" >
+    <fault name = "invalidSubtractFault"  element = "tns:invalidSubtractError"/>
+    <operation name="Subtract"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <input    messageLabel="In"  element="tns:SubtractSoapIn"/>
+      <output   messageLabel="Out" element="tns:SubtractSoapOut"/>
+      <outfault messageLabel="Out" ref    ="tns:invalidSubtractFault" />
+    </operation>
+  </interface>
+
+  <interface  name = "MultiplyInterface" >
+    <fault name = "invalidMultiplyFault"  element = "tns:invalidMultiplyError"/>
+    <operation name="Multiply"
+            pattern="http://www.w3.org/ns/wsdl/in-out-INVALID-URL-FOR-TEST-ONLY"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <input    messageLabel="In"  element="tns:MultiplySoapIn"/>
+      <output   messageLabel="Out" element="tns:MultiplySoapOut"/>
+      <outfault messageLabel="Out" ref    ="tns:invalidMultiplyFault" />
+    </operation>
+  </interface>
+
+  <binding name="AddSOAPBinding"
           interface="tns:AddInterface"
           type="http://www.w3.org/ns/wsdl/soap"
           wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
@@ -58,12 +108,30 @@
       wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
   </binding>
 
+  <binding name="SubtractSOAPBinding"
+          interface="tns:SubtractInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+    <fault ref="tns:invalidSubtractFault" wsoap:code="soap:Sender"/>
+    <operation ref="tns:Subtract"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+  </binding>
+
   <service
-       name     ="calculatorService"
+       name     ="AddCalculatorService"
        interface="tns:AddInterface">
-     <endpoint name ="calculatorEndpoint"
-            binding ="tns:calculatorSOAPBinding"
-            address ="http://www.dneonline.com/calculator.asmx"/>
+     <endpoint name ="AddCalculatorEndpoint"
+            binding ="tns:AddSOAPBinding"
+            address ="http://localhost:8080/ws"/>
   </service>
+
+  <service
+       name     ="SubtractCalculatorService"
+       interface="tns:SubtractInterface">
+     <endpoint name ="SubtractCalculatorEndpoint"
+            binding ="tns:SubtractSOAPBinding"
+            address ="http://localhost:8080/ws"/>
+  </service>
+
 
 </description>
