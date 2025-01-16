@@ -51,9 +51,10 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
     5. [Example (D) : Request and Response | XSLT with the saxon library](#Miscellaneous_example_D)
     6. [Example (E) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_E)
     7. [Example (F) : Request | validate the SOAPAction Http header](#Miscellaneous_example_F)
-6. [Plugins Testing](#Plugins_Testing)
-7. [Known Limitations](#Known_Limitations)
-8. [Changelog](#Changelog)
+6. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
+7. [Plugins Testing](#Plugins_Testing)
+8. [Known Limitations](#Known_Limitations)
+9. [Changelog](#Changelog)
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -953,6 +954,26 @@ The expected result is:
 ...
 ```
 
+<a id="W3C_Compatibility_Matrix"></a>
+
+## W3C Compatibility Matrix
+|SOAP/XML            |Plugin         |libxml         |libxlt         |saxon          |W3C URL        |Comment        |
+|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|
+|SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml`|
+|SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml`|
+|XSLT 1.0|`XSLT TRANSFORMATION`|N/A|✅|✅|http://www.w3.org/1999/XSL/Transform|See `version=1.0` attribute in XSLT|
+|XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|`version=2.0` or `version=3.0` attribute in XSLT|
+|Schema XML 1.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/2001/XMLSchema|
+|WSDL 1.1|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/|see `<definitions>` in WSDL 1.0|
+|WSDL 2.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/ns/wsdl|see `<description>` in WSDL 2.0|
+|SOAPAction|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/ (WSDL 1.1) and http://www.w3.org/ns/wsdl (WSDL 2.0)|`SOAPAction` Http header for SOAP 1.1 and `action` in `Content-Type` Http header for SOAP 1.2|
+|XPath 1.0|`ROUTING BY XPATH`|✅|N/A|⬛|https://www.w3.org/TR/xpath-10/||
+
+- ✅: supported by the library
+- ❌: not supported by the library
+- ⬛: supported by the library but not available due to license restiction
+- N/A: not applicable
+
 <a id="Plugins_Testing"></a>
 
 ## Plugins Testing
@@ -1064,7 +1085,8 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - v1.2.3
   - Validation of `SOAPAction` Http header: fix the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
   - Validation of `SOAPAction` Http header: handle the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
- - v1.2.4
+- v1.2.4
   - Validation of `SOAPAction` Http header: added WSDL 2.0 support
   - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
+  - Add a `W3C Compatibility Matrix` section in the README.md
   
