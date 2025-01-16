@@ -149,8 +149,8 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
   -- If it's a SOAP/XML Request then the Fault Message is SOAP/XML text
   if contentTypeJSON == false then
     -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
-    detailErrMsg = string.gsub(detailErrMsg, "<", "Less Than '")
-    detailErrMsg = string.gsub(detailErrMsg, ">", "' Greater Than")
+    detailErrMsg = string.gsub(detailErrMsg, "<", "Less Than ")
+    detailErrMsg = string.gsub(detailErrMsg, ">", " Greater Than")
     kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. detailErrMsg .. "</detail>")
     if VerboseResponse then
       detailErrMsg = "\n      <detail>" .. detailErrMsg .. "</detail>"
@@ -662,9 +662,9 @@ function xmlgeneral.initializeXmlSoapPlugin ()
     --      https://luajit.org/ext_ffi_semantics.html#callback
     xslt.xsltSetGenericErrorFunc (nil, function(ctx, msg, type)
       -- The callback function can be called two times in a row
-      if kong.ctx.shared.xmlSoapErrMessage == nil then
+      if kong.ctx.shared.xmlSoapErrMessage == nil and type ~= ffi.NULL then
         kong.ctx.shared.xmlSoapErrMessage = ffi.string(type)
-      else
+      elseif type ~= ffi.NULL then
         kong.ctx.shared.xmlSoapErrMessage = kong.ctx.shared.xmlSoapErrMessage .. '. ' .. ffi.string(type)
       end
     end)
@@ -1351,7 +1351,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
       -- Get the List of all NameSpaces of the WSDL and find the NameSpace related to WSDL and SOAP 1.1 and SOAP 1.2
       wsdlRaw_namespaces = libxml2.xmlGetNsList(xmlWSDL_doc, xmlWSDLNodePtrRoot)
       local i = 0
-      while wsdlRaw_namespaces and wsdlRaw_namespaces[i] ~= ffi.NULL do
+      while wsdlRaw_namespaces and wsdlRaw_namespaces[i] ~= ffi.NULL and wsdlRaw_namespaces[i].href ~= ffi.NULL do
         -- WSDL 1.1 namespace (example: wsdl)
         if     ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1 then
           if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
@@ -1705,7 +1705,7 @@ function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
   if not errMessage then
     -- Get root element '<soap:Envelope>' from the SOAP Request
     xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xmlRequest_doc)
-    if not xmlNodePtrRoot or ffi.string(xmlNodePtrRoot.name) ~= "Envelope"  then
+    if not xmlNodePtrRoot or xmlNodePtrRoot.name == ffi.NULL or (xmlNodePtrRoot.name ~= ffi.NULL and ffi.string(xmlNodePtrRoot.name)) ~= "Envelope"  then
       errMessage = "Unable to find 'soap:Envelope'"
     end
   end
@@ -1715,7 +1715,7 @@ function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
     currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
     -- Retrieve '<soap:Body>' Node
     while currentNode ~= ffi.NULL do
-      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
         nodeName = ffi.string(currentNode.name)
         if nodeName == "Body" then
           break
@@ -1725,7 +1725,7 @@ function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
     end
     if nodeName == "Body" then
       currentNode = libxml2.xmlFirstElementChild(currentNode)
-      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
         operationName = ffi.string(currentNode.name)
       else
         errMessage = "Unable to find the Operation Name inside 'soap:Body'"
@@ -1855,7 +1855,8 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
   -- Get root element '<soap:Envelope>' from the SOAP Request
   if not errMessage then
     xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xmlRequest_doc)
-    if not xmlNodePtrRoot or ffi.string(xmlNodePtrRoot.name) ~= "Envelope"  then
+    if not xmlNodePtrRoot or xmlNodePtrRoot.name == ffi.NULL or
+      (xmlNodePtrRoot.name ~= ffi.NULL and ffi.string(xmlNodePtrRoot.name) ~= "Envelope")  then
       errMessage = "Unable to find 'Envelope' tag"
     end
   end
@@ -1864,7 +1865,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
   if not errMessage then
     raw_namespaces = libxml2.xmlGetNsList(xmlRequest_doc, xmlNodePtrRoot)
     i = 0
-    while raw_namespaces and raw_namespaces[i] ~= ffi.NULL do
+    while raw_namespaces and raw_namespaces[i] ~= ffi.NULL and raw_namespaces[i].href ~= ffi.NULL do
       if  ffi.string(raw_namespaces[i].href) == xmlgeneral.schemaSOAP1_1 then
         nsSOAP_11_12_found = xmlgeneral.SOAP1_1
       elseif ffi.string(raw_namespaces[i].href) == xmlgeneral.schemaSOAP1_2 then
@@ -1895,7 +1896,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
     currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
     -- Retrieve '<soap:Body>' Node
     while currentNode ~= ffi.NULL do
-      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
         nodeName = ffi.string(currentNode.name)
         if nodeName == "Body" then
           soapBody_found = true
@@ -1906,7 +1907,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
     end
     if soapBody_found then
       currentNode = libxml2.xmlFirstElementChild(currentNode)
-      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE then
+      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
         request_OperationName = ffi.string(currentNode.name)
         kong.log.debug("validate 'SOAPAction' Header - Found in SOAP Request: operationName=" .. request_OperationName)
       else

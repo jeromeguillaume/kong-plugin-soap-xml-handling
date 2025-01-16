@@ -978,7 +978,6 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
 5) The MIME type of the request's `Content-Type` is not checked by the plugin
 - For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins sends back to the consumer a `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
-6) The validation of `SOAPAction` works only for WSDL 1.0 (no support for WSDL 2.0)
 
 <a id="Changelog"></a>
 
@@ -1065,4 +1064,7 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
 - v1.2.3
   - Validation of `SOAPAction` Http header: fix the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
   - Validation of `SOAPAction` Http header: handle the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
- 
+ - v1.2.4
+  - Validation of `SOAPAction` Http header: works for WSDL 2.0
+  - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
+  
