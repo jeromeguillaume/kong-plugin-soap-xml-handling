@@ -957,7 +957,7 @@ The expected result is:
 <a id="W3C_Compatibility_Matrix"></a>
 
 ## W3C Compatibility Matrix
-|SOAP/XML            |Plugin         |libxml         |libxlt         |saxon          |W3C URL        |Comment        |
+|SOAP/XML            |Plugin         |libxml         |libxlt         |saxon HE        |W3C URL        |Comment        |
 |:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|
 |SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml` for SOAP 1.1|
 |SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml` for SOAP 1.2|
@@ -971,7 +971,7 @@ The expected result is:
 
 - ✅: supported by the library
 - ❌: not supported by the library
-- ⬛: supported by the library but not available due to license restiction
+- ⬛: supported by the library but not available due to license restiction (it only concerns `saxon HE` that stands for Home Edition)
 - N/A: not applicable
 
 <a id="Plugins_Testing"></a>
