@@ -1093,5 +1093,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Validation of `SOAPAction` Http header: added WSDL 2.0 support
   - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
   - Add a `W3C Compatibility Matrix` section in the README.md
-  - `pongo` tests: for avoiding the sporadic error `attempt to index field 'lru' (a nil value)` (since v3.8): remove `it()` from `lazy_setup()` and remove `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
+  - `pongo` tests: for reducing the number of sporadic errors `attempt to index field 'lru' (a nil value)` (since v3.8): remove `it()` from `lazy_setup()` and remove `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
   
