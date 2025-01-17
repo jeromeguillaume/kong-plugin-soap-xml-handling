@@ -957,10 +957,10 @@ The expected result is:
 <a id="W3C_Compatibility_Matrix"></a>
 
 ## W3C Compatibility Matrix
-|SOAP/XML            |Plugin         |libxml         |libxlt         |saxon HE        |W3C URL        |Comment        |
+|SOAP/XML       |Plugin         |libxml2        |libxlt         |saxon HE       |W3C URL        |Comment        |
 |:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|:--------------|
-|SOAP 1.1 Envelope|All|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml` for SOAP 1.1|
-|SOAP 1.2 Envelope|All|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml` for SOAP 1.2|
+|SOAP 1.1 Envelope|All (except for plugin features not supported by the library)|✅|✅|✅|http://schemas.xmlsoap.org/soap/envelope/|The `Content-Type` is `text/xml` for SOAP 1.1|
+|SOAP 1.2 Envelope|All (except for plugin features not supported by the library)|✅|✅|✅|http://www.w3.org/2003/05/soap-envelope|The `Content-Type` is `application/soap+xml` for SOAP 1.2|
 |XSLT 1.0|`XSLT TRANSFORMATION`|N/A|✅|✅|http://www.w3.org/1999/XSL/Transform|See `version=1.0` attribute in XSLT|
 |XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|See `version=2.0` or `version=3.0` attribute in XSLT|
 |Schema XML 1.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/2001/XMLSchema|
@@ -968,11 +968,15 @@ The expected result is:
 |WSDL 2.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/ns/wsdl|See `<description>` in WSDL 2.0|
 |SOAPAction|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/ (WSDL 1.1) and http://www.w3.org/ns/wsdl (WSDL 2.0)|`SOAPAction` Http header for SOAP 1.1 and `action` in `Content-Type` Http header for SOAP 1.2|
 |XPath 1.0|`ROUTING BY XPATH`|✅|N/A|⬛|https://www.w3.org/TR/xpath-10/||
-
+1) Table legend
 - ✅: supported by the library
 - ❌: not supported by the library
 - ⬛: supported by the library but not available due to license restiction (it only concerns `saxon HE` that stands for Home Edition)
 - N/A: not applicable
+
+2) Libraries availability
+- The `libxml2` and `libxlt` libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image
+- The `saxon HE` library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate saxon with Kong
 
 <a id="Plugins_Testing"></a>
 
