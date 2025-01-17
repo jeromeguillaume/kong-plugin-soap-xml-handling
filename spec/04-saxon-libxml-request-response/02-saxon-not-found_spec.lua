@@ -20,11 +20,6 @@ for _, strategy in helpers.all_strategies() do
     setup(function()
     end)
 
-    -- teardown runs after its parent describe block
-    teardown(function()
-      helpers.stop_kong(nil, true)
-    end)
-
     -- before_each runs before each child describe
     before_each(function()
       client = helpers.proxy_client()
@@ -57,6 +52,10 @@ for _, strategy in helpers.all_strategies() do
 				}))
 		
     	end)
+
+      lazy_teardown(function()
+				helpers.stop_kong(nil, true)
+			end)
                
       it("1|Saxon library not found", function()
         saxon_common._1_Saxon_Library_not_found (assert, client)

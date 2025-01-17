@@ -1540,11 +1540,6 @@ for _, strategy in helpers.all_strategies() do
     setup(function()
     end)
 
-    -- teardown runs after its parent describe block
-    teardown(function()
-      helpers.stop_kong(nil, true)
-    end)
-
     -- before_each runs before each child describe
     before_each(function()
       client = helpers.proxy_client()
@@ -1558,212 +1553,216 @@ for _, strategy in helpers.all_strategies() do
     -- a nested describe defines an actual test on the plugin behavior
     describe("libxml |", function()
 			
-    lazy_setup(function()			
-      -- A BluePrint gives us a helpful database wrapper to
-      --    manage Kong Gateway entities directly.
-      -- This function also truncates any existing data in an existing db.
-      -- The custom plugin name is provided to this function so it mark as loaded
-      local blue_print = helpers.get_db_utils(strategy, nil, { PLUGIN_NAME })
-      
-      local calculator_service = blue_print.services:insert({
-        protocol = "http",
-        host = "ws.soap1.calculator",
-        port = 8080,
-        path = "/ws",
-      })
-           
-      local calculator_wsdl11_soap11_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_SOAPAction_11_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_soap11_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL11_soap_soap12,
-          SOAPAction_Header = "yes"
-        }
-      }
-
-      local calculator_wsdl11_kong11_stands_for_soap11_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_SOAPAction_kong_wsdl_kong11_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_kong11_stands_for_soap11_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL11_kong_wsdl_kong11_kong12,
-          SOAPAction_Header = "yes"
-        }
-      }
-
-      local calculator_wsdl11_defaultNS_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_SOAPAction_kong_wsdl_defaultNS_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_defaultNS_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL11_defaultNS_wsdl_kong11_kong12,
-          SOAPAction_Header = "yes"
-        }
-      }
-
-      local calculator_wsdl11_soap12_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_action_12_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_soap12_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL11_soap_soap12,
-          SOAPAction_Header = "yes",
-          xsdSoapSchema = soap12_common.soap12_XSD,
-          xsdSoapSchemaInclude = {
-            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+      lazy_setup(function()			
+        -- A BluePrint gives us a helpful database wrapper to
+        --    manage Kong Gateway entities directly.
+        -- This function also truncates any existing data in an existing db.
+        -- The custom plugin name is provided to this function so it mark as loaded
+        local blue_print = helpers.get_db_utils(strategy, nil, { PLUGIN_NAME })
+        
+        local calculator_service = blue_print.services:insert({
+          protocol = "http",
+          host = "ws.soap1.calculator",
+          port = 8080,
+          path = "/ws",
+        })
+            
+        local calculator_wsdl11_soap11_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_11_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_soap11_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL11_soap_soap12,
+            SOAPAction_Header = "yes"
           }
         }
-      }
 
-      local calculator_wsdl11_kong12_stands_for_soap12_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_action12_kong_wsdl_kong12_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_kong12_stands_for_soap12_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL11_kong_wsdl_kong11_kong12,
-          SOAPAction_Header = "yes",
-          xsdSoapSchema = soap12_common.soap12_XSD,
-          xsdSoapSchemaInclude = {
-            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+        local calculator_wsdl11_kong11_stands_for_soap11_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_kong_wsdl_kong11_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_kong11_stands_for_soap11_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL11_kong_wsdl_kong11_kong12,
+            SOAPAction_Header = "yes"
           }
         }
-      }
 
-      local calculator_wsdl11_soap_wsdl_not_defined_in_plugin_ko = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_SOAPAction_wsdl_not_defined_in_plugin_ko" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_soap_wsdl_not_defined_in_plugin_ko,
-        config = {
-          VerboseRequest = true,
-          SOAPAction_Header = "yes"
-        }
-      }
-      
-      local calculator_wsdl11_soap_xsd_defined_instead_of_wsdl_ko = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_SOAPAction_xsd_defined_instead_of_wsdl_ko" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_soap_xsd_defined_instead_of_wsdl_ko,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,          
-          SOAPAction_Header = "yes"        
-        }
-      }
-      
-      local calculator_wsdl11_soap11_yes_null_allowed_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL11_SOAPAction_yes_null_allowed_11_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl11_soap11_yes_null_allowed_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL11_soap_soap12,
-          SOAPAction_Header = "yes_null_allowed"
-        }
-      }
-
-      local calculator_wsdl20_soap11_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL20_SOAPAction_11_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl20_soap11_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL20_wsdl2,
-          SOAPAction_Header = "yes"
-        }
-      }
-
-      local calculator_wsdl20_soap12_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL20_action_12_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl20_soap12_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL20_wsdl2,
-          SOAPAction_Header = "yes",
-          xsdSoapSchema = soap12_common.soap12_XSD,
-          xsdSoapSchemaInclude = {
-            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+        local calculator_wsdl11_defaultNS_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_kong_wsdl_defaultNS_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_defaultNS_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL11_defaultNS_wsdl_kong11_kong12,
+            SOAPAction_Header = "yes"
           }
         }
-      }
 
-      local calculator_wsdl20_soap11_defaultNS_wsdl_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL20_SOAPAction_11_defaultNS_wsdl_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl20_soap11_defaultNS_wsdl_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL20_defaultNS_wsdl,
-          SOAPAction_Header = "yes"
-        }
-      }
-
-      local calculator_wsdl20_soap12_defaultNS_wsdl_ok = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculatorWSDL20_action_12_defaultNS_wsdl_ok" }
-        }
-      blue_print.plugins:insert {
-        name = PLUGIN_NAME,
-        route = calculator_wsdl20_soap12_defaultNS_wsdl_ok,
-        config = {
-          VerboseRequest = true,
-          xsdApiSchema = calculatorWSDL20_defaultNS_wsdl,
-          SOAPAction_Header = "yes",
-          xsdSoapSchema = soap12_common.soap12_XSD,
-          xsdSoapSchemaInclude = {
-            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+        local calculator_wsdl11_soap12_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_action_12_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_soap12_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL11_soap_soap12,
+            SOAPAction_Header = "yes",
+            xsdSoapSchema = soap12_common.soap12_XSD,
+            xsdSoapSchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
           }
         }
-      }
 
-      -- start kong
-      assert(helpers.start_kong({
-        -- use the custom test template to create a local mock server
-        nginx_conf = "spec/fixtures/custom_nginx.template",
-        -- make sure our plugin gets loaded
-        plugins = "bundled," .. PLUGIN_NAME
-        }))       
+        local calculator_wsdl11_kong12_stands_for_soap12_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_action12_kong_wsdl_kong12_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_kong12_stands_for_soap12_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL11_kong_wsdl_kong11_kong12,
+            SOAPAction_Header = "yes",
+            xsdSoapSchema = soap12_common.soap12_XSD,
+            xsdSoapSchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+
+        local calculator_wsdl11_soap_wsdl_not_defined_in_plugin_ko = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_wsdl_not_defined_in_plugin_ko" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_soap_wsdl_not_defined_in_plugin_ko,
+          config = {
+            VerboseRequest = true,
+            SOAPAction_Header = "yes"
+          }
+        }
+        
+        local calculator_wsdl11_soap_xsd_defined_instead_of_wsdl_ko = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_xsd_defined_instead_of_wsdl_ko" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_soap_xsd_defined_instead_of_wsdl_ko,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,          
+            SOAPAction_Header = "yes"        
+          }
+        }
+        
+        local calculator_wsdl11_soap11_yes_null_allowed_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_yes_null_allowed_11_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_soap11_yes_null_allowed_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL11_soap_soap12,
+            SOAPAction_Header = "yes_null_allowed"
+          }
+        }
+
+        local calculator_wsdl20_soap11_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL20_SOAPAction_11_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl20_soap11_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL20_wsdl2,
+            SOAPAction_Header = "yes"
+          }
+        }
+
+        local calculator_wsdl20_soap12_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL20_action_12_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl20_soap12_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL20_wsdl2,
+            SOAPAction_Header = "yes",
+            xsdSoapSchema = soap12_common.soap12_XSD,
+            xsdSoapSchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+
+        local calculator_wsdl20_soap11_defaultNS_wsdl_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL20_SOAPAction_11_defaultNS_wsdl_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl20_soap11_defaultNS_wsdl_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL20_defaultNS_wsdl,
+            SOAPAction_Header = "yes"
+          }
+        }
+
+        local calculator_wsdl20_soap12_defaultNS_wsdl_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL20_action_12_defaultNS_wsdl_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl20_soap12_defaultNS_wsdl_ok,
+          config = {
+            VerboseRequest = true,
+            xsdApiSchema = calculatorWSDL20_defaultNS_wsdl,
+            SOAPAction_Header = "yes",
+            xsdSoapSchema = soap12_common.soap12_XSD,
+            xsdSoapSchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+
+        -- start kong
+        assert(helpers.start_kong({
+          -- use the custom test template to create a local mock server
+          nginx_conf = "spec/fixtures/custom_nginx.template",
+          -- make sure our plugin gets loaded
+          plugins = "bundled," .. PLUGIN_NAME
+          }))       
       end)
-
+      
+      lazy_teardown(function()
+				helpers.stop_kong(nil, true)
+			end)
+      
       --------------------------------------------------------------------------------------------------
       -- WSDL 1.1 | SOAP 1.1
       --------------------------------------------------------------------------------------------------
@@ -2566,9 +2565,9 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
+    
+    end)
 
-
-		end)    
-	end)
-  ::continue::
+  end)  
+	::continue::
 end

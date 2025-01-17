@@ -22,11 +22,6 @@ for _, strategy in helpers.all_strategies() do
     setup(function()
     end)
 
-    -- teardown runs after its parent describe block
-    teardown(function()
-      helpers.stop_kong(nil, true)
-    end)
-
     -- before_each runs before each child describe
     before_each(function()
       client = helpers.proxy_client()
@@ -40,100 +35,104 @@ for _, strategy in helpers.all_strategies() do
     -- a nested describe defines an actual test on the plugin behavior
     describe("libxml+libxslt |", function()
 			
-    lazy_setup(function()			
-      -- A BluePrint gives us a helpful database wrapper to
-      --    manage Kong Gateway entities directly.
-      -- This function also truncates any existing data in an existing db.
-      -- The custom plugin name is provided to this function so it mark as loaded
-      local blue_print = helpers.get_db_utils(strategy, nil, { pluginRequest,  pluginResponse })
-      
-      local calculator_service = blue_print.services:insert({
-          protocol = "http",
-          host = "ws.soap1.calculator",
-          port = 8080,
-          path = "/ws",
-        })
+      lazy_setup(function()			
+        -- A BluePrint gives us a helpful database wrapper to
+        --    manage Kong Gateway entities directly.
+        -- This function also truncates any existing data in an existing db.
+        -- The custom plugin name is provided to this function so it mark as loaded
+        local blue_print = helpers.get_db_utils(strategy, nil, { pluginRequest,  pluginResponse })
+        
+        local calculator_service = blue_print.services:insert({
+            protocol = "http",
+            host = "ws.soap1.calculator",
+            port = 8080,
+            path = "/ws",
+          })
 
-      local tempui_org_request_response_xsd = blue_print.routes:insert{
-        paths = { "/tempuri.org.request-response.xsd" }
-      }
-      blue_print.plugins:insert {
-        name = "request-termination",
-        route = tempui_org_request_response_xsd,
-        config = {
-          status_code = 200,
-          content_type = "text/xml; charset=utf-8",
-          body = request_common.calculator_Request_Response_XSD_VALIDATION
+        local tempui_org_request_response_xsd = blue_print.routes:insert{
+          paths = { "/tempuri.org.request-response.xsd" }
         }
-      }
-
-      local calculator_soap12_XSD_with_import_no_download_ok_route = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculator_soap12_XSD_with_import_no_download_ok" }
-        }
-      blue_print.plugins:insert {
-        name = pluginRequest,
-        route = calculator_soap12_XSD_with_import_no_download_ok_route,
-        config = {
-          VerboseRequest = false,
-          xsdApiSchemaInclude = {
-            ["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
-          },
-          xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
-          xsdSoapSchema = soap12_common.soap12_XSD,
-          xsdSoapSchemaInclude = {
-            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+        blue_print.plugins:insert {
+          name = "request-termination",
+          route = tempui_org_request_response_xsd,
+          config = {
+            status_code = 200,
+            content_type = "text/xml; charset=utf-8",
+            body = request_common.calculator_Request_Response_XSD_VALIDATION
           }
         }
-      }
-      blue_print.plugins:insert {
-        name = pluginResponse,
-        route = calculator_soap12_XSD_with_import_no_download_ok_route,
-        config = {
-          VerboseResponse = false,
-          xsdApiSchemaInclude = {
-            ["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
-          },
-          xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
-          xsdSoapSchema = soap12_common.soap12_XSD,
-          xsdSoapSchemaInclude = {
-            ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+
+        local calculator_soap12_XSD_with_import_no_download_ok_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_soap12_XSD_with_import_no_download_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_soap12_XSD_with_import_no_download_ok_route,
+          config = {
+            VerboseRequest = false,
+            xsdApiSchemaInclude = {
+              ["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
+            },
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdSoapSchema = soap12_common.soap12_XSD,
+            xsdSoapSchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
           }
         }
-      }
-      
-      local calculator_soap12_XSD_with_async_download_ok_route = blue_print.routes:insert{
-        service = calculator_service,
-        paths = { "/calculator_soap12_XSD_with_async_download_ok" }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_soap12_XSD_with_import_no_download_ok_route,
+          config = {
+            VerboseResponse = false,
+            xsdApiSchemaInclude = {
+              ["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
+            },
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdSoapSchema = soap12_common.soap12_XSD,
+            xsdSoapSchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
         }
-      blue_print.plugins:insert {
-        name = pluginRequest,
-        route = calculator_soap12_XSD_with_async_download_ok_route,
-        config = {
-          VerboseRequest = false,
-          ExternalEntityLoader_Async = true,
-          xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
-          xsdSoapSchema = soap12_common.soap12_XSD,
+        
+        local calculator_soap12_XSD_with_async_download_ok_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_soap12_XSD_with_async_download_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_soap12_XSD_with_async_download_ok_route,
+          config = {
+            VerboseRequest = false,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdSoapSchema = soap12_common.soap12_XSD,
+          }
         }
-      }
-      blue_print.plugins:insert {
-        name = pluginResponse,
-        route = calculator_soap12_XSD_with_async_download_ok_route,
-        config = {
-          VerboseResponse = false,
-          ExternalEntityLoader_Async = true,
-          xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
-          xsdSoapSchema = soap12_common.soap12_XSD,
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_soap12_XSD_with_async_download_ok_route,
+          config = {
+            VerboseResponse = false,
+            ExternalEntityLoader_Async = true,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdSoapSchema = soap12_common.soap12_XSD,
+          }
         }
-      }
-      -- start kong
-      assert(helpers.start_kong({
-        -- use the custom test template to create a local mock server
-        nginx_conf = "spec/fixtures/custom_nginx.template",
-        -- make sure our plugin gets loaded
-        plugins = "bundled," .. PLUGIN_NAME
-        }))       
+        -- start kong
+        assert(helpers.start_kong({
+          -- use the custom test template to create a local mock server
+          nginx_conf = "spec/fixtures/custom_nginx.template",
+          -- make sure our plugin gets loaded
+          plugins = "bundled," .. PLUGIN_NAME
+          }))       
       end)
+
+      lazy_teardown(function()
+				helpers.stop_kong(nil, true)
+			end)
 
       it("2+6|Request and Response plugins|SOAP 1.2 - XSD (SOAP env) + WSDL (API) Validation with import no download - Ok", function()
         -- invoke a test request
@@ -167,7 +166,8 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<AddResult>12</AddResult>', body)
       end)
   
-		end)		
+		end)
+
 	end)
   ::continue::
 end

@@ -18,11 +18,6 @@ for _, strategy in helpers.all_strategies() do
     setup(function()
     end)
 
-    -- teardown runs after its parent describe block
-    teardown(function()
-      helpers.stop_kong(nil, true)
-    end)
-
     -- before_each runs before each child describe
     before_each(function()
       client = helpers.proxy_client()
@@ -54,6 +49,11 @@ for _, strategy in helpers.all_strategies() do
 				
 
     	end)
+
+			lazy_teardown(function()
+				helpers.stop_kong(nil, true)
+			end)
+
 			it ("5|XSLT (BEFORE XSD) - Valid transformation", function()
 				response_common._5_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 			end)
