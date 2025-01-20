@@ -116,7 +116,7 @@ env:
   lua_package_path: "/usr/local/lib/kongsaxon/?.lua;/opt/?.lua;/opt/?/init.lua;;"
   plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
 ...
-# *** Specific properties for Saxon library ***
+# *** Specific property for Saxon library ***
 customEnv:
   LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
 
