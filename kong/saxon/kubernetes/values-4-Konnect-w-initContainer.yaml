@@ -25,7 +25,7 @@ env:
   upstream_keepalive_max_requests: "100000"
   nginx_http_keepalive_requests: "100000"
   dns_stale_ttl: "3600"
-  lua_package_path: "/usr/local/lib/kongsaxon/?.lua;;"
+  lua_package_path: "/usr/local/lib/kongsaxon/?.lua;/opt/?.lua;/opt/?/init.lua;;"
   plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
   
 customEnv:
