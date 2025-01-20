@@ -112,13 +112,15 @@ image:
   tag: "3.9.0.0"
   ...
 env:
-  lua_package_path: "/usr/local/lib/kongsaxon/?.lua;;"
+  # *** Specific properties for SOAP/XML Request Handling plugins and Saxon ***
+  lua_package_path: "/usr/local/lib/kongsaxon/?.lua;/opt/?.lua;/opt/?/init.lua;;"
   plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
 ...
 # *** Specific properties for Saxon ***
 customEnv:
   LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
 
+# *** Specific properties for SOAP/XML Request Handling plugins and Saxon ***
 deployment:
   initContainers:
   - name: kongsaxon
