@@ -832,7 +832,7 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
   -- If the XSLT and the XML are correctly loaded and parsed
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
-    local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
+    local xml_transformed = libxslt.xsltApplyStylesheet(style, xml_doc, plugin_conf.xsltParams)
 
     if xml_transformed ~= nil then
       -- Dump into a String the canonized image of the XML transformed by XSLT
