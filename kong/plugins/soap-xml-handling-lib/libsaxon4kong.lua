@@ -14,6 +14,10 @@ ffi.cdef [[
                                             const char *template_name,
                                             const char *param_name,
                                             const char *param_value);
+  void *addParameter                      ( const void *saxonProcessor_void,
+                                            const void *context_void,
+                                            const char *key,
+                                            const char *value);
   const char* stylesheetTransformXmlKong  ( const void *saxonProcessor_void,
                                             const void *context_void,
                                             const char *xml_string);
@@ -194,16 +198,28 @@ function libsaxon4kong.stylesheetInvokeTemplate (saxonProcessor, context, templa
   return xml_transformed, err
 end
 
+
+
 ---------------------------------------------------
 -- Transform the XML document with XSLT Stylesheet
 ---------------------------------------------------
-function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTransform)
+function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTransform, params)
   local err
   local xml_transformed
   local xml_ptr
   local rc = true
-  
+
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
+    if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL and next(params) then
+      for k, v in pairs(params) do
+        local ret, _ = pcall (saxon4KongLib.addParameter, saxonProcessor, context, k, v)
+
+        if not ret then
+          kong.log.err("FAILED TO ADD PARAM")
+        end
+      end
+    end
+
     rc, xml_ptr = pcall (saxon4KongLib.stylesheetTransformXmlKong, saxonProcessor, context, XMLtoTransform)
   end
   

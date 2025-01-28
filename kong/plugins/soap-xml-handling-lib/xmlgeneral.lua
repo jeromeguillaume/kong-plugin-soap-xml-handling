@@ -767,9 +767,10 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
       xml_transformed_dump, errMessage = libsaxon4kong.stylesheetTransformXml ( 
                                             kong.xmlSoapSaxon.saxonProcessor,
                                             context,
-                                            XMLtoTransform
+                                            XMLtoTransform,
+                                            plugin_conf.xsltParams
                                           )
-      
+
       if not errMessage then 
         -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
         xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
