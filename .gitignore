@@ -1,5 +1,7 @@
 kong/plugins/.DS_Store
 kong/saxon/notes.txt
+tls.crt
+tls.key
 .DS_Store
 servroot/
 .busted

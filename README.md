@@ -415,7 +415,7 @@ Add a Kong `Upstream` named `calculator.apim.eu` and defines a `target` with `ca
 Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `RouteToPath` property with the value `https://calculator.apim.eu:443/ws`
 - `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
-- `RouteXPathCondition` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
+- `RouteXPathCondition` property with the value `5`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
 Use command defined at Example #3, the expected result is `13`. Pay attention to the `X-SOAP-Region` (http header in the response) added by `calculator.apim.eu`
 ```xml
