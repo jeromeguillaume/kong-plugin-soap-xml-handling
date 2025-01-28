@@ -210,12 +210,19 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
   local rc = true
 
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
-    if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL and next(params) then
+    -- inject stylesheet/template parameters
+    if next(params) then
       for k, v in pairs(params) do
-        local ret, _ = pcall (saxon4KongLib.addParameter, saxonProcessor, context, k, v)
+        rc, err = pcall (saxon4KongLib.addParameter, saxonProcessor, context, k, v)
 
-        if not ret then
-          kong.log.err("FAILED TO ADD PARAM")
+        -- If there is an error on pcall
+        if not rc then
+          err = "addParameter: " .. xml_ptr
+          xml_ptr = nil
+        elseif context ~= ffi.NULL then
+          err = libsaxon4kong.getErrorMessage(context)
+        else
+          err = "Unable to add parameter to stylesheet renderer"
         end
       end
     end
