@@ -26,14 +26,40 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
 
 Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment
 
+## How to use K6
+- Create a ConfigMap for each scenario
+  - See [1-k6-configMap.sh](/loadtest/k6/1-k6-configMap.sh)
+  
+- Start a test
+  - Configure [2-k6-TestRun.yaml](/loadtest/k6/2-k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
+  - Apply the configuration and start the test: `kubectl apply -f 2-k6-TestRun.yaml`
+- Collect and check the results once the job has the `succeeded` status
+  -  The command is for instance: `kubectl logs scen1-1-wxyz`
+  - The expected result is:
+```
+    ✓ http response status code is 200
+     ✓ Content-Type
+     ✓ calculator Result
+     checks.........................: 100.00% 14027889 out of 14027889
+     data_received..................: 3.7 GB  3.7 MB/s
+     data_sent......................: 2.5 GB  2.5 MB/s
+     ...     
+     ...
+     http_reqs......................: 4675963 4723.14347/s
+     iteration_duration.............: min=1.15ms  max=211.3ms  avg=4.01ms  p(90)=5.37ms  p(95)=7.54ms  p(99)=17.31ms
+     iterations.....................: 4675963 4723.14347/s
+     vus............................: 20      min=0                    max=20
+     vus_max........................: 20      min=20                   max=20
+```
+
+
 ## Other information regarding load testing methodology
 - The Body size of the request is ~345 bytes for both upstream services
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
 - The Endurance test duration is 12 hours
-- At the end of the K6 execution we checked that we have:
-  - `checks....: 100.00%`
-  -  The command is for instance: `kubectl logs scen1-1-wxyz`
+- At the end of the K6 execution we collect the results and we verify that the checks are 100% successful
+  
 - Kong Node is restarted between each iteration of test
 
 ## Scenarios for `calculator` Web Service (SOAP/XML)
@@ -48,13 +74,14 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - [Scenario 1](/loadtest/k6/scenhttpbin1.js): OAS Validation plugin (only Request validation)
 - [Scenario 2](/loadtest/k6/scenhttpbin2.js): OAS Validation plugin (Request and Response validation)
 
-## Results
-|Service name|Scenario|Test type|Requests per second|Avg|p95|p99 |Kong Linux Memory|Data Sent|Data Received
-|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|
-|calculator|0|Kong proxy with no plugins||||||||
-|calculator|1|WSDL Validation (req only) plugin|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
-|calculator|2|XSD Validation (req only) plugin| rps| ms| ms| ms| Gib| GB| GB
-|calculator|3|XSLT Transformation plugin| rps| ms| ms| ms| Gib| GB| GB
-|httbin|0|Kong proxy with no plugins| rps| ms| ms| ms| Gib|
-|httbin|1|OAS Validation (req only)|8691 rps|23 ms|63 ms|92 ms|0.9 Gib|
-|httbin|2|OAS Validation (req and res)|6508 rps|31 ms|99 ms|144 ms|0.9 Gib|
+## Performance tests Results
+|Service name|Scenario|Test type|XSLT Library|Requests per second|Avg|p95|p99 |Kong Linux Memory|Data Sent|Data Received
+|:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|
+|calculator|0|Kong proxy with no plugins|N/A||||||||
+|calculator|1|all options for Request and Response plugins|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
+|calculator|2|WSDL Validation (req only) plugin|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
+|calculator|3|XSD Validation (req only) plugin|libxslt|4723 rps|4 ms|8 ms|17 ms|2.4 Gib|2.5 GB|3 GB
+|calculator|4|XSLT Transformation (req only) plugin|libxslt| rps| ms| ms| ms| Gib| GB| GB
+|httbin|0|Kong proxy with no plugins|N/A| rps| ms| ms| ms| Gib|
+|httbin|1|OAS Validation (req only)|N/A|8691 rps|23 ms|63 ms|92 ms|0.9 Gib|
+|httbin|2|OAS Validation (req and res)|N/A|6508 rps|31 ms|99 ms|144 ms|0.9 Gib|
