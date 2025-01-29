@@ -1,16 +1,16 @@
 # Load testing results
 
 ## Architecture test
-Deployment this stack in this order:
+Deploy this stack in this order:
 1) Google Kubernetes Engine (GKE)
   - Use the `c2-standard-8` GKE cloud instance size:
     - 8 vCPUs and 32 GB ram per node
     - 3 nodes
 2) Kong node configuration:
   - Version: v3.9.0.1
-  - One Kong node with 4 Nginx workers (with `nginx_worker_processes`: `4`)
-  - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (with `resources.requests` and `resources.limits`)
-  - Disable `http2` on `proxy_listen` as it's the default protocol used by K6
+  - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
+  - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)
+  - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and not supported by the Response plugin
   - Those specific parameters are defined in [values.yaml](/loadtest/k6/0-init/cp-gke/values.yaml)
   - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtest/k6/0-init/6-kong.yaml) deck file
 3) Prometheus / Grafana stack
@@ -39,7 +39,7 @@ Body size ~345 bytes
 - [Scenario 2](/loadtest/k6/scenhttpbin2.js): OAS Validation plugin (Request and Response validation)
 
 |Service name|Test type|Requests per second|Avg|p95|p99 |Kong Linux Memory|Data Sent|Data Received
-|:--------|:--------|------------------------:|-------:|-------:|-------:|-------:|-------:|-------:|
+|:--|:--|--:|--:|--:|--:|--:|--:|--:|
 |calculator|Kong proxy with no plugins||||||||
 |calculator|WSDL Validation plugin|3887 rps|5 ms|8 ms|18 ms|3.5 Gib|2.1 GB|3.0 GB
 |calculator|XSD Validation (req only) plugin|4939 rps|4 ms|7 ms|17 ms|2.1 Gib|2.6 GB|3.9 GB
