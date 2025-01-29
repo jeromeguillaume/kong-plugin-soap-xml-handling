@@ -14,7 +14,7 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
   - Those specific parameters are defined in:
     - [values.yaml](/loadtest/k6/0-init/cp-gke/values.yaml) without Saxon
     - [valuesSaxon.yaml](/loadtest/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
-  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtest/k6/0-init/6-kong.yaml) deck file
+  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtest/k6/0-init/k6-kong.yaml) deck file
 3) Prometheus / Grafana stack
 4) K6: load testing tool
   - See [Running distributed load tests on Kubernetes](https://grafana.com/blog/2022/06/23/running-distributed-load-tests-on-kubernetes/)
