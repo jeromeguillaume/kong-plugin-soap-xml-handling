@@ -49,7 +49,6 @@ export function scenhttpbin0 () {
   check(result, {
     'http response status code is 200': result.status === 200,
     'Content-Type': result.headers['Content-Type'] === 'application/json',
-    'JSON object': result.headers['Content-Type'] === 'application/json',
   });
 
   if (result.status === 200) {

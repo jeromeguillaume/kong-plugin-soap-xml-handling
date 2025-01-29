@@ -8,9 +8,9 @@ const host='kong-proxy.kong:8443';
 
 export const options = {
   insecureSkipTLSVerify: true,
-  scenarios: {    
-    scenOk: {
-      exec: 'scen2',
+  scenarios: {
+    scen6saxon: {
+      exec: 'scen6saxon',
       
       /*executor: 'per-vu-iterations',
       vus: 1,
@@ -30,29 +30,31 @@ export const options = {
   },
 };
 
-export function scen2 () {
+export function scen6saxon () {
   const calcReq = 
   `<?xml version=\"1.0\" encoding=\"utf-8\"?>
   <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
     <soap:Body>
-      <Add xmlns=\"http://tempuri.org/\">
+      <Subtract xmlns=\"http://tempuri.org/\">
         <intA>5</intA>
         <intB>7</intB>
-      </Add>
+      </Subtract>
     </soap:Body>
   </soap:Envelope>`;
   
-  const result = http.post('https://'+host+'/scen2', calcReq, {
+  const result = http.post('https://'+host+'/scen6saxon', calcReq, {
     headers: { 
         'Content-Type': 'text/xml; charset=utf-8',
       },
   });
-
+  
   check(result, {
     'http response status code is 200': result.status === 200,
     'Content-Type': result.headers['Content-Type'] === 'text/xml;charset=utf-8',
     "calculator Result": result =>
       result.body.includes("<AddResult>12</AddResult>"),
   });
+
+  //sleep(0.04)
   
 }

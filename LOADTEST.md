@@ -11,7 +11,9 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
   - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
   - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)
   - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and not supported by the Response plugin
-  - Those specific parameters are defined in [values.yaml](/loadtest/k6/0-init/cp-gke/values.yaml)
+  - Those specific parameters are defined in:
+    - [values.yaml](/loadtest/k6/0-init/cp-gke/values.yaml) without Saxon
+    - [valuesSaxon.yaml](/loadtest/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
   - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtest/k6/0-init/6-kong.yaml) deck file
 3) Prometheus / Grafana stack
 4) K6: load testing tool
@@ -19,7 +21,7 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
 5) Upstream:
   - `calculator` Web Service (SOAP/XML)
     - Docker Image: [jeromeguillaume/ws-soap-calculator:1.0.4](https://hub.docker.com/r/jeromeguillaume/ws-soap-calculator)
-    - Kubernetes deployment: [ws-calculator.yaml](loadtest/k6/ws-calculator.yaml)
+    - Kubernetes deployment: [ws-calculator.yaml](loadtest/k6/ws-calculator.yaml)    
   - `httpbin` REST API (JSON)
     - Docker Image: [kong/httpbin:0.2.3](https://hub.docker.com/r/kong/httpbin)
     - Kubernetes deployment: [httpbin.yaml](loadtest/k6/0-init/httpbin.yaml)
@@ -29,7 +31,6 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 ## How to use K6
 - Create a ConfigMap for each scenario
   - See [1-k6-configMap.sh](/loadtest/k6/1-k6-configMap.sh)
-  
 - Start a test
   - Configure [2-k6-TestRun.yaml](/loadtest/k6/2-k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
   - Apply the configuration and start the test: `kubectl apply -f 2-k6-TestRun.yaml`
@@ -51,10 +52,12 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
      vus............................: 20      min=0                    max=20
      vus_max........................: 20      min=20                   max=20
 ```
-
+- optional: if required stop a test
+  - `kubectl delete testruns.k6.io scen1`
 
 ## Other information regarding load testing methodology
 - The Body size of the request is ~345 bytes for both upstream services
+- Protocol: HTTPS only
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
 - The Endurance test duration is 12 hours
@@ -63,11 +66,14 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - Kong Node is restarted between each iteration of test
 
 ## Scenarios for `calculator` Web Service (SOAP/XML)
-- [Scenario 0](/loadtest/k6/scen0.js): no plugin
-- [Scenario 1](/loadtest/k6/scen1.js): all options for Request and Response plugins
-- [Scenario 2](/loadtest/k6/scen2.js): WSDL Validation (soap 1.1 and API schemas) Request plugin
+- [Scenario 0](/loadtest/k6/scen0.js): no plugin (need to set `replicas=2` instead of 1 to reach limit of `calculator`)
+- [Scenario 1](/loadtest/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) Request plugin
+- [Scenario 2]
 - [Scenario 3](/loadtest/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) Request plugin
-- [Scenario 4](/loadtest/k6/scen4.js): XSLT Transformation (Before) Request plugin
+- [Scenario 4](/loadtest/k6/scen4.js): XSLT Transformation (Before) with `libxslt` Request plugin
+- [Scenario 5](/loadtest/k6/scen5.js): all options (with `libxslt`) for Request and Response plugins 
+- [Scenario 6](/loadtest/k6/scen6.js): XSLT Transformation (Before) with `saxon` Request plugin
+- [Scenario 7](/loadtest/k6/scen7.js): XSLT v3.0 - JSON to XML for Request and Response plugins
 
 ## Scenarios for `httpbin` REST API (JSON)
 - [Scenario 0](/loadtest/k6/scenhttpbin0.js): no plugin
@@ -77,11 +83,14 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 ## Performance tests Results
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Avg|p95|p99 |Kong Linux Memory|Data Sent|Data Received
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|
-|calculator|0|Kong proxy with no plugins|N/A||||||||
-|calculator|1|all options for Request and Response plugins|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
-|calculator|2|WSDL Validation (req only) plugin|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
+|calculator|0|Kong proxy with no plugins|N/A|12441 rps||||||
+|calculator|1|WSDL Validation (req only) plugin|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
+|calculator|2|WSDL Validation and SOAPAction (req only) plugin|libxslt| rps| ms| ms| ms| Gib| GB| GB
 |calculator|3|XSD Validation (req only) plugin|libxslt|4723 rps|4 ms|8 ms|17 ms|2.4 Gib|2.5 GB|3 GB
-|calculator|4|XSLT Transformation (req only) plugin|libxslt| rps| ms| ms| ms| Gib| GB| GB
+|calculator|4|XSLT Transformation (req only) plugin|libxslt|rps| ms| ms| ms| Gib| GB| GB
+|calculator|5|All options for req and res plugins|libxslt|rps|ms|ms| ms| Gib| GB| GB
+|calculator|6|XSLT Transformation (req only) plugin|saxon| rps| ms| ms| ms| Gib| GB| GB
+|calculator|7|XSLT v3.0 - JSON to XML for req and res plugins|saxon|rps|ms|ms| ms| Gib| GB| GB
 |httbin|0|Kong proxy with no plugins|N/A| rps| ms| ms| ms| Gib|
 |httbin|1|OAS Validation (req only)|N/A|8691 rps|23 ms|63 ms|92 ms|0.9 Gib|
 |httbin|2|OAS Validation (req and res)|N/A|6508 rps|31 ms|99 ms|144 ms|0.9 Gib|
