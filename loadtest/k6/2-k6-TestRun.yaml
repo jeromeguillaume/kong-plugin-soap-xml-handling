@@ -1,14 +1,14 @@
 apiVersion: k6.io/v1alpha1
 kind: TestRun
 metadata:
-  name: scen2
+  name: scen3
 spec:
   parallelism: 1
   script:
     configMap:
-      name: scen2
-      file: scen2.js
-  arguments: --tag testId=scen2
+      name: scen3
+      file: scen3.js
+  arguments: --tag testId=scen3
   runner:
     resources:
       limits:

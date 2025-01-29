@@ -20,7 +20,7 @@ export const options = {
       stages: [
         { duration: '300s', target: 8 },
         { duration: '300s', target: 12 },
-        { duration: '43200s', target: 16 },
+        { duration: '900s', target: 16 },
       ],
       gracefulRampDown: '5s',
     },
@@ -53,5 +53,4 @@ export function scen1 () {
     "calculator Result": result =>
       result.body.includes("<KongResult>15</KongResult>"),
   });
-  sleep(0.1);
 }
