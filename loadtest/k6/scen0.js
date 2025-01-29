@@ -22,7 +22,7 @@ export const options = {
       stages: [
         { duration: '30s', target: 25 },
         { duration: '30s', target: 50 },
-        { duration: '900s', target: 100 },
+        { duration: '900s', target: 75 },
       ],
       gracefulRampDown: '5s',
     },
