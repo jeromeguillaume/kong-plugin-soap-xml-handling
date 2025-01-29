@@ -213,12 +213,11 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
     -- inject stylesheet/template parameters
     if next(params) then
       for k, v in pairs(params) do
-        rc, err = pcall (saxon4KongLib.addParameter, saxonProcessor, context, k, v)
+        rc = pcall (saxon4KongLib.addParameter, saxonProcessor, context, k, v)
 
         -- If there is an error on pcall
         if not rc then
-          err = "addParameter: " .. xml_ptr
-          xml_ptr = nil
+          err = "addParameter: unknown failure, check formatting"
         elseif context ~= ffi.NULL then
           err = libsaxon4kong.getErrorMessage(context)
         else
