@@ -29,8 +29,8 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 ## Other information regarding load testing methodology
 - The Body size of the request is ~345 bytes for both upstream services
 - The Performance test duration is 15 minutes
+  - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
 - The Endurance test duration is 12 hours
-- The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
 - At the end of the K6 execution we checked that we have:
   - `checks....: 100.00%`
   -  The command is for instance: `kubectl logs scen1-1-wxyz`
