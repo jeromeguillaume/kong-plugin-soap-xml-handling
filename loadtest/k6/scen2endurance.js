@@ -10,7 +10,7 @@ export const options = {
   insecureSkipTLSVerify: true,
   scenarios: {    
     scenOk: {
-      exec: 'scen2',
+      exec: 'scen2endurance',
       
       /*executor: 'per-vu-iterations',
       vus: 1,
@@ -30,7 +30,7 @@ export const options = {
   },
 };
 
-export function scen2 () {
+export function scen2endurance () {
   const calcReq = 
   `<?xml version=\"1.0\" encoding=\"utf-8\"?>
   <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
@@ -42,7 +42,7 @@ export function scen2 () {
     </soap:Body>
   </soap:Envelope>`;
   
-  const result = http.post('https://'+host+'/scen2', calcReq, {
+  const result = http.post('https://'+host+'/scen2endurance', calcReq, {
     headers: { 
         'Content-Type': 'text/xml; charset=utf-8',
       },

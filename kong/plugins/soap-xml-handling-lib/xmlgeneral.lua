@@ -810,17 +810,16 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
                                       ffi.C.XML_PARSE_NOWARNING)
 
   -- Load the XSLT document
-  local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose)
+  local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose, true)
 
   if errMessage == nil then
     -- Parse XSLT document
     style, errMessage = libxslt.xsltParseStylesheetDoc (xslt_doc)
-    
     if style == ffi.NULL then
       errMessage = "error calling 'xsltParseStylesheetDoc'"
     elseif errMessage == nil then
       -- Load the complete XML document (with <soap:Envelope>)
-      xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options, verbose)
+      xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, nil, nil, default_parse_options, verbose, false)
       if errMessage ~= nil then
         errMessage = xmlgeneral.invalidXML .. ". " .. errMessage
       end
@@ -889,21 +888,6 @@ function xmlgeneral.XSLTransform(plugin_conf, XMLtoTransform, XSLT, verbose)
     kong.log.err("XSLTransform: unknown library " .. plugin_conf.xsltLibrary)
   end
   return xml_transformed_dump, errMessage
-end
-
---------------------------
--- Dump a document to XML
---------------------------
-function xmlgeneral.to_xml(document)
-  local buffer = libxml2.xmlBufferCreate()
-  local context = libxml2.xmlSaveToBuffer(buffer,
-                                          "UTF-8",
-                                          bit.bor(ffi.C.XML_SAVE_FORMAT,
-                                                  ffi.C.XML_SAVE_NO_DECL,
-                                                  ffi.C.XML_SAVE_AS_XML))
-  libxml2.xmlSaveDoc(context, document)
-  libxml2.xmlSaveClose(context)
-  return libxml2.xmlBufferGetContent(buffer)
 end
 
 ------------------------------------------------------------------------
@@ -1033,7 +1017,7 @@ function xmlgeneral.XMLValidateWithWSDL (plugin_conf, child, XMLtoValidate, WSDL
                                       ffi.C.XML_PARSE_NOWARNING)
 
   -- Parse an XML in-memory document and build a tree
-  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose)
+  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
   if errMessage then
     errMessage =  xmlgeneral.invalidWSDL_XSD .. ". " .. errMessage
     kong.log.err (errMessage)
@@ -1201,7 +1185,7 @@ function xmlgeneral.XMLValidateWithXSD (child, XMLtoValidate, XSDSchema, verbose
   if not errMessage then
     -- Create Validation context of XSD Schema
     local validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
-    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options, verbose)
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options, verbose, false)
      
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
@@ -1327,7 +1311,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
                                         ffi.C.XML_PARSE_NOWARNING)
 
   -- Parse an XML in-memory document from the WSDL and build a tree
-  xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose)
+  xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
   if not errMessage then
 
     -- Retrieve:
@@ -1700,7 +1684,7 @@ function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
   
-  xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(xmlRequest_doc, nil, nil, default_parse_options, verbose)
+  xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(xmlRequest_doc, nil, nil, default_parse_options, verbose, false)
 
   if not errMessage then
     -- Get root element '<soap:Envelope>' from the SOAP Request
@@ -1849,7 +1833,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
   
   -- Parse an XML in-memory document from the SOAP Request and build a tree
   if not errMessage then
-    xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(SOAPRequest, nil, nil, default_parse_options, verbose)
+    xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(SOAPRequest, nil, nil, default_parse_options, verbose, false)
   end
 
   -- Get root element '<soap:Envelope>' from the SOAP Request

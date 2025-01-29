@@ -1,0 +1,85 @@
+image:
+  repository: kong/kong-gateway
+  tag: "3.9"
+
+secretVolumes:
+- kong-cluster-cert
+
+admin:
+  enabled: false
+
+env:
+  role: data_plane
+  database: "off"
+  cluster_mtls: pki
+  cluster_control_plane: 130d4abacf.eu.cp0.konghq.com:443
+  cluster_server_name: 130d4abacf.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: 130d4abacf.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: 130d4abacf.eu.tp0.konghq.com
+  cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
+  cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
+  lua_ssl_trusted_certificate: system
+  konnect_mode: "on"
+  vitals: "off"
+  nginx_worker_processes: "4"
+  upstream_keepalive_max_requests: "100000"
+  nginx_http_keepalive_requests: "100000"
+  proxy_access_log: "off"
+  dns_stale_ttl: "86400"
+  resolver_stale_ttl: "86400"
+  lua_package_path: "/usr/local/lib/kongsaxon/?.lua;/opt/?.lua;/opt/?/init.lua;;"
+  plugins: bundled,soap-xml-request-handling,soap-xml-response-handling
+  cluster_rpc: "on"
+  active_tracing: "on"
+  mem_cache_size: "1000m"
+  proxy_listen: "0.0.0.0:8000, [::]:8000, 0.0.0.0:8443 ssl, [::]:8443 ssl"
+customEnv:
+  LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
+deployment:
+  initContainers:
+  - name: kongsaxon
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.5-1.2.5-12.5
+    command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
+    volumeMounts:
+    - name: kongsaxon-vol
+      mountPath: /usr/local/lib/kongsaxon
+  userDefinedVolumes:
+  - name: kongsaxon-vol
+    emptyDir: {}
+  userDefinedVolumeMounts:
+  - name: kongsaxon-vol
+    mountPath: /usr/local/lib/kongsaxon
+
+proxy:
+  annotations:
+    prometheus.io/port: "8100"
+    prometheus.io/scrape: "true"
+  labels:
+    enable-metrics: true
+  
+ingressController:
+  enabled: false
+  installCRDs: false
+
+resources:
+  requests:
+    cpu: 4
+    memory: "8Gi"
+  limits:
+    cpu: 4
+    memory: "8Gi"
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app
+            operator: In
+            values:
+            - calculator
+            - httpbin
+            - k6
+        topologyKey: kubernetes.io/hostname

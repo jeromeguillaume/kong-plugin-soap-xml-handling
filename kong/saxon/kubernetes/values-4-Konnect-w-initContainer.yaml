@@ -1,6 +1,6 @@
 image:
   repository: kong/kong-gateway
-  tag: "3.9.0.0"
+  tag: "3.9.0.1"
 
 secretVolumes:
 - kong-cluster-cert

@@ -22,7 +22,7 @@ spec:
         app: httpbin
     spec:
       containers:
-      - image: kong/httpbin
+      - image: kong/httpbin:0.2.3
         name: httpbin
         ports:
         - containerPort: 80
