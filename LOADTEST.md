@@ -81,7 +81,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - [Scenario 2](/loadtest/k6/scenhttpbin2.js): OAS Validation plugin (Request and Response validation)
 
 ## Performance tests Results
-|Service name|Scenario|Test type|XSLT Library|Requests per second|Avg (ms)|p95 (ms)|p99  (ms)|Kong Linux Memory|Data Sent|Data Rcv
+|Service name|Scenario|Test type|XSLT Library|Requests per second|Avg (ms)|p95 (ms)|p99---(ms)|Kong Linux Memory|Data Sent|Data Rcv
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|
 |calculator|0|Kong proxy with no plugins|N/A|12441 rps||||||
 |calculator|1|WSDL Validation (req only) plugin|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
