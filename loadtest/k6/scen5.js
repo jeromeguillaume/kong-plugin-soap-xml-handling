@@ -10,17 +10,19 @@ export const options = {
   scenarios: {
     scenOk: {
       exec: 'scen5',
+      
       /*executor: 'per-vu-iterations',
       vus: 1,
       iterations: 1,
       maxDuration: '1s',*/
       
       executor: 'ramping-vus',
-      startvus: 2,
+      startvus: 0,
       stages: [
-        { duration: '300s', target: 8 },
-        { duration: '300s', target: 12 },
-        { duration: '900s', target: 16 },
+        { duration: '30s', target: 6 },
+        { duration: '30s', target: 12 },
+        { duration: '30s', target: 20 },
+        { duration: '900s', target: 20 },
       ],
       gracefulRampDown: '5s',
     },
@@ -51,6 +53,9 @@ export function scen5 () {
     'Content-Type': result.headers['Content-Type'] === 'text/xml;charset=utf-8',
     'X-Soap-Region': result.headers['X-Soap-Region'] === 'soap2',
     "calculator Result": result =>
+      //result.body.includes("<AddResult>15</AddResult>"),
       result.body.includes("<KongResult>15</KongResult>"),
   });
+
+  //sleep (0.05);
 }

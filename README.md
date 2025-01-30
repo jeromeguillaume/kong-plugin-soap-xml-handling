@@ -1095,4 +1095,5 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add a `W3C Compatibility Matrix` section in the README.md
   - `pongo` tests: remove `it()` from `lazy_setup()` and remove `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
 - v1.2.5
-  - Fix leak memory with XSLT Transformation
+  - Fix a huge memory leak with XSLT Transformation
+  - Add Load testing results. See [LOADTESTING.md](/LOADTESTING.md)

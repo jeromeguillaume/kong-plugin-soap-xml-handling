@@ -31,6 +31,19 @@ services:
   retries: 5
   routes:
   - https_redirect_status_code: 426
+    name: scenhttpbin0
+    path_handling: v0
+    paths:
+    - /scenhttpbin0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  - https_redirect_status_code: 426
     name: scenhttpbin1
     path_handling: v0
     paths:
@@ -351,6 +364,494 @@ services:
     path_handling: v0
     paths:
     - /scen1
+    plugins:
+    - config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        RouteToPath: null
+        RouteXPath: null
+        RouteXPathCondition: null
+        RouteXPathRegisterNs:
+        - soap,http://schemas.xmlsoap.org/soap/envelope/
+        SOAPAction_Header: "no"
+        VerboseRequest: true
+        xsdApiSchema: <?xml version="1.0" encoding="utf-8"?> <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+          xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+          xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/"
+          xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+          xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/"
+          xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">   <wsdl:types>     <s:schema
+          elementFormDefault="qualified" targetNamespace="http://tempuri.org/">       <s:element
+          name="Add">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
+          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="AddResponse">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="AddResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="Subtract">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
+          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="SubtractResponse">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="SubtractResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="Multiply">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
+          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="MultiplyResponse">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="MultiplyResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="Divide">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
+          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
+          name="DivideResponse">         <s:complexType>           <s:sequence>             <s:element
+          minOccurs="1" maxOccurs="1" name="DivideResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>     </s:schema>   </wsdl:types>   <wsdl:message
+          name="AddSoapIn">     <wsdl:part name="parameters" element="tns:Add" />   </wsdl:message>   <wsdl:message
+          name="AddSoapOut">     <wsdl:part name="parameters" element="tns:AddResponse"
+          />   </wsdl:message>   <wsdl:message name="SubtractSoapIn">     <wsdl:part
+          name="parameters" element="tns:Subtract" />   </wsdl:message>   <wsdl:message
+          name="SubtractSoapOut">     <wsdl:part name="parameters" element="tns:SubtractResponse"
+          />   </wsdl:message>   <wsdl:message name="MultiplySoapIn">     <wsdl:part
+          name="parameters" element="tns:Multiply" />   </wsdl:message>   <wsdl:message
+          name="MultiplySoapOut">     <wsdl:part name="parameters" element="tns:MultiplyResponse"
+          />   </wsdl:message>   <wsdl:message name="DivideSoapIn">     <wsdl:part
+          name="parameters" element="tns:Divide" />   </wsdl:message>   <wsdl:message
+          name="DivideSoapOut">     <wsdl:part name="parameters" element="tns:DivideResponse"
+          />   </wsdl:message>   <wsdl:portType name="CalculatorSoap">     <wsdl:operation
+          name="Add">       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds
+          two integers. This is a test WebService. ©DNE Online</wsdl:documentation>       <wsdl:input
+          message="tns:AddSoapIn" />       <wsdl:output message="tns:AddSoapOut" />     </wsdl:operation>     <wsdl:operation
+          name="Subtract">       <wsdl:input message="tns:SubtractSoapIn" />       <wsdl:output
+          message="tns:SubtractSoapOut" />     </wsdl:operation>     <wsdl:operation
+          name="Multiply">       <wsdl:input message="tns:MultiplySoapIn" />       <wsdl:output
+          message="tns:MultiplySoapOut" />     </wsdl:operation>     <wsdl:operation
+          name="Divide">       <wsdl:input message="tns:DivideSoapIn" />       <wsdl:output
+          message="tns:DivideSoapOut" />     </wsdl:operation>   </wsdl:portType>   <wsdl:binding
+          name="JMSCalculatorSoap" type="tns:CalculatorSoap">     <soap:binding style="rpc"
+          transport="http://cxf.apache.org/transports/jms"/>     <wsdl:operation name="Add">       <soap:operation
+          soapAction="" style="rpc"/>       <wsdl:input>         <soap:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/>       </wsdl:input>       <wsdl:output>         <soap:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>     <wsdl:operation
+          name="Subtract">       <soap:operation soapAction="" style="rpc"/>       <wsdl:input>         <soap:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:input>       <wsdl:output>         <soap:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:binding
+          name="CalculatorSoap" type="tns:CalculatorSoap">     <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+          />     <wsdl:operation name="Add">       <soap:operation soapAction="http://tempuri.org/Add"
+          soapActionRequired="true" style="document" />       <wsdl:input>         <soap:body
+          use="literal" />       </wsdl:input>       <wsdl:output>         <soap:body
+          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
+          name="Subtract">       <soap:operation soapAction="http://tempuri.org/Subtract"
+          soapActionRequired="false" style="document" />       <wsdl:input>         <soap:body
+          use="literal" />       </wsdl:input>       <wsdl:output>         <soap:body
+          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
+          name="Multiply">       <soap:operation soapAction="http://tempuri.org/Multiply"
+          style="document" />       <wsdl:input>         <soap:body use="literal"
+          />       </wsdl:input>       <wsdl:output>         <soap:body use="literal"
+          />       </wsdl:output>     </wsdl:operation>     <wsdl:operation name="Divide">       <soap:operation
+          soapAction="http://tempuri.org/Divide" style="document" />       <wsdl:input>         <soap:body
+          use="literal" />       </wsdl:input>       <wsdl:output>         <soap:body
+          use="literal" />       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:binding
+          name="JMSCalculatorSoap12" type="tns:CalculatorSoap">     <soap12:binding
+          style="rpc" transport="http://cxf.apache.org/transports/jms"/>     <wsdl:operation
+          name="Add">       <soap12:operation soapAction="" style="rpc"/>       <wsdl:input>         <soap12:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:input>       <wsdl:output>         <soap12:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>     <wsdl:operation
+          name="Subtract">       <soap12:operation soapAction="" style="rpc"/>       <wsdl:input>         <soap12:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:input>       <wsdl:output>         <soap12:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:binding
+          name="CalculatorSoap12" type="tns:CalculatorSoap">     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"
+          />     <wsdl:operation name="Add">       <soap12:operation soapAction="http://tempuri.org/Add"
+          soapActionRequired="true" style="document" />       <wsdl:input>         <soap12:body
+          use="literal" />       </wsdl:input>       <wsdl:output>         <soap12:body
+          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
+          name="Subtract">       <soap12:operation soapAction="http://tempuri.org/Subtract"
+          soapActionRequired="false" style="document" />       <wsdl:input>         <soap12:body
+          use="literal" />       </wsdl:input>       <wsdl:output>         <soap12:body
+          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
+          name="Multiply">       <soap12:operation soapAction="http://tempuri.org/Multiply"
+          style="document" />       <wsdl:input>         <soap12:body use="literal"
+          />       </wsdl:input>       <wsdl:output>         <soap12:body use="literal"
+          />       </wsdl:output>     </wsdl:operation>     <wsdl:operation name="Divide">       <soap12:operation
+          soapAction="http://tempuri.org/Divide" style="document" />       <wsdl:input>         <soap12:body
+          use="literal" />       </wsdl:input>       <wsdl:output>         <soap12:body
+          use="literal" />       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:service
+          name="Calculator">     <wsdl:port name="CalculatorSoap" binding="tns:CalculatorSoap">       <soap:address
+          location="http://www.dneonline.com/calculator.asmx" />     </wsdl:port>     <wsdl:port
+          name="CalculatorSoap12" binding="tns:CalculatorSoap12">       <soap12:address
+          location="http://www.dneonline.com/calculator.asmx" />     </wsdl:port>   </wsdl:service>
+          </wsdl:definitions>
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
+          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
+          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+          namespace="##other" processContents="lax" /></xs:complexType><xs:element
+          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
+          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
+          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
+          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
+          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
+          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+          Global Attributes.  The following attributes are intended to be usable via
+          qualified attribute names on any complex type referencing them.  --><xs:attribute
+          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+          indicates any canonicalization conventions followed in the contents of the
+          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" /> </xs:complexType></xs:schema>
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: libxslt
+        xsltTransformAfter: null
+        xsltTransformBefore: null
+      enabled: true
+      name: soap-xml-request-handling
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  - https_redirect_status_code: 426
+    name: scen2
+    path_handling: v0
+    paths:
+    - /scen2
+    plugins:
+    - config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        RouteToPath: null
+        RouteXPath: null
+        RouteXPathCondition: null
+        RouteXPathRegisterNs:
+        - soap,http://schemas.xmlsoap.org/soap/envelope/
+        SOAPAction_Header: "yes"
+        VerboseRequest: true
+        xsdApiSchema: <?xml version="1.0" encoding="utf-8"?> <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+          xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+          xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/"
+          xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
+          xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/"
+          xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">
+          <wsdl:types> <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+          <s:element name="Add"> <s:complexType> <s:sequence> <s:element minOccurs="1"
+          maxOccurs="1" name="intA" type="s:int" /> <s:element minOccurs="1" maxOccurs="1"
+          name="intB" type="s:int" /> </s:sequence> </s:complexType> </s:element>
+          <s:element name="AddResponse"> <s:complexType> <s:sequence> <s:element minOccurs="1"
+          maxOccurs="1" name="AddResult" type="s:int" /> </s:sequence> </s:complexType>
+          </s:element> <s:element name="Subtract"> <s:complexType> <s:sequence> <s:element
+          minOccurs="1" maxOccurs="1" name="intA" type="s:int" /> <s:element minOccurs="1"
+          maxOccurs="1" name="intB" type="s:int" /> </s:sequence> </s:complexType>
+          </s:element> <s:element name="SubtractResponse"> <s:complexType> <s:sequence>
+          <s:element minOccurs="1" maxOccurs="1" name="SubtractResult" type="s:int"
+          /> </s:sequence> </s:complexType> </s:element> <s:element name="Multiply">
+          <s:complexType> <s:sequence> <s:element minOccurs="1" maxOccurs="1" name="intA"
+          type="s:int" /> <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int"
+          /> </s:sequence> </s:complexType> </s:element> <s:element name="MultiplyResponse">
+          <s:complexType> <s:sequence> <s:element minOccurs="1" maxOccurs="1" name="MultiplyResult"
+          type="s:int" /> </s:sequence> </s:complexType> </s:element> <s:element name="Divide">
+          <s:complexType> <s:sequence> <s:element minOccurs="1" maxOccurs="1" name="intA"
+          type="s:int" /> <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int"
+          /> </s:sequence> </s:complexType> </s:element> <s:element name="DivideResponse">
+          <s:complexType> <s:sequence> <s:element minOccurs="1" maxOccurs="1" name="DivideResult"
+          type="s:int" /> </s:sequence> </s:complexType> </s:element> </s:schema>
+          </wsdl:types> <wsdl:message name="AddSoapIn"> <wsdl:part name="parameters"
+          element="tns:Add" /> </wsdl:message> <wsdl:message name="AddSoapOut"> <wsdl:part
+          name="parameters" element="tns:AddResponse" /> </wsdl:message> <wsdl:message
+          name="SubtractSoapIn"> <wsdl:part name="parameters" element="tns:Subtract"
+          /> </wsdl:message> <wsdl:message name="SubtractSoapOut"> <wsdl:part name="parameters"
+          element="tns:SubtractResponse" /> </wsdl:message> <wsdl:message name="MultiplySoapIn">
+          <wsdl:part name="parameters" element="tns:Multiply" /> </wsdl:message> <wsdl:message
+          name="MultiplySoapOut"> <wsdl:part name="parameters" element="tns:MultiplyResponse"
+          /> </wsdl:message> <wsdl:message name="DivideSoapIn"> <wsdl:part name="parameters"
+          element="tns:Divide" /> </wsdl:message> <wsdl:message name="DivideSoapOut">
+          <wsdl:part name="parameters" element="tns:DivideResponse" /> </wsdl:message>
+          <wsdl:portType name="CalculatorSoap"> <wsdl:operation name="Add"> <wsdl:documentation
+          xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds two integers. This is
+          a test WebService. ©DNE Online</wsdl:documentation> <wsdl:input message="tns:AddSoapIn"
+          /> <wsdl:output message="tns:AddSoapOut" /> </wsdl:operation> <wsdl:operation
+          name="Subtract"> <wsdl:input message="tns:SubtractSoapIn" /> <wsdl:output
+          message="tns:SubtractSoapOut" /> </wsdl:operation> <wsdl:operation name="Multiply">
+          <wsdl:input message="tns:MultiplySoapIn" /> <wsdl:output message="tns:MultiplySoapOut"
+          /> </wsdl:operation> <wsdl:operation name="Divide"> <wsdl:input message="tns:DivideSoapIn"
+          /> <wsdl:output message="tns:DivideSoapOut" /> </wsdl:operation> </wsdl:portType>
+          <wsdl:binding name="JMSCalculatorSoap" type="tns:CalculatorSoap"> <soap:binding
+          style="rpc" transport="http://cxf.apache.org/transports/jms"/> <wsdl:operation
+          name="Add"> <soap:operation soapAction="" style="rpc"/> <wsdl:input> <soap:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/> </wsdl:input>
+          <wsdl:output> <soap:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/> </wsdl:output> </wsdl:operation> <wsdl:operation name="Subtract">
+          <soap:operation soapAction="" style="rpc"/> <wsdl:input> <soap:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/> </wsdl:input> <wsdl:output> <soap:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/> </wsdl:output> </wsdl:operation> </wsdl:binding> <wsdl:binding
+          name="CalculatorSoap" type="tns:CalculatorSoap"> <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+          /> <wsdl:operation name="Add"> <soap:operation soapAction="http://tempuri.org/Add"
+          soapActionRequired="true" style="document" /> <wsdl:input> <soap:body use="literal"
+          /> </wsdl:input> <wsdl:output> <soap:body use="literal" /> </wsdl:output>
+          </wsdl:operation> <wsdl:operation name="Subtract"> <soap:operation soapAction="http://tempuri.org/Subtract"
+          soapActionRequired="false" style="document" /> <wsdl:input> <soap:body use="literal"
+          /> </wsdl:input> <wsdl:output> <soap:body use="literal" /> </wsdl:output>
+          </wsdl:operation> <wsdl:operation name="Multiply"> <soap:operation soapAction="http://tempuri.org/Multiply"
+          style="document" /> <wsdl:input> <soap:body use="literal" /> </wsdl:input>
+          <wsdl:output> <soap:body use="literal" /> </wsdl:output> </wsdl:operation>
+          <wsdl:operation name="Divide"> <soap:operation soapAction="http://tempuri.org/Divide"
+          style="document" /> <wsdl:input> <soap:body use="literal" /> </wsdl:input>
+          <wsdl:output> <soap:body use="literal" /> </wsdl:output> </wsdl:operation>
+          </wsdl:binding> <wsdl:binding name="JMSCalculatorSoap12" type="tns:CalculatorSoap">
+          <soap12:binding style="rpc" transport="http://cxf.apache.org/transports/jms"/>
+          <wsdl:operation name="Add"> <soap12:operation soapAction="" style="rpc"/>
+          <wsdl:input> <soap12:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/> </wsdl:input> <wsdl:output> <soap12:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/> </wsdl:output> </wsdl:operation> <wsdl:operation name="Subtract">
+          <soap12:operation soapAction="" style="rpc"/> <wsdl:input> <soap12:body
+          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/> </wsdl:input>
+          <wsdl:output> <soap12:body namespace="http://org.jboss.ws/samples/jmstransport"
+          use="literal"/> </wsdl:output> </wsdl:operation> </wsdl:binding> <wsdl:binding
+          name="CalculatorSoap12" type="tns:CalculatorSoap"> <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"
+          /> <wsdl:operation name="Add"> <soap12:operation soapAction="http://tempuri.org/Add"
+          soapActionRequired="true" style="document" /> <wsdl:input> <soap12:body
+          use="literal" /> </wsdl:input> <wsdl:output> <soap12:body use="literal"
+          /> </wsdl:output> </wsdl:operation> <wsdl:operation name="Subtract"> <soap12:operation
+          soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document"
+          /> <wsdl:input> <soap12:body use="literal" /> </wsdl:input> <wsdl:output>
+          <soap12:body use="literal" /> </wsdl:output> </wsdl:operation> <wsdl:operation
+          name="Multiply"> <soap12:operation soapAction="http://tempuri.org/Multiply"
+          style="document" /> <wsdl:input> <soap12:body use="literal" /> </wsdl:input>
+          <wsdl:output> <soap12:body use="literal" /> </wsdl:output> </wsdl:operation>
+          <wsdl:operation name="Divide"> <soap12:operation soapAction="http://tempuri.org/Divide"
+          style="document" /> <wsdl:input> <soap12:body use="literal" /> </wsdl:input>
+          <wsdl:output> <soap12:body use="literal" /> </wsdl:output> </wsdl:operation>
+          </wsdl:binding> <wsdl:service name="Calculator"> <wsdl:port name="CalculatorSoap"
+          binding="tns:CalculatorSoap"> <soap:address location="http://www.dneonline.com/calculator.asmx"
+          /> </wsdl:port> <wsdl:port name="CalculatorSoap12" binding="tns:CalculatorSoap12">
+          <soap12:address location="http://www.dneonline.com/calculator.asmx" /> </wsdl:port>
+          </wsdl:service> </wsdl:definitions>
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
+          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
+          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+          namespace="##other" processContents="lax" /></xs:complexType><xs:element
+          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
+          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
+          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
+          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
+          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
+          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+          Global Attributes.  The following attributes are intended to be usable via
+          qualified attribute names on any complex type referencing them.  --><xs:attribute
+          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+          indicates any canonicalization conventions followed in the contents of the
+          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" /> </xs:complexType></xs:schema>
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: libxslt
+        xsltTransformAfter: null
+        xsltTransformBefore: null
+      enabled: true
+      name: soap-xml-request-handling
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  - https_redirect_status_code: 426
+    name: scen3
+    path_handling: v0
+    paths:
+    - /scen3
+    plugins:
+    - config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        RouteToPath: null
+        RouteXPath: null
+        RouteXPathCondition: null
+        RouteXPathRegisterNs:
+        - soap,http://schemas.xmlsoap.org/soap/envelope/
+        SOAPAction_Header: "no"
+        VerboseRequest: true
+        xsdApiSchema: <xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+          targetNamespace="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">   <xsd:element
+          name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="AddType">     <xsd:sequence>       <xsd:element type="xsd:integer"
+          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
+          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="SubtractType">     <xsd:sequence>       <xsd:element type="xsd:integer"
+          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
+          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="Multiply" type="tem:MultiplyType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="MultiplyType">     <xsd:sequence>       <xsd:element type="xsd:integer"
+          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
+          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="Divide" type="tem:DivideType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="DivideType">     <xsd:sequence>       <xsd:element type="xsd:integer"
+          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
+          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="AddResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
+          name="AddResult"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="SubtractResponse" type="tem:SubtractResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="SubtractResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
+          name="SubtractResult"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="MultiplyResponse" type="tem:MultiplyResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="MultiplyResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
+          name="MultiplyResult"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
+          name="DivideResponse" type="tem:DivideResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
+          name="DivideResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
+          name="DivideResult"/>     </xsd:sequence>   </xsd:complexType> </xsd:schema>
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
+          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
+          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+          namespace="##other" processContents="lax" /></xs:complexType><xs:element
+          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
+          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
+          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
+          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
+          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
+          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+          Global Attributes.  The following attributes are intended to be usable via
+          qualified attribute names on any complex type referencing them.  --><xs:attribute
+          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+          indicates any canonicalization conventions followed in the contents of the
+          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" /> </xs:complexType></xs:schema>
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: libxslt
+        xsltTransformAfter: null
+        xsltTransformBefore: null
+      enabled: true
+      name: soap-xml-request-handling
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  - https_redirect_status_code: 426
+    name: scen4
+    path_handling: v0
+    paths:
+    - /scen4
+    plugins:
+    - config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        RouteToPath: null
+        RouteXPath: null
+        RouteXPathCondition: null
+        RouteXPathRegisterNs:
+        - soap,http://schemas.xmlsoap.org/soap/envelope/
+        SOAPAction_Header: "no"
+        VerboseRequest: null
+        xsdApiSchema: null
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" ></xs:schema>
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: libxslt
+        xsltTransformAfter: null
+        xsltTransformBefore: <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+          <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no"
+          indent="yes"/> <xsl:strip-space elements="*"/> <xsl:template match="node()|@*">
+          <xsl:copy> <xsl:apply-templates select="node()|@*"/> </xsl:copy> </xsl:template>
+          <xsl:template match="//*[local-name()='Subtract']"> <Add xmlns="http://tempuri.org/"><xsl:apply-templates
+          select="@*|node()" /></Add> </xsl:template> </xsl:stylesheet>
+      enabled: true
+      name: soap-xml-request-handling
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  - https_redirect_status_code: 426
+    name: scen5
+    path_handling: v0
+    paths:
+    - /scen5
     plugins:
     - config:
         ExternalEntityLoader_Async: false
@@ -693,182 +1194,10 @@ services:
     response_buffering: true
     strip_path: true
   - https_redirect_status_code: 426
-    name: scen2
+    name: scen6saxon
     path_handling: v0
     paths:
-    - /scen2
-    plugins:
-    - config:
-        ExternalEntityLoader_Async: false
-        ExternalEntityLoader_CacheTTL: 3600
-        ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
-        RouteXPathRegisterNs:
-        - soap,http://schemas.xmlsoap.org/soap/envelope/
-        SOAPAction_Header: "no"
-        VerboseRequest: null
-        xsdApiSchema: <?xml version="1.0" encoding="utf-8"?> <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
-          xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
-          xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/"
-          xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
-          xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/"
-          xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">   <wsdl:types>     <s:schema
-          elementFormDefault="qualified" targetNamespace="http://tempuri.org/">       <s:element
-          name="Add">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
-          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="AddResponse">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="AddResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="Subtract">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
-          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="SubtractResponse">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="SubtractResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="Multiply">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
-          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="MultiplyResponse">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="MultiplyResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="Divide">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="intA" type="s:int" />             <s:element
-          minOccurs="1" maxOccurs="1" name="intB" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>       <s:element
-          name="DivideResponse">         <s:complexType>           <s:sequence>             <s:element
-          minOccurs="1" maxOccurs="1" name="DivideResult" type="s:int" />           </s:sequence>         </s:complexType>       </s:element>     </s:schema>   </wsdl:types>   <wsdl:message
-          name="AddSoapIn">     <wsdl:part name="parameters" element="tns:Add" />   </wsdl:message>   <wsdl:message
-          name="AddSoapOut">     <wsdl:part name="parameters" element="tns:AddResponse"
-          />   </wsdl:message>   <wsdl:message name="SubtractSoapIn">     <wsdl:part
-          name="parameters" element="tns:Subtract" />   </wsdl:message>   <wsdl:message
-          name="SubtractSoapOut">     <wsdl:part name="parameters" element="tns:SubtractResponse"
-          />   </wsdl:message>   <wsdl:message name="MultiplySoapIn">     <wsdl:part
-          name="parameters" element="tns:Multiply" />   </wsdl:message>   <wsdl:message
-          name="MultiplySoapOut">     <wsdl:part name="parameters" element="tns:MultiplyResponse"
-          />   </wsdl:message>   <wsdl:message name="DivideSoapIn">     <wsdl:part
-          name="parameters" element="tns:Divide" />   </wsdl:message>   <wsdl:message
-          name="DivideSoapOut">     <wsdl:part name="parameters" element="tns:DivideResponse"
-          />   </wsdl:message>   <wsdl:portType name="CalculatorSoap">     <wsdl:operation
-          name="Add">       <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds
-          two integers. This is a test WebService. ©DNE Online</wsdl:documentation>       <wsdl:input
-          message="tns:AddSoapIn" />       <wsdl:output message="tns:AddSoapOut" />     </wsdl:operation>     <wsdl:operation
-          name="Subtract">       <wsdl:input message="tns:SubtractSoapIn" />       <wsdl:output
-          message="tns:SubtractSoapOut" />     </wsdl:operation>     <wsdl:operation
-          name="Multiply">       <wsdl:input message="tns:MultiplySoapIn" />       <wsdl:output
-          message="tns:MultiplySoapOut" />     </wsdl:operation>     <wsdl:operation
-          name="Divide">       <wsdl:input message="tns:DivideSoapIn" />       <wsdl:output
-          message="tns:DivideSoapOut" />     </wsdl:operation>   </wsdl:portType>   <wsdl:binding
-          name="JMSCalculatorSoap" type="tns:CalculatorSoap">     <soap:binding style="rpc"
-          transport="http://cxf.apache.org/transports/jms"/>     <wsdl:operation name="Add">       <soap:operation
-          soapAction="" style="rpc"/>       <wsdl:input>         <soap:body namespace="http://org.jboss.ws/samples/jmstransport"
-          use="literal"/>       </wsdl:input>       <wsdl:output>         <soap:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>     <wsdl:operation
-          name="Subtract">       <soap:operation soapAction="" style="rpc"/>       <wsdl:input>         <soap:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:input>       <wsdl:output>         <soap:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:binding
-          name="CalculatorSoap" type="tns:CalculatorSoap">     <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
-          />     <wsdl:operation name="Add">       <soap:operation soapAction="http://tempuri.org/Add"
-          soapActionRequired="true" style="document" />       <wsdl:input>         <soap:body
-          use="literal" />       </wsdl:input>       <wsdl:output>         <soap:body
-          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
-          name="Subtract">       <soap:operation soapAction="http://tempuri.org/Subtract"
-          soapActionRequired="false" style="document" />       <wsdl:input>         <soap:body
-          use="literal" />       </wsdl:input>       <wsdl:output>         <soap:body
-          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
-          name="Multiply">       <soap:operation soapAction="http://tempuri.org/Multiply"
-          style="document" />       <wsdl:input>         <soap:body use="literal"
-          />       </wsdl:input>       <wsdl:output>         <soap:body use="literal"
-          />       </wsdl:output>     </wsdl:operation>     <wsdl:operation name="Divide">       <soap:operation
-          soapAction="http://tempuri.org/Divide" style="document" />       <wsdl:input>         <soap:body
-          use="literal" />       </wsdl:input>       <wsdl:output>         <soap:body
-          use="literal" />       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:binding
-          name="JMSCalculatorSoap12" type="tns:CalculatorSoap">     <soap12:binding
-          style="rpc" transport="http://cxf.apache.org/transports/jms"/>     <wsdl:operation
-          name="Add">       <soap12:operation soapAction="" style="rpc"/>       <wsdl:input>         <soap12:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:input>       <wsdl:output>         <soap12:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>     <wsdl:operation
-          name="Subtract">       <soap12:operation soapAction="" style="rpc"/>       <wsdl:input>         <soap12:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:input>       <wsdl:output>         <soap12:body
-          namespace="http://org.jboss.ws/samples/jmstransport" use="literal"/>       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:binding
-          name="CalculatorSoap12" type="tns:CalculatorSoap">     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http"
-          />     <wsdl:operation name="Add">       <soap12:operation soapAction="http://tempuri.org/Add"
-          soapActionRequired="true" style="document" />       <wsdl:input>         <soap12:body
-          use="literal" />       </wsdl:input>       <wsdl:output>         <soap12:body
-          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
-          name="Subtract">       <soap12:operation soapAction="http://tempuri.org/Subtract"
-          soapActionRequired="false" style="document" />       <wsdl:input>         <soap12:body
-          use="literal" />       </wsdl:input>       <wsdl:output>         <soap12:body
-          use="literal" />       </wsdl:output>     </wsdl:operation>     <wsdl:operation
-          name="Multiply">       <soap12:operation soapAction="http://tempuri.org/Multiply"
-          style="document" />       <wsdl:input>         <soap12:body use="literal"
-          />       </wsdl:input>       <wsdl:output>         <soap12:body use="literal"
-          />       </wsdl:output>     </wsdl:operation>     <wsdl:operation name="Divide">       <soap12:operation
-          soapAction="http://tempuri.org/Divide" style="document" />       <wsdl:input>         <soap12:body
-          use="literal" />       </wsdl:input>       <wsdl:output>         <soap12:body
-          use="literal" />       </wsdl:output>     </wsdl:operation>   </wsdl:binding>   <wsdl:service
-          name="Calculator">     <wsdl:port name="CalculatorSoap" binding="tns:CalculatorSoap">       <soap:address
-          location="http://www.dneonline.com/calculator.asmx" />     </wsdl:port>     <wsdl:port
-          name="CalculatorSoap12" binding="tns:CalculatorSoap12">       <soap12:address
-          location="http://www.dneonline.com/calculator.asmx" />     </wsdl:port>   </wsdl:service>
-          </wsdl:definitions>
-        xsdApiSchemaInclude: {}
-        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
-          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
-          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
-          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
-          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
-          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
-          namespace="##other" processContents="lax" /></xs:complexType><xs:element
-          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
-          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
-          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
-          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
-          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
-          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
-          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
-          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
-          Global Attributes.  The following attributes are intended to be usable via
-          qualified attribute names on any complex type referencing them.  --><xs:attribute
-          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
-          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
-          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
-          indicates any canonicalization conventions followed in the contents of the
-          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
-          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
-          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
-          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
-          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
-          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
-          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
-          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
-          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
-          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
-          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
-          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
-          processContents="lax" /> </xs:complexType></xs:schema>
-        xsdSoapSchemaInclude: {}
-        xsltLibrary: libxslt
-        xsltTransformAfter: null
-        xsltTransformBefore: null
-      enabled: true
-      name: soap-xml-request-handling
-      protocols:
-      - grpc
-      - grpcs
-      - http
-      - https
-    preserve_host: false
-    protocols:
-    - http
-    - https
-    regex_priority: 0
-    request_buffering: true
-    response_buffering: true
-    strip_path: true
-  - https_redirect_status_code: 426
-    name: scen3
-    path_handling: v0
-    paths:
-    - /scen3
+    - /scen6saxon
     plugins:
     - config:
         ExternalEntityLoader_Async: false
@@ -881,107 +1210,6 @@ services:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
         VerboseRequest: true
-        xsdApiSchema: <xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
-          targetNamespace="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">   <xsd:element
-          name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="AddType">     <xsd:sequence>       <xsd:element type="xsd:integer"
-          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
-          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="SubtractType">     <xsd:sequence>       <xsd:element type="xsd:integer"
-          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
-          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="Multiply" type="tem:MultiplyType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="MultiplyType">     <xsd:sequence>       <xsd:element type="xsd:integer"
-          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
-          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="Divide" type="tem:DivideType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="DivideType">     <xsd:sequence>       <xsd:element type="xsd:integer"
-          name="intA" minOccurs="1"/>       <xsd:element type="xsd:integer" name="intB"
-          minOccurs="1"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="AddResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
-          name="AddResult"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="SubtractResponse" type="tem:SubtractResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="SubtractResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
-          name="SubtractResult"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="MultiplyResponse" type="tem:MultiplyResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="MultiplyResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
-          name="MultiplyResult"/>     </xsd:sequence>   </xsd:complexType>   <xsd:element
-          name="DivideResponse" type="tem:DivideResponseType" xmlns:tem="http://tempuri.org/"/>   <xsd:complexType
-          name="DivideResponseType">     <xsd:sequence>       <xsd:element type="xsd:string"
-          name="DivideResult"/>     </xsd:sequence>   </xsd:complexType> </xsd:schema>
-        xsdApiSchemaInclude: {}
-        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
-          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
-          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
-          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
-          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
-          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
-          namespace="##other" processContents="lax" /></xs:complexType><xs:element
-          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
-          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
-          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
-          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
-          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
-          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
-          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
-          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
-          Global Attributes.  The following attributes are intended to be usable via
-          qualified attribute names on any complex type referencing them.  --><xs:attribute
-          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
-          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
-          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
-          indicates any canonicalization conventions followed in the contents of the
-          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
-          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
-          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
-          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
-          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
-          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
-          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
-          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
-          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
-          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
-          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
-          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
-          processContents="lax" /> </xs:complexType></xs:schema>
-        xsdSoapSchemaInclude: {}
-        xsltLibrary: libxslt
-        xsltTransformAfter: null
-        xsltTransformBefore: null
-      enabled: true
-      name: soap-xml-request-handling
-      protocols:
-      - grpc
-      - grpcs
-      - http
-      - https
-    preserve_host: false
-    protocols:
-    - http
-    - https
-    regex_priority: 0
-    request_buffering: true
-    response_buffering: true
-    strip_path: true
-  - https_redirect_status_code: 426
-    name: scen4
-    path_handling: v0
-    paths:
-    - /scen4
-    plugins:
-    - config:
-        ExternalEntityLoader_Async: false
-        ExternalEntityLoader_CacheTTL: 3600
-        ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
-        RouteXPathRegisterNs:
-        - soap,http://schemas.xmlsoap.org/soap/envelope/
-        SOAPAction_Header: "no"
-        VerboseRequest: null
         xsdApiSchema: null
         xsdApiSchemaInclude: {}
         xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
@@ -1019,7 +1247,7 @@ services:
           processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
           processContents="lax" /> </xs:complexType></xs:schema>
         xsdSoapSchemaInclude: {}
-        xsltLibrary: libxslt
+        xsltLibrary: saxon
         xsltTransformAfter: null
         xsltTransformBefore: <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
           <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no"
@@ -1029,6 +1257,147 @@ services:
           select="@*|node()" /></Add> </xsl:template> </xsl:stylesheet>
       enabled: true
       name: soap-xml-request-handling
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  - https_redirect_status_code: 426
+    name: scen7saxon
+    path_handling: v0
+    paths:
+    - /scen7saxon
+    plugins:
+    - config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        RouteToPath: null
+        RouteXPath: null
+        RouteXPathCondition: null
+        RouteXPathRegisterNs:
+        - soap,http://schemas.xmlsoap.org/soap/envelope/
+        SOAPAction_Header: "no"
+        VerboseRequest: true
+        xsdApiSchema: null
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
+          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
+          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+          namespace="##other" processContents="lax" /></xs:complexType><xs:element
+          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
+          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
+          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
+          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
+          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
+          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+          Global Attributes.  The following attributes are intended to be usable via
+          qualified attribute names on any complex type referencing them.  --><xs:attribute
+          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+          indicates any canonicalization conventions followed in the contents of the
+          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" /> </xs:complexType></xs:schema>
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: null
+        xsltTransformBefore: <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions"
+          exclude-result-prefixes="fn">   <xsl:output method="xml" indent="yes"/>   <xsl:template
+          match="/">     <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>         <soap:Envelope
+          xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">       <soap:Body>         <xsl:variable
+          name="operation" select="$json_var/map/string[@key='operation']"/>             <xsl:element
+          name="{$operation}" xmlns="http://tempuri.org/">           <intA>             <xsl:value-of
+          select="$json_var/map/number[@key='intA']"/>           </intA>           <intB>             <xsl:value-of
+          select="$json_var/map/number[@key='intB']"/>           </intB>                       </xsl:element>       </soap:Body>     </soap:Envelope>   </xsl:template>
+          </xsl:stylesheet>
+      enabled: true
+      name: soap-xml-request-handling
+      protocols:
+      - grpc
+      - grpcs
+      - http
+      - https
+    - config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: null
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+          targetNamespace="http://schemas.xmlsoap.org/soap/envelope/" > <!-- Envelope,
+          header and body --> <xs:element name="Envelope" type="tns:Envelope" /> <xs:complexType
+          name="Envelope" ><xs:sequence><xs:element ref="tns:Header" minOccurs="0"
+          /><xs:element ref="tns:Body" minOccurs="1" /><xs:any namespace="##other"
+          minOccurs="0" maxOccurs="unbounded" processContents="lax" /></xs:sequence><xs:anyAttribute
+          namespace="##other" processContents="lax" /></xs:complexType><xs:element
+          name="Header" type="tns:Header" /><xs:complexType name="Header" ><xs:sequence><xs:any
+          namespace="##other" minOccurs="0" maxOccurs="unbounded" processContents="lax"
+          /></xs:sequence><xs:anyAttribute namespace="##other" processContents="lax"
+          /></xs:complexType><xs:element name="Body" type="tns:Body" /><xs:complexType
+          name="Body" ><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" ><xs:annotation><xs:documentation>Prose in the spec
+          does not specify that attributes are allowed on the Body element</xs:documentation></xs:annotation></xs:anyAttribute></xs:complexType><!--
+          Global Attributes.  The following attributes are intended to be usable via
+          qualified attribute names on any complex type referencing them.  --><xs:attribute
+          name="mustUnderstand" ><xs:simpleType><xs:restriction base='xs:boolean'><xs:pattern
+          value='0|1' /></xs:restriction></xs:simpleType></xs:attribute><xs:attribute
+          name="actor" type="xs:anyURI" /><xs:simpleType name="encodingStyle" ><xs:annotation><xs:documentation>'encodingStyle'
+          indicates any canonicalization conventions followed in the contents of the
+          containing element.  For example, the value 'http://schemas.xmlsoap.org/soap/encoding/'
+          indicates the pattern described in SOAP specification</xs:documentation></xs:annotation><xs:list
+          itemType="xs:anyURI" /></xs:simpleType><xs:attribute name="encodingStyle"
+          type="tns:encodingStyle" /><xs:attributeGroup name="encodingStyle" ><xs:attribute
+          ref="tns:encodingStyle" /></xs:attributeGroup><xs:element name="Fault" type="tns:Fault"
+          /><xs:complexType name="Fault" final="extension" ><xs:annotation><xs:documentation>Fault
+          reporting structure</xs:documentation></xs:annotation><xs:sequence><xs:element
+          name="faultcode" type="xs:QName" /><xs:element name="faultstring" type="xs:string"
+          /><xs:element name="faultactor" type="xs:anyURI" minOccurs="0" /><xs:element
+          name="detail" type="tns:detail" minOccurs="0" /></xs:sequence></xs:complexType><xs:complexType
+          name="detail"><xs:sequence><xs:any namespace="##any" minOccurs="0" maxOccurs="unbounded"
+          processContents="lax" /></xs:sequence><xs:anyAttribute namespace="##any"
+          processContents="lax" /> </xs:complexType></xs:schema>
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: <xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+          xmlns="http://www.w3.org/2005/xpath-functions" xmlns:fn="http://www.w3.org/2005/xpath-functions"
+          xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xpath-default-namespace="http://tempuri.org/"
+          exclude-result-prefixes="fn">   <xsl:mode on-no-match="shallow-skip"/>   <xsl:output
+          method="text"/>      <xsl:template match="/soap:Envelope/soap:Body/*[ends-with(name(),
+          'Response')]/*[ends-with(name(), 'Result')]">     <xsl:variable name="json-result">       <map
+          xmlns="http://www.w3.org/2005/xpath-functions">         <number key="result">           <xsl:value-of
+          select="text()"/>         </number>       </map>     </xsl:variable>     <xsl:value-of
+          select="fn:xml-to-json($json-result)"/>   </xsl:template> </xsl:stylesheet>
+        xsltTransformBefore: null
+      enabled: true
+      name: soap-xml-response-handling
       protocols:
       - grpc
       - grpcs

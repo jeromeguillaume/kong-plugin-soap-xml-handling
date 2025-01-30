@@ -58,6 +58,8 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 ## Other information regarding load testing methodology
 - The Body size of the request is ~345 bytes for both upstream services
 - Protocol: HTTPS only
+- The reponse is deflated with `Content-Encoding: gzip` for `calculator` upstream only (but not for `httpbin` upstream)
+- As `XsdSoapSchema` has a default value (related to soap 1.1 schema) we can't put a null value. So the `XSLT Transformation` (only) also includes `XSD Validation (soap 1.1)`
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
 - The Endurance test duration is 12 hours
@@ -68,12 +70,15 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 ## Scenarios for `calculator` Web Service (SOAP/XML)
 - [Scenario 0](/loadtest/k6/scen0.js): no plugin (need to set `replicas=2` instead of 1 to reach limit of `calculator`)
 - [Scenario 1](/loadtest/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) Request plugin
-- [Scenario 2]
+- [Scenario 2](/loadtest/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) Request plugin
 - [Scenario 3](/loadtest/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) Request plugin
-- [Scenario 4](/loadtest/k6/scen4.js): XSLT Transformation (Before) with `libxslt` Request plugin
+- [Scenario 4](/loadtest/k6/scen4.js): XSLT Transformation (Before) with `libxslt` Request plugin (including XSD Validation (soap 1.1))
 - [Scenario 5](/loadtest/k6/scen5.js): all options (with `libxslt`) for Request and Response plugins 
-- [Scenario 6](/loadtest/k6/scen6.js): XSLT Transformation (Before) with `saxon` Request plugin
-- [Scenario 7](/loadtest/k6/scen7.js): XSLT v3.0 - JSON to XML for Request and Response plugins
+- [Scenario 6](/loadtest/k6/scen6.js): WSDL Validation (soap 1.1 and API schemas) Response plugin
+- [Scenario 7](/loadtest/k6/scen7.js): XSLT Transformation (Before) with `libxslt` Response plugin (including XSD Validation (soap 1.1))
+
+- [Scenario 8](/loadtest/k6/scen8saxon.js): XSLT Transformation (Before) with `saxon` Request plugin
+- [Scenario 9](/loadtest/k6/scen9saxon.js): XSLT v3.0 - JSON to XML with `saxon` for Request and Response plugins
 
 ## Scenarios for `httpbin` REST API (JSON)
 - [Scenario 0](/loadtest/k6/scenhttpbin0.js): no plugin
@@ -81,16 +86,18 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - [Scenario 2](/loadtest/k6/scenhttpbin2.js): OAS Validation plugin (Request and Response validation)
 
 ## Performance tests Results
-|Service name|Scenario|Test type|XSLT Library|Requests per second|Avg (ms)|p95 (ms)|p99 (ms)|Memory|Data Sent|Data Rcv
-|:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|
-|calculator|0|Kong proxy with no plugins|N/A|12441 rps||||||
-|calculator|1|WSDL Validation (req only) plugin|libxslt|3848 rps|5 ms|8 ms|23 ms|2.4 Gib|2 GB|3 GB
-|calculator|2|WSDL Validation and SOAPAction (req only) plugin|libxslt| rps| ms| ms| ms| Gib| GB| GB
-|calculator|3|XSD Validation (req only) plugin|libxslt|4723 rps|4 ms|8 ms|17 ms|2.4 Gib|2.5 GB|3 GB
-|calculator|4|XSLT Transformation (req only) plugin|libxslt|rps| ms| ms| ms| Gib| GB| GB
-|calculator|5|All options for req and res plugins|libxslt|rps|ms|ms| ms| Gib| GB| GB
-|calculator|6|XSLT Transformation (req only) plugin|saxon| rps| ms| ms| ms| Gib| GB| GB
-|calculator|7|XSLT v3.0 - JSON to XML for req and res plugins|saxon|rps|ms|ms| ms| Gib| GB| GB
-|httbin|0|Kong proxy with no plugins|N/A| rps| ms| ms| ms| Gib|
-|httbin|1|OAS Validation (req only)|N/A|8691 rps|23 ms|63 ms|92 ms|0.9 Gib|
-|httbin|2|OAS Validation (req and res)|N/A|6508 rps|31 ms|99 ms|144 ms|0.9 Gib|
+|Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
+|:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
+|calculator|0|Kong proxy with no plugins|N/A|13177 rps|0.95 ms|4.5 ms|11.3 ms|21.2 ms|0.9 Gib|6.8 GB|10 GB
+|calculator|1|WSDL Validation (req only) plugin|N/A|3780 rps|1.10 ms|5 ms|8.4 ms|26.8 ms|3.9 Gib|2 GB|3 GB
+|calculator|2|WSDL and SOAPAction Validation (req only) plugin|N/A|3806 rps|0.99 ms|4.9 ms|8.3 ms|24.5 ms|3.8 Gib|2 GB|3 GB
+|calculator|3|XSD Validation (req only) plugin|N/A| rps|ms| ms| ms| ms| Gib| GB| GB
+|calculator|4|XSLT Transformation (req only) plugin|libxslt|5869 rps|0.97 ms|3.2 ms|5.9 ms|13.2 ms|1.9 Gib|3.2 GB|4.6 GB
+|calculator|5|All options for req and res plugins|libxslt|rps| ms|ms|ms| ms| Gib| GB| GB
+|calculator|6|WSDL Validation (res only) plugin|N/A|3663 rps|0.97 ms|5.2 ms|8.25 ms|23 ms|2.9 Gib|1.9 GB|2.9 GB
+|calculator|7|XSLT Transformation (res only) plugin|libxslt|3881 rps|0.96 ms|4.88 ms|8.77 ms|20.2 ms|1.4 Gib|2.1 GB|3.1 GB
+|calculator|8|XSLT Transformation (req only) plugin|saxon| rps|ms|ms| ms| ms| Gib| GB| GB
+|calculator|9|XSLT v3.0 - JSON to XML for req and res plugins|saxon|rps|ms|ms|ms| ms| Gib| GB| GB
+|httbin|0|Kong proxy with no plugins|N/A| rps|ms|ms| ms| ms| Gib| GB| GB
+|httbin|1|OAS Validation (req only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
+|httbin|2|OAS Validation (req and res)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB

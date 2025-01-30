@@ -2,35 +2,35 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { sleep } from 'k6';
 
-//const host='kong-proxy.kong:8443';
-const host='35.241.175.116';
+const host='kong-proxy.kong:8443';
+//const host='35.241.175.116';
 
 
 export const options = {
   insecureSkipTLSVerify: true,
-  scenarios: {
-    scenOk: {
-      exec: 'scen3',
+  scenarios: {    
+    scen1endurance: {
+      exec: 'scen1endurance',
       
-      executor: 'per-vu-iterations',
+      /*executor: 'per-vu-iterations',
       vus: 1,
       iterations: 1,
-      maxDuration: '1s'
+      maxDuration: '1s'*/
       
-      /*executor: 'ramping-vus',
+      executor: 'ramping-vus',
       startvus: 0,
       stages: [
         { duration: '30s', target: 6 },
         { duration: '30s', target: 12 },
         { duration: '30s', target: 20 },
-        { duration: '900s', target: 20 },
+        { duration: '36000s', target: 20 },
       ],
-      gracefulRampDown: '5s',*/
+      gracefulRampDown: '5s',
     },
   },
 };
 
-export function scen3 () {
+export function scen1endurance () {
   const calcReq = 
   `<?xml version=\"1.0\" encoding=\"utf-8\"?>
   <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
@@ -42,7 +42,7 @@ export function scen3 () {
     </soap:Body>
   </soap:Envelope>`;
   
-  const result = http.post('https://'+host+'/scen3', calcReq, {
+  const result = http.post('https://'+host+'/scen1endurance', calcReq, {
     headers: { 
         'Content-Type': 'text/xml; charset=utf-8',
       },
@@ -54,5 +54,5 @@ export function scen3 () {
     "calculator Result": result =>
       result.body.includes("<AddResult>12</AddResult>"),
   });
-  
+  sleep(0.01)
 }
