@@ -1,4 +1,16 @@
-# Load testing results
+# Load testing benchmark
+
+## Load Testing conclusion
+1) A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) doens't massively impact the respone time and delivers the expected value. However the plugin involves a high CPU usage than a simple proxyfication without plugin: so we just need to size the right number of CPUs for the Kong node (vertical scaling) and/or the right number of nodes (horizontal scaling)
+2) A basic WSDL Validation reduces the throughput (rps) by 3.5 times and the Kong proxy latency (p95) is very close to the reference measure without plugins (1.10 ms vs 0.95 ms)
+3) The XSD Validation is most performant than the WSDL Validation
+4) A basic XSLT Transformation with `libxslt` reduces the throughput (rps) by 2.25 times and the Kong proxy latency (p95) is similar to the reference measure without plugins (0.97 ms vs 0.95 ms)
+5) A basic XSLT Transformation with `saxon` reduces the throughput (rps) by 5 times and the Kong proxy latency (p95) is increased by 2 times without plugins to the reference measure (1.97 ms vs 0.95 ms)
+6) All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency (p95) is ~4 ms in comparison to the reference measure without plugins (0.95 ms)
+
+See [Performance Tests results](#performance_tests_results)
+See [Endurance Tests results](#endurance_tests_results)
+
 
 ## Architecture test
 Deploy this stack **in this order** (for having `podAntiAffinity`):
@@ -30,14 +42,14 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 
 ## How to use K6
 - Create a ConfigMap for each scenario
-  - See [1-k6-configMap.sh]( /loadTesting/k6/1-k6-configMap.sh)
+  - See [k6-configMap.sh]( /loadTesting/k6/k6-configMap.sh)
 - Start a scenario on your Laptop
   - Configure `executor: per-vu-iterations` and `iterations: 1` in the `scenX.js`
   - `k6 run scen1.js`
 - Start a Load testing on Kubernetes
   - Configure `executor: 'ramping-vus` and `{ duration: '900s', target: 20 }` in the `scenX.js`
-  - Configure [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
-  - Apply the configuration and start the test: `kubectl apply -f 2-k6-TestRun.yaml`
+  - Configure [k6-TestRun.yaml]( /loadTesting/k6/k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
+  - Apply the configuration and start the test: `kubectl apply -f k6-TestRun.yaml`
 - Collect and check the results once the job has the `succeeded` status
   -  The command is for instance: `kubectl logs scen1-1-wxyz`
   - The expected result is:
@@ -66,9 +78,9 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - As `XsdSoapSchema` has a default value (related to soap 1.1 schema) we can't put a null value. So the `XSLT Transformation` (only) also includes `XSD Validation (soap 1.1)`
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
-  - Have `spec.parallelism: 1` in [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml)
+  - Have `spec.parallelism: 1` in [k6-TestRun.yaml]( /loadTesting/k6/k6-TestRun.yaml)
 - The Endurance test duration is 24 hours
-  - Have `spec.parallelism: 10` in [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml) for stability and avoid the K6 `failed` status
+  - Have `spec.parallelism: 10` in [k6-TestRun.yaml]( /loadTesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
 - At the end of the K6 execution we:
   - Collect the K6 results
   - Collect the `Kong Linux Memory` (observed at the end of the test)
@@ -99,15 +111,9 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 
 For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 
-## Load Testing Conclusion
-1) A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) doens't massively impact the respone time and delivers the expected value. However the plugin involves a high CPU usage than a simple proxyfication without plugin: so we just need to size the right number of CPUs for the Kong node (vertical scaling) and/or the right number of nodes (horizontal scaling)
-2) A basic WSDL Validation reduces the throughput (rps) by 3.5 times and the Kong proxy latency (p95) is very close to the reference measure without plugins (1.10 ms vs 0.95 ms)
-3) The XSD Validation is most performant than the WSDL Validation
-4) A basic XSLT Transformation with `libxslt` reduces the throughput (rps) by 2.25 times and the Kong proxy latency (p95) is similar to the reference measure without plugins (0.97 ms vs 0.95 ms)
-5) A basic XSLT Transformation with `saxon` reduces the throughput (rps) by 5 times and the Kong proxy latency (p95) is increased by 2 times without plugins to the reference measure (1.97 ms vs 0.95 ms)
-6) All the features (WSDL and SOAPAction validation, 2 x XSLT Transformation, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency (p95) is ~4 ms in comparison to the reference measure without plugins (0.95 ms)
+<a id="performance_tests_results"></a>
 
-## Performance Tests Result
+## Performance Tests results
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|0|Kong proxy with no plugins|N/A|13177 rps|0.95 ms|4.5 ms|11.3 ms|21.2 ms|0.9 Gib|6.8 GB|10 GB
@@ -125,7 +131,9 @@ For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node co
 |httbin|1|OAS Validation (req only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
 |httbin|2|OAS Validation (req and res)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
 
-## Endurance Tests Result (24h)
+<a id="endurance_tests_results"></a>
+
+## Endurance Tests results (24h)
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|5|All options for req and res plugins|libxslt| rps| ms| ms| ms| ms| Gib| GB| GB
