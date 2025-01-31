@@ -56,13 +56,13 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - `kubectl delete testruns.k6.io scen1`
 
 ## Other information regarding load testing methodology
-- The Body size of the request is ~345 bytes for both upstream services
+- The Body size of the request is ~350 bytes for both upstream services
 - Protocol: HTTPS only
 - The reponse is deflated with `Content-Encoding: gzip` for `calculator` upstream only (but not for `httpbin` upstream)
 - As `XsdSoapSchema` has a default value (related to soap 1.1 schema) we can't put a null value. So the `XSLT Transformation` (only) also includes `XSD Validation (soap 1.1)`
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
-- The Endurance test duration is 12 hours
+- The Endurance test duration is 24 hours
 - At the end of the K6 execution we collect the results and we verify that the checks are 100% successful
   
 - Kong Node is restarted between each iteration of test
@@ -93,7 +93,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 |calculator|2|WSDL and SOAPAction Validation (req only) plugin|N/A|3806 rps|0.99 ms|4.9 ms|8.3 ms|24.5 ms|3.8 Gib|2 GB|3 GB
 |calculator|3|XSD Validation (req only) plugin|N/A| rps|ms| ms| ms| ms| Gib| GB| GB
 |calculator|4|XSLT Transformation (req only) plugin|libxslt|5869 rps|0.97 ms|3.2 ms|5.9 ms|13.2 ms|1.9 Gib|3.2 GB|4.6 GB
-|calculator|5|All options for req and res plugins|libxslt|rps| ms|ms|ms| ms| Gib| GB| GB
+|calculator|5|All options for req and res plugins|libxslt|1299 rps|4.27 ms|14.6 ms|35.1 ms|70.89 ms|6.7 Gib|0.75 GB|0.72 GB
 |calculator|6|WSDL Validation (res only) plugin|N/A|3663 rps|0.97 ms|5.2 ms|8.25 ms|23 ms|2.9 Gib|1.9 GB|2.9 GB
 |calculator|7|XSLT Transformation (res only) plugin|libxslt|3881 rps|0.96 ms|4.88 ms|8.77 ms|20.2 ms|1.4 Gib|2.1 GB|3.1 GB
 |calculator|8|XSLT Transformation (req only) plugin|saxon| rps|ms|ms| ms| ms| Gib| GB| GB

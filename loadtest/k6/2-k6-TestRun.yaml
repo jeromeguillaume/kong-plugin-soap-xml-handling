@@ -1,21 +1,21 @@
 apiVersion: k6.io/v1alpha1
 kind: TestRun
 metadata:
-  name: scen5
+  name: scen5endurance
 spec:
-  parallelism: 1
+  parallelism: 10
   script:
     configMap:
-      name: scen5
-      file: scen5.js
-  arguments: --tag testId=scen5
+      name: scen5endurance
+      file: scen5endurance.js
+  arguments: --tag testId=scen5endurance
   runner:
     resources:
       limits:
         cpu: 8
         memory: 8Gi
       requests:
-        cpu: 2
+        cpu: "0.5"
         memory: 2Gi
     env:
       - name: K6_SUMMARY_TREND_STATS

@@ -67,7 +67,7 @@ resources:
     memory: "8Gi"
   limits:
     cpu: 4
-    memory: "8Gi"
+    memory: "16Gi"
 
 affinity:
   podAntiAffinity:
