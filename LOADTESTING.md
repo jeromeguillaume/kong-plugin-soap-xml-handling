@@ -8,8 +8,9 @@
 5) A basic XSLT Transformation with `saxon` reduces the throughput (rps) by 5 times and the Kong proxy latency (p95) is increased by 2 times without plugins to the reference measure (1.97 ms vs 0.95 ms)
 6) All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency (p95) is ~4 ms in comparison to the reference measure without plugins (0.95 ms)
 
-See [Performance Tests results](#performance_tests_results)
-See [Endurance Tests results](#endurance_tests_results)
+See detailed results:
+  - [Performance Tests results](#performance_tests_results)
+  - [Endurance Tests results](#endurance_tests_results)
 
 
 ## Architecture test
