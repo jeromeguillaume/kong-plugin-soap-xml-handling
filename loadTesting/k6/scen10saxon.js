@@ -40,34 +40,11 @@ export function scen10saxon () {
    <offices>
       <site>San Francisco (HQ)</site>
       <site>Chicago</site>
-      <site>London</site>
       <site>Bangalore</site>
       <site>Singapore</site>
       <site>Shangai</site>
-      <site>Japan</site>
    </offices>
-   <products>
-      <product name="Kong konnect">
-         <version>2024</version>
-         <saas>true</saas>
-      </product>
-      <product name="Kong AI Gateway">
-         <version>3.8</version>
-         <saas>false</saas>
-      </product>
-      <product name="Kong Ingress Controller">
-         <version>3.3</version>
-         <saas>false</saas>
-      </product>
-      <product name="Kong Mesh">
-         <version>2.8</version>
-         <saas>false</saas>
-      </product>
-      <product name="Insomnia">
-         <version>10</version>
-         <saas>false</saas>
-      </product>
-   </products>
+   <products/>
 </root>`;
     
   

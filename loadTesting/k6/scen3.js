@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { sleep } from 'k6';
 
-//const host='kong-proxy.kong:8443';
-const host='35.241.175.116';
+const host='kong-proxy.kong:8443';
+//const host='35.241.175.116';
 
 
 export const options = {
@@ -12,12 +12,12 @@ export const options = {
     scenOk: {
       exec: 'scen3',
       
-      executor: 'per-vu-iterations',
+      /*executor: 'per-vu-iterations',
       vus: 1,
       iterations: 1,
-      maxDuration: '1s'
+      maxDuration: '1s'*/
       
-      /*executor: 'ramping-vus',
+      executor: 'ramping-vus',
       startvus: 0,
       stages: [
         { duration: '30s', target: 6 },
@@ -25,7 +25,7 @@ export const options = {
         { duration: '30s', target: 20 },
         { duration: '900s', target: 20 },
       ],
-      gracefulRampDown: '5s',*/
+      gracefulRampDown: '5s',
     },
   },
 };

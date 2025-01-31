@@ -9,7 +9,6 @@ kubectl create configmap scen8saxon --from-file ./scen8saxon.js -o yaml --dry-ru
 kubectl create configmap scen9saxon --from-file ./scen9saxon.js -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen10saxon --from-file ./scen10saxon.js -o yaml --dry-run=client | kubectl apply -f - 
 
-kubectl create configmap scen1endurance --from-file ./scen1endurance.js -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen5endurance --from-file ./scen5endurance.js -o yaml --dry-run=client | kubectl apply -f - 
 
 kubectl create configmap scenhttpbin0 --from-file ./scenhttpbin0.js -o yaml --dry-run=client | kubectl apply -f - 

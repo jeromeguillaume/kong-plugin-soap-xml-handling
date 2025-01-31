@@ -14,7 +14,7 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
   - Those specific parameters are defined in:
     - [values.yaml]( /loadTesting/k6/0-init/cp-gke/values.yaml) without Saxon
     - [valuesSaxon.yaml]( /loadTesting/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
-  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml]( /loadTesting/k6/0-init/k6-kong.yaml) deck file
+  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml]( /loadTesting/k6/0-init/k6-kong.yaml) deck file. It includes the `Prometheus` plugin
 3) Prometheus / Grafana stack
 4) K6: load testing tool
   - See [Running distributed load tests on Kubernetes](https://grafana.com/blog/2022/06/23/running-distributed-load-tests-on-kubernetes/)
@@ -26,16 +26,16 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
     - Docker Image: [kong/httpbin:0.2.3](https://hub.docker.com/r/kong/httpbin)
     - Kubernetes deployment: [httpbin.yaml](loadtesting/k6/0-init/httpbin.yaml)
 
-Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment
+Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment. Exception: in case of Endurance tests the number of `replicas` for the `K6` deployment are deployed on all Kubernetes nodes
 
 ## How to use K6
 - Create a ConfigMap for each scenario
   - See [1-k6-configMap.sh]( /loadTesting/k6/1-k6-configMap.sh)
 - Start a scenario on your Laptop
-  - Configure `executor: per-vu-iterations` in the `scenX.js`
+  - Configure `executor: per-vu-iterations` and `iterations: 1` in the `scenX.js`
   - `k6 run scen1.js`
 - Start a Load testing on Kubernetes
-  - Configure `executor: 'ramping-vus` in the `scenX.js`
+  - Configure `executor: 'ramping-vus` and `{ duration: '900s', target: 20 }` in the `scenX.js`
   - Configure [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
   - Apply the configuration and start the test: `kubectl apply -f 2-k6-TestRun.yaml`
 - Collect and check the results once the job has the `succeeded` status
@@ -66,9 +66,14 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - As `XsdSoapSchema` has a default value (related to soap 1.1 schema) we can't put a null value. So the `XSLT Transformation` (only) also includes `XSD Validation (soap 1.1)`
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
+  - Have `spec.parallelism: 1` in [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml)
 - The Endurance test duration is 24 hours
-  - Have `spec.parallelism: 10` in [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml) for stability and avoid the `failed` status
-- At the end of the K6 execution we collect the results and we verify that **the checks are 100% successful**
+  - Have `spec.parallelism: 10` in [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml) for stability and avoid the K6 `failed` status
+- At the end of the K6 execution we:
+  - Collect the K6 results
+  - Collect the `Kong Linux Memory` observed (at the end of the test)
+  - Collect the `Kong Proxy Latency p95` in Grafana 
+  - Verify that **the checks are 100% successful**
 - Kong Node is restarted between each iteration of test
 
 ## Performance Tests Scenarios for `calculator` Web Service (SOAP/XML)
@@ -92,7 +97,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 ## Endurance Tests Scenarios for `calculator` Web Service (SOAP/XML)
 - [Scenario 5]( /loadTesting/k6/scen5endurance.js): all options (with `libxslt`) for Request and Response plugins
 
-For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory
+For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 
 ## Performance Tests Result
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
@@ -106,13 +111,13 @@ For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node co
 |calculator|6|WSDL Validation (res only) plugin|N/A|3663 rps|0.97 ms|5.2 ms|8.25 ms|23 ms|2.9 Gib|1.9 GB|2.9 GB
 |calculator|7|XSLT Transformation (res only) plugin|libxslt|3881 rps|0.96 ms|4.88 ms|8.77 ms|20.2 ms|1.4 Gib|2.1 GB|3.1 GB
 |calculator|8|XSLT Transformation (req only) plugin|saxon|2587 rps|1.92 ms|7.3ms|10.7 ms|29.4 ms|2.1 Gib|1.4 GB|2 GB
-|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|1644 saxon|rps|1.92 ms|11.5 ms|15.4 ms|38.6 ms|2.8 Gib| GB| GB
-|calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|rps|ms|ms|ms| ms| Gib| GB| GB
+|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|1652 rps|1.91 ms|11.5 ms|15 ms|38.2 ms|2.7 Gib|0.3 GB|0.8 GB
+|calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|1108 rps|3.2 ms|17.1 ms|28.2 ms|40.1 ms|2.1 Gib|1.3 GB|1.5 GB
 |httbin|0|Kong proxy with no plugins|N/A| rps|ms|ms| ms| ms| Gib| GB| GB
 |httbin|1|OAS Validation (req only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
 |httbin|2|OAS Validation (req and res)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
 
-## Endurance Tests Result
+## Endurance Tests Result (24h)
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|5|All options for req and res plugins|libxslt| rps| ms| ms| ms| ms| Gib| GB| GB
