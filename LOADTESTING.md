@@ -26,7 +26,7 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
     - Docker Image: [kong/httpbin:0.2.3](https://hub.docker.com/r/kong/httpbin)
     - Kubernetes deployment: [httpbin.yaml](loadtesting/k6/0-init/httpbin.yaml)
 
-Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment. Exception: in case of Endurance tests the number of `replicas` for the `K6` deployment are deployed on all Kubernetes nodes
+Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment. Exception: in case of Scenario 0 (tests with no plugins) and Endurance tests the number of `replicas` for the Upstream and `K6` deployment are deployed on all Kubernetes nodes
 
 ## How to use K6
 - Create a ConfigMap for each scenario
@@ -71,33 +71,41 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - Have `spec.parallelism: 10` in [2-k6-TestRun.yaml]( /loadTesting/k6/2-k6-TestRun.yaml) for stability and avoid the K6 `failed` status
 - At the end of the K6 execution we:
   - Collect the K6 results
-  - Collect the `Kong Linux Memory` observed (at the end of the test)
+  - Collect the `Kong Linux Memory` (observed at the end of the test)
   - Collect the `Kong Proxy Latency p95` in Grafana 
   - Verify that **the checks are 100% successful**
 - Kong Node is restarted between each iteration of test
 
 ## Performance Tests Scenarios for `calculator` Web Service (SOAP/XML)
 - [Scenario 0]( /loadTesting/k6/scen0.js): no plugin (needs to set `replicas=2` instead of 1 to reach limit of `calculator`)
-- [Scenario 1]( /loadTesting/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) Request plugin
-- [Scenario 2]( /loadTesting/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) Request plugin
-- [Scenario 3]( /loadTesting/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) Request plugin
-- [Scenario 4]( /loadTesting/k6/scen4.js): XSLT Transformation (Before) with `libxslt` Request plugin (including XSD Validation (soap 1.1))
-- [Scenario 5]( /loadTesting/k6/scen5.js): all options (with `libxslt`) for Request and Response plugins
-- [Scenario 6]( /loadTesting/k6/scen6.js): WSDL Validation (soap 1.1 and API schemas) Response plugin
-- [Scenario 7]( /loadTesting/k6/scen7.js): XSLT Transformation (Before) with `libxslt` Response plugin (including XSD Validation (soap 1.1))
-- [Scenario 8]( /loadTesting/k6/scen8saxon.js): XSLT Transformation (Before) with `saxon` Request plugin
-- [Scenario 9]( /loadTesting/k6/scen9saxon.js): XSLT v3.0 - JSON (client) to SOAP/XML (server) with `saxon` for Request and Response plugins (including XSD Validation (soap 1.1))
-- [Scenario 10]( /loadTesting/k6/scen10saxon.js): XSLT v3.0 - XML (client) to JSON (server) with `saxon` for Request and Response plugins (including XSD Validation (custom schema))
+- [Scenario 1]( /loadTesting/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) **Request** plugin
+- [Scenario 2]( /loadTesting/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) **Request** plugin
+- [Scenario 3]( /loadTesting/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) **Request** plugin
+- [Scenario 4]( /loadTesting/k6/scen4.js): XSLT Transformation (Before) with `libxslt` **Request** plugin (including XSD Validation (soap 1.1))
+- [Scenario 5]( /loadTesting/k6/scen5.js): all options (with `libxslt`) for **Request** and **Response** plugins
+- [Scenario 6]( /loadTesting/k6/scen6.js): WSDL Validation (soap 1.1 and API schemas) **Response** plugin
+- [Scenario 7]( /loadTesting/k6/scen7.js): XSLT Transformation (Before) with `libxslt` **Response plugin** (including XSD Validation (soap 1.1))
+- [Scenario 8]( /loadTesting/k6/scen8saxon.js): XSLT Transformation (Before) with `saxon` **Request** plugin
+- [Scenario 9]( /loadTesting/k6/scen9saxon.js): XSLT v3.0 - JSON (client) to SOAP/XML (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (soap 1.1))
+- [Scenario 10]( /loadTesting/k6/scen10saxon.js): XSLT v3.0 - XML (client) to JSON (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
 ## Performance Tests for `httpbin` REST API (JSON)
 - [Scenario 0]( /loadTesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=8` instead of 1 to reach limit of `httpbin`)
-- [Scenario 1]( /loadTesting/k6/scenhttpbin1.js): OAS Validation plugin (only Request validation)
-- [Scenario 2]( /loadTesting/k6/scenhttpbin2.js): OAS Validation plugin (Request and Response validation)
+- [Scenario 1]( /loadTesting/k6/scenhttpbin1.js): OAS Validation plugin (only **Request** validation)
+- [Scenario 2]( /loadTesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
 
 ## Endurance Tests Scenarios for `calculator` Web Service (SOAP/XML)
-- [Scenario 5]( /loadTesting/k6/scen5endurance.js): all options (with `libxslt`) for Request and Response plugins
+- [Scenario 5]( /loadTesting/k6/scen5endurance.js): all options (with `libxslt`) for **Request** and **Response** plugins
 
 For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
+
+## Load Testing Conclusion
+1) A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) doens't massively impact the respone time and delivers the expected value. However the plugin involves a high CPU usage than a simple proxyfication without plugin: so we just need to size the right number of CPUs for the Kong node (vertical scaling) and/or the right number of nodes (horizontal scaling)
+2) A basic WSDL Validation reduces the throughput (rps) by 3.5 times and the Kong proxy latency (p95) is very close to the reference measure without plugins (1.10 ms vs 0.95 ms)
+3) The XSD Validation is most performant than the WSDL Validation
+4) A basic XSLT Transformation with `libxslt` reduces the throughput (rps) by 2.25 times and the Kong proxy latency (p95) is similar to the reference measure without plugins (0.97 ms vs 0.95 ms)
+5) A basic XSLT Transformation with `saxon` reduces the throughput (rps) by 5 times and the Kong proxy latency (p95) is increased by 2 times without plugins to the reference measure (1.97 ms vs 0.95 ms)
+6) All the features (WSDL and SOAPAction validation, 2 x XSLT Transformation, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency (p95) is ~4 ms in comparison to the reference measure without plugins (0.95 ms)
 
 ## Performance Tests Result
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
@@ -105,14 +113,14 @@ For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node co
 |calculator|0|Kong proxy with no plugins|N/A|13177 rps|0.95 ms|4.5 ms|11.3 ms|21.2 ms|0.9 Gib|6.8 GB|10 GB
 |calculator|1|WSDL Validation (req only) plugin|N/A|3780 rps|1.10 ms|5 ms|8.4 ms|26.8 ms|3.9 Gib|2 GB|3 GB
 |calculator|2|WSDL and SOAPAction Validation (req only) plugin|N/A|3806 rps|0.99 ms|4.9 ms|8.3 ms|24.5 ms|3.8 Gib|2 GB|3 GB
-|calculator|3|XSD Validation (req only) plugin|N/A| rps|ms| ms| ms| ms| Gib| GB| GB
+|calculator|3|XSD Validation (req only) plugin|N/A|4561 rps|0.98 ms|4.2 ms|7.5 ms|17.3 ms|2.7 Gib|2.4 GB|3.6 GB
 |calculator|4|XSLT Transformation (req only) plugin|libxslt|5869 rps|0.97 ms|3.2 ms|5.9 ms|13.2 ms|1.9 Gib|3.2 GB|4.6 GB
 |calculator|5|All options for req and res plugins|libxslt|1299 rps|4.27 ms|14.6 ms|35.1 ms|70.89 ms|6.7 Gib|0.75 GB|0.72 GB
 |calculator|6|WSDL Validation (res only) plugin|N/A|3663 rps|0.97 ms|5.2 ms|8.25 ms|23 ms|2.9 Gib|1.9 GB|2.9 GB
 |calculator|7|XSLT Transformation (res only) plugin|libxslt|3881 rps|0.96 ms|4.88 ms|8.77 ms|20.2 ms|1.4 Gib|2.1 GB|3.1 GB
 |calculator|8|XSLT Transformation (req only) plugin|saxon|2587 rps|1.92 ms|7.3ms|10.7 ms|29.4 ms|2.1 Gib|1.4 GB|2 GB
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|1652 rps|1.91 ms|11.5 ms|15 ms|38.2 ms|2.7 Gib|0.3 GB|0.8 GB
-|calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|1108 rps|3.2 ms|17.1 ms|28.2 ms|40.1 ms|2.1 Gib|1.3 GB|1.5 GB
+|calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|1079 rps|2.94 ms|17.6 ms|26.5 ms|39 ms|2.1 Gib|0.59 GB| 0.8 GB
 |httbin|0|Kong proxy with no plugins|N/A| rps|ms|ms| ms| ms| Gib| GB| GB
 |httbin|1|OAS Validation (req only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
 |httbin|2|OAS Validation (req and res)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
