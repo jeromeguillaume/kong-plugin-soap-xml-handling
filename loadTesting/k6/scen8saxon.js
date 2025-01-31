@@ -9,8 +9,8 @@ const host='kong-proxy.kong:8443';
 export const options = {
   insecureSkipTLSVerify: true,
   scenarios: {
-    scen6saxon: {
-      exec: 'scen6saxon',
+    scen8saxon: {
+      exec: 'scen8saxon',
       
       /*executor: 'per-vu-iterations',
       vus: 1,
@@ -30,7 +30,7 @@ export const options = {
   },
 };
 
-export function scen6saxon () {
+export function scen8saxon () {
   const calcReq = 
   `<?xml version=\"1.0\" encoding=\"utf-8\"?>
   <soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
@@ -42,12 +42,12 @@ export function scen6saxon () {
     </soap:Body>
   </soap:Envelope>`;
   
-  const result = http.post('https://'+host+'/scen6saxon', calcReq, {
+  const result = http.post('https://'+host+'/scen8saxon', calcReq, {
     headers: { 
         'Content-Type': 'text/xml; charset=utf-8',
       },
   });
-  
+
   check(result, {
     'http response status code is 200': result.status === 200,
     'Content-Type': result.headers['Content-Type'] === 'text/xml;charset=utf-8',

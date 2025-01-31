@@ -9,7 +9,8 @@ export const options = {
   insecureSkipTLSVerify: true,
   scenarios: {
     scenOk: {
-      exec: 'scen7saxon',
+      exec: 'scen9saxon',
+      
       /*executor: 'per-vu-iterations',
       vus: 1,
       iterations: 1,
@@ -28,7 +29,7 @@ export const options = {
   },
 };
 
-export function scen7saxon () {
+export function scen9saxon () {
   const bodyJSON = {
     operation: 'Add',
 	  intA: 50,
@@ -37,7 +38,7 @@ export function scen7saxon () {
   let bodyString = JSON.stringify(bodyJSON);
     
   
-  const result = http.post('https://'+host+'/scen7saxon', bodyString, {
+  const result = http.post('https://'+host+'/scen9saxon', bodyString, {
     headers: { 
       'Content-Type': 'application/json',
     },
