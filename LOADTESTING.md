@@ -30,10 +30,10 @@ Deploy the stack **in this order** (for having `podAntiAffinity`):
   - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and it's not supported by the Response plugin
   - Create a `kong-proxy` Kubernetes service
   - Those specific parameters are defined in:
-    - [values.yaml](/loadTesting/k6/0-init/cp-gke/values.yaml) without Saxon
-    - [valuesSaxon.yaml](/loadTesting/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
+    - [values.yaml](/loadtesting/k6/0-init/cp-gke/values.yaml) without Saxon
+    - [valuesSaxon.yaml](/loadtesting/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
     - [kong-svc.yaml](/loadtesting/k6/0-init/kong-svc.yaml) 
-  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadTesting/k6/0-init/k6-kong.yaml) deck file. It includes the `Prometheus` plugin
+  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtesting/k6/0-init/k6-kong.yaml) deck file. It includes the `Prometheus` plugin
 3) Prometheus / Grafana stack
 4) K6: load testing tool
   - See [Running distributed load tests on Kubernetes](https://grafana.com/blog/2022/06/23/running-distributed-load-tests-on-kubernetes/)
@@ -50,13 +50,13 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 
 ## How to use K6
 - Create a ConfigMap for each scenario
-  - See [k6-configMap.sh](/loadTesting/k6/k6-configMap.sh)
+  - See [k6-configMap.sh](/loadtesting/k6/k6-configMap.sh)
 - Start a scenario on your Laptop
   - Configure `executor: per-vu-iterations` and `iterations: 1` in the `scenX.js`
   - `k6 run scen1.js`
 - Start a Load testing on Kubernetes
   - Configure `executor: 'ramping-vus` and `{ duration: '900s', target: 20 }` in the `scenX.js`
-  - Configure [k6-TestRun.yaml](/loadTesting/k6/k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
+  - Configure [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
   - Apply the configuration and start the test: `kubectl apply -f k6-TestRun.yaml`
 - Collect and check the results once the job has the `succeeded` status
   -  The command is for instance: `kubectl logs scen1-1-wxyz`
@@ -86,10 +86,10 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - As `XsdSoapSchema` has a default value (related to soap 1.1 schema) we can't put a null value. So the `XSLT Transformation` (only) also includes `XSD Validation (soap 1.1)`
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
-  - Have `spec.parallelism: 1` in [k6-TestRun.yaml](/loadTesting/k6/k6-TestRun.yaml)
+  - Have `spec.parallelism: 1` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml)
   - There is a ramp up phase of 90 s then the 15 min test
 - The Endurance test duration is 24 hours
-  - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadTesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
+  - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
   - Collect the `Kong Linux Memory` (observed at the end of the test)
@@ -99,36 +99,36 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 
 ## Performance Testing scenarios for `calculator` Web Service (SOAP/XML)
 Objective: measure the performance of the SOAP/XML plugins in a context of high usage
-- [Scenario 0](/loadTesting/k6/scen0.js): no plugin (needs to set `replicas=2` for `calculator` instead of 1 to reach its limit)
-- [Scenario 1](/loadTesting/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) **Request** plugin
-- [Scenario 2](/loadTesting/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) **Request** plugin
-- [Scenario 3](/loadTesting/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) **Request** plugin
-- [Scenario 4](/loadTesting/k6/scen4.js): XSLT Transformation (Before) with `libxslt` **Request** plugin (including XSD Validation (soap 1.1))
-- [Scenario 5](/loadTesting/k6/scen5.js): all options (with `libxslt`) for **Request** and **Response** plugins
-- [Scenario 6](/loadTesting/k6/scen6.js): WSDL Validation (soap 1.1 and API schemas) **Response** plugin
-- [Scenario 7](/loadTesting/k6/scen7.js): XSLT Transformation (Before) with `libxslt` **Response plugin** (including XSD Validation (soap 1.1))
-- [Scenario 8](/loadTesting/k6/scen8saxon.js): XSLT Transformation (Before) with `saxon` **Request** plugin
-- [Scenario 9](/loadTesting/k6/scen9saxon.js): XSLT v3.0 - JSON (client) to SOAP/XML (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (soap 1.1))
-- [Scenario 10](/loadTesting/k6/scen10saxon.js): XSLT v3.0 - XML (client) to JSON (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
+- [Scenario 0](/loadtesting/k6/scen0.js): no plugin (needs to set `replicas=2` for `calculator` instead of 1 to reach its limit)
+- [Scenario 1](/loadtesting/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) **Request** plugin
+- [Scenario 2](/loadtesting/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) **Request** plugin
+- [Scenario 3](/loadtesting/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) **Request** plugin
+- [Scenario 4](/loadtesting/k6/scen4.js): XSLT Transformation (Before) with `libxslt` **Request** plugin (including XSD Validation (soap 1.1))
+- [Scenario 5](/loadtesting/k6/scen5.js): all options (with `libxslt`) for **Request** and **Response** plugins
+- [Scenario 6](/loadtesting/k6/scen6.js): WSDL Validation (soap 1.1 and API schemas) **Response** plugin
+- [Scenario 7](/loadtesting/k6/scen7.js): XSLT Transformation (Before) with `libxslt` **Response plugin** (including XSD Validation (soap 1.1))
+- [Scenario 8](/loadtesting/k6/scen8saxon.js): XSLT Transformation (Before) with `saxon` **Request** plugin
+- [Scenario 9](/loadtesting/k6/scen9saxon.js): XSLT v3.0 - JSON (client) to SOAP/XML (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (soap 1.1))
+- [Scenario 10](/loadtesting/k6/scen10saxon.js): XSLT v3.0 - XML (client) to JSON (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
 ## Performance Testing scenarios for `httpbin` REST API (JSON)
 Objective: have a reference measure of a REST API to compare to the SOAP/XML API
-- [Scenario 0](/loadTesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=10` for `httpbin` instead of 1 to reach its limit)
-- [Scenario 1](/loadTesting/k6/scenhttpbin1.js): OAS Validation plugin (only **Request** validation)
-- [Scenario 2](/loadTesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
+- [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=10` for `httpbin` instead of 1 to reach its limit)
+- [Scenario 1](/loadtesting/k6/scenhttpbin1.js): OAS Validation plugin (only **Request** validation)
+- [Scenario 2](/loadtesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
 
 ## Endurance Testing scenarios for `calculator` Web Service (SOAP/XML)
 Objective: check that there is no memory leak in the SOAP/XML plugins
-- [Scenario 5 Endurance](/loadTesting/k6/scen5endurance.js): all options (with `libxslt`) for **Request** and **Response** plugins
-- [Scenario 9 Endurance](/loadTesting/k6/scen9endurance.js): XSLT v3.0 - JSON to SOAP/XML (with `saxon`) for **Request** and **Response** plugins
-- [Scenario 10 Endurance](/loadTesting/k6/scen10saxonendurance.js): XSLT v3.0 - XML to JSON with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
+- [Scenario 5 Endurance](/loadtesting/k6/scen5endurance.js): all options (with `libxslt`) for **Request** and **Response** plugins
+- [Scenario 9 Endurance](/loadtesting/k6/scen9endurance.js): XSLT v3.0 - JSON to SOAP/XML (with `saxon`) for **Request** and **Response** plugins
+- [Scenario 10 Endurance](/loadtesting/k6/scen10saxonendurance.js): XSLT v3.0 - XML to JSON with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
 ## Concurrent Testing scenarios with error for `calculator` Web Service (SOAP/XML)
 Objective: check that there is no side effect of an error request on a query without error. Keep in mind that the `libxml2` and `libxslt` libraries have global functions to detect error
-- [Scenario 1 with Error](/loadTesting/k6/scen1concurrent.js): WSDL Validation **Request** plugin, 2 sub-scenarios are concurently executed:
+- [Scenario 1 with Error](/loadtesting/k6/scen1concurrent.js): WSDL Validation **Request** plugin, 2 sub-scenarios are concurently executed:
   - A sub-scenario without error (http 200)
   - A sub-scenario with error (http 500) due to an invalid WSDL schema (in the plugin configuration)
-- [Scenario 3 with Error](/loadTesting/k6/scen3concurrent.js): XSD Validation **Request** plugin, 2 sub-scenarios are concurently executed: 
+- [Scenario 3 with Error](/loadtesting/k6/scen3concurrent.js): XSD Validation **Request** plugin, 2 sub-scenarios are concurently executed: 
   - A sub-scenario without error (http 200)
   - A sub-scenario with error (http 500) due to an invalid SOAP body request
 
