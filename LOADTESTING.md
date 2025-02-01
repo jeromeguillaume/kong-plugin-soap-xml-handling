@@ -41,7 +41,7 @@ Deploy the stack **in this order** (for having `podAntiAffinity`):
 5) Upstream:
   - `calculator` Web Service (SOAP/XML)
     - Docker Image: [jeromeguillaume/ws-soap-calculator:1.0.4](https://hub.docker.com/r/jeromeguillaume/ws-soap-calculator)
-    - Kubernetes deployment: [ws-calculator.yaml](loadtesting/k6/ws-calculator.yaml)    
+    - Kubernetes deployment: [ws-calculator.yaml](loadtesting/k6/ws-calculator.yaml)
   - `httpbin` REST API (JSON)
     - Docker Image: [kong/httpbin:0.2.3](https://hub.docker.com/r/kong/httpbin)
     - Kubernetes deployment: [httpbin.yaml](loadtesting/k6/0-init/httpbin.yaml)
@@ -87,6 +87,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - The Performance test duration is 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
   - Have `spec.parallelism: 1` in [k6-TestRun.yaml](/loadTesting/k6/k6-TestRun.yaml)
+  - There is a ramp up phase of 90 s then the 15 min test
 - The Endurance test duration is 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadTesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
 - At the end of the K6 execution:
@@ -141,19 +142,24 @@ Notes:
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|Avg|p95|p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|0|Kong proxy with no plugins|N/A|13177 rps|0.95 ms|4.5 ms|11.3 ms|21.2 ms|0.9 Gib|6.8 GB|10 GB
-|calculator|1|WSDL Validation (req only) plugin|N/A|3780 rps|1.10 ms|5 ms|8.4 ms|26.8 ms|3.9 Gib|2 GB|3 GB
-|calculator|2|WSDL and SOAPAction Validation (req only) plugin|N/A|3806 rps|0.99 ms|4.9 ms|8.3 ms|24.5 ms|3.8 Gib|2 GB|3 GB
-|calculator|3|XSD Validation (req only) plugin|N/A|4561 rps|0.98 ms|4.2 ms|7.5 ms|17.3 ms|2.7 Gib|2.4 GB|3.6 GB
-|calculator|4|XSLT Transformation (req only) plugin|libxslt|5869 rps|0.97 ms|3.2 ms|5.9 ms|13.2 ms|1.9 Gib|3.2 GB|4.6 GB
-|calculator|5|All options for req and res plugins|libxslt|1299 rps|4.27 ms|14.6 ms|35.1 ms|70.89 ms|6.7 Gib|0.75 GB|0.72 GB
-|calculator|6|WSDL Validation (res only) plugin|N/A|3663 rps|0.97 ms|5.2 ms|8.25 ms|23 ms|2.9 Gib|1.9 GB|2.9 GB
-|calculator|7|XSLT Transformation (res only) plugin|libxslt|3881 rps|0.96 ms|4.88 ms|8.77 ms|20.2 ms|1.4 Gib|2.1 GB|3.1 GB
-|calculator|8|XSLT Transformation (req only) plugin|saxon|2587 rps|1.92 ms|7.3ms|10.7 ms|29.4 ms|2.1 Gib|1.4 GB|2 GB
+|calculator|1|WSDL Validation (req plugin only)|N/A|3780 rps|1.10 ms|5 ms|8.4 ms|26.8 ms|3.9 Gib|2 GB|3 GB
+|calculator|2|WSDL and SOAPAction Validation (req plugin only)|N/A|3806 rps|0.99 ms|4.9 ms|8.3 ms|24.5 ms|3.8 Gib|2 GB|3 GB
+|calculator|3|XSD Validation (req plugin only)|N/A|4561 rps|0.98 ms|4.2 ms|7.5 ms|17.3 ms|2.7 Gib|2.4 GB|3.6 GB
+|calculator|4|XSLT Transformation (req plugin only)|libxslt|5949 rps|0.97 ms|3.18 ms|5.9 ms|13.1 ms|2.1 Gib|3.2 GB|4.7 GB
+|calculator|5|All options for req and res plugins|libxslt|1299 rps|4.27 ms|14.6 ms|35.1 ms|70.9 ms|6.7 Gib|0.75 GB|0.72 GB
+|calculator|6|WSDL Validation (res plugin only)|N/A|3663 rps|0.97 ms|5.2 ms|8.2 ms|23 ms|2.9 Gib|1.9 GB|2.9 GB
+|calculator|7|XSLT Transformation (res plugin only)|libxslt|3881 rps|0.96 ms|4.9 ms|8.8 ms|20.2 ms|1.4 Gib|2.1 GB|3.1 GB
+|calculator|8|XSLT Transformation (req plugin only)|saxon|2587 rps|1.92 ms|7.3ms|10.7 ms|29.4 ms|2.1 Gib|1.4 GB|2 GB
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|1652 rps|1.91 ms|11.5 ms|15 ms|38.2 ms|2.7 Gib|0.3 GB|0.8 GB
 |calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|1079 rps|2.94 ms|17.6 ms|26.5 ms|39 ms|2.1 Gib|0.59 GB| 0.8 GB
 |httbin|0|Kong proxy with no plugins|N/A|10290 rps|0.96 ms|26.97 ms|43.4 ms|82.3 ms|0.9 Gib|5.5 GB|16 GB
-|httbin|1|OAS Validation (req only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
-|httbin|2|OAS Validation (req and res)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
+|httbin|1|OAS Validation (req plugin only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
+|httbin|2|OAS Validation (req and res plugins)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
+
+Scenario 4 `calculator` - XSLT Transformation - libxslt: RPS per route/service by status code
+![Alt text](/images/loadtesting-scen4-rps.png?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+Scenario 4 `calculator` - XSLT Transformation - libxslt: Kong Proxy Latency per Service
+![Alt text](/images/loadtesting-scen4-kong-proxy-latency.png?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 
 <a id="endurance_testing_results"></a>
 
@@ -171,8 +177,8 @@ The main objective is to check that is no memory leak (see `Kong Linux Memory`) 
 Here performance is not the main objective: we just check in the K6 results that the "Ok" route leading to an expected 200 actually returns a 200 despite a high number of 500 errors implied concurently by the "Ko" route
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
-|calculator|1|WSDL Validation (req only) plugin with errors|N/A|4277 rps|0.99 ms|8.9 ms|16 ms|58.4 ms|2.7 Gib|2.3 GB|3.3 GB
-|calculator|3|XSD Validation (req only) plugin with errors|N/A|4479 rps|1 ms|8.5 ms|17.45 ms|45.06 ms|2.2 Gib|2.5 GB|3.9 GB
+|calculator|1|WSDL Validation (req plugin only) with errors|N/A|4277 rps|0.99 ms|8.9 ms|16 ms|58.4 ms|2.7 Gib|2.3 GB|3.3 GB
+|calculator|3|XSD Validation (req plugin only) with errors|N/A|4479 rps|1 ms|8.5 ms|17.45 ms|45.06 ms|2.2 Gib|2.5 GB|3.9 GB
 
-Scenario 3 - XSD Validation with Error: RPS per route/service by status code
-![Alt text](/images/loadtesting-scen3concurrent.png?raw=true "Scenario 3 - XSD Validation with Error")
+Scenario 3 `calculator` - XSD Validation with Error: RPS per route/service by status code
+![Alt text](/images/loadtesting-scen3concurrent-rps.png?raw=true "Scenario 3 - XSD Validation with Error")
