@@ -90,6 +90,8 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - There is a ramp up phase of 90 s then the 15 min test
 - The Endurance test duration is 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
+  - Have `replicas=5` for `calculator` for a better stability and endurance
+- Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
   - Collect the `Kong Linux Memory` (observed at the end of the test)
@@ -114,13 +116,13 @@ Objective: measure the performance of the SOAP/XML plugins in a context of high 
 ## Performance Testing scenarios for `httpbin` REST API (JSON)
 Objective: have a reference measure of a REST API to compare to the SOAP/XML API
 - [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=10` for `httpbin` instead of 1 to reach its limit)
-- [Scenario 1](/loadtesting/k6/scenhttpbin1.js): OAS Validation plugin (only **Request** validation)
+- [Scenario 1](/loadtesting/k6/scenhttpbin1.js): OAS Validation plugin (**Request** validation only)
 - [Scenario 2](/loadtesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
 
 ## Endurance Testing scenarios for `calculator` Web Service (SOAP/XML)
 Objective: check that there is no memory leak in the SOAP/XML plugins
 - [Scenario 5 Endurance](/loadtesting/k6/scen5endurance.js): all options (with `libxslt`) for **Request** and **Response** plugins
-- [Scenario 9 Endurance](/loadtesting/k6/scen9endurance.js): XSLT v3.0 - JSON to SOAP/XML (with `saxon`) for **Request** and **Response** plugins
+- [Scenario 9 Endurance](/loadtesting/k6/scen9saxonendurance.js): XSLT v3.0 - JSON to SOAP/XML (with `saxon`) for **Request** and **Response** plugins
 - [Scenario 10 Endurance](/loadtesting/k6/scen10saxonendurance.js): XSLT v3.0 - XML to JSON with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
 ## Concurrent Testing scenarios with error for `calculator` Web Service (SOAP/XML)
@@ -131,10 +133,6 @@ Objective: check that there is no side effect of an error request on a query wit
 - [Scenario 3 with Error](/loadtesting/k6/scen3concurrent.js): XSD Validation **Request** plugin, 2 sub-scenarios are concurently executed: 
   - A sub-scenario without error (http 200)
   - A sub-scenario with error (http 500) due to an invalid SOAP body request
-
-Notes:
-- Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
-- Endurance Testing: needs to set `replicas=5` for `calculator` for a better stability and endurance
 
 <a id="performance_testing_results"></a>
 
@@ -178,7 +176,7 @@ Here performance is not the main objective: we just check in the K6 results that
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|1|WSDL Validation (req plugin only) with errors|N/A|4277 rps|0.99 ms|8.9 ms|16 ms|58.4 ms|2.7 Gib|2.3 GB|3.3 GB
-|calculator|3|XSD Validation (req plugin only) with errors|N/A|4479 rps|1 ms|8.5 ms|17.45 ms|45.06 ms|2.2 Gib|2.5 GB|3.9 GB
+|calculator|3|XSD Validation (req plugin only) with errors|N/A|4479 rps|1 ms|8.5 ms|17.5 ms|45.1 ms|2.2 Gib|2.5 GB|3.9 GB
 
 Scenario 3 `calculator` - XSD Validation with Error: RPS per route/service by status code
 ![Alt text](/images/loadtesting-scen3concurrent-rps.png?raw=true "Scenario 3 - XSD Validation with Error")
