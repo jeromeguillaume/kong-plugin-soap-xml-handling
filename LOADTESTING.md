@@ -1,17 +1,19 @@
 # Load testing benchmark
 
-## Load Testing conclusion
-1) A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) doens't massively impact the respone time and delivers the expected value. However the plugin involves a high CPU usage than a simple proxyfication without plugin: so we just need to size the right number of CPUs for the Kong node (vertical scaling) and/or the right number of nodes (horizontal scaling)
-2) A basic WSDL Validation reduces the throughput (rps) by 3.5 times and the Kong proxy latency (p95) is very close to the reference measure without plugins (1.10 ms vs 0.95 ms)
-3) The XSD Validation is most performant than the WSDL Validation
-4) A basic XSLT Transformation with `libxslt` reduces the throughput (rps) by 2.25 times and the Kong proxy latency (p95) is similar to the reference measure without plugins (0.97 ms vs 0.95 ms)
-5) A basic XSLT Transformation with `saxon` reduces the throughput (rps) by 5 times and the Kong proxy latency (p95) is increased by 2 times without plugins to the reference measure (1.97 ms vs 0.95 ms)
-6) All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency (p95) is ~4 ms in comparison to the reference measure without plugins (0.95 ms)
+## Load Testing results
+The results are delivered for Kong v3.9 - Medium size (4 CPU / 8 GB RAM):
+- There is no memory leak observed after 24h tests (tested for `libxsml2`, `libxslt` and `saxon`)
+- A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negligible way the respone time and delivers the expected benefit
+  - For instance, the Kong proxy latency p95 (time taken by Kong itself) is very close to the reference measure:  1.10 ms (with plugins) vs 0.95 ms (without plugins)
+- All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency p95 is ~4 ms in comparison to the reference measure without plugins 0.95 ms
+  - Due to the complex nature of SOAP/XML, the plugin involves a high CPU usage than a simple proxyfication without plugin. So pay attention to correcly size the number of CPUs for the Kong node (vertical scaling) and/or the number of nodes (horizontal scaling)
+- XSLT v1.0: `libxslt` is more efficient than `saxon` in terms of throughput (+50% rps) and Kong proxy latency p95 (50% lower). 
+- XSLT v2.0 or 3.0: only `saxon` supports tem
 
 See detailed results:
-  - [Performance Tests results](#performance_tests_results)
-  - [Endurance Tests results](#endurance_tests_results)
-
+  - [Performance Testing](#performance_testing_results)
+  - [Endurance Testing results (24h)](#endurance_testing_results)
+  - [Concurrent Testing with error](#concurrent_testing_with_error_results)
 
 ## Architecture test
 Deploy this stack **in this order** (for having `podAntiAffinity`):
@@ -20,7 +22,8 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
     - 8 vCPUs and 32 GB ram per node
     - 3 nodes
 2) Kong GW configuration:
-  - Version: v3.9.0.1
+  - Kong GW version: `kong/kong-gateway:3.9.0.1`
+  - `saxon` version: `SaxonC-HE v12.5.0`
   - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
   - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)
   - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and it's not supported by the Response plugin
@@ -39,7 +42,7 @@ Deploy this stack **in this order** (for having `podAntiAffinity`):
     - Docker Image: [kong/httpbin:0.2.3](https://hub.docker.com/r/kong/httpbin)
     - Kubernetes deployment: [httpbin.yaml](loadtesting/k6/0-init/httpbin.yaml)
 
-Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment. Exception: in case of Scenario 0 (tests with no plugins) and Endurance tests the number of `replicas` for the Upstream and `K6` deployment are deployed on all Kubernetes nodes
+Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment. Exception: in case of Scenario 0 (tests with no plugins) and Endurance testing the number of `replicas` for the Upstream and `K6` deployment are deployed on all Kubernetes nodes
 
 ## How to use K6
 - Create a ConfigMap for each scenario
@@ -82,15 +85,16 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - Have `spec.parallelism: 1` in [k6-TestRun.yaml]( /loadTesting/k6/k6-TestRun.yaml)
 - The Endurance test duration is 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml]( /loadTesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
-- At the end of the K6 execution we:
-  - Collect the K6 results
+- At the end of the K6 execution:
+  - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
   - Collect the `Kong Linux Memory` (observed at the end of the test)
   - Collect the `Kong Proxy Latency p95` in Grafana 
   - Verify that **the checks are 100% successful**
 - Kong Node is restarted between each iteration of test
 
-## Performance Tests Scenarios for `calculator` Web Service (SOAP/XML)
-- [Scenario 0]( /loadTesting/k6/scen0.js): no plugin (needs to set `replicas=2` instead of 1 to reach limit of `calculator`)
+## Performance Testing scenarios for `calculator` Web Service (SOAP/XML)
+Objective: measure the performance of the SOAP/XML plugins in a context of high usage
+- [Scenario 0]( /loadTesting/k6/scen0.js): no plugin (needs to set `replicas=2` for `calculator` instead of 1 to reach its limit)
 - [Scenario 1]( /loadTesting/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) **Request** plugin
 - [Scenario 2]( /loadTesting/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) **Request** plugin
 - [Scenario 3]( /loadTesting/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) **Request** plugin
@@ -102,20 +106,35 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - [Scenario 9]( /loadTesting/k6/scen9saxon.js): XSLT v3.0 - JSON (client) to SOAP/XML (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (soap 1.1))
 - [Scenario 10]( /loadTesting/k6/scen10saxon.js): XSLT v3.0 - XML (client) to JSON (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
-## Performance Tests for `httpbin` REST API (JSON)
-- [Scenario 0]( /loadTesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=8` instead of 1 to reach limit of `httpbin`)
+## Performance Testing scenarios for `httpbin` REST API (JSON)
+Objective: have a reference measure of a REST API to compare to the SOAP/XML API
+- [Scenario 0]( /loadTesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=10` for `httpbin` instead of 1 to reach its limit)
 - [Scenario 1]( /loadTesting/k6/scenhttpbin1.js): OAS Validation plugin (only **Request** validation)
 - [Scenario 2]( /loadTesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
 
-## Endurance Tests Scenarios for `calculator` Web Service (SOAP/XML)
-- [Scenario 5]( /loadTesting/k6/scen5endurance.js): all options (with `libxslt`) for **Request** and **Response** plugins
+## Endurance Testing scenarios for `calculator` Web Service (SOAP/XML)
+Objective: check that there is no memory leak in the SOAP/XML plugins
+- [Scenario 5 Endurance]( /loadTesting/k6/scen5endurance.js): all options (with `libxslt`) for **Request** and **Response** plugins
+- [Scenario 9 Endurance]( /loadTesting/k6/scen9endurance.js): XSLT v3.0 - JSON to SOAP/XML (with `saxon`) for **Request** and **Response** plugins
+- [Scenario 10 Endurance]( /loadTesting/k6/scen10saxonendurance.js): XSLT v3.0 - XML to JSON with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
-For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
+## Concurrent Testing scenarios with error for `calculator` Web Service (SOAP/XML)
+Objective: check that there is no side effect of an error request on a query without error. Keep in mind that the `libxml2` and `libxslt` libraries have global functions to detect error
+- [Scenario 1 with Error]( /loadTesting/k6/scen1witherror.js): WSDL Validation **Request** plugin, 2 sub-scenarios are concurently executed:
+  - A sub-scenario without error (http 200)
+  - A sub-scenario with error (http 500) due to an invalid WSDL schema (in the plugin configuration)
+- [Scenario 3 with Error]( /loadTesting/k6/scen3witherror.js): XSD Validation **Request** plugin, 2 sub-scenarios are concurently executed: 
+  - A sub-scenario without error (http 200)
+  - A sub-scenario with error (http 500) due to an invalid SOAP body request
 
-<a id="performance_tests_results"></a>
+Notes:
+- Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
+- Endurance Testing: needs to set `replicas=5` for `calculator` for a better stability and endurance
 
-## Performance Tests results
-|Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
+<a id="performance_testing_results"></a>
+
+## Results of Performance Testing
+|Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|Avg|p95|p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|0|Kong proxy with no plugins|N/A|13177 rps|0.95 ms|4.5 ms|11.3 ms|21.2 ms|0.9 Gib|6.8 GB|10 GB
 |calculator|1|WSDL Validation (req only) plugin|N/A|3780 rps|1.10 ms|5 ms|8.4 ms|26.8 ms|3.9 Gib|2 GB|3 GB
@@ -128,13 +147,23 @@ For `calculator` scenario 5 (Performmance and Endurance tests) the  Kong node co
 |calculator|8|XSLT Transformation (req only) plugin|saxon|2587 rps|1.92 ms|7.3ms|10.7 ms|29.4 ms|2.1 Gib|1.4 GB|2 GB
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|1652 rps|1.91 ms|11.5 ms|15 ms|38.2 ms|2.7 Gib|0.3 GB|0.8 GB
 |calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|1079 rps|2.94 ms|17.6 ms|26.5 ms|39 ms|2.1 Gib|0.59 GB| 0.8 GB
-|httbin|0|Kong proxy with no plugins|N/A| rps|ms|ms| ms| ms| Gib| GB| GB
+|httbin|0|Kong proxy with no plugins|N/A|10290 rps|0.96 ms|26.97 ms|43.4 ms|82.3 ms|0.9 Gib|5.5 GB|16 GB
 |httbin|1|OAS Validation (req only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
 |httbin|2|OAS Validation (req and res)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
 
-<a id="endurance_tests_results"></a>
+<a id="endurance_testing_results"></a>
 
-## Endurance Tests results (24h)
-|Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcv
+## Results of Endurance Testing (24h)
+|Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|5|All options for req and res plugins|libxslt| rps| ms| ms| ms| ms| Gib| GB| GB
+|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
+|calculator|10|XSLT v3.0 - XML to JSON for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
+
+<a id="concurrent_testing_with_error_results"></a>
+
+## Results of Concurrent Testing with error
+|Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
+|:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
+|calculator|1|WSDL Validation (req only) plugin|N/A| rps| ms| ms| ms| ms| Gib| GB| GB
+|calculator|3|XSD Validation (req only) plugin|N/A| rps| ms| ms| ms| ms| Gib| GB| GB

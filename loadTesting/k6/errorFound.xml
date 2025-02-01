@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request - XSD validation failed</faultstring>
+      <detail>Error Node: Add_DOES_NOT_EXIST, Error code: 1845, Line: 4, Message: Element '{http://tempuri.org/}Add_DOES_NOT_EXIST': No matching global declaration available for the validation root.</detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>

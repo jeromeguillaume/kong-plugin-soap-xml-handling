@@ -1,7 +1,7 @@
 image:
   repository: kong/kong-gateway
   tag: "3.9"
-  pullPolicy: always
+  pullPolicy: Always
 
 secretVolumes:
 - kong-cluster-cert
