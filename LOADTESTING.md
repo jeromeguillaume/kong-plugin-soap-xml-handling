@@ -90,7 +90,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - There is a ramp up phase of 90 s then the 15 min test
 - The Endurance test duration is 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
-  - Have `replicas=5` in [ws-calculator.yaml](/loadtesting/ws-calculator.yaml) for a better stability and endurance
+  - Have `replicas: 5` in [ws-calculator.yaml](/loadtesting/k6/ws-calculator.yaml) for a better stability and endurance
 - Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
@@ -101,7 +101,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 
 ## Performance Testing scenarios for `calculator` Web Service (SOAP/XML)
 Objective: measure the performance of the SOAP/XML plugins in a context of high usage
-- [Scenario 0](/loadtesting/k6/scen0.js): no plugin (needs to set `replicas=2` for `calculator` instead of 1 to reach its limit)
+- [Scenario 0](/loadtesting/k6/scen0.js): no plugin (needs to set `replicas: 2` for `calculator` instead of 1 to reach its limit)
 - [Scenario 1](/loadtesting/k6/scen1.js): WSDL Validation (soap 1.1 and API schemas) **Request** plugin
 - [Scenario 2](/loadtesting/k6/scen2.js): WSDL and SOAPAction Validation (soap 1.1 and API schemas) **Request** plugin
 - [Scenario 3](/loadtesting/k6/scen3.js): XSD Validation (soap 1.1 and API schemas) **Request** plugin
@@ -115,7 +115,7 @@ Objective: measure the performance of the SOAP/XML plugins in a context of high 
 
 ## Performance Testing scenarios for `httpbin` REST API (JSON)
 Objective: have a reference measure of a REST API to compare to the SOAP/XML API
-- [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas=10` for `httpbin` instead of 1 to reach its limit)
+- [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas: 10` for `httpbin` instead of 1 to reach its limit)
 - [Scenario 1](/loadtesting/k6/scenhttpbin1.js): OAS Validation plugin (**Request** validation only)
 - [Scenario 2](/loadtesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
 
