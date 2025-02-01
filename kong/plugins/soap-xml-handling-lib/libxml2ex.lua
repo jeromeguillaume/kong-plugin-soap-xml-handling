@@ -414,6 +414,7 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
     return nil, kong.ctx.shared.xmlSoapErrMessage
   end
   if not_ffi_gc == true then
+    -- Fix v1.2.5
     -- Here we have to deal with a complex situation in regards of XSLT (only), the libxslt takes ownership of 'xml_doc'
     --    First the xmlReadMemory returns 'xml_doc', then 'xml_doc' is passed to 'xsltParseStylesheetDoc' that returns a 'style' pointer
     --    after, when the GC calls xsltFreeStylesheet(style), it frees 'style' (Good) and frees cascading 'xml_doc' but finally 
