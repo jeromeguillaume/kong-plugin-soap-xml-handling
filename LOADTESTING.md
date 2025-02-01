@@ -90,7 +90,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - There is a ramp up phase of 90 s then the 15 min test
 - The Endurance test duration is 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
-  - Have `replicas=5` for `calculator` for a better stability and endurance
+  - Have `replicas=5` in [ws-calculator.yaml](/loadtesting/ws-calculator.yaml) for a better stability and endurance
 - Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
