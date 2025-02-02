@@ -187,6 +187,9 @@ Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `
 Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
 ![Alt text](/images/loadtesting-scen9endurancesaxon-kong-worker-Lua-VM.png?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
 
+Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
+![Alt text](/images/loadtesting-scen9endurancesaxon-kong-worker-Lua-VM.jpeg?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
+
 
 <a id="concurrent_testing_with_error_results"></a>
 
