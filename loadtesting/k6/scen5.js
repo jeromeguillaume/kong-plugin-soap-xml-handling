@@ -53,9 +53,7 @@ export function scen5 () {
     'Content-Type': result.headers['Content-Type'] === 'text/xml;charset=utf-8',
     'X-Soap-Region': result.headers['X-Soap-Region'] === 'soap2',
     "calculator Result": result =>
-      //result.body.includes("<AddResult>15</AddResult>"),
       result.body.includes("<KongResult>15</KongResult>"),
   });
 
-  //sleep (0.05);
 }

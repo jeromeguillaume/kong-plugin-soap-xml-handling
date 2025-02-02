@@ -84,13 +84,17 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - Protocol: HTTPS only
 - The reponse is deflated with `Content-Encoding: gzip` for `calculator` upstream only (but not for `httpbin` upstream)
 - As `XsdSoapSchema` has a default value (related to soap 1.1 schema) we can't put a null value. So the `XSLT Transformation` (only) also includes `XSD Validation (soap 1.1)`
-- The Performance test duration is 15 minutes
+- Performance testing
+  - Duration = 15 minutes
   - The K6 scripts are configured to reach the limit of the Kong node (CPU or Memory) and to use all the physical ressources allocated
   - Have `spec.parallelism: 1` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml)
   - There is a ramp up phase of 90 s then the 15 min test
-- The Endurance test duration is 24 hours
+- Endurance testing
+  - Duration = 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
   - Have `replicas: 5` in [ws-calculator.yaml](/loadtesting/k6/ws-calculator.yaml) for a better stability and endurance
+  - Since this is not a performance testing there is a `sleep()` in the script for reducing the pace: the `sleep()` duration is subtracted from the performance duration metrics (`avg`, `p95`, `p99`).
+
 - Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
@@ -154,9 +158,9 @@ Objective: check that there is no side effect of an error request on a query wit
 |httbin|1|OAS Validation (req plugin only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
 |httbin|2|OAS Validation (req and res plugins)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
 
-Scenario 4 `calculator` - XSLT Transformation - libxslt: RPS per route/service by status code
+Scenario 4 `calculator` - XSLT Transformation `libxslt`: RPS per route/service by status code
 ![Alt text](/images/loadtesting-scen4-rps.png?raw=true "Scenario 4 - XSLT Transformation - libxslt")
-Scenario 4 `calculator` - XSLT Transformation - libxslt: Kong Proxy Latency per Service
+Scenario 4 `calculator` - XSLT Transformation `libxslt`: Kong Proxy Latency per Service
 ![Alt text](/images/loadtesting-scen4-kong-proxy-latency.png?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 
 <a id="endurance_testing_results"></a>
@@ -165,9 +169,24 @@ Scenario 4 `calculator` - XSLT Transformation - libxslt: Kong Proxy Latency per 
 The main objective is to check that is no memory leak (see `Kong Linux Memory`) and no restart of Kong GW pod observed after 24h tests
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
-|calculator|5|All options for req and res plugins|libxslt| rps| ms| ms| ms| ms| Gib| GB| GB
-|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
+|calculator|5|All options for req and res plugins|libxslt|611 rps|4.56 ms|7.7 ms|24 ms|71.3 ms|4.7 Gib| GB| GB
+|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|632 rps| ms| ms| ms| ms|8.2 Gib| GB| GB
 |calculator|10|XSLT v3.0 - XML to JSON for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
+
+Scenario 5 `calculator` - All options for req and res plugins `libxslt`: RPS per route/service by status code
+![Alt text](/images/loadtesting-scen5endurance-rps.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong Proxy Latency per Service
+![Alt text](/images/loadtesting-scen5endurance-kong-proxy-latency.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong worker Lua VM usage
+![Alt text](/images/loadtesting-scen5endurance-kong-worker-Lua-VM?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong shared memory usage
+![Alt text](/images/loadtesting-scen5endurance-kong-shared-memory-usage.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+
+Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: RPS per route/service by status code
+![Alt text](/images/loadtesting-scen9endurancesaxon-rps.png?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
+Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
+![Alt text](/images/loadtesting-scen9endurancesaxon-kong-worker-Lua-VM.png?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
+
 
 <a id="concurrent_testing_with_error_results"></a>
 

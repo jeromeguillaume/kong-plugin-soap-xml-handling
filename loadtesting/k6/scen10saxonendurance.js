@@ -54,7 +54,7 @@ export function scen10saxonendurance () {
     'http response status code is 200': result.status === 200,
     'Content-Type': result.headers['Content-Type'] === 'text/xml; charset=utf-8',
   });
-  console.log("result.body:" + result.body);
+  
   if (result.status === 200) {
     check(result, {
     "XML Result": result =>
@@ -62,4 +62,6 @@ export function scen10saxonendurance () {
    });
 
   }
+
+  sleep (0.025);
 }
