@@ -12,9 +12,9 @@ The results are delivered for Kong v3.9 - Medium size (4 CPU / 8 GB RAM):
 - XSLT v2.0 or 3.0: only `saxon` supports them
 
 See detailed results:
-  - [Performance Testing](#performance_testing_results)
-  - [Endurance Testing (24h)](#endurance_testing_results)
-  - [Concurrent Testing with error](#concurrent_testing_with_error_results)
+  - [Results of Performance Testing](#performance_testing_results): for measuring the performance of the SOAP/XML plugins in a context of high usage
+  - [Results of Endurance Testing (24h)](#endurance_testing_results): for checking that there is no memory leak in the SOAP/XML plugins
+  - [Results of Concurrent Testing with error](#concurrent_testing_with_error_results): for checking that there is no side effect of an error request on a query without error
 
 ## Architecture test
 Deploy the stack **in this order** (for having `podAntiAffinity`):
