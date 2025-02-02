@@ -183,13 +183,9 @@ Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong sh
 ![Alt text](/images/loadtesting-scen5endurance-kong-shared-memory-usage.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 
 Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: RPS per route/service by status code
-![Alt text](/images/loadtesting-scen9endurancesaxon-rps.png?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
-Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
-![Alt text](/images/loadtesting-scen9endurancesaxon-kong-worker-Lua-VM.png?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
-
+![Alt text](/images/loadtesting-scen9endurancesaxon-rps.jpeg?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
 Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
 ![Alt text](/images/loadtesting-scen9endurancesaxon-kong-worker-Lua-VM.jpeg?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
-
 
 <a id="concurrent_testing_with_error_results"></a>
 
