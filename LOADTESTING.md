@@ -178,7 +178,7 @@ Scenario 5 `calculator` - All options for req and res plugins `libxslt`: RPS per
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong Proxy Latency per Service
 ![Alt text](/images/loadtesting-scen5endurance-kong-proxy-latency.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong worker Lua VM usage
-![Alt text](/images/loadtesting-scen5endurance-kong-worker-Lua-VM?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+![Alt text](/images/loadtesting-scen5endurance-kong-worker-Lua-VM.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong shared memory usage
 ![Alt text](/images/loadtesting-scen5endurance-kong-shared-memory-usage.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 
