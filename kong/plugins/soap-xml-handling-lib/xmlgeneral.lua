@@ -767,9 +767,10 @@ function xmlgeneral.XSLTransform_libsaxon(plugin_conf, XMLtoTransform, XSLT, ver
       xml_transformed_dump, errMessage = libsaxon4kong.stylesheetTransformXml ( 
                                             kong.xmlSoapSaxon.saxonProcessor,
                                             context,
-                                            XMLtoTransform
+                                            XMLtoTransform,
+                                            plugin_conf.xsltParams
                                           )
-      
+
       if not errMessage then 
         -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
         xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
@@ -831,7 +832,7 @@ function xmlgeneral.XSLTransform_libxlt(plugin_conf, XMLtoTransform, XSLT, verbo
   -- If the XSLT and the XML are correctly loaded and parsed
   if errMessage == nil then
     -- Transform the XML doc with XSLT transformation
-    local xml_transformed = libxslt.xsltApplyStylesheet (style, xml_doc)
+    local xml_transformed = libxslt.xsltApplyStylesheet(style, xml_doc, plugin_conf.xsltParams)
 
     if xml_transformed ~= nil then
       -- Dump into a String the canonized image of the XML transformed by XSLT

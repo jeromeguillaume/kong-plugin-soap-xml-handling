@@ -183,6 +183,33 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
 }
 
 
+extern "C" void addParameter(const void *saxonProcessor_void,
+                             const void *context_void,
+                             const char* key,
+                             const char* value)
+{
+  SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
+  Context *context = nullptr;
+
+  XdmValue* xdmValue = saxonProcessor->makeStringValue(value);
+
+  try {
+    context = (Context*) context_void;
+
+    if ( context->_xsltExecutable != nullptr ){
+      context->_xsltExecutable->setParameter(key, xdmValue);
+    }
+  }
+  catch (SaxonApiException& e) {
+    formatCerr ("Error in addParameter", e.getMessage());
+    context->errMessage = e.getMessage();
+  }
+  catch (const std::exception& e) {
+    formatCerr ("Error in addParameter", e.what());
+    context->errMessage = e.what();
+  }
+}
+
 extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_void,
                                                    const void *context_void,
                                                    const char *xml_string)

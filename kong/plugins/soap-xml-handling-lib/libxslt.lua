@@ -30,8 +30,18 @@ end
 -- doc:	a parsed XML document
 -- params:	a NULL terminated arry of parameters names/values tuples
 -- Returns:	the result document or NULL in case of error
-function libxslt.xsltApplyStylesheet (style, doc)
-    local doc_transformed = xslt.xsltApplyStylesheet (style, doc, nil)
+function libxslt.xsltApplyStylesheet(style, doc, params)
+    local param_pairs = libxslt.make_parameter_table()
+
+    for k, v in pairs(params) do
+      param_pairs[#param_pairs + 1] = k
+      param_pairs[#param_pairs + 1] = v
+    end
+
+    local params_array = ffi.new("const char*[?]", #param_pairs + 1, param_pairs)
+    params_array[#param_pairs] = nil
+
+    local doc_transformed = xslt.xsltApplyStylesheet(style, doc, params_array)
 
     if doc_transformed == ffi.NULL then
       kong.log.err("xsltApplyStylesheet returns null")
@@ -47,7 +57,12 @@ function libxslt.make_parameter_table()
             if string.find(value, "'") then
               error("cannot use apostrophe in string value passed to xslt")
             end
-            rawset(t, key, "'" .. value .. "'")
+
+            -- quote the XSLT parameter value if it's a string (even-number offsets are the 'values')
+            if #t % 2 == 1 then
+              value = "'" .. value .. "'"
+            end
+            rawset(t, key, value)
           elseif type(value) == "number" then
             rawset(t, key, value)
           else
