@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: go-bench-suite
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: go-bench-suite
+  name: go-bench-suite
+  namespace: go-bench-suite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-bench-suite
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: go-bench-suite
+    spec:
+      containers:
+      - image: mangomm/go-bench-suite:latest
+        name: go-bench-suite
+        command: ["./go-bench-suite", "upstream"]
+        ports:
+        - containerPort: 8000          
+        resources:
+          limits:
+            cpu: 8
+            memory: 2Gi
+          requests:
+            cpu: 2
+            memory: 1Gi
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - kong-kong
+                  - k6
+              topologyKey: topology.kubernetes.io/zone              
+---   
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: go-bench-suite
+  name: go-bench-svc
+  namespace: go-bench-suite
+spec:
+  ports:
+  - port: 8000
+    protocol: TCP
+    targetPort: 8000
+  selector:
+    app: go-bench-suite
+  type: NodePort

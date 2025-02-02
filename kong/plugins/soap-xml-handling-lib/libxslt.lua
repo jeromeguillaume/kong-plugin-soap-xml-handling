@@ -22,9 +22,7 @@ function libxslt.xsltParseStylesheetDoc (styledoc)
     errMessage = kong.ctx.shared.xmlSoapErrMessage
   end
     
-  -- No need to free memory, it's already done (and it avoids the msg 'free(): double free detected in tcache 2')
-  -- return ffi.gc(style, xslt.xsltFreeStylesheet)
-  return style, errMessage
+  return ffi.gc(style, xslt.xsltFreeStylesheet), errMessage
 end
 
 -- Apply the stylesheet to the document NOTE: This may lead to a non-wellformed output XML wise!

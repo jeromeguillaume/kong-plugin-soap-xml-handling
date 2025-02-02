@@ -56,9 +56,9 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 8. [Known Limitations](#Known_Limitations)
 9. [Changelog](#Changelog)
 
-![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
+![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
 
-![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
+![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
 
 <a id="configuration_reference"></a>
 
@@ -415,7 +415,7 @@ Add a Kong `Upstream` named `calculator.apim.eu` and defines a `target` with `ca
 Open `soap-xml-request-handling` plugin and configure the plugin with:
 - `RouteToPath` property with the value `https://calculator.apim.eu:443/ws`
 - `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
-- `RouteXPathCondition` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
+- `RouteXPathCondition` property with the value `5`
 - `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
 Use command defined at Example #3, the expected result is `13`. Pay attention to the `X-SOAP-Region` (http header in the response) added by `calculator.apim.eu`
 ```xml
@@ -981,12 +981,16 @@ The expected result is:
 <a id="Plugins_Testing"></a>
 
 ## Plugins Testing
-The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo)
+### Functional testing
+The functional testing is available through [pongo](https://github.com/Kong/kong-pongo)
 1) Download `pongo`
 2) Initialize `pongo`
 3) Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
 Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean` for rebuilding the Pongo image
+
+### Load testing benchmark
+The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTING.md)
 
 <a id="Known_Limitations"></a>
 
@@ -1094,4 +1098,6 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
   - Add a `W3C Compatibility Matrix` section in the README.md
   - `pongo` tests: remove `it()` from `lazy_setup()` and remove `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
-  
+- v1.2.5
+  - Fix a memory leak in XSLT Transformation due to the `libxslt` taking ownership of the pointer returned by `xmlReadMemory` (see comments in `libxml2ex.lua` for `xmlReadMemory`)
+  - Add Load testing benchmark. See [LOADTESTING.md](/LOADTESTING.md)

@@ -25,7 +25,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_GUI_LISTEN=0.0.0.0:9002, 0.0.0.0:9445 ssl" \
 -e "KONG_ADMIN_GUI_URL=http://localhost:9002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
--e "KONG_LOG_LEVEL=debug" \
+-e "KONG_LOG_LEVEL=notice" \
 -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e KONG_LICENSE_DATA \
@@ -35,7 +35,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 9002:9002 \
 -p 9444:9444 \
 --platform linux/$ARCHITECTURE \
-kong/kong-gateway:3.9.0.0
+kong/kong-gateway:3.9.0.1
 
 #kong/kong-gateway:3.4.3.13
 #kong/kong-gateway:3.5.0.7

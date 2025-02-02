@@ -401,7 +401,7 @@ end
 -- encoding:	the document encoding, or NULL
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
-function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose)
+function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose, not_ffi_gc)
   kong.ctx.shared.xmlSoapErrMessage = nil
   
   xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
@@ -413,8 +413,20 @@ function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_enco
     kong.log.debug("xmlReadMemory returns null")
     return nil, kong.ctx.shared.xmlSoapErrMessage
   end
-
-  return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+  if not_ffi_gc == true then
+    -- Fix v1.2.5
+    -- Here we have to deal with a complex situation in regards of XSLT (only), the libxslt takes ownership of 'xml_doc'
+    --    First the xmlReadMemory returns 'xml_doc', then 'xml_doc' is passed to 'xsltParseStylesheetDoc' that returns a 'style' pointer
+    --    after, when the GC calls xsltFreeStylesheet(style), it frees 'style' (Good) and frees cascading 'xml_doc' but finally 
+    --    the GC calls xmlFreeDoc(xml_doc) that is already freed (Bad) and there is a 'double free or corruption (fasttop)' or 
+    --    'free(): double free detected in tcache 2')' or '[alert] 1#0: worker process **** exited on signal 11' in the Kong log
+    --    Note: 'xsltParseStylesheet' isn't concerned by that
+    -- 
+    -- So in the context of XSLT (with not_ffi_gc=true) we don't ask to GC to call xmlFreeDoc because it's done by 'xsltParseStylesheetDoc'
+    return xml_doc, kong.ctx.shared.xmlSoapErrMessage
+  else
+    return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+  end
 end
 -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
 jit.off(libxml2ex.xmlReadMemory)
@@ -513,7 +525,7 @@ end
 -- format:	is formatting allowed
 -- Returns:	the number of bytes written to the buffer or -1 in case of error
 function libxml2ex.xmlNodeDump	(xmlDocPtr, xmlNodePtr, level, format)
-  local xmlBuffer = xml2.xmlBufferCreate();
+  local xmlBuffer = libxml2ex.xmlBufferCreate();
   local errDump = -1
   local xmlDump = ""
 
@@ -527,15 +539,17 @@ function libxml2ex.xmlNodeDump	(xmlDocPtr, xmlNodePtr, level, format)
     else
       kong.log.err("Error calling 'xmlNodeDump'")
     end
-    -- free Buffer
-    xml2.xmlBufferFree(xmlBuffer)
   else
     kong.log.err("Error calling 'xmlBufferCreate'")
   end
   return xmlDump, errDump
 end
 
-local function xmlOutputBufferCreate(buffer)
+function libxml2ex.xmlBufferCreate()
+  return ffi.gc(xml2.xmlBufferCreate(), xml2.xmlBufferFree)
+end
+
+function libxml2ex.xmlOutputBufferCreate(buffer)
   return ffi.gc(xml2.xmlOutputBufferCreateBuffer(buffer, nil), xml2.xmlOutputBufferClose)
 end
 
@@ -555,7 +569,7 @@ function libxml2ex.xmlC14NDocSaveTo (xmlDocPtr, xmlNodeSet)
   
   if xmlBuffer ~= ffi.NULL then
     
-    local output_buffer = xmlOutputBufferCreate(xmlBuffer)
+    local output_buffer = libxml2ex.xmlOutputBufferCreate(xmlBuffer)
     if output_buffer ~= ffi.NULL then
       local rc = xml2.xmlC14NDocSaveTo(xmlDocPtr, xmlNodeSet, 0, nil, 1, output_buffer)
       if tonumber(rc) ~= -1 then
