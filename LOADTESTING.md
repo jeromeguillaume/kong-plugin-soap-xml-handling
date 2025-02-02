@@ -123,7 +123,7 @@ Objective: measure the performance of the SOAP/XML plugins in a context of high 
 Objective: have a reference measure of a REST API to compare to the SOAP/XML API. This reference measure is also used in the context of scenario 10 (XSLT v3.0 - XML (client) to JSON (server) with `saxon`) using `httpbin`
 - [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin
 - [Scenario 1](/loadtesting/k6/scenhttpbin1.js): OAS Validation plugin (**Request** validation only)
-- [Scenario 2](/loadtesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation): needs to be reviewed as there is response schema defined in the OAS
+- [Scenario 2](/loadtesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation): needs to be reviewed as there is no response schema defined in the OAS
 
 ## Performance Testing scenarios for `go-bench-suite` REST API (JSON)
 Objective: have another reference measure of a REST API to compare to the SOAP/XML API. The `go-bench-suite` is used for the benchmark of Kong Gateway : see the [performance testing benchmarks](https://docs.konghq.com/gateway/latest/production/performance/performance-testing/) and the [public test suite](https://github.com/Kong/kong-gateway-performance-benchmark/)
