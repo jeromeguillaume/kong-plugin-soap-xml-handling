@@ -981,12 +981,16 @@ The expected result is:
 <a id="Plugins_Testing"></a>
 
 ## Plugins Testing
-The plugins testing is available through [pongo](https://github.com/Kong/kong-pongo)
+### Functional testing
+The functional testing is available through [pongo](https://github.com/Kong/kong-pongo)
 1) Download `pongo`
 2) Initialize `pongo`
 3) Run tests with [pongo.sh](pongo.sh) and **adapt the `KONG_IMAGE` value** according to expectations
 
 Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean` for rebuilding the Pongo image
+
+### Load testing benchmark
+The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTING.md)
 
 <a id="Known_Limitations"></a>
 
@@ -1096,4 +1100,4 @@ Note: If the Kong Docker image with `saxon` has been rebuilt, run a `pongo clean
   - `pongo` tests: remove `it()` from `lazy_setup()` and remove `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
 - v1.2.5
   - Fix a memory leak in XSLT Transformation due to the `libxslt` taking ownership of the pointer returned by `xmlReadMemory` (see comments in `libxml2ex.lua` for `xmlReadMemory`)
-  - Add Load testing results. See [LOADTESTING.md](/LOADTESTING.md)
+  - Add Load testing benchmark. See [LOADTESTING.md](/LOADTESTING.md)

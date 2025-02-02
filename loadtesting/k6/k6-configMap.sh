@@ -17,7 +17,8 @@ kubectl create configmap scen10saxonendurance --from-file ./scen10saxonendurance
 kubectl create configmap scen1concurrent --from-file ./scen1concurrent.js -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen3concurrent --from-file ./scen3concurrent.js -o yaml --dry-run=client | kubectl apply -f - 
 
-
 kubectl create configmap scenhttpbin0 --from-file ./scenhttpbin0.js -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scenhttpbin1 --from-file ./scenhttpbin1.js -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scenhttpbin2 --from-file ./scenhttpbin2.js -o yaml --dry-run=client | kubectl apply -f - 
+
+kubectl create configmap scengobench0 --from-file ./scengobench0.js -o yaml --dry-run=client | kubectl apply -f - 

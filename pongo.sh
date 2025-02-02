@@ -14,13 +14,20 @@
 #-------------------------------------------------------------
 # Execute the tests with the customized Kong image with Saxon
 #-------------------------------------------------------------
+# For avoiding "attempt to index field 'lru' (a nil value)" since v3.8
+# Comment out as follows the code lines of 'clear_cache_on_file_end' in /Users/[userName]/.kong-pongo/kong-versions/3.9.0.1/kong/spec/internal/db.lua
+#   then
+#   --  G.kong.cache.mlcache.lru.free_queue = nil
+#   --  G.kong.cache.mlcache.lru.cache_queue = nil
+#   --  _G.kong.cache.mlcache.lru = nil
+#   --  collectgarbage()
 pongo up
 
 # Run pongo tests by using the code of plugins stored locally
-KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.1-1.2.5-12.5 pongo run --lpath=$PWD/spec/common
+# KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.1-1.2.5-12.5 pongo run --lpath=$PWD/spec/common
 
 # Run pongo tests by using the code of plugins included in the Docker image
-# KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.1-1.2.5-12.5 pongo run
+KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.1-1.2.5-12.5 pongo run
 
 #---------------------------------------------------------
 # Loop tests

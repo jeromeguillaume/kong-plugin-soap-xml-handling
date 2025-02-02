@@ -6,10 +6,10 @@ The results are delivered for Kong v3.9 - Medium size (4 CPU / 8 GB RAM):
   - Tested for `libxml2`, `libxslt` and `saxon`
 - A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negligible way the respone time and delivers the expected benefit
   - For instance, the `Kong proxy latency p95` (time taken by Kong itself) is very close to the reference measure:  1.10 ms (with plugins) vs 0.95 ms (without plugins)
-- All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations, XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the Kong proxy latency p95 is ~4 ms in comparison to the reference measure without plugins 0.95 ms
+- All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations with `libxslt` and XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the `Kong proxy latency p95` is ~4 ms compared to the reference measure without plugins 0.95 ms
   - Due to the complex nature of SOAP/XML, the plugin involves a high CPU usage than a simple proxyfication without plugin. So pay attention to correcly size the number of CPUs for the Kong node (vertical scaling) and/or the number of nodes (horizontal scaling)
 - XSLT v1.0: `libxslt` is more efficient than `saxon` in terms of throughput (+50% rps) and `Kong proxy latency p95` (50% lower). 
-- XSLT v2.0 or 3.0: only `saxon` supports them
+  - XSLT v2.0 or 3.0: only `saxon` supports them
 
 See detailed results:
   - [Results of Performance Testing](#performance_testing_results): for measuring the performance of the SOAP/XML plugins in a context of high usage
@@ -45,6 +45,9 @@ Deploy the stack **in this order** (for having `podAntiAffinity`):
   - `httpbin` REST API (JSON)
     - Docker Image: [kong/httpbin:0.2.3](https://hub.docker.com/r/kong/httpbin)
     - Kubernetes deployment: [httpbin.yaml](loadtesting/k6/0-init/httpbin.yaml)
+  - `go-bench-suite` REST API (JSON)
+    - Docker Image: [mangomm/go-bench-suite:latest](https://hub.docker.com/r/mangomm/go-bench-suite)
+    - Kubernetes deployment: [go-bench-suite.yaml](loadtesting/k6/0-init/go-bench-suite.yaml)
 
 Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for having a dedicated node for each deployment. Exception: in case of Scenario 0 (tests with no plugins) and Endurance testing the number of `replicas` for the Upstream and `K6` deployment are deployed on all Kubernetes nodes
 
@@ -93,8 +96,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - Duration = 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
   - Have `replicas: 5` in [ws-calculator.yaml](/loadtesting/k6/ws-calculator.yaml) for a better stability and endurance
-  - Since this is not a performance testing there is a `sleep()` in the script for reducing the pace: the `sleep()` duration is subtracted from the performance duration metrics (`avg`, `p95`, `p99`).
-
+  - Since this is not a performance testing there is a `sleep()` in the script for reducing the pace: the `sleep()` duration is subtracted from the performance duration metrics (`avg`, `p95`, `p99`)
 - Performmance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
@@ -118,10 +120,14 @@ Objective: measure the performance of the SOAP/XML plugins in a context of high 
 - [Scenario 10](/loadtesting/k6/scen10saxon.js): XSLT v3.0 - XML (client) to JSON (server) with `saxon` for **Request** and **Response** plugins (including XSD Validation (custom schema))
 
 ## Performance Testing scenarios for `httpbin` REST API (JSON)
-Objective: have a reference measure of a REST API to compare to the SOAP/XML API
-- [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin (needs to set `replicas: 10` for `httpbin` instead of 1 to reach its limit)
+Objective: have a reference measure of a REST API to compare to the SOAP/XML API. This reference measure is also used in the context of scenario 10 (XSLT v3.0 - XML (client) to JSON (server) with `saxon`) using `httpbin`
+- [Scenario 0](/loadtesting/k6/scenhttpbin0.js): no plugin
 - [Scenario 1](/loadtesting/k6/scenhttpbin1.js): OAS Validation plugin (**Request** validation only)
 - [Scenario 2](/loadtesting/k6/scenhttpbin2.js): OAS Validation plugin (**Request** and **Response** validation)
+
+## Performance Testing scenarios for `go-bench-suite` REST API (JSON)
+Objective: have another reference measure of a REST API to compare to the SOAP/XML API. The `go-bench-suite` is used for the benchmark of Kong Gateway : see the [performance testing benchmarks](https://docs.konghq.com/gateway/latest/production/performance/performance-testing/) and the [public test suite](https://github.com/Kong/kong-gateway-performance-benchmark/)
+- [Scenario 0](/loadtesting/k6/scengobench0.js): no plugin
 
 ## Endurance Testing scenarios for `calculator` Web Service (SOAP/XML)
 Objective: check that there is no memory leak in the SOAP/XML plugins
@@ -155,8 +161,9 @@ Objective: check that there is no side effect of an error request on a query wit
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|1652 rps|1.91 ms|11.5 ms|15 ms|38.2 ms|2.7 Gib|0.3 GB|0.8 GB
 |calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|1079 rps|2.94 ms|17.6 ms|26.5 ms|39 ms|2.1 Gib|0.59 GB| 0.8 GB
 |httbin|0|Kong proxy with no plugins|N/A|10290 rps|0.96 ms|26.97 ms|43.4 ms|82.3 ms|0.9 Gib|5.5 GB|16 GB
-|httbin|1|OAS Validation (req plugin only)|N/A|8691 rps|ms|23 ms|63 ms|92 ms|0.9 Gib| GB| GB
-|httbin|2|OAS Validation (req and res plugins)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
+|httbin|1|OAS Validation (req plugin only)|N/A|8905 rps|0.96 ms|31.2 ms|59.8 ms|95 ms|0.9 Gib|4.7 GB|14 GB
+|httbin|2|OAS Validation (req and res plugins)|N/A|6712 rps|0.97 ms|41.4 ms|61.1 ms|116.7 ms|0.9 Gib|3.5 GB|11 GB
+|go-bench-suite|0|Kong proxy with no plugins|N/A|19511 rps|0.97 ms|4.75 ms|11 ms|19.9 ms|0.9 Gib|2.5 GB GB|13 GB
 
 Scenario 4 `calculator` - XSLT Transformation `libxslt`: RPS per route/service by status code
 ![Alt text](/images/loadtesting-scen4-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
@@ -190,7 +197,7 @@ Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `
 <a id="concurrent_testing_with_error_results"></a>
 
 ## Results of Concurrent Testing with error
-Here performance is not the main objective: we just check in the K6 results that the "Ok" route leading to an expected 200 actually returns a 200 despite a high number of 500 errors implied concurently by the "Ko" route
+Here the performance is not the main objective: we just check in the K6 results that the "Ok" route leading to an expected 200 actually returns a 200 despite a high number of 500 errors implied concurently by the "Ko" route
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|1|WSDL Validation (req plugin only) with errors|N/A|4277 rps|0.99 ms|8.9 ms|16 ms|58.4 ms|2.7 Gib|2.3 GB|3.3 GB

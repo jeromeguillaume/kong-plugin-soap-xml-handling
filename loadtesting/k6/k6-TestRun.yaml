@@ -1,14 +1,14 @@
 apiVersion: k6.io/v1alpha1
 kind: TestRun
 metadata:
-  name: scen10saxonendurance
+  name: scenhttpbin2
 spec:
-  parallelism: 10
+  parallelism: 1
   script:
     configMap:
-      name: scen10saxonendurance
-      file: scen10saxonendurance.js
-  arguments: --tag testId=scen10saxonendurance
+      name: scenhttpbin2
+      file: scenhttpbin2.js
+  arguments: --tag testId=scenhttpbin2
   runner:
     resources:
       limits:

@@ -23,6 +23,29 @@ plugins:
 services:
 - connect_timeout: 60000
   enabled: true
+  host: go-bench-svc.go-bench-suite
+  name: go-bench-svc
+  port: 8000
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - https_redirect_status_code: 426
+    name: scengobench0
+    path_handling: v0
+    paths:
+    - /scengobench0
+    preserve_host: false
+    protocols:
+    - http
+    - https
+    regex_priority: 0
+    request_buffering: true
+    response_buffering: true
+    strip_path: true
+  write_timeout: 60000
+- connect_timeout: 60000
+  enabled: true
   host: httpbin-svc.httpbin
   name: httpbin-svc
   port: 80
