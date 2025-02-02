@@ -159,9 +159,9 @@ Objective: check that there is no side effect of an error request on a query wit
 |httbin|2|OAS Validation (req and res plugins)|N/A|6508 rps|ms|31 ms|99 ms|144 ms|0.9 Gib| GB| GB
 
 Scenario 4 `calculator` - XSLT Transformation `libxslt`: RPS per route/service by status code
-![Alt text](/images/loadtesting-scen4-rps.png?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+![Alt text](/images/loadtesting-scen4-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 Scenario 4 `calculator` - XSLT Transformation `libxslt`: Kong Proxy Latency per Service
-![Alt text](/images/loadtesting-scen4-kong-proxy-latency.png?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+![Alt text](/images/loadtesting-scen4-kong-proxy-latency.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 
 <a id="endurance_testing_results"></a>
 
@@ -174,13 +174,13 @@ The main objective is to check that is no memory leak (see `Kong Linux Memory`) 
 |calculator|10|XSLT v3.0 - XML to JSON for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
 
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: RPS per route/service by status code
-![Alt text](/images/loadtesting-scen5endurance-rps.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+![Alt text](/images/loadtesting-scen5endurance-rps.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong Proxy Latency per Service
-![Alt text](/images/loadtesting-scen5endurance-kong-proxy-latency.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+![Alt text](/images/loadtesting-scen5endurance-kong-proxy-latency.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong worker Lua VM usage
-![Alt text](/images/loadtesting-scen5endurance-kong-worker-Lua-VM.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+![Alt text](/images/loadtesting-scen5endurance-kong-worker-Lua-VM.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong shared memory usage
-![Alt text](/images/loadtesting-scen5endurance-kong-shared-memory-usage.png?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
+![Alt text](/images/loadtesting-scen5endurance-kong-shared-memory-usage.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 
 Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: RPS per route/service by status code
 ![Alt text](/images/loadtesting-scen9endurancesaxon-rps.png?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
@@ -201,4 +201,4 @@ Here performance is not the main objective: we just check in the K6 results that
 |calculator|3|XSD Validation (req plugin only) with errors|N/A|4479 rps|1 ms|8.5 ms|17.5 ms|45.1 ms|2.2 Gib|2.5 GB|3.9 GB
 
 Scenario 3 `calculator` - XSD Validation with Error: RPS per route/service by status code
-![Alt text](/images/loadtesting-scen3concurrent-rps.png?raw=true "Scenario 3 - XSD Validation with Error")
+![Alt text](/images/loadtesting-scen3concurrent-rps.jpeg?raw=true "Scenario 3 - XSD Validation with Error")

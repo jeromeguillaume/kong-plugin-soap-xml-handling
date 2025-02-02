@@ -56,9 +56,9 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 8. [Known Limitations](#Known_Limitations)
 9. [Changelog](#Changelog)
 
-![Alt text](/images/Pipeline-Kong-soap-xml-handling.png?raw=true "Kong - SOAP/XML execution pipeline")
+![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
 
-![Alt text](/images/Kong-Manager.png?raw=true "Kong - Manager")
+![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
 
 <a id="configuration_reference"></a>
 
