@@ -178,7 +178,7 @@ The main objective is to check that is no memory leak (see `Kong Linux Memory`) 
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
 |calculator|5|All options for req and res plugins|libxslt|611 rps|4.56 ms|7.7 ms|24 ms|71.3 ms|4.7 Gib|31 GB|29.4 GB
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|632 rps|2.97 ms|6.6 ms|7.6 ms|86.4 ms|8.2 Gib|12 GB| 26 GB
-|calculator|10|XSLT v3.0 - XML to JSON for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
+|calculator|10|XSLT v3.0 - XML to JSON for req and res plugins|saxon|633 rps|2.81 ms|6.7 ms|8.74 ms|47.4 ms|7.8 Gib|30 GB|41.8 GB
 
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: RPS per route/service by status code
 ![Alt text](/images/loadtesting-scen5endurance-rps.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
@@ -189,10 +189,15 @@ Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong wo
 Scenario 5 `calculator` - All options for req and res plugins `libxslt`: Kong shared memory usage
 ![Alt text](/images/loadtesting-scen5endurance-kong-shared-memory-usage.jpeg?raw=true "Scenario 5 - All options for req and res plugins - libxslt")
 
-Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: RPS per route/service by status code
+Scenario 9 `calculator` - XSLT v3.0 - XML to JSON for req and res plugins `saxon`: RPS per route/service by status code
 ![Alt text](/images/loadtesting-scen9endurancesaxon-rps.jpeg?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
-Scenario 9 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
+Scenario 9 `calculator` - XSLT v3.0 - XML to JSON for req and res plugins `saxon`: Kong worker Lua VM usage
 ![Alt text](/images/loadtesting-scen9endurancesaxon-kong-worker-Lua-VM.jpeg?raw=true "Scenario 9 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
+
+Scenario 10 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: RPS per route/service by status code
+![Alt text](/images/loadtesting-scen10endurancesaxon-rps.jpeg?raw=true "Scenario 10 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon")
+Scenario 10 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins `saxon`: Kong worker Lua VM usage
+![Alt text](/images/loadtesting-scen10endurancesaxon-kong-worker-Lua-VM.jpeg?raw=true "Scenario 10 - XSLT v3.0 - JSON to SOAP/XML for req and res plugins - saxon - saxon")
 
 <a id="concurrent_testing_with_error_results"></a>
 

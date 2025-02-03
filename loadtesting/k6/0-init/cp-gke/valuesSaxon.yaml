@@ -39,7 +39,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.5-1.2.5a-12.5
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.5-1.2.6a-12.5
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
