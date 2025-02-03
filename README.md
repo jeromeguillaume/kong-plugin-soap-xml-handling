@@ -80,7 +80,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
 |config.xsdSoapSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
-|config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSLT. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`
+|config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
 
@@ -1102,3 +1102,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.2.5
   - Fix a memory leak in XSLT Transformation due to the `libxslt` taking ownership of the pointer returned by `xmlReadMemory` (see comments in `libxml2ex.lua` for `xmlReadMemory`)
   - Add Load testing benchmark. See [LOADTESTING.md](/LOADTESTING.md)
+- v1.2.6
+  - Add `xsltParams`: named parameter (`<xsl:param>`) to use in `XSLT Transformation`
