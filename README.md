@@ -1024,7 +1024,7 @@ Restart the Kong node and pay attention to the `KONG_LOG_LEVEL=debug` as it will
 4) Call the `calculator` through the Kong Gateway Route
 ```
 http POST http://localhost:8000/calculator \
-Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"' \
+Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
   <soapenv:Header xmlns:auth="http://wwww.example.com">
