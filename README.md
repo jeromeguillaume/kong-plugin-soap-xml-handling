@@ -977,6 +977,7 @@ Restart the Kong node and pay attention to the `KONG_LOG_LEVEL=debug` as it will
   - `Environment Variable Prefix` with `env` value
   - `Prefix` with `soap-username` value
 - Create the 2nd Vault with:
+  - Select `Environment Variables`
   - `Environment Variable Prefix` with `env` value
   - `Prefix` with `soap-password` value
 2) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
