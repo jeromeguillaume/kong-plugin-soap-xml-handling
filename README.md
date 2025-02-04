@@ -983,6 +983,7 @@ Restart the Kong node and pay attention to the `KONG_LOG_LEVEL=debug` as it will
 2) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
+- `xsltLibrary` property with `libxslt` or `saxon` value
 - `xsltTransformBefore` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
