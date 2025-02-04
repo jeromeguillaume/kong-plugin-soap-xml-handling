@@ -51,7 +51,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
     5. [Example (D) : Request and Response | XSLT with the saxon library](#Miscellaneous_example_D)
     6. [Example (E) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_E)
     7. [Example (F) : Request | validate the SOAPAction Http header](#Miscellaneous_example_F)
-    8. [Example (G): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_F)    
+    8. [Example (G): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_G)
 6. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
 7. [Plugins Testing](#Plugins_Testing)
 8. [Known Limitations](#Known_Limitations)
