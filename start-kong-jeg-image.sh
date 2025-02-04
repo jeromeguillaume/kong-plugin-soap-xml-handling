@@ -21,6 +21,8 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_GUI_URL=http://localhost:7002" \
 -e "KONG_LOG_LEVEL=notice" \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
+-e "SOAP_USERNAME=KongUser" \
+-e "SOAP_PASSWORD=KongP@sswOrd!" \
 -e KONG_LICENSE_DATA \
 -p 7000:7000 \
 -p 7443:7443 \

@@ -267,7 +267,7 @@ Apply the following examples for testing all capabilities of both plugins. The e
 
 ### Example #1: Request | `XSLT TRANSFORMATION - BEFORE XSD`: adding a Tag in XML request by using XSLT 
 
-The plugin applies a XSLT Transformation on XML request **before** the XSD Validation.
+The plugin applies an XSLT Transformation on XML request **before** the XSD Validation.
 In this example the XSLT **adds the value ```<intB>8</intB>```** which will not be present in the request.
 
 Add `soap-xml-request-handling` plugin and configure the plugin with:
@@ -348,7 +348,7 @@ HTTP/1.1 500 Internal Server Error
 <a id="Main_Example_3"></a>
 
 ### Example #3: Request | `XSLT TRANSFORMATION - AFTER XSD`:  renaming a Tag in XML request by using XSLT
-The plugin applies a XSLT Transformation on XML request **after** the XSD Validation.
+The plugin applies an XSLT Transformation on XML request **after** the XSD Validation.
 In this example we **change the Tag name from `<Subtract>...</Subtract>`** (present in the request) **to `<Add>...</Add>`**.
 
 **Without XSLT**: Use command defined at step #3, rename the Tag `<Add>...</Add>`, to `<Subtract>...</Subtract>`, remove `<b>7</b>`, so the new command is:
@@ -437,7 +437,7 @@ For testing purposes only: one can play with the `RouteToPath` to raise a 503 er
 <a id="Main_Example_5"></a>
 
 ### Example #5: Response | `XSLT TRANSFORMATION - BEFORE XSD`: changing a Tag name in XML response by using XSLT
-The plugin applies a XSLT Transformation on XML response **before** the XSD Validation.
+The plugin applies an XSLT Transformation on XML response **before** the XSD Validation.
 In this example the XSLT **changes the Tag names**:
 -  from `<AddResult>...</AddResult>` (present in the response) to **`<KongResult>...</KongResult>`**
 
@@ -947,7 +947,6 @@ Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/Ad
   </soap12:Body>
 </soap12:Envelope>'
 ```
-
 The expected result is: 
 ```xml
 ...
@@ -955,6 +954,116 @@ The expected result is:
 ...
 ```
 
+<a id="Miscellaneous_example_G"></a>
+
+### Example (G): Request | `XSLT TRANSFORMATION` with `<xsl:param>` with the `libxslt` (or `saxon`) library
+The plugin applies an XSLT Transformation on XML request by using `<xsl:param>` defined in the plugin `config`. The transformations are:
+- `<intA>` value transformed to `1111`
+- `<intB>` value transformed to `3333`
+- `<Username>` value transformed to `KongUser` referenced in a Vault (`{vault://env/soap-username}`)
+- `<Password>` value transformed to `KongP@sswOrd!` referenced in a Vault (`{vault://env/soap-password}`)
+0) Add the following environment variables at the Kong Linux level, for instance for a Docker deployment (see [start-kong.sh](start-kong.sh)):
+```sh
+-e "SOAP_USERNAME=KongUser" \
+-e "SOAP_PASSWORD=KongP@sswOrd!" \
+-e "KONG_LOG_LEVEL=debug" \
+```
+Restart the Kong node and pay attention to the `KONG_LOG_LEVEL=debug` as it will be useful later
+1) Create 2 environment variables Vault
+- Go on `Vaults`
+- Create the 1st Vault with:
+  - Select `Environment Variables`
+  - `Environment Variable Prefix` with `env` value
+  - `Prefix` with `soap-username` value
+- Create the 2nd Vault with:
+  - `Environment Variable Prefix` with `env` value
+  - `Prefix` with `soap-password` value
+2) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseRequest` enabled
+- `xsltTransformBefore` property with this XSLT definition:
+```xml
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+   <xsl:param name="intA_param" select="1"/>
+   <xsl:param name="intB_param" select="2"/>
+   <xsl:param name="SOAP_USERNAME" select="MyUser"/>
+   <xsl:param name="SOAP_PASSWORD" select="MyPassword"/>
+  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='Username']">
+      <Username><xsl:value-of select="$SOAP_USERNAME"/></Username>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='Password']">
+      <Password><xsl:value-of select="$SOAP_PASSWORD"/></Password>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intA']">
+      <intA><xsl:value-of select="$intA_param"/></intA>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+      <intB><xsl:value-of select="$intB_param"/></intB>
+  </xsl:template>
+</xsl:stylesheet>
+```
+- `XsltParams` property with these values:
+  - key: `intA_param`
+  - value: `1111`
+  - key: `intB_param`
+  - value: `3333`
+  - key: `SOAP_USERNAME`
+  - value: `{vault://env/soap-username}`
+  - key: `SOAP_PASSWORD`
+  - value: `{vault://env/soap-password}`
+4) Call the `calculator` through the Kong Gateway Route
+```
+http POST http://localhost:8000/calculator \
+Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"' \
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+  <soapenv:Header xmlns:auth="http://wwww.example.com">
+    <auth:Authentication xmlns:auth="http://example.com/auth">
+      <Username>**TO_BE_CHANGED**</Username>
+      <Password>**TO_BE_CHANGED**</Password>
+    </auth:Authentication>
+  </soapenv:Header>
+  <soapenv:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>5</intA>
+      <intB>7</intB>
+    </Add>
+  </soapenv:Body>
+</soapenv:Envelope>'
+```
+The expected result is no longer `12` but `4444`:
+```xml
+...
+<AddResult>4444</AddResult>
+...
+```
+See Kong Log and look for `XSLT transformation, END`, 
+the expected result is:
+- `<Username>` value is transformed to `KongUser` referenced in the Vault
+- `<Password>` value is transformed to `KongP@sswOrd!` referenced in the Vault
+```xml
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <soapenv:Header xmlns:auth="http://wwww.example.com">
+    <auth:Authentication xmlns:auth="http://example.com/auth">
+      <Username>KongUser</Username>
+      <Password>KongP@sswOrd!</Password>
+    </auth:Authentication>
+  </soapenv:Header>
+  <soapenv:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>1111</intA>
+      <intB>3333</intB>
+    </Add>
+  </soapenv:Body>
+</soapenv:Envelope>
+```
 <a id="W3C_Compatibility_Matrix"></a>
 
 ## W3C Compatibility Matrix
