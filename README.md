@@ -1047,8 +1047,8 @@ The expected result is no longer `12` but `4444`:
 <AddResult>4444</AddResult>
 ...
 ```
-See Kong Log and look for `XSLT transformation, END`, 
-the expected result is:
+As the `calculator` service doesn't check the `<Username>` and `<Password>` values open the Kong Log and look for `XSLT transformation, END` debug and see the transformation applied by using the referenced value in the Vault.
+The expected result is:
 - `<Username>` value is transformed to `KongUser` referenced in the Vault
 - `<Password>` value is transformed to `KongP@sswOrd!` referenced in the Vault
 ```xml
