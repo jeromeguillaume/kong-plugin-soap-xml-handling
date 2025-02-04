@@ -961,8 +961,8 @@ The expected result is:
 The plugin applies an XSLT Transformation on XML request by using `<xsl:param>` defined in the plugin `config`. The transformations are:
 - `<intA>` value transformed to `1111`
 - `<intB>` value transformed to `3333`
-- `<Username>` value transformed to `KongUser` referenced in a Vault (`{vault://env/soap-username}`)
-- `<Password>` value transformed to `KongP@sswOrd!` referenced in a Vault (`{vault://env/soap-password}`)
+- `<Username>` value transformed to `KongUser` referenced in a Vault `{vault://env/soap-username}`
+- `<Password>` value transformed to `KongP@sswOrd!` referenced in a Vault `{vault://env/soap-password}`
 0) Add the following environment variables at the Kong Linux level, for instance for a Docker deployment (see [start-kong.sh](start-kong.sh)):
 ```sh
 -e "SOAP_USERNAME=KongUser" \
@@ -970,7 +970,7 @@ The plugin applies an XSLT Transformation on XML request by using `<xsl:param>` 
 -e "KONG_LOG_LEVEL=debug" \
 ```
 Restart the Kong node and pay attention to the `KONG_LOG_LEVEL=debug` as it will be useful later
-1) Create 2 environment variables Vault
+1) Create 2 x Vault environment variables
 - Go on `Vaults`
 - Create the 1st Vault with:
   - `Environment Variables` selected
@@ -1047,7 +1047,7 @@ The expected result is no longer `12` but `4444`:
 <AddResult>4444</AddResult>
 ...
 ```
-As the `calculator` service doesn't check the `<Username>` and `<Password>` values open the Kong Log and look for `XSLT transformation, END` debug and see the transformation applied by using the referenced values in the Vault.
+As the `calculator` service doesn't check the `<Username>` and `<Password>` values open the Kong Log and look for `XSLT transformation, END` debug and see the transformation applied by using the Vault referenced values.
 The expected result is:
 - `<Username>` value is transformed to `KongUser` referenced in the Vault
 - `<Password>` value is transformed to `KongP@sswOrd!` referenced in the Vault
