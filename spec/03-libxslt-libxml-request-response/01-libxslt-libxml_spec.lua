@@ -337,6 +337,35 @@ for _, strategy in helpers.all_strategies() do
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }
         }
+
+        
+        local calculator_Response_XSLT_beforeXSD_xslt_with_Params_route_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_Response_XSLT_beforeXSD_xslt_with_Params_ok" }
+        }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_Response_XSLT_beforeXSD_xslt_with_Params_route_ok,
+          config = {
+            xsltLibrary = xsltLibrary,
+            xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_with_params,
+            xsltParams = {
+              ["intA_param"] = "1111",
+              ["intB_param"] = "3333",
+            },
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_Response_XSLT_beforeXSD_xslt_with_Params_route_ok,
+          config = {
+            xsltLibrary = xsltLibrary,
+            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_with_params,
+            xsltParams = {
+              ["result_tag"] = "kongResultFromParam",
+            },
+          }
+        }
         
         -- start kong
         assert(helpers.start_kong({
@@ -499,6 +528,22 @@ for _, strategy in helpers.all_strategies() do
           assert.matches("text/xml%;%s-charset=utf%-8", content_type)
           assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed_verbose, body)
       end)
+
+      it("1+5|Requst and Response plugins|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculator_Response_XSLT_beforeXSD_xslt_with_Params_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches("<kongResultFromParam>4444</kongResultFromParam>", body)
+			end)
 
 		end)		
 	end)

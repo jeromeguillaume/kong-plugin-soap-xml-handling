@@ -63,6 +63,40 @@ response_common.calculator_Response_XSLT_BEFORE = [[
 </xsl:stylesheet>
 ]]
 
+response_common.calculator_Response_XSLT_BEFORE_with_params = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:param name="result_tag" select="MyResult"/>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResult']">
+    <xsl:element name="{$result_tag}">
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:element>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+response_common.calculator_Response_XSLT_AFTER_with_params = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:param name="result_tag_after_xsd" select="MyResult_After_XSD"/>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='kongResultFromParam']">
+    <xsl:element name="{$result_tag_after_xsd}">
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:element>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
 response_common.calculator_Response_XSLT_BEFORE_invalid = [[
 xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 </xsl:stylesheet>
@@ -356,6 +390,22 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			}
 	}
   
+	local calculatorXSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_with_xslt_Params_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_beforeXSD_with_xslt_Params_ok_route,
+		config = {
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_with_params,
+      xsltParams = {
+        ["result_tag"] = "kongResultFromParam",
+      },
+		}
+	}
+
   local calculatorXSLT_beforeXSD_invalid_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_invalid" }
@@ -608,6 +658,25 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			body = request_common.calculator_Request_Response_XSD_VALIDATION
 		}	
 	}
+
+	local calculatorXSLT_afterXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_afterXSD_with_xslt_Params_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_afterXSD_with_xslt_Params_ok_route,
+		config = {
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_with_params,
+			xsltTransformAfter = response_common.calculator_Response_XSLT_AFTER_with_params,
+      xsltParams = {
+        ["result_tag"] = "kongResultFromParam",
+        ["result_tag_after_xsd"] = "kongResultFromParamAfterXSD"
+      },
+		}
+	}
+
 	local calculator_wsdl_ok = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorWSDL_with_async_download_ok" }
@@ -842,6 +911,22 @@ function response_common._5_XSLT_BEFORE_XSD_Valid_transformation (assert, client
     local content_type = assert.response(r).has.header("Content-Type")
     assert.matches("text/xml%;%s-charset=utf%-8", content_type)
     assert.matches('<KongResult>13</KongResult>', body)	  
+end
+
+function response_common._5_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
+	-- invoke a test request	
+	local r = client:post("/calculatorXSLT_beforeXSD_with_xslt_Params_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("<kongResultFromParam>12</kongResultFromParam>", body)
 end
 
 function response_common._5_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
@@ -1155,6 +1240,22 @@ function response_common._5_6_7_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed_verbose, body)
+end
+
+function response_common._5_7_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_afterXSD_with_xslt_Params_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("<kongResultFromParamAfterXSD>12</kongResultFromParamAfterXSD>", body)
 end
 
 function response_common._6_WSDL_Validation_with_async_download_Ok (assert, client)
