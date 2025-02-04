@@ -98,6 +98,46 @@ request_common.calculator_Response = [[
 </soap:Envelope>
 ]]
 
+request_common.calculator_Request_XSLT_BEFORE_with_params = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+   <xsl:param name="intA_param" select="1"/>
+   <xsl:param name="intB_param" select="2"/>
+  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='intA']">
+      <intA><xsl:value-of select="$intA_param"/></intA>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+      <intB><xsl:value-of select="$intB_param"/></intB>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+request_common.calculator_Request_XSLT_AFTER_with_params = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+   <xsl:param name="intA_after_xsd_param" select="1"/>
+   <xsl:param name="intB_after_xsd_param" select="2"/>
+  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='intA']">
+      <intA><xsl:value-of select="$intA_after_xsd_param"/></intA>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+      <intB><xsl:value-of select="$intB_after_xsd_param"/></intB>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
 request_common.calculator_Request_XSLT_BEFORE_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -804,6 +844,23 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			}
 	}
 
+	local calculatorXSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_with_xslt_Params_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_beforeXSD_with_xslt_Params_ok_route,
+		config = {
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_with_params,
+			xsltParams = {
+				["intA_param"] = "1111",
+				["intB_param"] = "3333",
+			},
+		}
+	}
+
 	local calculatorXSLT_beforeXSD_invalid_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_invalid" }
@@ -1028,6 +1085,26 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid
+		}
+	}
+
+	local calculatorXSLT_afterXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_afterXSD_with_xslt_Params_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSLT_afterXSD_with_xslt_Params_ok_route,
+		config = {
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_with_params,
+			xsltParams = {
+        ["intA_param"] = "1111",
+        ["intB_param"] = "3333",
+        ["intA_after_xsd_param"] = "22222",
+        ["intB_after_xsd_param"] = "44444",
+      },
+      xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_with_params,
 		}
 	}
 
@@ -1333,6 +1410,23 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 		assert.matches('<AddResult>13</AddResult>', body)	
 end
 
+function request_common._1_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
+	-- invoke a test request	
+	local r = client:post("/calculatorXSLT_beforeXSD_with_xslt_Params_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("<AddResult>4444</AddResult>", body)
+end
+
+
 function request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_input(assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSLT_beforeXSD_invalid", {
@@ -1619,6 +1713,22 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_without_Operatio
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
+end
+
+function request_common._1_3_XSLT_AFTER_XSD_with_xslt_Params_Ok (assert, client)
+	-- invoke a test request	
+	local r = client:post("/calculatorXSLT_afterXSD_with_xslt_Params_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("<AddResult>66666</AddResult>", body)
 end
 
 function request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)

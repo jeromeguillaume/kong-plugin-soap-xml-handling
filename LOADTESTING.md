@@ -1,7 +1,7 @@
 # Load testing benchmark
 
 ## Load Testing results
-The results are delivered for Kong v3.9 - Medium size (4 CPU / 8 GB RAM):
+The results are delivered for Kong `v3.9` - Medium size (4 CPU / 8 GB RAM) and SOAP/XML plugins `v1.2.5`:
 - There is no memory leak and no restart of Kong GW pod observed after 24h tests:
   - Tested for `libxml2`, `libxslt` and `saxon`
 - A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negligible way the respone time and delivers the expected benefit

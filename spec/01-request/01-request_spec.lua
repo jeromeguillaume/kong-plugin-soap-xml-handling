@@ -56,6 +56,10 @@ for _, strategy in helpers.all_strategies() do
 			it ("1|XSLT (BEFORE XSD) - Valid transformation", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 			end)
+
+			it ("1|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
+				request_common._1_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
+			end)
 			
 			it("1|XSLT (BEFORE XSD) - Invalid XSLT input", function()
 				request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
@@ -129,6 +133,10 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_XSD_Validation_Invalid_API_request_without_Operation_with_verbose_ko (assert, client)
 			end)
 			
+			it ("1+3|XSLT (AFTER XSD) - With xslt Params - Ok", function()
+				request_common._1_3_XSLT_AFTER_XSD_with_xslt_Params_Ok (assert, client)
+			end)			
+
 			it("1+2+3|XSLT (AFTER XSD) - Ok", function()
 				request_common._1_2_3_XSLT_AFTER_XSD_Ok (assert, client)
 			end)
