@@ -28,7 +28,8 @@ ffi.cdef [[
 
 local saxon4KongLib = nil
 
-libsaxon4kong.libName = "libsaxon-4-kong.so" 
+libsaxon4kong.libName = "libsaxon-4-kong.so"
+libsaxon4kong.symbolNotFound = "Internal error. A symbol is not found in the Shared Object library"
 
 -----------------------------------
 -- Load the Saxon for Kong library
@@ -66,6 +67,15 @@ function libsaxon4kong.createSaxonProcessorKong()
 
   -- If the Saxon library is initialized
   if saxon4KongLib then
+    if not pcall(function() return saxon4KongLib.createSaxonProcessorKong end) then
+      err = "'createSaxonProcessorKong' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return nil, err
+      end
+    end
     -- Initialize the Saxon Processor
     rc, saxonProcessor = pcall(saxon4KongLib.createSaxonProcessorKong)
     -- If there is an error on pcall
@@ -88,6 +98,17 @@ function libsaxon4kong.createXslt30ProcessorKong(saxonProcessor)
   local rc = true
 
   if saxon4KongLib and saxonProcessor ~= ffi.NULL then
+
+    if not pcall(function() return saxon4KongLib.createXslt30ProcessorKong end) then
+      err = "'createXslt30ProcessorKong' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return nil, err
+      end
+    end
+
     local errorMessage_ptr = ffi.new ("char *[1]")
     -- Initialize the XSLT 3.0 Processor
     rc, xslt30Processor = pcall(saxon4KongLib.createXslt30ProcessorKong, saxonProcessor, errorMessage_ptr)
@@ -111,36 +132,61 @@ end
 -- Get Error Message from Context
 ----------------------------------
 function libsaxon4kong.getErrorMessage(context)
-  local errorMessage
+  local err
   
   if saxon4KongLib then
+    -- Check if symbol exists
+    if not pcall(function() return saxon4KongLib.getErrMessage end) then
+      err = "'getErrMessage' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return nil, err
+      end
+    end
+
     local rc, errorMessage_ptr = pcall(saxon4KongLib.getErrMessage, context)
     -- If there is an error on pcall
     if not rc then
-      errorMessage = "getErrMessage: " .. errorMessage_ptr
+      err = "getErrMessage: " .. errorMessage_ptr
     elseif errorMessage_ptr ~= ffi.NULL then
-      errorMessage = ffi.string(errorMessage_ptr)
+      err = ffi.string(errorMessage_ptr)
       saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr))
       
       -- If the last character is a 'New line' (or \n) character => remove it
-      if errorMessage:sub(#errorMessage, #errorMessage) == '\n' then
-        errorMessage = errorMessage:sub(1, -2)  
+      if err:sub(#err, #err) == '\n' then
+        err = err:sub(1, -2)  
       end
       
     end
   end
-  return errorMessage
+  return err
 end
 
 ------------------
 -- Delete Context
 ------------------
 function libsaxon4kong.deleteContext(context)
+  local err
+
   if saxon4KongLib and context ~= ffi.NULL then
-    local rc, errMsg = pcall(saxon4KongLib.deleteContext, context)
+    
+    -- Check if symbol exists
+    if not pcall(function() return saxon4KongLib.deleteContext end) then
+      err = "'deleteContext' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return nil, err
+      end
+    end
+
+    local rc, err = pcall(saxon4KongLib.deleteContext, context)
     -- If there is an error on pcall
     if not rc then
-      kong.log.err("Error on deleteContext: " .. errMsg)
+      kong.log.err("Error on deleteContext: " .. err)
     end
   end
 end
@@ -154,6 +200,19 @@ function libsaxon4kong.compileStylesheet(saxonProcessor, xslt30Processor, XSLT)
   local rc = true
 
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and xslt30Processor ~= ffi.NULL then
+    
+    -- Check if symbol exists
+    if not pcall(function() return saxon4KongLib.compileStylesheet end) then
+      err = "'compileStylesheet' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return nil, err
+      end
+    end
+
+    -- call the 'compileStylesheet'
     rc, context = pcall(saxon4KongLib.compileStylesheet, saxonProcessor, xslt30Processor, XSLT)
   end
   
@@ -179,6 +238,19 @@ function libsaxon4kong.stylesheetInvokeTemplate (saxonProcessor, context, templa
   local rc = true
   
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
+    
+    -- Check if symbol exists
+    if not pcall(function() return saxon4KongLib.stylesheetInvokeTemplateKong end) then
+      err = "'stylesheetInvokeTemplateKong' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return nil, err
+      end
+    end
+
+    -- call the 'stylesheetInvokeTemplateKong'
     rc, xml_ptr = pcall(saxon4KongLib.stylesheetInvokeTemplateKong, saxonProcessor, context, templateName, paramName, XMLtoTransform)
   end
   
@@ -210,11 +282,30 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
   local rc = true
 
   if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
-    -- inject stylesheet/template parameters
+    -- Check if symbol exists
+    if not pcall(function() return saxon4KongLib.addParameter end) then
+      err = "'addParameter' symbol doesn't exist in " .. libsaxon4kong.libName
+    end
+
+    -- call the 'stylesheetTransformXmlKong'
+    if not err and not pcall(function() return saxon4KongLib.stylesheetTransformXmlKong end) then
+      err = "'stylesheetTransformXmlKong' symbol doesn't exist in " .. libsaxon4kong.libName
+    end
+
+    -- If some symbols are not found
+    if err then
+      kong.log.err(err)
+      err = libsaxon4kong.symbolNotFound
+      return nil, err
+    end
+  end
+
+  if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL then
+    -- Inject stylesheet/template parameters
     if next(params) then
       for k, v in pairs(params) do
+        
         rc = pcall (saxon4KongLib.addParameter, saxonProcessor, context, k, v)
-
         -- If there is an error on pcall
         if not rc then
           err = "addParameter: unknown failure, check formatting"
@@ -223,15 +314,26 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
         else
           err = "Unable to add parameter to stylesheet renderer"
         end
+        
+        -- If there is an error: stop the loop
+        if not rc or err then
+          break
+        end
       end
-    end
+    end    
+  end
 
+  if saxon4KongLib and saxonProcessor ~= ffi.NULL and context ~= ffi.NULL and rc and not err then
     rc, xml_ptr = pcall (saxon4KongLib.stylesheetTransformXmlKong, saxonProcessor, context, XMLtoTransform)
   end
   
   -- If there is an error on pcall
   if not rc then
-    err = "stylesheetTransformXml: " .. xml_ptr
+    if not err then
+      err = "stylesheetTransformXml: " .. (xml_ptr or 'nil')
+    else
+      -- there is an error on 'addParameter' call
+    end
     xml_ptr = nil
   elseif xml_ptr ~= ffi.NULL then
     xml_transformed = ffi.string(xml_ptr)
@@ -241,6 +343,7 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
   else
     err = "Unable to invoke XLST transformation"
   end
+  
   return xml_transformed, err
 end
 

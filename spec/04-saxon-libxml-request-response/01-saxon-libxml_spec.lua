@@ -9,9 +9,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local saxon_common = require "spec.common.saxon"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -62,6 +62,15 @@ for _, strategy in helpers.all_strategies() do
 			end)
       it ("1+2+6+7|XML to JSON Transformation - Ok", function()
 				saxon_common._1_2_6_7_XML_2_JSON_Transformation_Ok (assert, client)
+			end)
+      it("1|XSLT (BEFORE XSD) XSLT with xslt Params - Ok", function()
+				saxon_common._1_REQ_XSLT_BEFORE_XSD_with_xslt_Params_input_Ok (assert, client)
+			end)
+      it("5|XSLT (BEFORE XSD) XSLT with xslt Params - Ok", function()
+				saxon_common._5_RES_XSLT_BEFORE_XSD_with_xslt_Params_input_Ok (assert, client)
+			end)
+      it("1+5|XSLT (BEFORE XSD) XSLT with xslt Params - Ok", function()
+				saxon_common._1_5_RES_XSLT_BEFORE_XSD_with_xslt_Params_input_Ok (assert, client)
 			end)
       it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input", function()
 				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)

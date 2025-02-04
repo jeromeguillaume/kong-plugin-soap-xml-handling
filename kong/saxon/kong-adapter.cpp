@@ -185,8 +185,8 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
 
 extern "C" void addParameter(const void *saxonProcessor_void,
                              const void *context_void,
-                             const char* key,
-                             const char* value)
+                             const char *key,
+                             const char *value)
 {
   SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
   Context *context = nullptr;

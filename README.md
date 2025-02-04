@@ -1015,92 +1015,95 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.0.0:
   - Initial Release
 - v1.0.1:
-  - Improve the behavior of SOAP/XML Handling plugins in conjunction with the Kong System plugins: Rate Limiting, Auth (OIDC, basic-auth, etc.)
-  - Reformat the JSON Error messages (of Kong System plugins) to a SOAP/XML `<soap:Fault>` error
+  - Improved the behavior of SOAP/XML Handling plugins in conjunction with the Kong System plugins: Rate Limiting, Auth (OIDC, basic-auth, etc.)
+  - Reformated the JSON Error messages (of Kong System plugins) to a SOAP/XML `<soap:Fault>` error
 - v1.0.2:
-  - Add the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
+  - Added the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
 - v1.0.3:
   - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
 - v1.0.4:
-  - Improve the log error management by initializing it in the `init_worker` phase
+  - Improved the log error management by initializing it in the `init_worker` phase
 - v1.0.5:
-  - Add an external loader (http)
+  - Added an external loader (http)
 - v1.0.6: 
-  - Add `Timeout` and `Cache_TTL` parameters related to the External Entity Loader (http(s))
+  - Added `Timeout` and `Cache_TTL` parameters related to the External Entity Loader (http(s))
   - Put the detailed error message in `<detail>` of `<soap:Fault>` message in case `VerboseRequest` or `VerboseResponse` is enabled
-  - Adapt the `schema.lua` to be Konnect compatible
+  - Adapted the `schema.lua` to be Konnect compatible
 - v1.0.7: 
-  - Change example material from `https://ecs.syr.edu` (no longer available) to `http://www.dneonline.com`
-  - Improve `Routing By XPath` by putting in one plugin property the complete routing URL and by enabling the usage of a Host (not only a Kong Upstream)
-  - Add experimental `ExternalEntityLoader_Async` capacity for downloading Asynchronously the XSD External Entities
+  - Changed example material from `https://ecs.syr.edu` (no longer available) to `http://www.dneonline.com`
+  - Improved `Routing By XPath` by putting in one plugin property the complete routing URL and by enabling the usage of a Host (not only a Kong Upstream)
+  - Added experimental `ExternalEntityLoader_Async` capacity for downloading Asynchronously the XSD External Entities
 - v1.0.8: 
-  - Add https support to Synchronous external loader (https)
+  - Added https support to Synchronous external loader (https)
   - `WSDL validation`: Get the Namespace definitons found in `<wsdl:definitions>` and add them in `<xsd:schema>` (if they don't exist)
 - v1.0.9: 
   - In case of `request-termination` plugin there is no longer SOAP/XML - 200 error
   - `xsdApiSchemaInclude`: support the inclusion of multiple XSD schemas in the plugin configuration (without download external entity)
-  - Enhance the documentation for Kubernetes, Konnect and KIC
+  - Enhanced the documentation for Kubernetes, Konnect and KIC
 - v1.0.10:
-  - Due to Kong v3.6+, update the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
+  - Due to Kong v3.6+, updated the Kong's library used for gzip compression (from `kong.tools.utils` to `kong.tools.gzip`)
 - v1.0.11:
-  - Add `pongo` tests
+  - Added `pongo` tests
 - v1.1.0:
-  - Add `saxon` Home Edition (v12.5) library for supporting XSLT 2.0 or 3.0
-  - Fix a free memory issue for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11` error during Nginx shutdown)
-  - Add an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2.0 or 3.0
-  - Add `jit.off()` for `libxml` to avoid `nginx: lua atpanic: Lua VM crashed, reason: bad callback` error
+  - Added `saxon` Home Edition (v12.5) library for supporting XSLT 2.0 or 3.0
+  - Fixed a free memory issue for `libxslt` (and avoid `[alert] 1#0: worker process **** exited on signal 11` error during Nginx shutdown)
+  - Added an `Error Handler` for `libxslt` to detect correctly the unsupported XLST 2.0 or 3.0
+  - Added `jit.off()` for `libxml` to avoid `nginx: lua atpanic: Lua VM crashed, reason: bad callback` error
 - v1.1.1:
-  - Add the `saxon` notices files (related to the Saxon license distribution)
-  - Add support for `XML` to `JSON` transformation
-  - Rename the `kong-saxon-initcontainer` and `kong-saxon` docker images
+  - Added the `saxon` notices files (related to the Saxon license distribution)
+  - Added support for `XML` to `JSON` transformation
+  - Renamed the `kong-saxon-initcontainer` and `kong-saxon` docker images
 - v1.1.2:
-  - `saxon` library: remove the `xsltSaxonTemplate` and `xsltSaxonTemplateParam` parameters and use `XSLT` without `<xsl:template name="main">`
-  - Add `conf/saxonConf.xml` for `saxon` configuration file 
-  - Add nginx `pid` for `saxon` logs
+  - `saxon` library: removed the `xsltSaxonTemplate` and `xsltSaxonTemplateParam` parameters and use `XSLT` without `<xsl:template name="main">`
+  - Added `conf/saxonConf.xml` for `saxon` configuration file 
+  - Added nginx `pid` for `saxon` logs
 - v1.1.3:
-  - Load `saxon` library during the `configure` nginx phase only if necessary
+  - Loaded `saxon` library during the `configure` nginx phase only if necessary
 - v1.1.4:
-  - `ExternalEntityLoader_Async`: replace `nginx.timer.at` by `kong.tools.queue`
+  - `ExternalEntityLoader_Async`: replaced `nginx.timer.at` by `kong.tools.queue`
 - v1.1.5:
-  - Remove the `require("kong.plugins.soap-xml-handling-lib.xmlgeneral")` declared on each phase to a global definition
+  - Removed the `require("kong.plugins.soap-xml-handling-lib.xmlgeneral")` declared on each phase to a global definition
   - `ExternalEntityLoader_Async`: replace the `kong.xmlSoapAsync.entityLoader.urls` to a LRU cache
-  - Replace `plugin.PRIORITY` by `plugin.__plugin_id` regarding the Error management
+  - Replaced `plugin.PRIORITY` by `plugin.__plugin_id` regarding the Error management
 - v1.1.6:
-  - `ExternalEntityLoader_Async`: use a `kong.tools.queue` to execute a WSDL/XSD validation prefetch on the `configure` nginx phase (for downloading the `ìmport`ed XSD)
+  - `ExternalEntityLoader_Async`: used a `kong.tools.queue` to execute a WSDL/XSD validation prefetch on the `configure` nginx phase (for downloading the `ìmport`ed XSD)
 - v1.2.0:
-  - Improve support for `SOAP` v1.1 and v1.2, which does an `ìmport` (that can be included in a new property: `xsdSoapSchemaInclude`)
-  - Add the validation of the `SOAPAction` Http header
-  - `xmlgeneral.pluginConfigure`: enable the `XSD_Validation_Prefetch` for `saxon` library (not only `libxslt`)
-  - Add a `Known Limitations` section in the README.md
+  - Improved support for `SOAP` v1.1 and v1.2, which does an `ìmport` (that can be included in a new property: `xsdSoapSchemaInclude`)
+  - Added the validation of the `SOAPAction` Http header
+  - `xmlgeneral.pluginConfigure`: enabled the `XSD_Validation_Prefetch` for `saxon` library (not only `libxslt`)
+  - Added a `Known Limitations` section in the README.md
   - If `stream_listen` is enabled, send an error message in the log and forces the synchronous download by using `socket.http` (blocking library)
 - v1.2.1
-  - Add a table of contents in the README.md
-  - Add support of `WSDL` 2.0 (for `WSDL/XSD Validation`)
+  - Added a table of contents in the README.md
+  - Added support of `WSDL` 2.0 (for `WSDL/XSD Validation`)
   - `WSDL/XSD Validation`: Handle correctly the case where the Namespace (associated with `http://www.w3.org/ns/wsdl` or `http://www.w3.org/2001/XMLSchema`) has no prefix
-  - `xmlgeneral.addNamespaces`: fix a memory issue when the prefix is NULL (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`)
+  - `xmlgeneral.addNamespaces`: fixed a memory issue when the prefix is NULL (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`)
   - Send the correct detailed error message (instead `Ko`) in case there is no Operation in `<soap:Body>`  
-  - Optimize the `WSDL` validation (in case of multiple `<xs:schema>`): match the Operation in `<soap:Body>` with its associated `<xs:element name=` in `<xs:schema>`
+  - Optimized the `WSDL` validation (in case of multiple `<xs:schema>`): match the Operation in `<soap:Body>` with its associated `<xs:element name=` in `<xs:schema>`
   - Have a dynamic loading of the Kong's library used for gzip compression regarding the Kong version: `kong.tools.utils` for version < 3.6 and `kong.tools.gzip`for version >= 3.6
-  - Replace the usage of `https://ecs.syr.edu` by a local calculator
-  - Include the Kong version in the docker image related to `saxon` (example: `jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5`)
-  - Include the Lua code SOAP/XML plugins in the docker images related to `saxon`
-  - Pongo (Tests): remove the external dependencies (from `http://www.dneonline.com:80/calculator.asmx` to `jeromeguillaume/ws-soap-calculator` Docker image and from `http://httpbin.apim.eu` to `svenwal/httpbin` Docker image)
+  - Replaced the usage of `https://ecs.syr.edu` by a local calculator
+  - Included the Kong version in the docker image related to `saxon` (example: `jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5`)
+  - Included the Lua code SOAP/XML plugins in the docker images related to `saxon`
+  - Pongo (Tests): removed the external dependencies (from `http://www.dneonline.com:80/calculator.asmx` to `jeromeguillaume/ws-soap-calculator` Docker image and from `http://httpbin.apim.eu` to `svenwal/httpbin` Docker image)
 - v1.2.2
-  - `saxon` - `XSLT Transformation`: remove empty Namespace (example: `xmlns=""`)
-  - `XSLT Transformation`: Improve error message in case XSLT definition or XML input is not correct
-  - `WSDL/XSD Validation`: Improve error message in case WSDL/XSD schema or XML input is not correct
-  - `WSDL/XSD Validation`: Improve the validation mechanism in case of multiple schemas to have a better match between the XML ad its WSDL/XSD schema (by leveraging the error code `1845` - `No matching global declaration available for the validation root` on `xmlSchemaValidateOneElement` call)
-  - `soap-xml-response-handling`: remove the call of `xmlgeneral.sleepForPrefetchEnd` due to `ngx.sleep` that is not allowed in `header` phase
+  - `saxon` - `XSLT Transformation`: removed empty Namespace (example: `xmlns=""`)
+  - `XSLT Transformation`: Improved error message in case XSLT definition or XML input is not correct
+  - `WSDL/XSD Validation`: Improved error message in case WSDL/XSD schema or XML input is not correct
+  - `WSDL/XSD Validation`: Improved the validation mechanism in case of multiple schemas to have a better match between the XML ad its WSDL/XSD schema (by leveraging the error code `1845` - `No matching global declaration available for the validation root` on `xmlSchemaValidateOneElement` call)
+  - `soap-xml-response-handling`: removed the call of `xmlgeneral.sleepForPrefetchEnd` due to `ngx.sleep` that is not allowed in `header` phase
 - v1.2.3
-  - Validation of `SOAPAction` Http header: fix the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
-  - Validation of `SOAPAction` Http header: handle the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
+  - Validation of `SOAPAction` Http header: fixed the header name detection for SOAP 1.2 (from `SOAPAction` to `action` in `Content-Type`)
+  - Validation of `SOAPAction` Http header: handled the default namespace for `soap`, `soap12`, `wsdl` (example: `xmlns="http://www.w3.org/ns/wsdl"` instead of `xmlns:wsdl="http://www.w3.org/ns/wsdl"`) 
 - v1.2.4
   - Validation of `SOAPAction` Http header: added WSDL 2.0 support
-  - Add the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
-  - Add a `W3C Compatibility Matrix` section in the README.md
-  - `pongo` tests: remove `it()` from `lazy_setup()` and remove `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
+  - Added the Lua code checking that the pointer passed to `ffi.string` is not `ffi.NULL` (and avoid a crash: `[alert] 1#0: worker process XXXX exited on signal 11`)
+  - Added a `W3C Compatibility Matrix` section in the README.md
+  - `pongo` tests: removed `it()` from `lazy_setup()` and removed `teardown()` and put `helpers.stop_kong()` in `lazy_teardown()`
 - v1.2.5
-  - Fix a memory leak in XSLT Transformation due to the `libxslt` taking ownership of the pointer returned by `xmlReadMemory` (see comments in `libxml2ex.lua` for `xmlReadMemory`)
-  - Add Load testing benchmark. See [LOADTESTING.md](/LOADTESTING.md)
+  - Fixed a memory leak in XSLT Transformation due to the `libxslt` taking ownership of the pointer returned by `xmlReadMemory` (see comments in `libxml2ex.lua` for `xmlReadMemory`)
+  - Added Load testing benchmark. See [LOADTESTING.md](/LOADTESTING.md)
 - v1.2.6
-  - Add `xsltParams`: named parameter (`<xsl:param>`) to use in `XSLT Transformation`
+  - Added `xsltParams`: named parameter (`<xsl:param>`) to use in `XSLT Transformation`
+- v1.2.7
+  - Added `pongo` tests for `xsltParams`
+  - Added the detection of non existing symbols in `libsaxon4kong.lua`

@@ -2,7 +2,9 @@
 -- Some characters, called magic characters, have special meanings when used in a pattern. The magic characters are
 -- ( ) . % + - * ? [ ^ $
 
-local helpers = require "spec.helpers"
+local helpers         = require "spec.helpers"
+local request_common  = require "spec.common.request"
+
 local saxon_common = {}
 
 saxon_common.calculator_Request= {
@@ -53,6 +55,43 @@ saxon_common.calculator_Response_XSLT_AFTER = [[
       </map>
     </xsl:variable>
     <xsl:value-of select="fn:xml-to-json($json-result)"/>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+saxon_common.calculator_Request_XSLT_BEFORE_with_params = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+   <xsl:param name="intA_param" select="1"/>
+   <xsl:param name="intB_param" select="2"/>
+  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>   
+  <xsl:template match="//*[local-name()='intA']">
+      <intA><xsl:value-of select="$intA_param"/></intA>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='intB']">
+      <intB><xsl:value-of select="$intB_param"/></intB>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+saxon_common.calculator_Response_XSLT_BEFORE_with_params = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:param name="result_tag" select="MyResult"/>
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResult']">
+    <xsl:element name="{$result_tag}">
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:element>
   </xsl:template>
 </xsl:stylesheet>
 ]]
@@ -269,6 +308,7 @@ saxon_common.httpbin_Response_XSLT_BEFORE = [[
   </xsl:template>
 </xsl:stylesheet>
 ]]
+
 ---------------------------------------------------------------------------------------------------
 -- SOAP/XML REQUEST/RESPONSE plugin with Saxon: configure the Kong entities (Service/Route/Plugin)
 ---------------------------------------------------------------------------------------------------
@@ -315,7 +355,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
   local httpbin_XML_2_JSON_Transformation_ok_route = blue_print.routes:insert{
 		service = httpbin_service,
 		paths = { "/calculator_XML_2_JSON_Transformation_ok" }
-	  }
+	}
 	blue_print.plugins:insert {
     name = pluginRequest,
     route = httpbin_XML_2_JSON_Transformation_ok_route,
@@ -334,7 +374,68 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
       xsltTransformBefore = saxon_common.httpbin_Response_XSLT_BEFORE
     }
   }
+
+  local calculator_REQ_XSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_REQ_XLST_with_xslt_Params_ok" }
+	}
+  blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_REQ_XSLT_beforeXSD_with_xslt_Params_ok_route,
+    config = {
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE_with_params,
+      xsltParams = {
+        ["intA_param"] = "1111",
+        ["intB_param"] = "3333",
+      },
+    }
+  }
+
+  local calculator_RES_XSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_RES_XLST_with_xslt_Params_ok" }
+	}
+  blue_print.plugins:insert {
+    name = pluginResponse,
+    route = calculator_RES_XSLT_beforeXSD_with_xslt_Params_ok_route,
+    config = {
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Response_XSLT_BEFORE_with_params,
+      xsltParams = {
+        ["result_tag"] = "kongResultFromParam",
+      },
+    }
+  }
   
+  local calculator_REQ_RES_XSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_REQ_RES_XLST_with_xslt_Params_ok" }
+	}
+  blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_REQ_RES_XSLT_beforeXSD_with_xslt_Params_ok_route,
+    config = {
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE_with_params,
+      xsltParams = {
+        ["intA_param"] = "1111",
+        ["intB_param"] = "3333",
+      },
+    }
+  }
+  blue_print.plugins:insert {
+    name = pluginResponse,
+    route = calculator_REQ_RES_XSLT_beforeXSD_with_xslt_Params_ok_route,
+    config = {
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Response_XSLT_BEFORE_with_params,
+      xsltParams = {
+        ["result_tag"] = "kongResultFromParam",
+      },
+    }
+  }
+
   local calculator_REQ_XSLT_beforeXSD_invalid_XSLT_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_XSLT" }
@@ -500,8 +601,56 @@ function saxon_common._1_2_6_7_XML_2_JSON_Transformation_Ok (assert, client)
     -- validate that the request succeeded: response status 200, Content-Type and right match
     local body = assert.response(r).has.status(200)
     local content_type = assert.response(r).has.header("Content-Type")
-    assert.equal("text/xml; charset=utf-8", content_type)
+    assert.matches("text/xml%;%s-charset=utf%-8", content_type)
     assert.matches(saxon_common.httpbin_Response_Ok, body)
+end
+
+function saxon_common._1_REQ_XSLT_BEFORE_XSD_with_xslt_Params_input_Ok (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_REQ_XLST_with_xslt_Params_ok", {
+    headers = {
+      ["Content-Type"] = "text/xml; charset=utf-8",
+    },
+    body = request_common.calculator_Full_Request,
+  })
+
+  -- validate that the request succeeded: response status 200, Content-Type and right match
+  local body = assert.response(r).has.status(200)
+  local content_type = assert.response(r).has.header("Content-Type")
+  assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+  assert.matches("<AddResult>4444</AddResult>", body)
+end
+
+function saxon_common._5_RES_XSLT_BEFORE_XSD_with_xslt_Params_input_Ok (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_RES_XLST_with_xslt_Params_ok", {
+    headers = {
+      ["Content-Type"] = "text/xml; charset=utf-8",
+    },
+    body = request_common.calculator_Full_Request,
+  })
+
+  -- validate that the request succeeded: response status 200, Content-Type and right match
+  local body = assert.response(r).has.status(200)
+  local content_type = assert.response(r).has.header("Content-Type")
+  assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+  assert.matches("<kongResultFromParam>12</kongResultFromParam>", body)
+end
+
+function saxon_common._1_5_RES_XSLT_BEFORE_XSD_with_xslt_Params_input_Ok (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_REQ_RES_XLST_with_xslt_Params_ok", {
+    headers = {
+      ["Content-Type"] = "text/xml; charset=utf-8",
+    },
+    body = request_common.calculator_Full_Request,
+  })
+
+  -- validate that the request succeeded: response status 200, Content-Type and right match
+  local body = assert.response(r).has.status(200)
+  local content_type = assert.response(r).has.header("Content-Type")
+  assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+  assert.matches("<kongResultFromParam>4444</kongResultFromParam>", body)
 end
 
 function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
