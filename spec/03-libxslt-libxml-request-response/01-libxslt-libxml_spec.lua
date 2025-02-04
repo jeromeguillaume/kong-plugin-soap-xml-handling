@@ -337,15 +337,14 @@ for _, strategy in helpers.all_strategies() do
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }
         }
-
         
-        local calculator_Response_XSLT_beforeXSD_xslt_with_Params_route_ok = blue_print.routes:insert{
+        local calculator_Response_XSLT_beforeXSD_with_xslt_Params_route_ok = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_Response_XSLT_beforeXSD_xslt_with_Params_ok" }
+          paths = { "/calculator_Response_XSLT_beforeXSD_with_xslt_Params_ok" }
         }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_Response_XSLT_beforeXSD_xslt_with_Params_route_ok,
+          route = calculator_Response_XSLT_beforeXSD_with_xslt_Params_route_ok,
           config = {
             xsltLibrary = xsltLibrary,
             xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_with_params,
@@ -357,7 +356,7 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_Response_XSLT_beforeXSD_xslt_with_Params_route_ok,
+          route = calculator_Response_XSLT_beforeXSD_with_xslt_Params_route_ok,
           config = {
             xsltLibrary = xsltLibrary,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_with_params,
@@ -531,7 +530,7 @@ for _, strategy in helpers.all_strategies() do
 
       it("1+5|Requst and Response plugins|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_Response_XSLT_beforeXSD_xslt_with_Params_ok", {
+        local r = client:post("/calculator_Response_XSLT_beforeXSD_with_xslt_Params_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
           },
