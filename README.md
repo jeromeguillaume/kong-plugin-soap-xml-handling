@@ -867,7 +867,7 @@ The WSDL v1.1 and WSDL v2.0 differ in how they define the `SOAPAction`:
 3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `SOAPAction_Header` property with the value `yes`
 - `VerboseRequest` enabled
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (v1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
+- `xsdApiSchema` property with this `WSDL 1.1` value: [dneonline.com.wsdl (v1.1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 
 4) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
@@ -936,7 +936,7 @@ The expected result is:
 3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `SOAPAction_Header` property with the value `yes`
 - `VerboseRequest` enabled
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
+- `xsdApiSchema` property with this `WSDL 1.1` value: [dneonline.com.wsdl (v1.1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 - `xsdSoapSchema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
 - `xsdSoapSchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
@@ -965,7 +965,7 @@ The expected result is:
 
 #### For WSDL 2.0 | SOAP 1.1:
 Follow the steps defined for WSDL 1.1 | SOAP 1.1 and specifically configure the plugin with: 
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (WSDL v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
+- `xsdApiSchema` property with this `WSDL 2.0` value: [dneonline.com.wsdl (v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
 
 ##### Add operation
 Call the `Add` operation with a SOAP 1.1 envelope and `SOAPAction:"http://tempuri.org/Add"` as there is a defined value for the `Action` attribute
@@ -975,7 +975,7 @@ Call the `Subtract` operation with a SOAP 1.1 envelope and `SOAPAction:"http://t
 
 #### For WSDL 2.0 | SOAP 1.2:
 Follow the steps defined for WSDL 1.1 | SOAP 1.2 and specifically configure the plugin with: 
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (WSDL v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
+- `xsdApiSchema` property with this `WSDL 2.0` value: [dneonline.com.wsdl (v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
 
 ##### Add operation
 Call the `Add` operation with a SOAP 1.2 envelope and `SOAPAction:"http://tempuri.org/Add"` as there is a defined value for the `Action` attribute
