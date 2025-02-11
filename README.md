@@ -978,10 +978,10 @@ Follow the steps defined for WSDL 1.1 | SOAP 1.2 and specifically configure the 
 - `xsdApiSchema` property with this `WSDL 2.0` value: [dneonline.com.wsdl (v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
 
 ##### Add operation
-Call the `Add` operation with a SOAP 1.2 envelope and `SOAPAction:"http://tempuri.org/Add"` as there is a defined value for the `Action` attribute
+Call the `Add` operation with a SOAP 1.2 envelope and `Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"'` as there is a defined value for the `Action` attribute
 
 ##### Subtract operation
-Call the `Subtract` operation with a SOAP 1.2 envelope and `SOAPAction:"http://tempuri.org/SubtractInterface/SubtractRequest"` as there is not defined value for the `Action` attribute. So the default action pattern is used as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)
+Call the `Subtract` operation with a SOAP 1.2 envelope `Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/SubtractInterface/SubtractRequest"'` as there is not defined value for the `Action` attribute. So the default action pattern is used as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)
 
 <a id="Miscellaneous_example_G"></a>
 
