@@ -866,8 +866,8 @@ The WSDL v1.1 and WSDL v2.0 differ in how they define the `SOAPAction`:
 
 3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (v1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 - `SOAPAction_Header` property with the value `yes`
+- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (v1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 
 4) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
@@ -935,12 +935,12 @@ The expected result is:
 
 3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
+- `SOAPAction_Header` property with the value `yes`
 - `xsdSoapSchema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
 - `xsdSoapSchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
   - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
 - `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
-- `SOAPAction_Header` property with the value `yes`
 
 4) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `action` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
