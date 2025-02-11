@@ -209,7 +209,7 @@ helm install kong kong/kong -n kong --values ./values.yaml
 1) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx.
 This simple backend Web Service adds or subtracts 2 numbers.
 
-2) Create a Route on the Service `calculator` with the `path` value `/calculator`
+2) Create a Route on the `calculator` Service with the `path` value `/calculator`
 
 3) Call the `calculator` through the Kong Gateway Route by using [httpie](https://httpie.io/) tool
 ```
@@ -855,15 +855,21 @@ Call correctly `calculator` by setting the expected `SOAPAction` Http header. Th
 - SOAP 1.1: `SOAPAction` Http header
 - SOAP 1.2: `action` in `Content-Type` Http header
 
-For SOAP 1.1:
+The WSDL v1.1 and WSDL v2.0 differ in how they define the `SOAPAction`:
+- WSDL 1.1: `soapAction` attribute
+- WSDL 2.0: `Action` attribute
+
+#### For WSDL 1.1 | SOAP 1.1:
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
-2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+2) Change the URL of `calculator` Gateway Service: https://calculator.apim.eu:443/ws
+
+3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
+- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (v1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 - `SOAPAction_Header` property with the value `yes`
 
-3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
+4) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `SOAPAction` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:'text/xml; charset=utf-8' \
@@ -922,10 +928,12 @@ The expected result is:
 ...
 ```
 
-For SOAP 1.2:
+#### For WSDL 1.1 | SOAP 1.2:
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
-2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+2) Change the URL of `calculator` GW Service: https://calculator.apim.eu:443/ws
+
+3) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `xsdSoapSchema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
 - `xsdSoapSchemaInclude` property with this value:
@@ -934,7 +942,7 @@ For SOAP 1.2:
 - `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 - `SOAPAction_Header` property with the value `yes`
 
-3) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `action` has the `http://tempuri.org/Add` value as defined in the WSDL
+4) Call the `calculator` through the Kong Gateway Route. As the `Àdd` operation name is requested (see `soapActionRequired="true"` in WSDL), the `action` has the `http://tempuri.org/Add` value as defined in the WSDL
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:'application/soap+xml; charset=utf-8; action="http://tempuri.org/Add"' \
@@ -954,6 +962,26 @@ The expected result is:
 <AddResult>12</AddResult>
 ...
 ```
+
+#### For WSDL 2.0 | SOAP 1.1:
+Follow the steps defined for WSDL 1.1 | SOAP 1.1 and specifically configure the plugin with: 
+- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (WSDL v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
+
+##### Add operation
+Call the `Add` operation with a SOAP 1.1 envelope and `SOAPAction:"http://tempuri.org/Add"` as there is a defined value for the `Action` attribute
+
+##### Subtract operation
+Call the `Subtract` operation with a SOAP 1.1 envelope and `SOAPAction:"http://tempuri.org/SubtractInterface/SubtractRequest"` as there is not defined value for the `Action` attribute. So the default action pattern is used as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)
+
+#### For WSDL 2.0 | SOAP 1.2:
+Follow the steps defined for WSDL 1.1 | SOAP 1.2 and specifically configure the plugin with: 
+- `xsdApiSchema` property with this `WSDL` value: [dneonline.com.wsdl (WSDL v2.0)](/_tmp.dneonline.com/dneonline.com.wsdlv2_defaultNS_xsd_NSPrefix.wsdl)
+
+##### Add operation
+Call the `Add` operation with a SOAP 1.2 envelope and `SOAPAction:"http://tempuri.org/Add"` as there is a defined value for the `Action` attribute
+
+##### Subtract operation
+Call the `Subtract` operation with a SOAP 1.2 envelope and `SOAPAction:"http://tempuri.org/SubtractInterface/SubtractRequest"` as there is not defined value for the `Action` attribute. So the default action pattern is used as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)
 
 <a id="Miscellaneous_example_G"></a>
 
