@@ -418,7 +418,7 @@ Add a Kong `Upstream` named `calculator.apim.eu` and defines a `target` with `ca
 
 Open `soap-xml-request-handling` plugin and configure it with:
 - `RouteXPathRegisterNs` leave the default value and add `tempuri_kong,http://tempuri.org/`
-- `RouteXPathTargets` add a new target with:
+- `RouteXPathTargets` add a new (target) item with:
   - `URL` property with the value `https://calculator.apim.eu:443/ws`
   - `XPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']` or `/soap:Envelope/soap:Body/tempuri_kong:Add/tempuri_kong:intA`
   - `XPathCondition` property with the value `5`
