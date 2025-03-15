@@ -1435,7 +1435,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
   -- **************************
   -- For WSDL 1.1 / WSDL 2.0: the SOAPAction/Action Must be related to operationName=Add (found in the SOAP/XML body Request)
   
-  -- Register the NameSpaces to make an XPath request
+  -- Register the NameSpaces to make an XPath expression
   if not errMessage then
     rc = true
     -- If it's a WSDL 1.1, register the NameSpaces related to WSDL 1.0, SOAP 1.1 or SOAP 1.2
@@ -1465,7 +1465,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     end
 
     if not rc then
-      errMessage = "Failure registering NameSpaces for the XPath request"
+      errMessage = "Failure registering NameSpaces for the XPath expression"
       kong.log.debug(errMessage)
     end
   end
@@ -1498,7 +1498,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     end
   end
   
-  -- WSDL 1.1: Execute the XPath request to find the 'soapAction' attribute value and 
+  -- WSDL 1.1: Execute the XPath expression to find the 'soapAction' attribute value and 
   -- the 'soapActionRequired' optional value in the WSDL
   if not errMessage and wsdlDefinitions_type == xmlgeneral.WSDL1_1 then
     -- Example: /wsdl:definitions/wsdl:binding/soap12:binding[@transport="http://schemas.xmlsoap.org/soap/http"]/parent::wsdl:binding/wsdl:operation[@name="Add"]/soap12:operation/@soapAction
@@ -1507,9 +1507,9 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
     xpathReqRequired   = xpathReqRoot .. "@soapActionRequired"
     xpathReqSoapAction = xpathReqRoot .. "@soapAction"
 
-    -- Execute the XPath request to find the 'soapActionRequired' optional attribute
+    -- Execute the XPath expression to find the 'soapActionRequired' optional attribute
     object = libxml2.xmlXPathEvalExpression(xpathReqRequired, context)    
-    errXPathSoapAction = " | XPath request='".. xpathReqRequired.. "'"
+    errXPathSoapAction = " | XPath expression='".. xpathReqRequired.. "'"
     if object ~= ffi.NULL then
       -- If we found the XPath element
       if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
@@ -1524,14 +1524,14 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
         kong.log.debug("getSOAPActionFromWSDL: the optional 'xpathReqRequired' attribute is not found" .. errXPathSoapAction)
       end
     else
-      errMessage = "Invalid XPath request for 'soapActionRequired' attribute"
+      errMessage = "Invalid XPath expression for 'soapActionRequired' attribute"
       kong.log.err(errMessage .. errXPathSoapAction)
     end
 
     if not errMessage then
-      -- Execute the XPath request to find the 'soapAction' attribute
+      -- Execute the XPath expression to find the 'soapAction' attribute
       object = libxml2.xmlXPathEvalExpression(xpathReqSoapAction, context)
-      errXPathSoapAction = " | XPath request='" .. xpathReqSoapAction .. "'"
+      errXPathSoapAction = " | XPath expression='" .. xpathReqSoapAction .. "'"
 
       if object ~= ffi.NULL then
         wsdlSoapAction_Value = nil
@@ -1548,11 +1548,11 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
           kong.log.err(errMessage ..  errXPathSoapAction)
         end
       else
-        errMessage = "Invalid XPath request for 'soapAction'"
+        errMessage = "Invalid XPath expression for 'soapAction'"
         kong.log.err(errMessage .. errXPathSoapAction)
       end
     end
-  -- Else WSDL 2.0: Execute the XPath request to find the 'Action' attribute value
+  -- Else WSDL 2.0: Execute the XPath expression to find the 'Action' attribute value
   -- See RFC: https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#explicitaction
   elseif not errMessage and wsdlDefinitions_type == xmlgeneral.WSDL2_0 then
     wsdlRequired_Value  = true
@@ -1561,7 +1561,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
                         request_OperationName .. "\"]/"..wsdlNS2_0..":input[@messageLabel='In']/@"..wsamNS..":Action"
     
     object = libxml2.xmlXPathEvalExpression(xpathReqSoapAction, context)
-    errXPathSoapAction = " | XPath request='" .. xpathReqSoapAction .. "'"
+    errXPathSoapAction = " | XPath expression='" .. xpathReqSoapAction .. "'"
 
     if object ~= ffi.NULL then
       wsdlSoapAction_Value = nil
@@ -1579,7 +1579,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
         kong.log.debug("getSOAPActionFromWSDL: No 'Action' attribute in the WSDL linked with '" ..request_OperationName.. "' Operation name" .. errXPathSoapAction .. ". Apply the default 'Action' pattern")
       end      
     else
-      errMessage = "Invalid XPath request 'Action'"
+      errMessage = "Invalid XPath expression 'Action'"
       kong.log.err(errMessage .. errXPathSoapAction)
     end
     -- If the Action is not found: apply the 'Default Action Pattern for WSDL 2.0'
@@ -1588,7 +1588,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
       -- Example: /wsdl:description/@targetNamespace
       xpathReqSoapAction = "/"..wsdlNS2_0..":description/@targetNamespace"
       object = libxml2.xmlXPathEvalExpression(xpathReqSoapAction, context)
-      errXPathSoapAction = " | XPath request='" .. xpathReqSoapAction .. "'"
+      errXPathSoapAction = " | XPath expression='" .. xpathReqSoapAction .. "'"
       if object ~= ffi.NULL then
         if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
           targetNamespace = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
@@ -1598,7 +1598,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
           errMessage = "Unable to get the value of 'targetNamespace' attribute in the WSDL" .. errXPathSoapAction
         end
       else
-        errMessage = "Invalid XPath request for 'targetNamespace'" .. errXPathSoapAction
+        errMessage = "Invalid XPath expression for 'targetNamespace'" .. errXPathSoapAction
       end
       -- Find the 'interface' Name
       -- Example: /wsdl:description/wsdl:interface/wsdl:operation[@name='Add']/parent::wsdl:interface/@name
@@ -1606,7 +1606,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
         xpathReqSoapAction = "/"..wsdlNS2_0..":description/"..wsdlNS2_0..":interface/"..wsdlNS2_0..
                              ":operation[@name=\""..request_OperationName.. "\"]/parent::"..wsdlNS2_0..":interface/@name"
         object = libxml2.xmlXPathEvalExpression(xpathReqSoapAction, context)
-        errXPathSoapAction = " | XPath request='" .. xpathReqSoapAction .. "'"
+        errXPathSoapAction = " | XPath expression='" .. xpathReqSoapAction .. "'"
         if object ~= ffi.NULL then
           if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
             interfaceName = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
@@ -1616,7 +1616,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
             errMessage = "Unable to get the value of 'interface' name in the WSDL" .. errXPathSoapAction
           end
         else
-          errMessage = "Invalid XPath request for 'interface' name" .. errXPathSoapAction
+          errMessage = "Invalid XPath expression for 'interface' name" .. errXPathSoapAction
         end
       end
       -- Find the 'pattern' Attribute
@@ -1625,7 +1625,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
         xpathReqSoapAction = "/"..wsdlNS2_0..":description/"..wsdlNS2_0..":interface/"..wsdlNS2_0..
                              ":operation[@name=\""..request_OperationName.. "\"]/@pattern"
         object = libxml2.xmlXPathEvalExpression(xpathReqSoapAction, context)
-        errXPathSoapAction = " | XPath request='" .. xpathReqSoapAction .. "'"
+        errXPathSoapAction = " | XPath expression='" .. xpathReqSoapAction .. "'"
         if object ~= ffi.NULL then
           if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
             pattern = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
@@ -1640,7 +1640,7 @@ function xmlgeneral.getSOAPActionFromWSDL (WSDL, request_OperationName, xmlnsSOA
                         "'"..xmlgeneral.schemaWSDL_WSAM_in_out_opt.."'"
           end
         else
-          errMessage = "Invalid XPath request for 'pattern' attribute" .. errXPathSoapAction
+          errMessage = "Invalid XPath expression for 'pattern' attribute" .. errXPathSoapAction
         end
       end
       kong.log.debug( "getSOAPActionFromWSDL: Names and Attributes found in WSDL for 'Default Action Pattern for WSDL':" ..
@@ -1940,8 +1940,8 @@ end
 ---------------------------------------------
 -- Search a XPath and Compares it to a value
 ---------------------------------------------
-function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPathRegisterNs)
-  local rcXpath     = false
+function xmlgeneral.RouteByXPath (XMLtoSearch, XPathRegisterNs, RouteXPathTargets)
+  local rcXpath = 0
   
   kong.log.debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
 
@@ -1977,28 +1977,35 @@ function xmlgeneral.RouteByXPath (kong, XMLtoSearch, XPath, XPathCondition, XPat
     end
   end
 
-  local object = libxml2.xmlXPathEvalExpression(XPath, context)
-  if object ~= ffi.NULL then
+  -- Go on each Route XPath Target
+  for i, RouteXPathTarget in pairs(RouteXPathTargets) do
     
-    -- If we found the XPath element
-    if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then        
-        local nodeContent = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
-        kong.log.debug("libxml2.xmlNodeGetContent: " .. nodeContent)
-        if nodeContent == XPathCondition then
-          rcXpath = true
-        end
+    kong.log.debug ("RouteByXPath: XPath expression: '"..RouteXPathTarget.XPath.."'")
+    local object = libxml2.xmlXPathEvalExpression(RouteXPathTarget.XPath, context)
+    if object ~= ffi.NULL then
+      
+      -- If we found the XPath element
+      if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then        
+          local nodeContent = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
+          kong.log.debug("libxml2.xmlNodeGetContent: " .. nodeContent)
+          if nodeContent == RouteXPathTarget.XPathCondition then
+            rcXpath = i
+            break
+          end
+      else
+        kong.log.debug ("RouteByXPath, object.nodesetval is null")  
+      end
     else
-      kong.log.debug ("RouteByXPath, object.nodesetval is null")  
+      kong.log.debug ("RouteByXPath, object is null")
     end
-  else
-    kong.log.debug ("RouteByXPath, object is null")
   end
-  local msg = "with XPath=\"" .. XPath .. "\" and XPathCondition=\"" .. XPathCondition .. "\""
-  
-  if rcXpath then
-    kong.log.debug ("RouteByXPath: Ok " .. msg)
+
+  if rcXpath > 0 then
+    kong.log.debug ("RouteByXPath: Ok, "..
+                    "with XPath='" ..RouteXPathTargets[rcXpath].XPath.. 
+                    "' and XPathCondition='" ..RouteXPathTargets[rcXpath].XPathCondition.."'")
   else
-    kong.log.debug ("RouteByXPath: Ko " .. msg)
+    kong.log.debug ("RouteByXPath: Ko, not having the proper XPath expression or the right condition")
   end
   return rcXpath
 end

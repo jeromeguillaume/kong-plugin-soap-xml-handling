@@ -68,10 +68,11 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.ExternalEntityLoader_Async|`false`|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
-|config.ExternalEntityLoader_Timeout|`1`|Tiemout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
-|config.RouteToPath|N/A|URI Path to change the route dynamically to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname:port/path`|
-|config.RouteXPath|N/A|XPath request to extract a value from the request body and to compare it with `RouteXPathCondition`|
-|config.RouteXPathCondition|N/A|XPath value to compare with the value extracted by `RouteXPath`. If the condition is satisfied the route is changed to `RouteToPath`|
+|config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
+|config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
+|config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname:port/path`|
+|config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
+|config.RouteXPathTargets.XPathCondition|N/A|XPath value to compare with the value extracted by `XPath`. If the condition is satisfied the route is changed to `URL`|
 |config.RouteXPathRegisterNs|Pre-defined|Register Namespace to enable XPath request. The syntax is `prefix,namespace`. Mulitple entries are allowed (example: `prefix1,namespace1`,`prefix2,namespace2`). If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a a fake prefix like `myprefix,http://...`|
 |config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
@@ -409,16 +410,18 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 <a id="Main_Example_4"></a>
 
 ### Example #4: Request | `ROUTING BY XPATH`: change the Route of the request to a different hostname and path depending of XPath condition
-The plugin searches the XPath entry and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route.
+The plugin executes an XPath expression and compares it to a Condition value. If this is the right Condition value, the plugin changes the host and the path of the Route. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route.
 
 This example uses a new backend Web Service (https://calculator.apim.eu:443/ws), which provides the same capabilities as `calculator` Service (http://www.dneonline.com) defined at step #1. 
 
 Add a Kong `Upstream` named `calculator.apim.eu` and defines a `target` with `calculator.apim.eu:443` value. 
-Open `soap-xml-request-handling` plugin and configure the plugin with:
-- `RouteToPath` property with the value `https://calculator.apim.eu:443/ws`
-- `RouteXPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']`
-- `RouteXPathCondition` property with the value `5`
-- `RouteXPathRegisterNs` leave the default value; we can also register specific NameSpace with the syntax `prefix,uri`
+
+Open `soap-xml-request-handling` plugin and configure it with:
+- `RouteXPathRegisterNs` leave the default value and add `tempuri_kong,http://tempuri.org/`
+- `RouteXPathTargets` add a new target with:
+  - `URL` property with the value `https://calculator.apim.eu:443/ws`
+  - `XPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']` or `/soap:Envelope/soap:Body/tempuri_kong:Add/tempuri_kong:intA`
+  - `XPathCondition` property with the value `5`
 Use command defined at Example #3, the expected result is `13`. Pay attention to the `X-SOAP-Region` (http header in the response) added by `calculator.apim.eu`
 ```xml
 HTTP/1.1 200 
@@ -490,7 +493,7 @@ For testing purposes only: one can play with the XSD schema to raise an error by
 
 <a id="Main_Example_7"></a>
 
-### Example #7: Response | `XSLT TRANSFORMATION - AFTER XSD`:  transforming the SOAP response to a XML response
+### Example #7: Response | `XSLT TRANSFORMATION - AFTER XSD`:  transforming the SOAP response to an XML response
 In this example the XSLT removes all <soap> tags and **converts the response from SOAP to XML**.
 
 Open `soap-xml-response-handling` plugin and configure the plugin with:

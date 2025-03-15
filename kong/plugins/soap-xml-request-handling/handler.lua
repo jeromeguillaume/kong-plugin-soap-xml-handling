@@ -110,21 +110,22 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
   end
 
   -- If there is no error and
-  -- If the plugin is defined with Routing XPath properties then:
+  -- If the plugin is defined with Routing XPath Targets then:
   -- => we change the Route By XPath if the condition is satisfied
-    if soapFaultBody == nil and plugin_conf.RouteXPath and plugin_conf.RouteXPathCondition and plugin_conf.RouteToPath then
+    if soapFaultBody == nil and plugin_conf.RouteXPathTargets then
     -- Get Route By XPath and check if the condition is satisfied
-    local rcXpath = xmlgeneral.RouteByXPath (kong, soapEnvelope_transformed, 
-                                            plugin_conf.RouteXPath, plugin_conf.RouteXPathCondition, plugin_conf.RouteXPathRegisterNs)
-    -- If the condition is statisfied we change the Upstream
-    if rcXpath then
+    local rcXpath = xmlgeneral.RouteByXPath (soapEnvelope_transformed, 
+                                            plugin_conf.RouteXPathRegisterNs,
+                                            plugin_conf.RouteXPathTargets)
+    -- If the condition is satisfied we change the Upstream
+    if rcXpath > 0 then
       local parse_url = require("socket.url").parse
-      local parsed    = parse_url(plugin_conf.RouteToPath)
+      local parsed    = parse_url(plugin_conf.RouteXPathTargets[rcXpath].URL)
       local port
       local path
       local query
 
-      if (parsed.scheme and parsed.host) then        
+      if (parsed and parsed.scheme and parsed.host) then        
         kong.service.request.set_scheme(parsed.scheme)        
         if (not parsed.path) then
           path = '/'
