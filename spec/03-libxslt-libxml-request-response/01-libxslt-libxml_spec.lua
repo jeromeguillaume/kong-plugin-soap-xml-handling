@@ -61,9 +61,13 @@ for _, strategy in helpers.all_strategies() do
             xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
             xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
             xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-            RouteToPath = "http://ws.soap2.calculator:8080/ws",
-            RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-            RouteXPathCondition = "10",
+            RouteXPathTargets = {
+              {
+                  URL= "http://ws.soap2.calculator:8080/ws",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+                  XPathCondition= "10"
+              },
+            }
           }
         }
         blue_print.plugins:insert {
@@ -147,9 +151,13 @@ for _, strategy in helpers.all_strategies() do
             xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
             xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
             xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-            RouteToPath = "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-            RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-            RouteXPathCondition = "5",
+            RouteXPathTargets = {
+              {
+                  URL= "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
+                  XPathCondition= "5"
+              },
+            }
           }
         }
         blue_print.plugins:insert {
@@ -177,9 +185,13 @@ for _, strategy in helpers.all_strategies() do
             xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
             xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
             xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-            RouteToPath = "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-            RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
-            RouteXPathCondition = "5",
+            RouteXPathTargets = {
+              {
+                  URL= "https://ecs.syr.edu:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'a']",
+                  XPathCondition= "5"
+              },
+            }
           }
         }
         blue_print.plugins:insert {

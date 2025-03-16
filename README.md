@@ -1250,3 +1250,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.2.7
   - Added `pongo` tests for `xsltParams`
   - Added the detection of non existing symbols in `libsaxon4kong.lua`
+- v1.3.0
+  - `ROUTING BY XPATH`: added multiple targets in the plugin configuration. Breaking change: former parameters `RouteToPath`, `RouteXPath` and `RouteXPathCondition` have been replaced by `RouteXPathTargets[].URL`, `RouteXPathTargets[].XPath` and `RouteXPathTargets[].XPathCondition`

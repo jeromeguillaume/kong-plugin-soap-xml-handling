@@ -6,9 +6,9 @@ local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
+	-- if strategy == "off" then
   --  goto continue
-	--end
+	-- end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -156,6 +156,14 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Ok", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, client)
 			end)
+
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' and 2 XPath targets - Ok", function()
+				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_2_XPath_targets_Ok (assert, client)
+			end)
+
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' and XPath not succeeded - Ok", function()
+				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_XPath_not_succeeded_Ok (assert, client)
+			end)			
 			
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503)", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)

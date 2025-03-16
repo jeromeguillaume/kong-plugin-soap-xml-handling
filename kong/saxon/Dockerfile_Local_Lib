@@ -1,4 +1,4 @@
-FROM kong/kong-gateway:3.9.0.1 as base
+FROM kong/kong-gateway:3.9.0.1 AS base
 
 USER root
 RUN apt-get update && apt-get install -y build-essential zsh unzip
@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y build-essential zsh unzip
 #########################
 # ARM64
 #########################
-FROM --platform=linux/arm64 base as build_arm64
+FROM --platform=linux/arm64 base AS build_arm64
 COPY ./saxon/zip/libsaxon-HEC-linux-aarch64-v12.5.0.zip /
 
 RUN unzip libsaxon-HEC-linux-aarch64-v12.5.0.zip
@@ -23,7 +23,7 @@ RUN cp libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/libsaxon-4-kong.so /usr/lo
 #########################
 # AMD64
 #########################
-FROM --platform=linux/amd64 base as build_amd64
+FROM --platform=linux/amd64 base AS build_amd64
 COPY ./saxon/zip/libsaxon-HEC-linux-x86_64-v12.5.0.zip /
 
 RUN unzip libsaxon-HEC-linux-x86_64-v12.5.0.zip && \

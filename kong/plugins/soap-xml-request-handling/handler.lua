@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.2.7",
+    VERSION = "1.3.0",
   }
 
 local xmlgeneral = nil
@@ -144,10 +144,11 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentTypeJSO
         end
         -- First, consider that the Host is a Kong Upstream
         local ok, err = kong.service.set_upstream(parsed.host)
+
         -- If there is an error it means that the Host is not a Kong Upstream
         if not ok then
           -- Change Hostname and port
-          kong.service.set_target(parsed.host, tonumber(port))          
+          local ok, err = kong.service.set_target(parsed.host, tonumber(port))
         end
         if parsed.query then
           kong.service.request.set_raw_query(parsed.query)
