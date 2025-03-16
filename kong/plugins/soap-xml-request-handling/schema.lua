@@ -13,10 +13,22 @@ return {
           { ExternalEntityLoader_Async = { type = "boolean", default = false, required = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
-          { RouteToPath = { type = "string", required = false }, },
-          { RouteXPath = { type = "string", required = false }, },
-          { RouteXPathCondition = { type = "string", required = false }, },
-          { RouteXPathRegisterNs = { type = "array",  required = false, elements = {type = "string"}, default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"}},},
+          { RouteXPathRegisterNs = { type = "array",  required = false, 
+              elements = {type = "string"}, 
+                default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"},
+            },
+          },
+          { RouteXPathTargets = { type = "array", required = false,
+              elements = { type = "record",
+                required = true,
+                fields = {
+                  { URL = typedefs.url( { required = true} ) },
+                  { XPath = {type = "string", required = true} },
+                  { XPathCondition = {type = "string", required = true}}
+                }
+              }
+            } 
+          },          
           { SOAPAction_Header = {required = false, type = "string", default = "no",
             one_of = {
               "no",
@@ -49,5 +61,31 @@ return {
           }},
         },
     }, },
+  },
+
+  entity_checks = {
+    { custom_entity_check = {
+      field_sources = { "config" },
+      fn = function(entity)
+        local config = entity.config
+
+        -- Check that the Register Namespace is valid
+        local XPathRegisterNs = config.RouteXPathRegisterNs
+        for i = 1, #XPathRegisterNs do
+          local prefix, uri
+          local j = config.RouteXPathRegisterNs[i]:find(',', 1)
+          if j then
+            prefix  = string.sub(XPathRegisterNs[i], 1, j - 1)
+            uri     = string.sub(XPathRegisterNs[i], j + 1, #XPathRegisterNs[i])
+          end
+          if (uri == nil or uri == '' or uri:find('%s')) or 
+            (prefix == nil or prefix == '' or prefix:find('%s')) then
+            return nil, "config.RouteXPathRegisterNs: invalid NameSpace or URI. The syntax is 'ns,uri' without space"
+          end
+        end
+        
+        return true
+      end
+    }},
   },
 }

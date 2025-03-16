@@ -507,6 +507,9 @@ request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose
   </soap:Body>
 </soap:Envelope>]]
 
+request_common.ROUTING_BY_XPATH_ns_default = "soap,http://schemas.xmlsoap.org/soap/envelope/"
+request_common.calculator_Request_ROUTING_BY_XPATH_ns_tempuri = "tempuri_kong,http://tempuri.org/"
+
 request_common.calculatorWSDL_with_async_download_verbose_ok = [[
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -1175,28 +1178,89 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "http://" .. upstream_ws_soap2_calculator.name .. "/ws",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-			RouteXPathCondition = "10",
-		}
-	}
-
-	local calculatorRoutingByXPath_hostname_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorRoutingByXPath_hostname_ok" }
+			RouteXPathRegisterNs = {
+				request_common.ROUTING_BY_XPATH_ns_default,
+				request_common.calculator_Request_ROUTING_BY_XPATH_ns_tempuri
+			},
+			RouteXPathTargets = {
+				{
+						URL= "http://" .. upstream_ws_soap2_calculator.name .. "/ws",
+						XPath= "/soap:Envelope/soap:Body/tempuri_kong:Add/tempuri_kong:intA",
+						XPathCondition= "10"
+				},
+			}
+	}}
+	local culatorRoutingByXPath_hostname_route = blue_print.routes:insert{
+		service= calculator_service,
+		paths= { "/calculatorRoutingByXPath_hostname_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = calculatorRoutingByXPath_hostname_route,
+		route = culatorRoutingByXPath_hostname_route,
 		config = {
 			VerboseRequest = false,
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "http://ws.soap2.calculator:8080/ws",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-			RouteXPathCondition = "10",
+			RouteXPathTargets = {
+				{
+						URL= "http://ws.soap2.calculator:8080/ws",
+						XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+						XPathCondition= "10"
+				},
+			}
+		}
+	}
+
+	local culatorRoutingByXPath_hostname_2_XPath_targets_route = blue_print.routes:insert{
+		service= calculator_service,
+		paths= { "/calculatorRoutingByXPath_hostname_2_XPath_targets_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = culatorRoutingByXPath_hostname_2_XPath_targets_route,
+		config = {
+			VerboseRequest = false,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
+			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
+			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
+			RouteXPathTargets = {
+				{
+						URL= "http://NOT_EXISTING.COM",
+						XPath= "/NOT_EXISTING",
+						XPathCondition= "/NOT_EXISTING"
+				},
+				{
+					URL= "http://ws.soap2.calculator:8080/ws",
+					XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+					XPathCondition= "10"
+			},
+			}
+		}
+	}
+
+	local culatorRoutingByXPath_hostname_XPath_not_succeeded_route = blue_print.routes:insert{
+		service= calculator_service,
+		paths= { "/calculatorRoutingByXPath_hostname_XPath_not_succeeded_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = culatorRoutingByXPath_hostname_XPath_not_succeeded_route,
+		config = {
+			VerboseRequest = false,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
+			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
+			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
+			RouteXPathTargets = {
+				{
+						URL= "http://ws.soap2.calculator:8080/ws",
+						XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+						XPathCondition= "***NOT_FOUND***"
+				},
+			}
 		}
 	}
 
@@ -1213,9 +1277,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-			RouteXPathCondition = "10",
+			RouteXPathTargets = {
+				{
+						URL= "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+						XPathCondition= "10"
+				},
+			}
 		}
 	}
 
@@ -1232,9 +1300,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteToPath = "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-			RouteXPath = "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-			RouteXPathCondition = "10",
+			RouteXPathTargets = {
+				{
+						URL= "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+						XPathCondition= "10"
+				},
+			}
 		}
 	}
 
@@ -1809,6 +1881,44 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Ok (assert, clie
 	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
+	local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+	assert.equal("soap2", x_soap_region)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>18</AddResult>', body)
+end
+
+function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_2_XPath_targets_Ok (assert, client)		
+	-- invoke a test request
+	local r = client:post("/calculatorRoutingByXPath_hostname_2_XPath_targets_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+	assert.equal("soap2", x_soap_region)
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>18</AddResult>', body)
+end
+
+function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_XPath_not_succeeded_Ok (assert, client)		
+	-- invoke a test request
+	local r = client:post("/calculatorRoutingByXPath_hostname_XPath_not_succeeded_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+	assert.Not.equal("soap2", x_soap_region)
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<AddResult>18</AddResult>', body)
 end
