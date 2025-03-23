@@ -172,13 +172,13 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     
     -- If the Request 'Content-Type' is JSON and the soapEnvelopeTransformed type is XML
     if kong.ctx.shared.contentType.request == xmlgeneral.JSON and bodyContentType == xmlgeneral.XMLContentTypeBody then
-      kong.service.request.set_header("Content-Type", xmlgeneral.XMLContentType)
-      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML")
+      kong.service.request.set_header("Content-Type", xmlgeneral.SOAP1_1ContentType)
+      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML ("..xmlgeneral.SOAP1_1ContentType..")")
     -- Else If the Request 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
     elseif kong.ctx.shared.contentType.request ~= xmlgeneral.JSON and bodyContentType == xmlgeneral.JSONContentTypeBody then
       -- Check if the body has been transformed to a JSON type, due to an XSLT transformation (SOAP/XML -> JSON)
       kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
-      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON")
+      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON ("..xmlgeneral.JSONContentType..")")
     else
       -- The Request 'Content-Type' is compatible with the Body
       kong.log.debug("JSON<->XML Transformation: Don't change the Request's 'Content-Type' as it's compatible with the Body type")
@@ -278,7 +278,7 @@ function plugin:header_filter(plugin_conf)
       -- but it will be done by 'body_filter' phase
       kong.response.set_header("Content-Length", #soapFaultBody)
 
-      kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
+      kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
     end
 
     -- Set the Global Fault Code to the "Request and Response SOAP/XML handling" plugins 

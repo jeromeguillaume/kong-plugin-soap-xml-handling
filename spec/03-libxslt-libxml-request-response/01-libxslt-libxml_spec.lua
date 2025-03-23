@@ -540,7 +540,7 @@ for _, strategy in helpers.all_strategies() do
           assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed_verbose, body)
       end)
 
-      it("1+5|Requst and Response plugins|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
+      it("1+5|Request and Response plugins|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
         -- invoke a test request
         local r = client:post("/calculator_Response_XSLT_beforeXSD_with_xslt_Params_ok", {
           headers = {

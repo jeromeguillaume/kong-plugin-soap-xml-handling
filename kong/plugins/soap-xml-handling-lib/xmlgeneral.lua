@@ -43,7 +43,8 @@ xmlgeneral.xmlnsXsdHref               = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema                  = "schema"
 xmlgeneral.schemaTypeSOAP             = 0
 xmlgeneral.schemaTypeAPI              = 2
-xmlgeneral.XMLContentType             = "text/xml; charset=utf-8"
+xmlgeneral.SOAP1_1ContentType         = "text/xml; charset=utf-8"
+xmlgeneral.SOAP1_2ContentType         = "application/soap+xml; charset=utf-8"
 xmlgeneral.JSONContentType            = "application/json"
 xmlgeneral.Unknown_WSDL               = 0            -- Unknown WSDL
 xmlgeneral.WSDL1_1                    = 11            -- WSDL 1.1
@@ -201,15 +202,26 @@ end
 ---------------------------------------
 -- Return a SOAP Fault to the Consumer
 ---------------------------------------
-function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentType) 
-  local contentTypeRC
-  if contentType == xmlgeneral.JSON then
+function xmlgeneral.getContentType (contentType)
+  local contentTypeRC = xmlgeneral.SOAP1_1ContentType -- Default Content-Type
+  
+  if contentType == xmlgeneral.SOAP1_1 then
+    contentTypeRC = xmlgeneral.SOAP1_1ContentType
+  elseif contentType == xmlgeneral.SOAP1_2 then
+    contentTypeRC = xmlgeneral.SOAP1_2ContentType
+  elseif contentType == xmlgeneral.JSON then
     contentTypeRC = xmlgeneral.JSONContentType
-  else
-    contentTypeRC = xmlgeneral.XMLContentType
   end
+  
+  return contentTypeRC
+end
+
+---------------------------------------
+-- Return a SOAP Fault to the Consumer
+---------------------------------------
+function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentType) 
   -- Send a Fault code to client
-  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentTypeRC})
+  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = xmlgeneral.getContentType(contentType)})
 end
 
 --------------------------------------------------------------------------------------

@@ -212,6 +212,9 @@ You can try it with an online XSLT tester (like [https://linangdata.com/xslt-tes
 ### Example A: Request and Response | `XSLT 3.0 TRANSFORMATION`: JSON (client) to SOAP/XML (server)
 Call the `calculator` web service by sending a `JSON` request.
 The `soap-xml-request-handling` is in charge of transforming the JSON request to a SOAP/XML request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the SOAP/XML response to JSON.
+
+The default SOAP 1.1 `Content-Type` is applied on the request: `text/xml; charset=utf-8`
+
 ![Alt text](/images/Pipeline-Kong-JSON-to-XML-transformation.jpeg?raw=true "Kong - Execution pipeline: JSON to SOAP/XML transformation")
 
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
@@ -305,6 +308,7 @@ You can change operation to the following values:
 ### Example B: Request and Response | `XSLT 3.0 TRANSFORMATION`: XML (client) to JSON (server)
 Call the `httpbin` REST API by sending an `XML` request.
 The `soap-xml-request-handling` is in charge of transforming the XML request to a JSON request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the XML response to JSON.
+
 ![Alt text](/images/Pipeline-Kong-XML-to-JSON-transformation.jpeg?raw=true "Kong - Execution pipeline: XML to JSON transformation")
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
