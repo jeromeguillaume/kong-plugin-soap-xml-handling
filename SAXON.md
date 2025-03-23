@@ -224,6 +224,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 
 5) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
+- `xsdApiSchema` property with this `WSDL 1.1` value: [dneonline.com.wsdl (v1.1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
 - `xsltLibrary` property with the value `saxon`
 - `xsltTransformBefore` property with this `XSLT 3.0` definition:
 ```xml

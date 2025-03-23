@@ -50,6 +50,7 @@ xmlgeneral.WSDL1_1                    = 11            -- WSDL 1.1
 xmlgeneral.WSDL2_0                    = 20            -- WSDL 2.0
 xmlgeneral.SOAP1_1                    = 11            -- SOAP 1.1
 xmlgeneral.SOAP1_2                    = 12            -- SOAP 1.2
+xmlgeneral.JSON                       = 30            -- JSON content type
 xmlgeneral.SOAPAction                 = "SOAPAction"  -- SOAP 1.1
 xmlgeneral.action                     = "action"      -- SOAP 1.2
 xmlgeneral.SOAPAction_Header_No       = "no"
@@ -117,7 +118,7 @@ local HTTP_ERROR_MESSAGES = {
 ---------------------------------
 -- Format the SOAP Fault message
 ---------------------------------
-function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJSON)
+function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType)
   local soapErrMsg
   local detailErrMsg
   
@@ -147,7 +148,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentTypeJ
   detailErrMsg = string.gsub(detailErrMsg, "\"", "'")
 
   -- If it's a SOAP/XML Request then the Fault Message is SOAP/XML text
-  if contentTypeJSON == false then
+  if contentType == xmlgeneral.SOAP1_1 or contentType == xmlgeneral.SOAP1_2 then
     -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
     detailErrMsg = string.gsub(detailErrMsg, "<", "Less Than ")
     detailErrMsg = string.gsub(detailErrMsg, ">", " Greater Than")
@@ -185,14 +186,14 @@ end
 -----------------------------------------------------
 -- Add the HTTP Error code to the SOAP Fault message
 -----------------------------------------------------
-function xmlgeneral.addHttpErorCodeToSoapFault(VerboseResponse, contentTypeJSON)
+function xmlgeneral.addHttpErorCodeToSoapFault(VerboseResponse, contentType)
   local soapFaultBody
   
   local msg = HTTP_ERROR_MESSAGES[kong.response.get_status()]
   if not msg then
     msg = "Error"
   end
-  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()), contentTypeJSON)
+  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. tostring(kong.response.get_status()), contentType)
   
   return soapFaultBody
 end
@@ -200,9 +201,9 @@ end
 ---------------------------------------
 -- Return a SOAP Fault to the Consumer
 ---------------------------------------
-function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentTypeJSON) 
+function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentType) 
   local contentType
-  if contentTypeJSON == false then
+  if contentType ~= xmlgeneral.JSON then
     contentType = xmlgeneral.XMLContentType
   else
     contentType = xmlgeneral.JSONContentType
@@ -212,23 +213,33 @@ function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentTy
 end
 
 --------------------------------------------------------------------------------------
--- Initialize the ContentTypeJSON table for keeping the 'Content-Type' of the Request
+-- Initialize the ContentType table for keeping the 'Content-Type' of the Request
 --------------------------------------------------------------------------------------
-function xmlgeneral.initializeContentTypeJSON ()
-  -- If the 'kong.ctx.shared.contentTypeJSON' is not already created (by the Request plugin)
-  if not kong.ctx.shared.contentTypeJSON then
-    kong.ctx.shared.contentTypeJSON = {}
+function xmlgeneral.initializeContentType ()
+  -- If the 'kong.ctx.shared.contentType' is not already created (by the Request plugin)
+  if not kong.ctx.shared.contentType then
+    kong.ctx.shared.contentType = {}
     -- Get the 'Content-Type' to define the type of a potential Error message (sent by the plugin): SOAP/XML or JSON
     local contentType = kong.request.get_header("Content-Type")
-    kong.ctx.shared.contentTypeJSON.request = xmlgeneral.compareToJSONType(contentType)
+    kong.ctx.shared.contentType.request = xmlgeneral.detectContentType(contentType)
   end
 end
 
-----------------------------------------------------------------
--- Return true if the contentType is JSON type, false otherwise
-----------------------------------------------------------------
-function xmlgeneral.compareToJSONType (contentType)
-  return contentType == 'application/json' or contentType == 'application/vnd.api+json'
+--------------------------------------------------
+-- Detect content type SOAP 1.1 / SOAP 1.2 / JSON
+--------------------------------------------------
+function xmlgeneral.detectContentType (contentType)
+  local rc
+  if contentType == 'application/json' or contentType == 'application/vnd.api+json' then
+    rc = xmlgeneral.JSON
+  elseif contentType == 'application/soap+xml' then
+    rc = xmlgeneral.SOAP1_2
+  -- The default is soap 1.1
+  else
+    rc = xmlgeneral.SOAP1_1
+  end
+print("**jerome**: detectContentType: "..rc)
+  return rc
 end
 
 ---------------------------------------------------------------------------------------------
@@ -1789,7 +1800,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
 
   -- If multiple 'action' have been found 
   --   OR
-  -- If one 'action' has ben found but it isn't defined correctly
+  -- If one 'action' has ben found but it isn't correctly defined
   if action12_found >= 2 or (action12_found == 1 and SOAPAction12_Header_Value == nil) then
     errMessage = "'action' has been found in Content-Type header but it's not correctly defined"
   end
