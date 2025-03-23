@@ -129,7 +129,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType)
     detailErrMsg = string.sub(detailErrMsg, 1, -2)
   end
 
-  -- Add the Http status code of the SOAP/XML Web Service only during 'Response' phases (response, header_filter, body_filter)
+  -- Add the Http status code of the Backend Service only during 'Response' phases (response, header_filter, body_filter)
   local ngx_get_phase = ngx.get_phase
   if  ngx_get_phase() == "response"      or 
       ngx_get_phase() == "header_filter" or 
@@ -140,7 +140,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType)
       if detailErrMsg:sub(-1) ~= '.' then
         detailErrMsg = detailErrMsg .. '.'
       end
-      local additionalErrMsg = "SOAP/XML Web Service - HTTP code: " .. tostring(status)
+      local additionalErrMsg = "Backend Service - HTTP code: " .. tostring(status)
       detailErrMsg = detailErrMsg .. " " .. additionalErrMsg
     end
   end
@@ -202,14 +202,14 @@ end
 -- Return a SOAP Fault to the Consumer
 ---------------------------------------
 function xmlgeneral.returnSoapFault(plugin_conf, HTTPcode, soapErrMsg, contentType) 
-  local contentType
-  if contentType ~= xmlgeneral.JSON then
-    contentType = xmlgeneral.XMLContentType
+  local contentTypeRC
+  if contentType == xmlgeneral.JSON then
+    contentTypeRC = xmlgeneral.JSONContentType
   else
-    contentType = xmlgeneral.JSONContentType
+    contentTypeRC = xmlgeneral.XMLContentType
   end
   -- Send a Fault code to client
-  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentType})
+  return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = contentTypeRC})
 end
 
 --------------------------------------------------------------------------------------
@@ -229,16 +229,20 @@ end
 -- Detect content type SOAP 1.1 / SOAP 1.2 / JSON
 --------------------------------------------------
 function xmlgeneral.detectContentType (contentType)
-  local rc
-  if contentType == 'application/json' or contentType == 'application/vnd.api+json' then
-    rc = xmlgeneral.JSON
-  elseif contentType == 'application/soap+xml' then
-    rc = xmlgeneral.SOAP1_2
-  -- The default is soap 1.1
-  else
+  local rc = xmlgeneral.SOAP1_1 -- Default is soap 1.1
+  
+  -- Ignore space and tabulation characters by using: %s
+  -- SOAP 1.1
+  if string.find(contentType, "^%s*text/xml")   then
     rc = xmlgeneral.SOAP1_1
+  -- SOAP 1.2
+  elseif string.find(contentType, "^%s*application/soap%+xml") then
+    rc = xmlgeneral.SOAP1_2
+  -- JSON
+  elseif string.match(contentType, "^%s*application/json") or string.match(contentType, "^%s*application/vnd.api%+json") then
+    rc = xmlgeneral.JSON
   end
-print("**jerome**: detectContentType: "..rc)
+  
   return rc
 end
 

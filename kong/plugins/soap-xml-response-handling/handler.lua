@@ -303,14 +303,14 @@ function plugin:header_filter(plugin_conf)
     local bodyContentType = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelopeTransformed)
     
     -- If the Response 'Content-Type' is JSON and the Request 'Content-Type' is XML
-    if jsonResponse == true and kong.ctx.shared.contentType.request ~= xmlgeneral.JSON then
+    if jsonResponse == xmlgeneral.JSON and kong.ctx.shared.contentType.request ~= xmlgeneral.JSON then
       -- If the soapEnvelopeTransformed type is XML
       if bodyContentType == xmlgeneral.XMLContentTypeBody then
         kong.response.set_header("Content-Type", xmlgeneral.XMLContentType)
         kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from JSON to XML")
       end
     -- Else If the Response 'Content-Type' is XML and the Request 'Content-Type' is JSON
-    elseif jsonResponse == false and kong.ctx.shared.contentType.request == xmlgeneral.JSON then
+    elseif jsonResponse ~= xmlgeneral.JSON and kong.ctx.shared.contentType.request == xmlgeneral.JSON then
       -- If the soapEnvelopeTransformed type is JSON
       if bodyContentType == xmlgeneral.JSONContentTypeBody then
         kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)

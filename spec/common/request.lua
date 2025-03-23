@@ -192,7 +192,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>An invalid response was received from the upstream server</faultstring>
-      <detail>HTTP Error code is 502. SOAP/XML Web Service %- HTTP code: 502</detail>
+      <detail>HTTP Error code is 502. Backend Service %- HTTP code: 502</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
