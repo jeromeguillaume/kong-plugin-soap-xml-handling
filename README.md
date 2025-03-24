@@ -395,7 +395,7 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
   </xsl:template>
 </xsl:stylesheet>
 ```
-**With XSLT**: Use command defined at Example #3, the expected result is `13`:
+**With XSLT**: Use previous command, the expected result is `13`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" ...>

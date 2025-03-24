@@ -140,59 +140,71 @@ request_common.calculator_Request_XSLT_AFTER_with_params = [[
 
 request_common.calculator_Request_XSLT_BEFORE_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
-      <faultcode>soap:Client</faultcode>
+      <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <detail>
+        <errorMessage>SOAP/XML process failure</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
-      <faultcode>soap:Client</faultcode>
+      <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found</detail>
+      <detail>
+        <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
-      <faultcode>soap:Client</faultcode>
+      <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
-      <detail>compilation error. xsl:version: only 1.1 features are supported</detail>
+      <detail>
+        <errorMessage>Invalid XSLT definition. compilation error. xsl:version: only 1.1 features are supported</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Unauthorized</faultstring>
-      <detail>HTTP Error code is 401</detail>
+      <detail>
+        <errorMessage>HTTP Error code is 401</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
-      <faultcode>soap:Client</faultcode>
+      <faultcode>soap:Server</faultcode>
       <faultstring>An invalid response was received from the upstream server</faultstring>
-      <detail>HTTP Error code is 502. Backend Service %- HTTP code: 502</detail>
+      <detail>
+        <errorMessage>HTTP Error code is 502</errorMessage>
+        <backendHttpCode>502</backendHttpCode>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -319,7 +331,7 @@ request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
+      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -331,7 +343,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found</detail>
+      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -458,7 +470,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed_verbose = [[
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
-      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than ' not found</detail>
+      <detail>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]

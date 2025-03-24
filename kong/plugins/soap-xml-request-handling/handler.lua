@@ -26,7 +26,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) Before XSD
   if plugin_conf.xsltTransformBefore then
-    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseRequest)
+    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin, plugin_conf.xsltLibrary, plugin_conf.xsltParams, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseRequest)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -49,7 +49,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     end
     
     -- Validate the SOAP envelope with its schema    
-    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
+    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin, xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -71,7 +71,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     end
     
     -- Validate the API XML with its schema
-    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (plugin_conf, xmlgeneral.schemaTypeAPI, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
+    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin, xmlgeneral.schemaTypeAPI, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
 
     if errMessage ~= nil then
         -- Format a Fault code to Client
@@ -104,7 +104,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- If there is 'XSLT Transformation After XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) After XSD
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then
-    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope_transformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseRequest)
+    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin, plugin_conf.xsltLibrary, plugin_conf.xsltParams, soapEnvelope_transformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseRequest)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -174,7 +174,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
 
     -- If there is JSON <-> XML Transformation we have to change the Request 'Content-Type'
     -- Change the Request 'Content-Type' according to the soapEnvelope_transformed Type
-    local bodyContentType = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelope_transformed)
+    local bodyContentType = xmlgeneral.getBodyContentType(soapEnvelope_transformed)
     
     -- If the Request 'Content-Type' is JSON and the soapEnvelopeTransformed type is XML
     if kong.ctx.shared.contentType.request == xmlgeneral.JSON and bodyContentType == xmlgeneral.XMLContentTypeBody then
@@ -247,7 +247,7 @@ function plugin:access(plugin_conf)
       return xmlgeneral.returnSoapFault (soapFaultCode,                    
                                         soapFaultBody,
                                         kong.ctx.shared.contentType.request
-                                      )
+                                        )
   end
 
   -- If the SOAP Body request has been changed (for instance, the XPath Routing alone doesn't change it)

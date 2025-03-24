@@ -23,7 +23,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   -- => we apply XSL Transformation (XSLT) Before
   if plugin_conf.xsltTransformBefore then
-    soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(plugin_conf, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseResponse)
+    soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin, plugin_conf.xsltLibrary, plugin_conf.xsltParams, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -42,7 +42,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
     
     -- Validate the SOAP envelope with its schema
-    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.schemaTypeSOAP, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
+    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.ResponseTypePlugin, xmlgeneral.schemaTypeSOAP, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -58,7 +58,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- => Validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
   
-    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (plugin_conf, xmlgeneral.schemaTypeAPI, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
+    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin, xmlgeneral.schemaTypeAPI, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -73,7 +73,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- If there is 'XSLT Transformation After XSD' configuration then
   -- => we apply XSL Transformation (XSLT) After
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
-    soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(plugin_conf, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseResponse)
+    soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin, plugin_conf.xsltLibrary, plugin_conf.xsltParams, soapEnvelopeTransformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseResponse)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -307,7 +307,7 @@ function plugin:header_filter(plugin_conf)
     -- If there is JSON <-> XML Transformation we have to change the Response 'Content-Type'
     -- Change the Response 'Content-Type' according to the Request 'Content-Type' AND the soapEnvelopeTransformed Type    
     local jsonResponse = xmlgeneral.detectContentType (kong.response.get_header("Content-Type"))
-    local bodyContentType = xmlgeneral.getBodyContentType(plugin_conf, soapEnvelopeTransformed)
+    local bodyContentType = xmlgeneral.getBodyContentType(soapEnvelopeTransformed)
     
     -- If the Response 'Content-Type' is JSON and the Request 'Content-Type' is XML
     if jsonResponse == xmlgeneral.JSON and kong.ctx.shared.contentType.request ~= xmlgeneral.JSON then
