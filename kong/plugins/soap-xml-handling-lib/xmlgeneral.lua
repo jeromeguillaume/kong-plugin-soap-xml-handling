@@ -1346,8 +1346,7 @@ function xmlgeneral.XMLValidateWithXSD (typePlugin, child, XMLtoValidate, XSDSch
     
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
-      errMessage = xmlgeneral.invalidXML .. ". " .. errMessage
-      soapFaultCode = xmlgeneral.soapFaultCodeClient
+      errMessage = xmlgeneral.invalidXML .. ". " .. errMessage      
     -- Else if we have to find the 1st Child of API, which is in this example <Add ... /"> (and not the <soap> root)
     elseif child ~= xmlgeneral.schemaTypeSOAP then
       -- Example:
