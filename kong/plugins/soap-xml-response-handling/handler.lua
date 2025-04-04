@@ -272,8 +272,8 @@ function plugin:header_filter(plugin_conf)
     if kong.ctx.shared.contentType.request == xmlgeneral.JSON then
       kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
       kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON ("..xmlgeneral.JSONContentType..")")
-    -- Else if the Content-Type sent by the Service is JSON and the Request-Content-type is XML
-    elseif string.find (kong.response.get_header("Content-Type"), xmlgeneral.JSONContentType) then
+    -- (here: the Request-Content-type is XML) Else if the Content-Type sent by the Service is JSON
+    elseif kong.response.get_header("Content-Type") and string.find (kong.response.get_header("Content-Type"), xmlgeneral.JSONContentType) then
       -- Force the XML Content-Type
       kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
     end

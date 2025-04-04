@@ -130,257 +130,359 @@ local calculator_soap12_Multiply_Request= [[
 
 local calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not ''</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not ''</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Add_XSD_VALIDATION_Failed_Mismatch_Header = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Subtract_XSD_VALIDATION_Failed_Empty_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not ''</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not ''</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Subtract_XSD_VALIDATION_Failed_Mismatch_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not 'http://tempuri.org/Add'</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not 'http://tempuri.org/Add'</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Empty_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not ''</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not ''</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Divide_XSD_VALIDATION_Failed_sopAction_attibute_is_empty= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Divide' Operation name</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Divide' Operation name</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 local calculator_soap11_Power_XSD_VALIDATION_Failed_sopAction_attibute_is_not_defined= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Power' Operation name</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Power' Operation name</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
+
+local calculator_soap12_XSD_VALIDATION_Failed_No_Header_But_Required = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap12_Add_XSD_VALIDATION_Failed_No_Header_But_Required = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not ''</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not ''</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap12_Add_XSD_VALIDATION_Failed_Mismatch_Header = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap12_Subtract_XSD_VALIDATION_Failed_Empty_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not ''</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not ''</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap12_Subtract_XSD_VALIDATION_Failed_Mismatch_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not 'http://tempuri.org/Add'</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
-  
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not 'http://tempuri.org/Add'</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap12_Multiply_XSD_VALIDATION_Failed_Empty_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not ''</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not ''</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap12_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
+
+local calculator_soap11_XSD_VALIDATION_Failed_NO_WSDL_Definition= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap12:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: No WSDL definition found: it's mandatory to validate the 'SOAPAction' header</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
-local calculator_soap_XSD_VALIDATION_Failed_NO_WSDL_Definition= [[
+local calculator_soap11_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: No WSDL definition found: it's mandatory to validate the 'SOAPAction' header</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: Unable to find the 'wsdl:definition' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
-local calculator_soap_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL= [[
+local calculator_soap11_XSD_VALIDATION_Failed_SOAPAction_and_action_defined_simultaneously= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: Unable to find the 'wsdl:definition' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: 'SOAPAction' for SOAP 1.1 and 'action' for SOAP 1.2 have been defined simultaneously</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
-local calculator_soap_XSD_VALIDATION_Failed_SOAPAction_and_action_defined_simultaneously= [[
+local calculator_soap11_XSD_VALIDATION_Failed_SOAP11_with_action= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: 'SOAPAction' for SOAP 1.1 and 'action' for SOAP 1.2 have been defined simultaneously</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: Found a SOAP 1.1 envelope and an 'action' field in the 'Content%-Type' header linked with for SOAP 1.2</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
-local calculator_soap_XSD_VALIDATION_Failed_SOAP11_with_action= [[
+local calculator_soap12_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: Found a SOAP 1.1 envelope and an 'action' field in the 'Content%-Type' header linked with for SOAP 1.2</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
-
-local calculator_soap_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction= [[
-<%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <soap:Body>
-    <soap:Fault>
-      <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: Found a SOAP 1.2 envelope and a 'SOAPAction' header linked with for SOAP 1.1</detail>
-    </soap:Fault>
-  </soap:Body>
-</soap:Envelope>]]
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Validation of 'SOAPAction' header: Found a SOAP 1.2 envelope and a 'SOAPAction' header linked with for SOAP 1.1</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 local calculator_soap11_Multiply_XSD_VALIDATION_WSDL20_Failed_Invalid_Pattern= [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Validation of 'SOAPAction' header: the 'pattern' found in WSDL is 'http://www.w3.org/ns/wsdl/in%-%out%-INVALID%-URL%-FOR%-TEST%-ONLY' and must be 'http://www.w3.org/ns/wsdl/in%-out' or 'http://www.w3.org/ns/wsdl/in%-opt%-out'</detail>
+      <detail>
+        <errorMessage>Validation of 'SOAPAction' header: the 'pattern' found in WSDL is 'http://www.w3.org/ns/wsdl/in%-%out%-INVALID%-URL%-FOR%-TEST%-ONLY' and must be 'http://www.w3.org/ns/wsdl/in%-out' or 'http://www.w3.org/ns/wsdl/in%-opt%-out'</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
-
 
 ----------------------------------------------------------------------------------------------------
 -- This WSDL 1.1 provides:
@@ -2097,7 +2199,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("application/soap%+xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
+        assert.matches(calculator_soap12_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
 
       it("2|WSDL Validation - 'action' 1.2 Http header with soapActionRequired=\"true\" (in WSDL 1.1) and Header is '' - Ko", function()
@@ -2289,7 +2391,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required, body)
+        assert.matches(calculator_soap12_XSD_VALIDATION_Failed_No_Header_But_Required, body)
       end)
       
       --------------------------------------------------------------------------------------------------
@@ -2309,7 +2411,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap_XSD_VALIDATION_Failed_NO_WSDL_Definition, body)        
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_NO_WSDL_Definition, body)        
       end)
 
       it("2|WSDL Validation - 'SOAPAction' Http header - XSD defined instead of WSDL - Ko", function()
@@ -2326,7 +2428,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL, body)        
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL, body)        
       end)
 
       it("2|WSDL Validation - 'SOAPAction' Http header with soapActionRequired=\"true\" (in WSDL 1.1) and 'yes_null_allowed' - Ok", function()
@@ -2427,7 +2529,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap_XSD_VALIDATION_Failed_SOAPAction_and_action_defined_simultaneously, body)        
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_SOAPAction_and_action_defined_simultaneously, body)        
       end)
       
       it("2|WSDL Validation - SOAP 1.1 envelope with 'action' - Ko", function()
@@ -2443,7 +2545,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap_XSD_VALIDATION_Failed_SOAP11_with_action, body)        
+        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_SOAP11_with_action, body)        
       end)
 
       it("2|WSDL Validation - SOAP 1.2 envelope with 'SOAPAction' - Ko", function()
@@ -2460,7 +2562,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction, body)        
+        assert.matches(calculator_soap12_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction, body)        
       end)
 
       --------------------------------------------------------------------------------------------------

@@ -226,13 +226,13 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
 <env:Envelope xmlns:env=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:f=\"http://www.example.org/faults\" xmlns:xml=\"http://www.w3.org/XML/1998/namespace\">\
   <env:Body>\
     <env:Fault>\
-     <env:Code>\
-       <env:Value>env:" ..soapFaultCodeStr.. "</env:Value>\
-     </env:Code>\
-     <env:Reason>\
-       <env:Text xml:lang=\"en\">" ..ErrMsg.. "</env:Text>\
-     </env:Reason>\
-     " .. errorMessage .. "\
+      <env:Code>\
+        <env:Value>env:" ..soapFaultCodeStr.. "</env:Value>\
+      </env:Code>\
+      <env:Reason>\
+        <env:Text xml:lang=\"en\">" ..ErrMsg.. "</env:Text>\
+      </env:Reason>\
+      " .. errorMessage .. "\
     </env:Fault>\
   </env:Body>\
 </env:Envelope>"
@@ -1905,7 +1905,7 @@ function xmlgeneral.validateSOAPAction_Header (SOAPRequest, WSDL, SOAPAction_Hea
   local SOAPAction_Header_Value
   local wsdlSOAPAction_Header_Value
   local request_OperationName
-  local soapFaultCode         = xmlgeneral.soapFaultCodeServer
+  local soapFaultCode         = xmlgeneral.soapFaultCodeClient
   local action12_found        = 0
   local nsSOAP_11_12_found    = 0
   local wsdlRequired_Value    = false
