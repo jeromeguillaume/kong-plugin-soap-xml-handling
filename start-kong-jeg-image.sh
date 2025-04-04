@@ -30,7 +30,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 7002:7002 \
 -p 7444:7444 \
 --platform linux/$ARCHITECTURE \
-jeromeguillaume/kong-saxon:3.6.0.0-1.2.1-12.5
+jeromeguillaume/kong-soap-xml:3.6.0.0-1.2.1-12.5
 
 #-e "KONG_STREAM_LISTEN= 127.0.0.1:7099" \
 
@@ -40,7 +40,7 @@ jeromeguillaume/kong-saxon:3.6.0.0-1.2.1-12.5
 #-e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
 #--mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
 
-#jeromeguillaume/kong-saxon:3.7.1.1-12.5
+#jeromeguillaume/kong-soap-xml:3.7.1.1-12.5
 
 #-e "KONG_NGINX_PROXY_GZIP=on" \
 #-e "KONG_NGINX_PROXY_GZIP_VARY=on" \

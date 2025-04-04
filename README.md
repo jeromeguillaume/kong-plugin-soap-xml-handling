@@ -1225,7 +1225,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Optimized the `WSDL` validation (in case of multiple `<xs:schema>`): match the Operation in `<soap:Body>` with its associated `<xs:element name=` in `<xs:schema>`
   - Have a dynamic loading of the Kong's library used for gzip compression regarding the Kong version: `kong.tools.utils` for version < 3.6 and `kong.tools.gzip`for version >= 3.6
   - Replaced the usage of `https://ecs.syr.edu` by a local calculator
-  - Included the Kong version in the docker image related to `saxon` (example: `jeromeguillaume/kong-saxon:3.8.1.0-1.2.1-12.5`)
+  - Included the Kong version in the docker image related to `saxon` (example: `jeromeguillaume/kong-soap-xml:3.8.1.0-1.2.1-12.5`)
   - Included the Lua code SOAP/XML plugins in the docker images related to `saxon`
   - Pongo (Tests): removed the external dependencies (from `http://www.dneonline.com:80/calculator.asmx` to `jeromeguillaume/ws-soap-calculator` Docker image and from `http://httpbin.apim.eu` to `svenwal/httpbin` Docker image)
 - v1.2.2

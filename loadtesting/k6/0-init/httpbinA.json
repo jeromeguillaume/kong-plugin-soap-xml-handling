@@ -13,7 +13,7 @@
       },
       "description": "A cool simple REST API service",
       "title": "httpbin based on httpbin.org",
-      "version": "1.3.0"
+      "version": "1.3.1"
     },
     "paths": {
       "/scenhttpbin1/uuid": {

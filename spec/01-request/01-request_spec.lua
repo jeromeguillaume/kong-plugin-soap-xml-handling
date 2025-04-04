@@ -88,42 +88,42 @@ for _, strategy in helpers.all_strategies() do
 			it("1|XSLT (BEFORE XSD) - Invalid Hostname service (502) with Verbose", function()
 				request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Verbose (assert, client)
 			end)
---
---			it("1+2|XSD Validation - Ok", function()
---				request_common._1_2_XSD_Validation_Ok (assert, client)
---			end)
---
---			it("1+2|XSD Validation - Invalid SOAP XSD input", function()
---				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input (assert, client)
---			end)
---
---			it("1+2|XSD Validation - Invalid SOAP XSD input with verbose", function()
---				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose (assert, client)
---			end)
---			
---			it("1+2|XSD Validation - Invalid API XSD input", function()
---				request_common._1_2_XSD_Validation_Invalid_API_XSD_input (assert, client)
---			end)
---			
---			it("1+2|XSD Validation - Invalid API XSD input with verbose", function()
---				request_common._1_2_XSD_Validation_Invalid_API_XSD_input_with_verbose (assert, client)
---			end)
---			
---			it("1+2|XSD Validation - Invalid SOAP request", function()
---				request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client)
---			end)
---
---			it("1+2|XSD Validation - Invalid SOAP request with verbose", function()
---				request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (assert, client)
---			end)
---			
---			it("1+2|XSD Validation - Invalid API request", function()
---				request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
---			end)
---
---			it("1+2|XSD Validation - Invalid API request with verbose", function()
---				request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (assert, client)
---			end)
+
+			it("1+2|XSD Validation - Ok", function()
+				request_common._1_2_XSD_Validation_Ok (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid SOAP XSD input", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid SOAP XSD input with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose (assert, client)
+			end)
+			
+			it("1+2|XSD Validation - Invalid API XSD input", function()
+				request_common._1_2_XSD_Validation_Invalid_API_XSD_input (assert, client)
+			end)
+			
+			it("1+2|XSD Validation - Invalid API XSD input with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_API_XSD_input_with_verbose (assert, client)
+			end)
+			
+			it("1+2|XSD Validation - Invalid SOAP request", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid SOAP request with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (assert, client)
+			end)
+			
+			it("1+2|XSD Validation - Invalid API request", function()
+				request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid API request with verbose", function()
+				request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (assert, client)
+			end)
 --
 --			it("1+2|XSD Validation - Invalid SOAP request (no 'soap:Body') with verbose - Ko", function()
 --				request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBody_with_verbose_ko (assert, client)

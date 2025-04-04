@@ -315,59 +315,84 @@ request_common.calculator_Request_XSD_VALIDATION_Failed_shortened = [[
 
 request_common.calculator_Request_XSD_VALIDATION_Failed = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>SOAP/XML process failure</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_VALIDATION_Failed_Client = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>SOAP/XML process failure</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
-      <faultcode>soap:Client</faultcode>
+      <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</detail>
+      <detail>
+        <errorMessage>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
-      <faultcode>soap:Client</faultcode>
+      <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</detail>
+      <detail>
+        <errorMessage>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
-request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_verbose = [[
+request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_Client_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Error Node: Envelope2, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope2': No matching global declaration available for the validation root.</detail>
+      <detail>
+        <errorMessage>Error Node: Envelope2, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope2': No matching global declaration available for the validation root.</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
 
 request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema%-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
-      <detail>Error Node: intC, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}intC': This element is not expected. Expected is %( {http://tempuri.org/}intA %).</detail>
+      <detail>
+        <errorMessage>Error Node: intC, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}intC': This element is not expected. Expected is %( {http://tempuri.org/}intA %).</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
 </soap:Envelope>]]
@@ -1716,7 +1741,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request (assert, client
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
+	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_Client, body)
 end
 
 function request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (assert, client)
@@ -1732,7 +1757,7 @@ function request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose (a
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_verbose, body)
+	assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_Client_verbose, body)
 end
 
 function request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
@@ -1748,7 +1773,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request (assert, client)
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed, body)
+	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_Client, body)
 end
 
 function request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (assert, client)
