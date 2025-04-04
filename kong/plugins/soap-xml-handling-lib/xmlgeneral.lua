@@ -435,7 +435,7 @@ end
 -----------------------------------------------------------------------------------------------
 -- Callback function called by 'kong.tools.queue' to Asynchronously Prefetch Schema Validation
 -----------------------------------------------------------------------------------------------
-local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entries)
+local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_entries)
   local errMessage
   local soapFaultCode
   local child
@@ -444,15 +444,15 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
   local xsdHashKey
   local rc = true
   kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin")
-  
-  local count = 0
+    
+  local count = 0  
 
   -- Loop over all WSDL/XSDs
   for k, prefetchConf_entry in pairs (prefetchConf_entries) do
     
     count = count + 1
     kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
-    
+
     xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
     
     -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
@@ -473,7 +473,7 @@ local asyncPrefetch_Schema_Validation_callback = function(_, prefetchConf_entrie
 
       -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
       -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
-      errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (child, nil, WSDL, verbose, true)
+      errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (_, child, nil, WSDL, verbose, true)
       
       -- If the prefetch succeeded
       if not errMessage then
@@ -562,8 +562,11 @@ function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (plugin_id, config, 
       xsdHashKey = xsdHashKey,
       child = child
     }
+    local conf = {}
+    conf.requestTypePlugin = requestTypePlugin
+
     -- Asynchronously execute the Prefetch of External Entities
-    local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, nil , prefetchConf)            
+    local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, conf , prefetchConf)
     if err then
       kong.log.err("XSD_Validation_Prefetch, prefetchQueue: " .. err)
     end
