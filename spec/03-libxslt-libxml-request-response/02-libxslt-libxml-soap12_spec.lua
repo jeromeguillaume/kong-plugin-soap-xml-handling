@@ -149,6 +149,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
+
       
       it("2+6|Request and Response plugins|SOAP 1.2 - XSD (SOAP env) + WSDL (API) Validation with async download - Ok", function()
         -- invoke a test request

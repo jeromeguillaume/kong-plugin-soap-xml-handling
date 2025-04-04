@@ -456,7 +456,7 @@ for _, strategy in helpers.all_strategies() do
           local content_type = assert.response(r).has.header("Content-Type")
           assert.matches("text/xml%;%s-charset=utf%-8", content_type)
           assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-          assert.matches("<detail>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+          assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
       end)
 
       it("2+6|Request and Response plugins|WSDL Validation with async download - Invalid Import on Response plugin with verbose", function()
@@ -473,7 +473,7 @@ for _, strategy in helpers.all_strategies() do
           local content_type = assert.response(r).has.header("Content-Type")
           assert.matches("text/xml%;%s-charset=utf%-8", content_type)
           assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed_shortened, body)
-          assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+          assert.matches("<errorMessage>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
       end)
 
       it("1|Request and Response plugins|XSLT (BEFORE XSD) - Invalid XSLT input", function()

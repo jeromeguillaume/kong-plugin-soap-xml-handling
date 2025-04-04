@@ -1,5 +1,5 @@
 # Kong plugins: SOAP/XML Handling for Request and Response
-This repository concerns Kong plugins developed in Lua and uses the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
+This repository concerns Kong plugins developed in Lua, which use the GNOME C libraries [libxml2](https://gitlab.gnome.org/GNOME/libxml2#libxml2) and [libxslt](https://gitlab.gnome.org/GNOME/libxslt#libxslt) (for XSLT 1.0). Part of the functions are bound in the [XMLua/libxml2](https://clear-code.github.io/xmlua/) library.
 Both GNOME C and XMLua/libxml2 libraries are already included in [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image, so you don't need to rebuild a Kong image.
 
 The XSLT Transformation can also be managed with the [saxon](https://www.saxonica.com/html/welcome/welcome.html) library, which supports XSLT 2.0 and 3.0. With XSLT 2.0+ there is a way for applying JSON <-> XML transformation with [fn:json-to-xml](https://www.w3.org/TR/xslt-30/#func-json-to-xml) and [fn:xml-to-json](https://www.w3.org/TR/xslt-30/#func-xml-to-json). The `saxon` library is not included in the Kong Docker image, see [SAXON.md](SAXON.md) for how to integrate saxon with Kong. It's optional, don't install the `saxon` library if you don't need it.
@@ -21,7 +21,15 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 6) `WSDL/XSD VALIDATION`: Validate the XML response with its WSDL/XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
-Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error `<soap:Fault>` (with the error detailed message).
+Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error:
+- SOAP 1.1
+  - `<faultstring>`: name of the handling process
+  - `<faultcode>`: the values are `soap:Client` (for a Consumer error) and `soap:Server` (for a Server error: Kong or Web Service)
+- SOAP 1.2
+  - `<Reason><Text>`: name of the handling process
+  - `<Code><Value>`: the values are `Sender` (for a Consumer error) and `Receiver` (for a Server error: Kong or Web Service)
+
+If  `Verbose` is enabled the `<errorMessage>` contains the detail of the error
 
 ---
 
@@ -66,7 +74,7 @@ Each handling is optional. In case of misconfiguration the Plugin sends to the c
 ## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference
 |FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
 |:------------------------------|:----------------|:-----------------------------------------------------------|
-|config.ExternalEntityLoader_Async|`false`|Download asynchronously the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
+|config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
@@ -336,7 +344,9 @@ Use command defined at step #3, **change** `<soap:Envelope>` by **`<soap:Envelop
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Error Node: EnvelopeKong, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.<detail/>
+<detail>
+  <errorMessage>Error Node: EnvelopeKong, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.</errorMessage>
+<detail/>
 </soap:Fault>
 ```
 Use command defined at step #3, **remove ```<intA>5</intA>```** => there is an error because the ```<intA>``` tag has the ```minOccurs="1"``` XSD property and Kong says: 
@@ -344,7 +354,9 @@ Use command defined at step #3, **remove ```<intA>5</intA>```** => there is an e
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}intA ).<detail/>
+<detail>
+  <errorMessage>Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}intA ).</errorMessage>
+<detail/>
 ```
 
 <a id="Main_Example_3"></a>
@@ -699,7 +711,9 @@ Use previous command defined, **remove ```<intA>5</intA>```** => there is an err
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ).<detail/>
+<detail>
+   <errorMessage>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ). </errorMessage>
+<detail/>
 ```
 
 <a id="Miscellaneous_example_C1"></a>
@@ -900,14 +914,18 @@ The expected result is:
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</detail>
+<detail>
+   <errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required</errorMessage>
+</detail>
 ```
 - Use previous command defined, **set ```SOAPAction:"http://tempuri.org/Subtract"```** and Kong says: 
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
-<detail>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</detail>
+<detail>
+   <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</errorMessage>
+</detail>
 ```
 
 6) If the `SOAPAction` is not set but there is `soapActionRequired="false"` (in the WSDL) for `Subtract` operation, the plugin allows the request
@@ -1252,3 +1270,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Added the detection of non existing symbols in `libsaxon4kong.lua`
 - v1.3.0
   - `ROUTING BY XPATH`: added multiple targets in the plugin configuration. Breaking change: former parameters `RouteToPath`, `RouteXPath` and `RouteXPathCondition` have been replaced by `RouteXPathTargets[].URL`, `RouteXPathTargets[].XPath` and `RouteXPathTargets[].XPathCondition`
+- v1.3.1
+  - Changed the error message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)

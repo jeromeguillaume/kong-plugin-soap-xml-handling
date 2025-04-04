@@ -12,6 +12,7 @@ soap12_common.calculator_soap12_Request= [[
 </soap12:Envelope>
 ]]
 
+
 soap12_common.soap12_XSD = [[
 <!-- Schema defined in the SOAP Version 1.2 Part 1 specification
      Recommendation:
