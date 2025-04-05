@@ -21,15 +21,15 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 6) `WSDL/XSD VALIDATION`: Validate the XML response with its WSDL/XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
-Each handling is optional. In case of misconfiguration the Plugin sends to the consumer an HTTP 500 Internal Server Error:
-- SOAP 1.1
-  - `<faultstring>`: name of the handling process
+Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config). In case of misconfiguration the Plugin sends to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
+- [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
+  - `<faultstring>`: name of the handling process of the plugin
   - `<faultcode>`: the values are `soap:Client` (for a Consumer error) and `soap:Server` (for a Server error: Kong or Web Service)
-- SOAP 1.2
-  - `<Reason><Text>`: name of the handling process
+- [SOAP Fault 1.2](https://www.w3.org/TR/soap12-part1/#soapfault):
+  - `<Reason><Text>`: name of the handling process of the plugin
   - `<Code><Value>`: the values are `Sender` (for a Consumer error) and `Receiver` (for a Server error: Kong or Web Service)
 
-If  `Verbose` is enabled the `<errorMessage>` contains the detail of the error
+If `Verbose` is enabled the `<errorMessage>` contains the detail of the error
 
 ---
 
@@ -1272,3 +1272,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `ROUTING BY XPATH`: added multiple targets in the plugin configuration. Breaking change: former parameters `RouteToPath`, `RouteXPath` and `RouteXPathCondition` have been replaced by `RouteXPathTargets[].URL`, `RouteXPathTargets[].XPath` and `RouteXPathTargets[].XPathCondition`
 - v1.3.1
   - Changed the error message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
+  - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`)

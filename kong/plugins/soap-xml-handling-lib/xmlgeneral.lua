@@ -29,8 +29,9 @@ xmlgeneral.invalidXSLT        = "Invalid XSLT definition"
 xmlgeneral.invalidXSD         = "Invalid XSD schema"
 xmlgeneral.invalidWSDL_XSD    = "Invalid WSDL/XSD schema"
 
-xmlgeneral.soapFaultCodeServer  = 0   -- Fault Code type is 'Server' (The Kong GW and Upstream)
-xmlgeneral.soapFaultCodeClient  = 1   -- Fault Code type is 'Client' (The Consumer)
+xmlgeneral.soapFaultCodeNone    = 0   -- Fault Code type is 'None'
+xmlgeneral.soapFaultCodeServer  = 1   -- Fault Code type is 'Server' (The Kong GW and Upstream)
+xmlgeneral.soapFaultCodeClient  = 2   -- Fault Code type is 'Client' (The Consumer)
 
 xmlgeneral.schemaWSDL1_1              = "http://schemas.xmlsoap.org/wsdl/"
 xmlgeneral.schemaWSDL2_0              = "http://www.w3.org/ns/wsdl"
@@ -244,7 +245,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
     if VerboseResponse then
       soapErrMsg = soapErrMsg .. ",\n    \"message_verbose\": \"" .. errorMessage .. "\""
       if backendHttpCode then
-        soapErrMsg = soapErrMsg .. ",\n    \"backend_http_code\": \"" .. backendHttpCode .. "\""
+        soapErrMsg = soapErrMsg .. ",\n    \"backend_http_code\": " .. tonumber(backendHttpCode) .. ""
       end
     else
       soapErrMsg = soapErrMsg .. "\n"
@@ -301,7 +302,7 @@ function xmlgeneral.returnSoapFault(soapFaultCode, soapErrMsg, contentType)
   local HTTPcode = xmlgeneral.HTTPServerCodeSOAPFault
 
   -- If it's a JSON request and the Fault comes from the Client
-  if contentType == xmlgeneral.JSONContentType and soapFaultCode == xmlgeneral.soapFaultCodeClient then
+  if contentType == xmlgeneral.JSON and soapFaultCode == xmlgeneral.soapFaultCodeClient then
     HTTPcode = xmlgeneral.HTTPClientCodeSOAPFault
   end
   -- Send a Fault code to client
@@ -325,11 +326,15 @@ end
 -- Detect content type SOAP 1.1 / SOAP 1.2 / JSON
 --------------------------------------------------
 function xmlgeneral.detectContentType (contentType)
-  local rc = xmlgeneral.SOAP1_1 -- Default is soap 1.1
+  local rc = xmlgeneral.SOAP1_1
   
   -- Ignore space and tabulation characters by using: %s
+  
+  -- If there is no contentType
+  if not contentType then
+    rc = xmlgeneral.SOAP1_1 -- Default is soap 1.1
   -- SOAP 1.1
-  if string.find(contentType, "^%s*text/xml")   then
+  elseif string.find(contentType, "^%s*text/xml")   then
     rc = xmlgeneral.SOAP1_1
   -- SOAP 1.2
   elseif string.find(contentType, "^%s*application/soap%+xml") then
@@ -347,7 +352,7 @@ end
 --    <      =>  XML 
 --    { or [ =>  JSON
 -- It's used when an XSLT transformation is done:
---    XML transformed to JSON or 
+--    XML  transformed to JSON or 
 --    JSON transformed to XML
 ---------------------------------------------------------------------------------------------
 function xmlgeneral.getBodyContentType(body)
@@ -848,6 +853,7 @@ function xmlgeneral.XSLTransform_libsaxon(typePlugin, xsltParams, XMLtoTransform
   local errMessage
   local xml_transformed_dump
   local context
+  local errFaultCode
   local soapFaultCode = xmlgeneral.soapFaultCodeServer
   
   kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
@@ -891,6 +897,11 @@ function xmlgeneral.XSLTransform_libsaxon(typePlugin, xsltParams, XMLtoTransform
     if not errMessage then 
       -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
       xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
+    else
+      -- If it's the Request Plugin we consider that the error comes from the Client
+      if typePlugin == xmlgeneral.RequestTypePlugin then
+        soapFaultCode = xmlgeneral.soapFaultCodeClient
+      end
     end
   end
   

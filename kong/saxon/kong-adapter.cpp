@@ -20,10 +20,16 @@
 
 using namespace std;
 
+const int faultCodeNone     = 0;   // Fault Code type is 'None'
+const int faultCodeServer   = 1;   // Fault Code type is 'Server' (The Kong GW and Upstream)
+const int faultCodeClient   = 2;   // Fault Code type is 'Client' (The Consumer)
+
+
 typedef struct Context
 {
   XsltExecutable *_xsltExecutable;
   std::string errMessage;
+  int faultCode;
 } Context;
 
 // Format the Error message and Send it to stderr (ie. Kong Log)
@@ -67,6 +73,22 @@ extern "C" const char *getErrMessage( const void* context_void )
   }
 
   return errMessage;
+}
+
+extern "C" int getFaultCode( const void* context_void )
+{
+  const Context *context = reinterpret_cast<const Context*>(context_void);
+  int rcFaultCode = faultCodeNone;
+  
+  if ( context != nullptr )
+  {
+    rcFaultCode = context->faultCode;
+  }
+  else{
+    formatCerr("The saxon Context is null", "");
+  }
+
+  return rcFaultCode;
 }
 
 extern "C" void deleteContext( const void* context_void )
@@ -130,14 +152,17 @@ extern "C" void *compileStylesheet( const void *saxonProcessor_void,
     Xslt30Processor *pxslt30Processor = (Xslt30Processor *) xslt30Processor_void;
     context = new Context();
     context->_xsltExecutable = pxslt30Processor->compileFromString(stylesheet_string);
+    context->faultCode = faultCodeNone;
   }
   catch (SaxonApiException& e) {
     formatCerr ("Error in compile_stylesheet", e.getMessage());
     context->errMessage = e.getMessage();
+    context->faultCode = faultCodeServer;
   }
   catch (const std::exception& e) {
     formatCerr ("Error in compile_stylesheet", e.what());
     context->errMessage = e.what();
+    context->faultCode = faultCodeServer;
   }
 
   return context;
@@ -155,6 +180,7 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
   {
     SaxonProcessor *saxonProcessor = (SaxonProcessor *) saxonProcessor_void;
     context = (Context*) context_void;
+    context->faultCode = faultCodeNone;
     map<string, XdmValue*> parameterValues;
     parameterValues[param_name] = saxonProcessor->makeStringValue(param_value);
     if ( context->_xsltExecutable != nullptr ){
@@ -173,10 +199,12 @@ extern "C" const char *stylesheetInvokeTemplateKong(const void *saxonProcessor_v
   catch (SaxonApiException& e) {
     formatCerr ("Error in stylesheetInvokeTemplateKong", e.getMessage());
     context->errMessage = e.getMessage();
+    context->faultCode = faultCodeServer;
   }
   catch (const std::exception& e) {
     formatCerr ("Error in stylesheetInvokeTemplateKong", e.what());
     context->errMessage = e.what();
+    context->faultCode = faultCodeServer;
   }
   
   return retval;
@@ -195,6 +223,7 @@ extern "C" void addParameter(const void *saxonProcessor_void,
 
   try {
     context = (Context*) context_void;
+    context->faultCode = faultCodeNone;
 
     if ( context->_xsltExecutable != nullptr ){
       context->_xsltExecutable->setParameter(key, xdmValue);
@@ -203,10 +232,12 @@ extern "C" void addParameter(const void *saxonProcessor_void,
   catch (SaxonApiException& e) {
     formatCerr ("Error in addParameter", e.getMessage());
     context->errMessage = e.getMessage();
+    context->faultCode = faultCodeServer;
   }
   catch (const std::exception& e) {
     formatCerr ("Error in addParameter", e.what());
     context->errMessage = e.what();
+    context->faultCode = faultCodeServer;
   }
 }
 
@@ -221,19 +252,27 @@ extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_vo
   const char* retval = nullptr;
   try{
     context = (Context*) context_void;
+    context->faultCode = faultCodeNone;
+    formatCerr ("parseXmlFromString Before", "");
     XdmNode* input = saxonProcessor->parseXmlFromString(xml_string);
+    formatCerr ("parseXmlFromString After", "");
     if (input == nullptr) {
+      context->faultCode = faultCodeClient;
+      formatCerr ("throw std::runtime_error", "");
       throw std::runtime_error("parsing input XML failed");
     }
+    formatCerr ("transformToString Before", "");
     output_string = context->_xsltExecutable->transformToString(input);
+    formatCerr ("transformToString After", "");
     delete input;
     if (output_string == nullptr) {
-      throw std::runtime_error("parsing input XML failed");
+      context->faultCode = faultCodeServer;
+      throw std::runtime_error("XSLT executable failed");
     }
     retval = strdup(output_string);
   }
   catch (SaxonApiException& e) {
-    formatCerr ("Error in stylesheetTransformXmlKong", e.getMessage());
+    formatCerr ("Error in stylesheetTransformXmlKong", e.getMessage());    
     context->errMessage = e.getMessage();
   }
   catch (const std::exception& e) {

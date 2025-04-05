@@ -44,11 +44,11 @@ cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h ./include
 cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h ./include
 rm ./include/php8*
 ```
-- Adapt the version of Kong image (exemple: `kong/kong-gateway:3.10.0.0`) in the following files:
+- Adapt the version of Kong image (example: `kong/kong-gateway:3.10.0.0`) in the following files:
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (exemple: `kong-saxon-local-lib:1.0.5-1.3.1-12.5`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `kong-saxon-local-lib:1.0.6-1.3.1-12.5`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -124,7 +124,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.5-1.3.1-12.5
+    image: jeromeguillaume/kong-saxon-initcontainer:1.0.6-1.3.1-12.5
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
