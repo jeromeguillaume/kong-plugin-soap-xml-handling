@@ -29,7 +29,9 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
   - `<Reason><Text>`: name of the handling process of the plugin
   - `<Code><Value>`: the values are `Sender` (for a Consumer error) and `Receiver` (for a Server error: Kong or Web Service)
 
-If `Verbose` is enabled the `<errorMessage>` contains the detail of the error and the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Web Service.
+If `Verbose` is enabled:
+- the `<errorMessage>` contains the detail of the error
+- the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Web Service
 
 ---
 
@@ -747,13 +749,6 @@ Call incorrectly `calculator` and detect issue in the Request with a WSDL defini
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
   <xs:complexType name="AddType">
-    <xs:sequence>
-      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
-      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="SubtractType">
     <xs:sequence>
       <xs:element type="xs:integer" name="intA" minOccurs="1"/>
       <xs:element type="xs:integer" name="intB" minOccurs="1"/>

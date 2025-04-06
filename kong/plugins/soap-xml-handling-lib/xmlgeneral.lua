@@ -714,35 +714,29 @@ end
 ----------------------------------------------
 function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchemaInclude, queuename)
   local rc = false
-  
+  print("**jerome sleepForPrefetchEnd BEGIN")
   -- If Asynchronous is enabled
   if ExternalEntityLoader_Async then
     -- Check if there is 'xsdSchemaInclude'
     local xsdApiSchemaIncluded = false
-    if xsdApiSchemaInclude then
-      for k,v in pairs(xsdApiSchemaInclude) do            
-        xsdApiSchemaIncluded = true
-        break
-      end
-    end
 
-    -- If XSD content is NOT included in the plugin configuration
-    if  not xsdApiSchemaIncluded   then
-      
+    -- If there is XSD content included in the plugin configuration
+    if next(xsdApiSchemaInclude)  then
+      print("**jerome before sleep loop")
       local nowTime = ngx.now()
-      
       -- Wait for:
       --     The end of Prefetch Validation of the XSD schema and
       --     The timeout Prefetch (avoiding infinite loop)
       while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
             (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
               -- This 'sleep' happens only one time per Plugin configuration update
+print("**jerome sleep:"..libxml2ex.xmlSoapSleepAsync)
         ngx.sleep(libxml2ex.xmlSoapSleepAsync)
         rc = true
       end
     end
   end
-  
+  print("**jerome sleepForPrefetchEnd END")  
   return rc
 end
 
