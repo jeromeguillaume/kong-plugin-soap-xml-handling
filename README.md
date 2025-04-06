@@ -24,12 +24,12 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config). In case of misconfiguration the Plugin sends to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
   - `<faultstring>`: name of the handling process of the plugin
-  - `<faultcode>`: the values are `soap:Client` (for a Consumer error) and `soap:Server` (for a Server error: Kong or Web Service)
+  - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Web Service)
 - [SOAP Fault 1.2](https://www.w3.org/TR/soap12-part1/#soapfault):
   - `<Reason><Text>`: name of the handling process of the plugin
   - `<Code><Value>`: the values are `Sender` (for a Consumer error) and `Receiver` (for a Server error: Kong or Web Service)
 
-If `Verbose` is enabled the `<errorMessage>` contains the detail of the error
+If `Verbose` is enabled the `<errorMessage>` contains the detail of the error and the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Web Service.
 
 ---
 
@@ -630,13 +630,6 @@ In this example we use the Kong Gateway itself to serve the XSD schema (through 
       <xs:element type="xs:integer" name="intB" minOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:element name="Subtract" type="tem:SubtractType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="SubtractType">
-    <xs:sequence>
-      <xs:element type="xs:integer" name="intA" minOccurs="1"/>
-      <xs:element type="xs:integer" name="intB" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
   <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
   <xs:complexType name="AddResponseType">
     <xs:sequence>
@@ -1167,8 +1160,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
-5) The MIME type of the request's `Content-Type` is not checked by the plugin
-- For the record `Content-Type` of SOAP 1.1 is `text/xml` and `Content-Type` of SOAP 1.2 is `application/soap+xml`. In case of error the plugins send back to the consumer a generic `Content-Type`: `text/xml; charset=utf-8` regardless of the SOAP version
 
 <a id="Changelog"></a>
 
@@ -1272,4 +1263,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `ROUTING BY XPATH`: added multiple targets in the plugin configuration. Breaking change: former parameters `RouteToPath`, `RouteXPath` and `RouteXPathCondition` have been replaced by `RouteXPathTargets[].URL`, `RouteXPathTargets[].XPath` and `RouteXPathTargets[].XPathCondition`
 - v1.3.1
   - Changed the error message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
-  - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`)
+  - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
+  - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)

@@ -48,7 +48,7 @@ rm ./include/php8*
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (example: `kong-saxon-local-lib:1.0.6-1.3.1-12.5`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `kong-saxon-local-lib:1.0.5-1.3.1-12.5`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -68,7 +68,7 @@ make kong_saxon_docker_hub
   ```sh
   make local_lib_amd64
   ```
-- Build and Push on Docker Hub a `<your_docker_account>/kong-saxon-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `<your_docker_account>/kong-soap-xml-initcontainer` image. It's based on `alpine` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_initcontainer_docker_hub
 ```
@@ -98,7 +98,7 @@ jeromeguillaume/kong-soap-xml:3.10.0.0-1.3.1-12.5
   - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
   - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.10.0.0-1.3.1-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
-### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-saxon-initcontainer`
+### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-soap-xml-initcontainer`
 The image is based on `Alpine` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries
 - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
 - Prepare a `values.yaml` and pay attention to:
@@ -124,7 +124,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-saxon-initcontainer:1.0.6-1.3.1-12.5
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.3.1-12.5
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol

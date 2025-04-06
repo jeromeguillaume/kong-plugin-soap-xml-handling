@@ -93,7 +93,7 @@ for _, strategy in helpers.all_strategies() do
 			it("1|XSLT (BEFORE XSD) - Request - Invalid JSON request with verbose - Ko", function()
 				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_JSON_request_with_verbose_ko (assert, client)
 			end)
-			it ("1+2+6+7|JSON to XML Transformation - 400 Error - No Content-Type from Upstream - Ko", function()
+			it ("1+2+6+7|JSON to XML Transformation - 400 Error and No Content-Type from Upstream - Ko", function()
 				saxon_common._1_2_6_7_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_Ko (assert, client)
 			end)
 		end)		

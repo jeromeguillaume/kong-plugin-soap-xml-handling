@@ -330,9 +330,10 @@ function xmlgeneral.detectContentType (contentType)
   
   -- Ignore space and tabulation characters by using: %s
   
-  -- If there is no contentType
+  -- If there is no 'Content-Type' header
   if not contentType then
-    rc = xmlgeneral.SOAP1_1 -- Default is soap 1.1
+    -- Apply default SOAP 1.1
+    rc = xmlgeneral.SOAP1_1
   -- SOAP 1.1
   elseif string.find(contentType, "^%s*text/xml")   then
     rc = xmlgeneral.SOAP1_1
@@ -713,33 +714,35 @@ end
 ----------------------------------------------
 function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchemaInclude, queuename)
   local rc = false
+  
+  -- If Asynchronous is enabled
+  if ExternalEntityLoader_Async then
+    -- Check if there is 'xsdSchemaInclude'
+    local xsdApiSchemaIncluded = false
+    if xsdApiSchemaInclude then
+      for k,v in pairs(xsdApiSchemaInclude) do            
+        xsdApiSchemaIncluded = true
+        break
+      end
+    end
 
-  -- Check if there is 'xsdSchemaInclude'
-  local xsdApiSchemaIncluded = false
-  if xsdApiSchemaInclude then
-    for k,v in pairs(xsdApiSchemaInclude) do            
-      xsdApiSchemaIncluded = true
-      break
+    -- If XSD content is NOT included in the plugin configuration
+    if  not xsdApiSchemaIncluded   then
+      
+      local nowTime = ngx.now()
+      
+      -- Wait for:
+      --     The end of Prefetch Validation of the XSD schema and
+      --     The timeout Prefetch (avoiding infinite loop)
+      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
+            (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
+              -- This 'sleep' happens only one time per Plugin configuration update
+        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+        rc = true
+      end
     end
   end
-
-  -- If Asynchronous is enabled and 
-  -- If XSD content is NOT included in the plugin configuration
-  if  ExternalEntityLoader_Async and 
-      not xsdApiSchemaIncluded   then
-    
-    local nowTime = ngx.now()
-    
-    -- Wait for:
-    --     The end of Prefetch Validation of the XSD schema and
-    --     The timeout Prefetch (avoiding infinite loop)
-    while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
-           (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
-            -- This 'sleep' happens only one time per Plugin configuration update
-      ngx.sleep(libxml2ex.xmlSoapSleepAsync)
-      rc = true
-    end
-  end
+  
   return rc
 end
 
@@ -1127,7 +1130,6 @@ function xmlgeneral.XMLValidateWithWSDL (typePlugin, child, XMLtoValidate, WSDL,
   local typesNodeFound   = false
   local validSchemaFound = false
   local XMLXSDMatching   = false
-  local operationName    = nil
   local nodeName         = ""
   local index            = 0
   local soapFaultCode    = xmlgeneral.soapFaultCodeServer
@@ -1232,14 +1234,6 @@ function xmlgeneral.XMLValidateWithWSDL (typePlugin, child, XMLtoValidate, WSDL,
   -- Else it's a not a WSDL it's a raw <xs:schema>
   else
     currentNode = xmlNodePtrRoot
-  end
-
-  -- If prefetch is not enabled
-  if not prefetch then
-    -- Try to get the Operation Name in the <soap:Body>
-    -- Note: if there is an XML syntax error, the operationName can't be found and it's nil
-    operationName = xmlgeneral.getOperationNameFromSOAPEnvelope(XMLtoValidate, verbose)
-    kong.log.debug("XMLValidateWithWSDL, operationName='"..(operationName or 'Not_Found').."' in XML")    
   end
 
   -- Retrieve all '<xs:schema>' Nodes until 

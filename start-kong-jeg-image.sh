@@ -6,9 +6,9 @@ export ARCHITECTURE=arm64
 # Start Kong Gateway
 docker run -d --name kong-gateway-soap-xml-handling \
 --network=kong-net \
---link kong-database-soap-xml-handling-36:kong-database-soap-xml-handling-36 \
+--link kong-database-soap-xml-handling:kong-database-soap-xml-handling \
 -e "KONG_DATABASE=postgres" \
--e "KONG_PG_HOST=kong-database-soap-xml-handling-36" \
+-e "KONG_PG_HOST=kong-database-soap-xml-handling" \
 -e "KONG_PG_USER=kong" \
 -e "KONG_PG_PASSWORD=kongpass" \
 -e "KONG_PROXY_ACCESS_LOG=/dev/stdout" \

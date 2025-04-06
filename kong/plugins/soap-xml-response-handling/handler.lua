@@ -126,25 +126,11 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- Check if there is 'xsdApiSchemaInclude'
-  local xsdApiSchemaInclude = false
-  if plugin_conf.xsdApiSchemaInclude then
-    for k,v in pairs(plugin_conf.xsdApiSchemaInclude) do            
-      xsdApiSchemaInclude = true
-      break
-    end
-  end
+  -- Do a sleep for waiting the end of Prefetch of SOAP Schema
+  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
   
-  -- If the plugin is defined with XSD or WSDL API schema and
-  -- If Asynchronous is enabled
-  if  plugin_conf.xsdApiSchema               and
-      plugin_conf.ExternalEntityLoader_Async then
-    -- Wait for the end of Prefetch External Entities (i.e. Validate the XSD schema)  
-    while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName) do
-      -- This 'sleep' happens only one time per Plugin configuration update
-      ngx.sleep(libxml2ex.xmlSoapSleepAsync)
-    end
-  end
+  -- Do a sleep for waiting the end of Prefetch of API Schema
+  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude , libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
 
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
