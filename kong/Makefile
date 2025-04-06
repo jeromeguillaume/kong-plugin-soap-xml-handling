@@ -1,3 +1,6 @@
+# If there is an Auth: "ERROR: failed to solve: failed to push jeromeguillaume/kong-soap-xml..." re-create the buildx
+# docker buildx create --use --name newbuilder --driver docker-container
+
 all: kong_saxon_all
 
 kong_saxon_all: local_lib_arm64 local_lib_amd64 kong_saxon_docker_hub kong_saxon_initcontainer_docker_hub
