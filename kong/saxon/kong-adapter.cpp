@@ -69,6 +69,7 @@ extern "C" const char *getErrMessage( const void* context_void )
   return errMessage;
 }
 
+
 extern "C" void deleteContext( const void* context_void )
 {
   const Context *context = reinterpret_cast<const Context*>(context_void);
@@ -221,19 +222,24 @@ extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_vo
   const char* retval = nullptr;
   try{
     context = (Context*) context_void;
+    formatCerr ("parseXmlFromString Before", "");
     XdmNode* input = saxonProcessor->parseXmlFromString(xml_string);
+    formatCerr ("parseXmlFromString After", "");
     if (input == nullptr) {
+      formatCerr ("throw std::runtime_error", "");
       throw std::runtime_error("parsing input XML failed");
     }
+    formatCerr ("transformToString Before", "");
     output_string = context->_xsltExecutable->transformToString(input);
+    formatCerr ("transformToString After", "");
     delete input;
     if (output_string == nullptr) {
-      throw std::runtime_error("parsing input XML failed");
+      throw std::runtime_error("XSLT executable failed");
     }
     retval = strdup(output_string);
   }
   catch (SaxonApiException& e) {
-    formatCerr ("Error in stylesheetTransformXmlKong", e.getMessage());
+    formatCerr ("Error in stylesheetTransformXmlKong", e.getMessage());    
     context->errMessage = e.getMessage();
   }
   catch (const std::exception& e) {

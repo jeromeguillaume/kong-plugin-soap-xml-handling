@@ -78,12 +78,24 @@ saxon_common.error_message_Response_XSLT_transfo_after_XSD_val = {
 
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
   message = 'Response - XSLT transformation failed (after XSD validation)',
-  message_verbose = 'Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog. SOAP/XML Web Service - HTTP code: 200'
+  message_verbose = 'Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.',
+  backend_http_code = 200
 }
 
 saxon_common.error_message_Saxon_Library_not_Found_val_verbose = {
   message = 'Request - XSLT transformation failed (before XSD validation)',
   message_verbose = "Unable to load the XSLT library shared object or its dependency. Please check 'LD_LIBRARY_PATH' env variable and the presence of libraries"
+}
+
+saxon_common.error_message_Request_XSLT_transfo_before_XSD_Invalid_JSON_verbose = {
+  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message_verbose = 'Invalid JSON input on line 1: Unescaped control character (xa)'
+}
+
+saxon_common.error_message_Response_XSD_validation_400_No_Content_Type_error_from_Upstream_verbose = {
+  message = 'Response - XSD validation failed',
+  message_verbose = "Invalid XML input. Error code: 4, Line: 1, Message: Start tag expected, '<' not found",
+  backend_http_code = 400
 }
 
 saxon_common.httpbin_Request= [[
@@ -298,6 +310,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     name = pluginRequest,
     route = calculator_JSON_2_XML_Transformation_ok_route,
     config = {
+      VerboseRequest = true,
       xsltLibrary = xsltLibrary,
       xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
     }
@@ -306,6 +319,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     name = pluginResponse,
     route = calculator_JSON_2_XML_Transformation_ok_route,
     config = {
+      VerboseResponse = true,
       xsltLibrary = xsltLibrary,
       xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
     }
@@ -564,6 +578,48 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     }
   }
 
+  local local_400_no_content_type_termination_route = blue_print.routes:insert{
+		paths = { "/local_400_No_Content_Type" }
+	}
+	blue_print.plugins:insert {
+		name = "request-termination",
+		route = local_400_no_content_type_termination_route,
+		config = {
+			status_code = 400
+		}	
+	}
+
+  local local_400_no_content_type_service = blue_print.services:insert({
+		protocol = "http",
+		host = "localhost",
+		port = 9000,
+		path = "/local_400_No_Content_Type",
+	})
+
+  local calculator_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_ko_route = blue_print.routes:insert{
+		service = local_400_no_content_type_service,
+		paths = { "/calculator_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_ko" }
+	  }
+	blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_ko_route,
+    config = {
+      VerboseRequest = true,
+      xsltLibrary = xsltLibrary,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
+  blue_print.plugins:insert { 
+    name = pluginResponse,
+    route = calculator_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_ko_route,
+    config = {
+      VerboseResponse = true,
+      xsltLibrary = xsltLibrary,
+      xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
+    }
+  }
+
+
 end
 
 ------------------------------------------------------------
@@ -783,5 +839,45 @@ function saxon_common._1_Saxon_Library_not_found_with_verbose (assert, client)
   local json = assert.response(r).has.jsonbody()
   assert.same (saxon_common.error_message_Saxon_Library_not_Found_val_verbose, json)
 end
+
+function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_JSON_request_with_verbose_ko (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_JSON_2_XML_Transformation_ok", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = '{\
+    "intA": 50,\
+    "intB": 10,\
+    "operation": "Add\
+      }',
+    })
+
+  -- validate that the request succeeded: response status 400, Content-Type and right match
+	local body = assert.response(r).has.status(400)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_Invalid_JSON_verbose, json)
+end
+
+function saxon_common._1_2_6_7_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_Ko (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_JSON_2_XML_Transformation_400_error_No_Content_Type_from_Upstream_ko", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+    })
+
+  -- validate that the request succeeded: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Response_XSD_validation_400_No_Content_Type_error_from_Upstream_verbose, json)
+end
+
+
 
 return saxon_common

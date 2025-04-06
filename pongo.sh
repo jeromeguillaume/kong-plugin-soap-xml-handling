@@ -3,7 +3,7 @@
 #   required if the 'KONG_IMAGE' has been rebuilt w/o changing its tag version
 #------------------------------------------------------------------------------
 # pongo clean
-# KONG_IMAGE=jeromeguillaume/kong-saxon:3.8.0.0-12.5 pongo build --force
+# KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.8.0.0-12.5 pongo build --force
 
 #-------------------------------------------------------------------------------
 # Execute the tests with the Kong standard image
@@ -15,7 +15,7 @@
 # Execute the tests with the customized Kong image with Saxon
 #-------------------------------------------------------------
 # For avoiding the following error message (since v3.8) "attempt to index field 'lru' (a nil value)"
-# Comment out as follows the code lines of 'clear_cache_on_file_end' in /Users/[userName]/.kong-pongo/kong-versions/3.9.0.1/kong/spec/internal/db.lua
+# Comment out as follows the code lines of 'clear_cache_on_file_end' in /Users/[userName]/.kong-pongo/kong-versions/3.10.0.0/kong/spec/internal/db.lua
 #   then
 #   --  G.kong.cache.mlcache.lru.free_queue = nil
 #   --  G.kong.cache.mlcache.lru.cache_queue = nil
@@ -24,10 +24,10 @@
 pongo up
 
 # Run pongo tests by using the code of plugins stored locally
-# KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.1-1.3.0-12.5 pongo run --lpath=$PWD/spec/common
+# KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.10.0.0-1.3.1-12.5 pongo run --lpath=$PWD/spec/common
 
 # Run pongo tests by using the code of plugins included in the Docker image
-KONG_IMAGE=jeromeguillaume/kong-saxon:3.9.0.1-1.3.0-12.5 pongo run
+KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.10.0.0-1.3.1-12.5 pongo run
 
 #---------------------------------------------------------
 # Loop tests

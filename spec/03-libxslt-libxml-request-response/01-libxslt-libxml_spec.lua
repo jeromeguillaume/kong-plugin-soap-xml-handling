@@ -392,39 +392,39 @@ for _, strategy in helpers.all_strategies() do
 				helpers.stop_kong(nil, true)
 			end)
       
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-          },
-          body = request_common.calculator_Subtract_Request,
-        })
-        
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)
-      end)
+     it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - Ok", function()
+       -- invoke a test request
+       local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
+         headers = {
+           ["Content-Type"] = "text/xml; charset=utf-8",
+         },
+         body = request_common.calculator_Subtract_Request,
+       })
+       
+       -- validate that the request succeeded: response status 200, Content-Type and right match
+       local body = assert.response(r).has.status(200)
+       local content_type = assert.response(r).has.header("Content-Type")
+       local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+       assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+       assert.equal("soap2", x_soap_region)
+       assert.matches(response_common.calculator_Response_XML_18, body)
+     end)
 
-      it("2+6|Request and Response plugins|Same WSDL Validation with async download with verbose - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_same_WSDL_with_async_download_ok_verbose", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-          },
-          body = request_common.calculator_Full_Request,
-        })
+     it("2+6|Request and Response plugins|Same WSDL Validation with async download with verbose - Ok", function()
+       -- invoke a test request
+       local r = client:post("/calculator_same_WSDL_with_async_download_ok_verbose", {
+         headers = {
+           ["Content-Type"] = "text/xml; charset=utf-8",
+         },
+         body = request_common.calculator_Full_Request,
+       })
 
-        -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-      end)
+       -- validate that the request failed: response status 500, Content-Type and right match
+       local body = assert.response(r).has.status(200)
+       local content_type = assert.response(r).has.header("Content-Type")
+       assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+       assert.matches('<AddResult>12</AddResult>', body)
+     end)
 
       it("2+6|Request and Response plugins|Different WSDL Validation with async download with verbose - Ok", function()
         -- invoke a test request
@@ -456,7 +456,7 @@ for _, strategy in helpers.all_strategies() do
           local content_type = assert.response(r).has.header("Content-Type")
           assert.matches("text/xml%;%s-charset=utf%-8", content_type)
           assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-          assert.matches("<detail>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+          assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
       end)
 
       it("2+6|Request and Response plugins|WSDL Validation with async download - Invalid Import on Response plugin with verbose", function()
@@ -473,7 +473,7 @@ for _, strategy in helpers.all_strategies() do
           local content_type = assert.response(r).has.header("Content-Type")
           assert.matches("text/xml%;%s-charset=utf%-8", content_type)
           assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed_shortened, body)
-          assert.matches("<detail>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
+          assert.matches("<errorMessage>.*Failed to locate a schema at location 'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
       end)
 
       it("1|Request and Response plugins|XSLT (BEFORE XSD) - Invalid XSLT input", function()
@@ -540,7 +540,7 @@ for _, strategy in helpers.all_strategies() do
           assert.matches(response_common.calculator_Response_XSLT_AFTER_Failed_verbose, body)
       end)
 
-      it("1+5|Requst and Response plugins|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
+      it("1+5|Request and Response plugins|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
         -- invoke a test request
         local r = client:post("/calculator_Response_XSLT_beforeXSD_with_xslt_Params_ok", {
           headers = {

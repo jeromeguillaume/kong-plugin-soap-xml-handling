@@ -22,8 +22,10 @@ ffi.cdef [[
                                             const void *context_void,
                                             const char *xml_string);
   const char *getErrMessage               ( const void *context_void );
+  int  getFaultCode                       ( const void *context_void );
   void deleteContext                      ( const void *context_void );
   void free(void*);
+  
 ]]
 
 local saxon4KongLib = nil
@@ -142,7 +144,7 @@ function libsaxon4kong.getErrorMessage(context)
       if err then
         kong.log.err(err)
         err = libsaxon4kong.symbolNotFound
-        return nil, err
+        return err
       end
     end
 
@@ -162,6 +164,35 @@ function libsaxon4kong.getErrorMessage(context)
     end
   end
   return err
+end
+
+-------------------------------
+-- Get Fault Code from Context
+-------------------------------
+function libsaxon4kong.getFaultCode(context)
+  local err
+  local faultCode = 0
+  local rc
+  
+  if saxon4KongLib then
+    -- Check if symbol exists
+    if not pcall(function() return saxon4KongLib.getFaultCode end) then
+      err = "'getFaultCode' symbol doesn't exist in " .. libsaxon4kong.libName
+      -- If symbol is not found
+      if err then
+        kong.log.err(err)
+        err = libsaxon4kong.symbolNotFound
+        return faultCode, err
+      end
+    end
+
+    rc, faultCode = pcall(saxon4KongLib.getFaultCode, context)
+    -- If there is an error on pcall
+    if not rc then
+      err = "getFaultCode: " .. faultCode
+    end
+  end
+  return faultCode, err
 end
 
 ------------------
@@ -287,7 +318,7 @@ function libsaxon4kong.stylesheetTransformXml(saxonProcessor, context, XMLtoTran
       err = "'addParameter' symbol doesn't exist in " .. libsaxon4kong.libName
     end
 
-    -- call the 'stylesheetTransformXmlKong'
+    -- Check if symbol exists
     if not err and not pcall(function() return saxon4KongLib.stylesheetTransformXmlKong end) then
       err = "'stylesheetTransformXmlKong' symbol doesn't exist in " .. libsaxon4kong.libName
     end

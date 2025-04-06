@@ -23,7 +23,7 @@ Deploy the stack **in this order** (for having `podAntiAffinity`):
     - 8 vCPUs and 32 GB ram per node
     - 3 nodes
 2) Kong GW configuration:
-  - Kong GW version: `kong/kong-gateway:3.9.0.1`
+  - Kong GW version: `kong/kong-gateway:3.10.0.0`
   - `saxon` version: `SaxonC-HE v12.5.0`
   - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
   - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)

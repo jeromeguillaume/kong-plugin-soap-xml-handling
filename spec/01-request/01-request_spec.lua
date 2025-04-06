@@ -6,9 +6,9 @@ local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
 for _, strategy in helpers.all_strategies() do
-	-- if strategy == "off" then
+	--if strategy == "off" then
   --  goto continue
-	-- end
+	--end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -219,7 +219,8 @@ for _, strategy in helpers.all_strategies() do
 
 			it("2|WSDL (v2) Validation with no import - 'wsdl' default Namespace - 'xs:schema' - Ok", function()
 				request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schema_with_verbose_ok (assert, client)
-			end)--
+			end)
+			
 			it("2|WSDL (v2) Validation with no import - 'wsdl2:description' - 'schema' default Namespace - Ok", function()
 				request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
 			end)
