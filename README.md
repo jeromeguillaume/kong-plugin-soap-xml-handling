@@ -21,7 +21,9 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 6) `WSDL/XSD VALIDATION`: Validate the XML response with its WSDL/XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
-Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config). In case of misconfiguration the Plugin sends to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
+Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config)
+
+In case of misconfiguration the Plugin sends to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
   - `<faultstring>`: name of the handling process of the plugin
   - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Web Service)
@@ -1257,6 +1259,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.3.0
   - `ROUTING BY XPATH`: added multiple targets in the plugin configuration. Breaking change: former parameters `RouteToPath`, `RouteXPath` and `RouteXPathCondition` have been replaced by `RouteXPathTargets[].URL`, `RouteXPathTargets[].XPath` and `RouteXPathTargets[].XPathCondition`
 - v1.3.1
-  - Changed the error message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
+  - Changed the `SOAP Fault` message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
