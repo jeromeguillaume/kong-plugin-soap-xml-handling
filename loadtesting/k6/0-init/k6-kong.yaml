@@ -3,8 +3,6 @@ _info:
   defaults: {}
   select_tags:
   - k6
-_konnect:
-  control_plane_name: cp-gke-prod
 plugins:
 - config:
     ai_metrics: false

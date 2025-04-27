@@ -1351,7 +1351,6 @@ function xmlgeneral.XMLValidateWithXSD (typePlugin, pluginId, child, indexXSD, X
   -- If the XSD Cache table is not yet created
   if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] then
     kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
-    print("**jerome create 'xsdCache' table")
   end
 
   -- If the Parser Context is not in the cache or If there is an error
@@ -1359,14 +1358,12 @@ function xmlgeneral.XMLValidateWithXSD (typePlugin, pluginId, child, indexXSD, X
      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtErrMsg then
     -- Create the Parser Context
     xsd_context, errMessage = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
-print("**jerome call 'xmlSchemaNewMemParserCtxt'")
     kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtPtr = xsd_context
     kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtErrMsg = errMessage
   -- Get the Parser Context from cache
   else
     xsd_context = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtPtr
     errMessage = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtErrMsg
-    print("**jerome caching no need to call 'xmlSchemaNewMemParserCtxt'")
   end
   
   if not errMessage then
@@ -1375,33 +1372,32 @@ print("**jerome call 'xmlSchemaNewMemParserCtxt'")
            kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg then
       -- Parse XSD schema
       xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
-print("**jerome call 'xmlSchemaParse'")
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaPtr    = xsd_schema_doc
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg = errMessage
     -- Get the Schema Parser from cache
     else
       xsd_schema_doc = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaPtr
-      errMessage = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg
-      print("**jerome caching no need to call 'xmlSchemaParse'")
+      errMessage = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg      
     end
   end
   
   -- If it's a Prefetch we just have to parse the XSD, which downloads XSD in cascade 
+  --   => there is no XML to validate with its schema
   if prefech then
     return errMessage, XMLXSDMatching, soapFaultCode
   end
   
-  -- If the Validation Context pointer is not in the cache
   if not errMessage then
-    if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr then
+    -- If the Validation Context pointer is not in the cache or If there is an error
+    if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr or
+           kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtErrMsg then
       -- Create Validation context of XSD Schema
-      validation_context = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
+      validation_context, errMessage = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr = validation_context
+      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtErrMsg = errMessage
     else
       validation_context = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr
-    end
-    if not validation_context then
-      errMessage = "xmlSchemaNewValidCtxt returns null"
+      errMessage = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtErrMsg
     end
   end
 

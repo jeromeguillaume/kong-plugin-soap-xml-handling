@@ -384,14 +384,16 @@ jit.off(libxml2ex.xmlSchemaParse)
 -- schema:	a precompiled XML Schemas
 -- Returns:	the validation context or NULL in case of error
 function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
+    local errMsg
     local validation_context = xml2.xmlSchemaNewValidCtxt(xsd_schema_doc)
     
     if validation_context == ffi.NULL then
-      kong.log.err("xmlSchemaNewValidCtxt returns null")
-      return nil
+      errMsg = "xmlSchemaNewValidCtxt returns null"
+      kong.log.err(errMsg)
+      return nil, errMsg
     end
 
-    return ffi.gc(validation_context, xml2.xmlSchemaFreeValidCtxt)
+    return ffi.gc(validation_context, xml2.xmlSchemaFreeValidCtxt), errMsg
 end
 
 -- Parse an XML in-memory document and build a tree.
