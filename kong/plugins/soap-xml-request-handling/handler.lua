@@ -48,9 +48,16 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     if not sleepForPrefetchEnd then
       sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
     end
-    
+
     -- Validate the SOAP envelope with its schema    
-    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin, xmlgeneral.schemaTypeSOAP, soapEnvelope_transformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseRequest, false)
+    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin,
+                                                                              kong.plugin.get_id(),
+                                                                              xmlgeneral.schemaTypeSOAP,
+                                                                              1,
+                                                                              soapEnvelope_transformed,
+                                                                              plugin_conf.xsdSoapSchema,
+                                                                              plugin_conf.VerboseRequest,
+                                                                              false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -72,7 +79,13 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     end
     
     -- Validate the API XML with its schema
-    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin, xmlgeneral.schemaTypeAPI, soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseRequest, false)
+    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin,
+                                                                kong.plugin.get_id(),
+                                                                xmlgeneral.schemaTypeAPI,
+                                                                soapEnvelope_transformed,
+                                                                plugin_conf.xsdApiSchema,
+                                                                plugin_conf.VerboseRequest,
+                                                                false)
 
     if errMessage ~= nil then
         -- Format a Fault code to Client
@@ -240,7 +253,7 @@ function plugin:access(plugin_conf)
       kong.ctx.shared.xmlSoapHandlingFault = {
         error = true,
         otherPlugin = false,
-        pluginId = plugin.__plugin_id,
+        pluginId = kong.plugin.get_id(),
         soapEnvelope = soapFaultBody
       }
 
@@ -293,7 +306,7 @@ function plugin:header_filter(plugin_conf)
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
       otherPlugin = true,
-      pluginId = plugin.__plugin_id,
+      pluginId = kong.plugin.get_id(),
       soapEnvelope = soapFaultBody
     }
     

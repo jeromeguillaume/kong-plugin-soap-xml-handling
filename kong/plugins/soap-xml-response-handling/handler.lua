@@ -42,7 +42,14 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
     
     -- Validate the SOAP envelope with its schema
-    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.ResponseTypePlugin, xmlgeneral.schemaTypeSOAP, soapEnvelopeTransformed, plugin_conf.xsdSoapSchema, plugin_conf.VerboseResponse, false)
+    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.ResponseTypePlugin, 
+                                                                              kong.plugin.get_id(), 
+                                                                              xmlgeneral.schemaTypeSOAP, 
+                                                                              1, 
+                                                                              soapEnvelopeTransformed, 
+                                                                              plugin_conf.xsdSoapSchema, 
+                                                                              plugin_conf.VerboseResponse, 
+                                                                              false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -58,7 +65,13 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- => Validate the API XML (included in the <soap:envelope>) with its schema
   if soapFaultBody == nil and plugin_conf.xsdApiSchema then
   
-    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin, xmlgeneral.schemaTypeAPI, soapEnvelopeTransformed, plugin_conf.xsdApiSchema, plugin_conf.VerboseResponse, false)
+    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin,
+                                                                kong.plugin.get_id(),
+                                                                xmlgeneral.schemaTypeAPI,
+                                                                soapEnvelopeTransformed,
+                                                                plugin_conf.xsdApiSchema,
+                                                                plugin_conf.VerboseResponse,
+                                                                false)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -268,7 +281,7 @@ function plugin:header_filter(plugin_conf)
     -- It prevents to apply SOAP/XML handling whereas there is already an error
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = true,
-      pluginId = plugin.__plugin_id,
+      pluginId = kong.plugin.get_id(),
       soapEnvelope = soapFaultBody
     }
   -- If the SOAP envelope is transformed
@@ -318,7 +331,7 @@ function plugin:header_filter(plugin_conf)
     -- by calling 'kong.response.get_raw_body ()' in header_filter
     kong.ctx.shared.xmlSoapHandlingFault = {
       error = false,
-      pluginId = plugin.__plugin_id,
+      pluginId = kong.plugin.get_id(),
       soapEnvelope = soapEnvelopeTransformed
     }
   end
@@ -335,14 +348,14 @@ function plugin:body_filter(plugin_conf)
   -- If there is a pending error set by other SOAP/XML plugin we do nothing except for the Plugin itself
   if  kong.ctx.shared.xmlSoapHandlingFault      and
     kong.ctx.shared.xmlSoapHandlingFault.error  and 
-    kong.ctx.shared.xmlSoapHandlingFault.pluginId ~= plugin.__plugin_id then
+    kong.ctx.shared.xmlSoapHandlingFault.pluginId ~= kong.plugin.get_id() then
     kong.log.debug("A pending error has been set by other SOAP/XML plugin: we do nothing in this plugin")
     return
   end
-
+  
   -- Get modified SOAP envelope set by the plugin itself on 'header_filter'
   if  kong.ctx.shared.xmlSoapHandlingFault  and
-      kong.ctx.shared.xmlSoapHandlingFault.pluginId == plugin.__plugin_id then
+      kong.ctx.shared.xmlSoapHandlingFault.pluginId == kong.plugin.get_id() then
     
     if kong.ctx.shared.xmlSoapHandlingFault.soapEnvelope then
       -- Set the modified SOAP envelope

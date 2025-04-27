@@ -351,19 +351,20 @@ end
 -- size:	the size of the array
 -- Returns:	the parser context or NULL in case of error
 function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
-    
+    local errMsg
     local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
     
     if xsd_context == ffi.NULL then
-        kong.log.err("xmlSchemaNewMemParserCtxt returns null")
-        return nil
+      errMsg = "xmlSchemaNewMemParserCtxt returns null"
+      kong.log.err(errMsg)
+      return nil, errMsg
     end
     
-    return ffi.gc(xsd_context, xml2.xmlSchemaFreeParserCtxt)
+    return ffi.gc(xsd_context, xml2.xmlSchemaFreeParserCtxt), errMsg
 end
 
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
--- ctxt:	a schema validation context
+-- xsd_context:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     kong.ctx.shared.xmlSoapErrMessage = nil
