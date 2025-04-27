@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.3.1",
+    VERSION = "1.3.2",
   }
 
 local xmlgeneral = nil
@@ -10,6 +10,7 @@ local libxml2ex  = nil
 ------------------------------------------------------------------------------------------------------------------------------------
 -- XSLT TRANSFORMATION - BEFORE XSD: Transform the XML request with XSLT (XSLTransformation) before XSD Validation
 -- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
+--                                 : Validate the 'SOAPAction' header
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML request with XSLT (XSLTransformation) after XSD Validation
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------
