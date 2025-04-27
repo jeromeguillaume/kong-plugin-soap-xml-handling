@@ -353,7 +353,6 @@ end
 function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
     local errMsg
     local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
-    
     if xsd_context == ffi.NULL then
       errMsg = "xmlSchemaNewMemParserCtxt returns null"
       kong.log.err(errMsg)
