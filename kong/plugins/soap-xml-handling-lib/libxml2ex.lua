@@ -224,7 +224,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   if response_body then
     kong.log.debug("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration")
   
-  -- If we download Asynchronously the External Entity
+  -- If we Asynchronously download the External Entity
   elseif async then
     
     kong.log.debug("REQUIRE an entry in the LRU cache url=" .. entity_url)
@@ -267,7 +267,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
       }
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
 
-      -- Download Asynchronously the new entity from a given URL
+      -- Asynchronously Download the new entity from a given URL
       local rcAsync, errAsync = kong.xmlSoapAsync.entityLoader.downloadExtEntitiesQueue.enqueue(
                                      queue_conf, 
                                      asyncDownloadEntities_callback, 
@@ -291,7 +291,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
 
       kong.log.debug("UPDATE an existing entry in LRU cache and download it => url=" .. entity_url .. " ttl=" .. cacheTTL .." timeout=" .. timeout)
-      -- Update Asynchronously the existing entity from a given URL
+      -- Asynchronously Update the existing entity from a given URL
       local rcAsync, errAsync = kong.xmlSoapAsync.entityLoader.downloadExtEntitiesQueue.enqueue(
                                      queue_conf, 
                                      asyncDownloadEntities_callback, 
@@ -309,7 +309,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     end
     kong.log.debug(string.format("Current LRU cache %d/%d capacity", lruCacheEntities:count(), lruCacheEntities:capacity()))
 
-  -- Else we download Synchronously the External Entity
+  -- Else we Synchronously download the External Entity
   else
     
     -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
@@ -370,7 +370,6 @@ function libxml2ex.xmlSchemaParse (xsd_context, verbose)
 
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
-    
     if xsd_schema_doc == ffi.NULL then
       return nil, kong.ctx.shared.xmlSoapErrMessage
     end
@@ -386,7 +385,6 @@ jit.off(libxml2ex.xmlSchemaParse)
 function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
     local errMsg
     local validation_context = xml2.xmlSchemaNewValidCtxt(xsd_schema_doc)
-    
     if validation_context == ffi.NULL then
       errMsg = "xmlSchemaNewValidCtxt returns null"
       kong.log.err(errMsg)

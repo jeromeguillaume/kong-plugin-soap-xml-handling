@@ -223,8 +223,7 @@ extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_vo
   try{
     context = (Context*) context_void;
     XdmNode* input = saxonProcessor->parseXmlFromString(xml_string);
-    if (input == nullptr) {
-      formatCerr ("throw std::runtime_error", "");
+    if (input == nullptr) {      
       throw std::runtime_error("parsing input XML failed");
     }
     output_string = context->_xsltExecutable->transformToString(input);
