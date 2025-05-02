@@ -1263,6 +1263,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
 - v1.3.2
+  - Improved the performance by compiling and paring WSDL, XSD and XSLT definitions only once per plugin (managed by the `kong.xmlSoapPtrCache.plugins[plugin_id]` table)
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`
-

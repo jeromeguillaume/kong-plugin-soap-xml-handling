@@ -20,14 +20,22 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   local XMLXSDMatching
   local soapFaultBody
   local sleepForPrefetchEnd = false
-  local soapFaultCode = xmlgeneral.soapFaultCodeServer
+  local soapFaultCode       = xmlgeneral.soapFaultCodeServer
+  local pluginId            = kong.plugin.get_id()
   
   soapEnvelope_transformed = soapEnvelope
 
   -- If there is 'XSLT Transformation Before XSD' configuration then:
-  -- => we apply XSL Transformation (XSLT) Before XSD
+  -- => Apply XSL Transformation (XSLT) Before XSD
   if plugin_conf.xsltTransformBefore then
-    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin, plugin_conf.xsltLibrary, plugin_conf.xsltParams, soapEnvelope, plugin_conf.xsltTransformBefore, plugin_conf.VerboseRequest)
+    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
+                                                                                  pluginId,
+                                                                                  xmlgeneral.xsltBeforeXSD,
+                                                                                  plugin_conf.xsltLibrary,
+                                                                                  plugin_conf.xsltParams,
+                                                                                  soapEnvelope,
+                                                                                  plugin_conf.xsltTransformBefore,
+                                                                                  plugin_conf.VerboseRequest)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -51,13 +59,13 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
 
     -- Validate the SOAP envelope with its schema    
     errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin,
-                                                                              kong.plugin.get_id(),
-                                                                              xmlgeneral.schemaTypeSOAP,
-                                                                              1,
-                                                                              soapEnvelope_transformed,
-                                                                              plugin_conf.xsdSoapSchema,
-                                                                              plugin_conf.VerboseRequest,
-                                                                              false)
+                                                                               pluginId,
+                                                                               xmlgeneral.schemaTypeSOAP,
+                                                                               1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (for 1st XSD entry)
+                                                                               soapEnvelope_transformed,
+                                                                               plugin_conf.xsdSoapSchema,
+                                                                               plugin_conf.VerboseRequest,
+                                                                               false)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -80,7 +88,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     
     -- Validate the API XML with its schema
     errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin,
-                                                                kong.plugin.get_id(),
+                                                                pluginId,
                                                                 xmlgeneral.schemaTypeAPI,
                                                                 soapEnvelope_transformed,
                                                                 plugin_conf.xsdApiSchema,
@@ -116,9 +124,16 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
 
   -- If there is no error and
   -- If there is 'XSLT Transformation After XSD' configuration then:
-  -- => we apply XSL Transformation (XSLT) After XSD
+  -- => Apply XSL Transformation (XSLT) After XSD
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then
-    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin, plugin_conf.xsltLibrary, plugin_conf.xsltParams, soapEnvelope_transformed, plugin_conf.xsltTransformAfter, plugin_conf.VerboseRequest)
+    soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
+                                                                                  pluginId,
+                                                                                  xmlgeneral.xsltAfterXSD,
+                                                                                  plugin_conf.xsltLibrary,
+                                                                                  plugin_conf.xsltParams,
+                                                                                  soapEnvelope_transformed,
+                                                                                  plugin_conf.xsltTransformAfter,
+                                                                                  plugin_conf.VerboseRequest)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,

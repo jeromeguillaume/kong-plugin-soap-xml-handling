@@ -49,6 +49,8 @@ xmlgeneral.xmlnsXsdHref               = "http://www.w3.org/2001/XMLSchema"
 xmlgeneral.xsdSchema                  = "schema"
 xmlgeneral.schemaTypeSOAP             = 1
 xmlgeneral.schemaTypeAPI              = 2
+xmlgeneral.xsltBeforeXSD              = 3
+xmlgeneral.xsltAfterXSD               = 4
 xmlgeneral.SOAP1_1ContentType         = "text/xml; charset=utf-8"
 xmlgeneral.SOAP1_2ContentType         = "application/soap+xml; charset=utf-8"
 xmlgeneral.JSONContentType            = "application/json"
@@ -636,7 +638,10 @@ print("**jerome 'configure' phase=>initialize cache table for pluginId="..plugin
       kong.xmlSoapPtrCache.plugins[plugin_id].WSDLs[xmlgeneral.schemaTypeAPI ] = {}
       kong.xmlSoapPtrCache.plugins[plugin_id].WSDLs[xmlgeneral.schemaTypeSOAP].XSDs = {}
       kong.xmlSoapPtrCache.plugins[plugin_id].WSDLs[xmlgeneral.schemaTypeAPI ].XSDs = {}
-
+      kong.xmlSoapPtrCache.plugins[plugin_id].XSLTs = {}
+      kong.xmlSoapPtrCache.plugins[plugin_id].XSLTs[xmlgeneral.xsltBeforeXSD ] = {}
+      kong.xmlSoapPtrCache.plugins[plugin_id].XSLTs[xmlgeneral.xsltAfterXSD  ] = {}
+      
       -- If saxon library is enabled
       if config.xsltLibrary == 'saxon' then
         saxon = true
@@ -864,7 +869,7 @@ end
 ---------------------------------------------------
 -- libsaxon: Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform_libsaxon(typePlugin, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform_libsaxon(pluginType, xsltParams, XMLtoTransform, XSLT, verbose)
   local errMessage
   local xml_transformed_dump
   local context
@@ -914,7 +919,7 @@ function xmlgeneral.XSLTransform_libsaxon(typePlugin, xsltParams, XMLtoTransform
       xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
     else
       -- If it's the Request Plugin we consider that the error comes from the Client
-      if typePlugin == xmlgeneral.RequestTypePlugin then
+      if pluginType == xmlgeneral.RequestTypePlugin then
         soapFaultCode = xmlgeneral.soapFaultCodeClient
       end
     end
@@ -938,10 +943,11 @@ end
 ---------------------------------------------------
 -- libxslt: Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform_libxlt(typePlugin, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, xsltBeforeAfterXSD, xsltParams, XMLtoTransform, XSLT, verbose)
   local errMessage  = nil
   local err         = nil
   local style       = nil
+  local xslt_doc    = nil
   local xml_doc     = nil
   local errDump     = 0
   local xml_transformed_dump  = ""
@@ -951,7 +957,7 @@ function xmlgeneral.XSLTransform_libxlt(typePlugin, xsltParams, XMLtoTransform, 
   kong.log.debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
   
   -- If it's the Request Plugin
-  if typePlugin == xmlgeneral.RequestTypePlugin then
+  if pluginType == xmlgeneral.RequestTypePlugin then
     -- By default the error is related to the 'Client' (exception: in case of wrong XSLT definition, the errror is related to 'Server')
     soapFaultCode = xmlgeneral.soapFaultCodeClient
   -- Else it's the Response Plugin
@@ -963,12 +969,38 @@ function xmlgeneral.XSLTransform_libxlt(typePlugin, xsltParams, XMLtoTransform, 
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                       ffi.C.XML_PARSE_NOWARNING)
 
-  -- Load the XSLT document
-  local xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose, true)
+  -- Get the XSLT Cache table  
+  local cacheXslt = kong.xmlSoapPtrCache.plugins[pluginId].XSLTs[xsltBeforeAfterXSD]
+
+print("**jerome pluginId="..pluginId.." XSLT Before_or_After_XSD="..xsltBeforeAfterXSD)
+  -- If the XML Tree document of XSLT is not in the cache and If there is no Error from Cache
+  if not cacheXslt.xmlXsltPtr and not cacheXslt.xmlXsltErrMsg then
+print("**jerome create XML Tree document of XSLT for Cache") 
+    -- Load the XSLT document
+    xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, nil, nil, default_parse_options, verbose, true)
+    cacheXslt.xmlXsltPtr    = xslt_doc
+    cacheXslt.xmlXsltErrMsg = errMessage
+  -- Get from cache the XML Tree document of XSLT
+  else
+    print("**jerome use cache // for XML Tree document of XSLT")
+    xslt_doc   = cacheXslt.xmlXsltPtr
+    errMessage = cacheXslt.xmlXsltErrMsg
+  end
 
   if errMessage == nil then
-    -- Parse XSLT document
-    style, errMessage = libxslt.xsltParseStylesheetDoc (xslt_doc)
+    -- If XSLT document parser is not in the cache and If there is no Error from Cache
+    if not cacheXslt.xsltParsePtr and not cacheXslt.xsltParseErrMsg then
+      print("**jerome create XSLT Parser for Cache")         
+      -- Parse XSLT document
+      style, errMessage = libxslt.xsltParseStylesheetDoc (xslt_doc)
+      cacheXslt.xsltParsePtr    = style
+      cacheXslt.xsltParseErrMsg = errMessage
+    -- Get from cache the XSLT Parser
+    else
+      style      = cacheXslt.xsltParsePtr
+      errMessage = cacheXslt.xsltParseErrMsg
+    end
+
     if errMessage then
       errMessage = xmlgeneral.invalidXSLT .. ". " .. errMessage
       soapFaultCode = xmlgeneral.soapFaultCodeServer
@@ -1030,19 +1062,29 @@ end
 ---------------------------------------------------
 -- Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform(typePlugin, xsltLibrary, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform(pluginType, pluginId, xsltBeforeAfterXSD, xsltLibrary, xsltParams, XMLtoTransform, XSLT, verbose)
   local errMessage
   local xml_transformed_dump
   local soapFaultCode = xmlgeneral.soapFaultCodeServer
   
   if xsltLibrary == 'libxslt' then
-    xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libxlt(typePlugin, xsltParams, XMLtoTransform, XSLT, verbose)
+    xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libxlt(pluginType,
+                                                                                     pluginId,
+                                                                                     xsltBeforeAfterXSD,
+                                                                                     xsltParams,
+                                                                                     XMLtoTransform,
+                                                                                     XSLT,
+                                                                                     verbose)
   elseif xsltLibrary == 'saxon' then
     -- If XMLtoTransform is a JSON type, we add a fake <InternalkongRoot> tag to be ingested as an XML
     if xmlgeneral.getBodyContentType(XMLtoTransform) == xmlgeneral.JSONContentTypeBody then
       XMLtoTransform = "<InternalkongRoot>" .. XMLtoTransform .. "</InternalkongRoot>"
     end
-    xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libsaxon(typePlugin, xsltParams, XMLtoTransform, XSLT, verbose)
+    xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libsaxon(pluginType,
+                                                                                       xsltParams,
+                                                                                       XMLtoTransform,
+                                                                                       XSLT,
+                                                                                       verbose)
   else
     kong.log.err("XSLTransform: unknown library " .. xsltLibrary)
   end
@@ -1131,7 +1173,7 @@ end
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
-function xmlgeneral.XMLValidateWithWSDL (typePlugin, pluginId, child, XMLtoValidate, WSDL, verbose, prefetch)
+function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValidate, WSDL, verbose, prefetch)
   local xml_doc          = nil
   local errMessage       = nil
   local firstErrMessage  = nil
@@ -1173,7 +1215,7 @@ function xmlgeneral.XMLValidateWithWSDL (typePlugin, pluginId, child, XMLtoValid
   --  </wsdl:message>
 
   -- If it's the Request Plugin
-  if typePlugin == xmlgeneral.RequestTypePlugin then
+  if pluginType == xmlgeneral.RequestTypePlugin then
     -- By default the error is related to the 'Client' (exception: in case of wrong WSDL definition, the errror is related to 'Server')
     soapFaultCode = xmlgeneral.soapFaultCodeClient
   -- Else it's the Response Plugin
@@ -1185,14 +1227,33 @@ function xmlgeneral.XMLValidateWithWSDL (typePlugin, pluginId, child, XMLtoValid
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
 
-  -- Parse an XML in-memory document of the WSDL and build a tree
-  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
+  -- Get the WSDL Cache table  
+  local cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child]
+  
+  -- If the XML Tree document of WSDL is not in the cache and If there is no Error from Cache 
+  -- or If it's a prefetch
+  if (not cacheWSDL.xmlWsdlPtr and
+      not cacheWSDL.xmlWsdlErrMsg) or
+      prefetch then
+print("**jerome create XML Tree document of WSDL for Cache") 
+    -- Parse an XML in-memory document of the WSDL and build a tree
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
+    cacheWSDL.xmlWsdlPtr    = xml_doc
+    cacheWSDL.xmlWsdlErrMsg = errMessage
+  -- Get from cache the XML Tree document of WSDL
+  else
+print("**jerome use cache // for XML Tree document of WSDL")
+    xml_doc    = cacheWSDL.xmlWsdlPtr
+    errMessage = cacheWSDL.xmlWsdlErrMsg
+  end
+  
   if errMessage then
-    errMessage    = xmlgeneral.invalidWSDL_XSD .. ". " .. errMessage
+    errMessage = xmlgeneral.invalidWSDL_XSD .. ". " .. errMessage      
     soapFaultCode = xmlgeneral.soapFaultCodeServer
     kong.log.err (errMessage)
     return errMessage, soapFaultCode
   end
+
   kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
   
   -- Retrieve the <wsdl:definitions>
@@ -1270,7 +1331,7 @@ function xmlgeneral.XMLValidateWithWSDL (typePlugin, pluginId, child, XMLtoValid
 
         errMessage = nil
         -- Validate the XML with the <xs:schema>'
-        errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (typePlugin, pluginId, child, index, XMLtoValidate, xsdSchema, verbose, prefetch)
+        errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, index, XMLtoValidate, xsdSchema, verbose, prefetch)
         
         local msgDebug = errMessage or "Ok"
         kong.log.debug ("Validation for schema #" .. index .. " Message: '" .. msgDebug .. "'")
@@ -1312,7 +1373,7 @@ end
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
-function xmlgeneral.XMLValidateWithXSD (typePlugin, pluginId, child, indexXSD, XMLtoValidate, XSDSchema, verbose, prefech)
+function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, XMLtoValidate, XSDSchema, verbose, prefetch)
   local xml_doc            = nil
   local errMessage         = nil
   local err                = nil
@@ -1336,7 +1397,7 @@ function xmlgeneral.XMLValidateWithXSD (typePlugin, pluginId, child, indexXSD, X
   end
   
   -- If it's the Request Plugin
-  if typePlugin == xmlgeneral.RequestTypePlugin then
+  if pluginType == xmlgeneral.RequestTypePlugin then
     -- By default the error is related to the 'Client' (exception: in case of wrong XSD definition, the errror is related to 'Server')
     soapFaultCode = xmlgeneral.soapFaultCodeClient
   -- Else it's the Response Plugin
@@ -1348,7 +1409,7 @@ function xmlgeneral.XMLValidateWithXSD (typePlugin, pluginId, child, indexXSD, X
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
 
-print("**jerome pluginId="..pluginId)
+print("**jerome pluginId="..pluginId.." child="..child.." indexXSD="..indexXSD)
   -- If the XSD Cache table is not yet created
   if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] then
 print("**jerome create the XSD Cache table")
@@ -1358,24 +1419,9 @@ print("**jerome create the XSD Cache table")
   local cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
   -- If the Parser Context is not in the cache and If there is no Error from Cache 
   -- or If it's a prefetch
---  if (not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtPtr and
---      not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtErrMsg) or
---     prefech then
---print("**jerome create the Parser Context for Cache") 
---    -- Create the Parser Context
---    xsd_context, errMessage = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
---    kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtPtr = xsd_context
---    kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtErrMsg = errMessage
---  -- Get the Parser Context from cache
---  else
---print("**jerome use cache // for Parser Context")
---    xsd_context = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtPtr
---    errMessage  = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaParserCtxtErrMsg
---  end
-
 if (not cacheXSD.xmlSchemaParserCtxtPtr and
     not cacheXSD.xmlSchemaParserCtxtErrMsg) or
-     prefech then
+     prefetch then
 print("**jerome create the Parser Context for Cache") 
     -- Create the Parser Context
     xsd_context, errMessage = libxml2ex.xmlSchemaNewMemParserCtxt(XSDSchema)
@@ -1388,31 +1434,12 @@ print("**jerome use cache // for Parser Context")
     errMessage  = cacheXSD.xmlSchemaParserCtxtErrMsg
   end
   
---  if not errMessage then
---    -- If the Schema Parser is not in the cache and If there is no Error from Cache
---    -- or If it's a prefetch
---    if (not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaPtr and 
---        not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg) or 
---       prefech then
---print("**jerome create the Parse XSD schema for Cache")
---      -- Parse XSD schema
---      xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
---      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaPtr    = xsd_schema_doc
---      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg = errMessage
---    -- Get the Schema Parser from cache
---    else
---print("**jerome use cache // for Parse XSD schema")
---      xsd_schema_doc = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaPtr
---      errMessage     = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaErrMsg      
---    end
---  end
-
   if not errMessage then
     -- If the Schema Parser is not in the cache and If there is no Error from Cache
     -- or If it's a prefetch
     if (not cacheXSD.xmlSchemaPtr and 
         not cacheXSD.xmlSchemaErrMsg) or 
-       prefech then
+       prefetch then
 print("**jerome create the Parse XSD schema for Cache")
       -- Parse XSD schema
       xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
@@ -1429,25 +1456,9 @@ print("**jerome use cache // for Parse XSD schema")
   
   -- If it's a Prefetch we just have to parse the XSD, which downloads XSD in cascade 
   --   => there is no XML to validate with its schema
-  if prefech then
+  if prefetch then
     return errMessage, XMLXSDMatching, soapFaultCode
   end
-  
---  if not errMessage then
---    -- If the Validation Context pointer is not in the cache and If there is no Error from Cache
---    if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr and
---       not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtErrMsg then
---print("**jerome create the Validation Context for Cache")
---      -- Create Validation context of XSD Schema
---      validation_context, errMessage = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
---      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr = validation_context
---      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtErrMsg = errMessage
---    else
---print("**jerome use cache // for Validation Context")
---      validation_context = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtPtr
---      errMessage = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].xmlSchemaValidCtxtErrMsg
---    end
---  end
 
   if not errMessage then
     -- If the Validation Context pointer is not in the cache and If there is no Error from Cache
@@ -1456,7 +1467,7 @@ print("**jerome use cache // for Parse XSD schema")
 print("**jerome create the Validation Context for Cache")
       -- Create Validation context of XSD Schema
       validation_context, errMessage = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
-      cacheXSD.xmlSchemaValidCtxtPtr = validation_context
+      cacheXSD.xmlSchemaValidCtxtPtr    = validation_context
       cacheXSD.xmlSchemaValidCtxtErrMsg = errMessage
     else
 print("**jerome use cache // for Validation Context")
@@ -1534,7 +1545,7 @@ print("**jerome use cache // for Validation Context")
     end
   else
     -- If it's the Request Plugin
-    if typePlugin == xmlgeneral.RequestTypePlugin then
+    if pluginType == xmlgeneral.RequestTypePlugin then
       -- The error is related to the 'Server'
       soapFaultCode = xmlgeneral.soapFaultCodeServer
     end
