@@ -65,7 +65,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                                soapEnvelope_transformed,
                                                                                plugin_conf.xsdSoapSchema,
                                                                                plugin_conf.VerboseRequest,
-                                                                               false)
+                                                                               false,
+                                                                               plugin_conf.ExternalEntityLoader_Async)
     if errMessage ~= nil then
         -- Format a Fault code to Client
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
@@ -93,7 +94,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                 soapEnvelope_transformed,
                                                                 plugin_conf.xsdApiSchema,
                                                                 plugin_conf.VerboseRequest,
-                                                                false)
+                                                                false,
+                                                                plugin_conf.ExternalEntityLoader_Async
+                                                              )
 
     if errMessage ~= nil then
         -- Format a Fault code to Client
@@ -110,7 +113,11 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if soapFaultBody == nil then
     
     -- Validate the API XML with its schema
-    errMessage, soapFaultCode = xmlgeneral.validateSOAPAction_Header (soapEnvelope_transformed, plugin_conf.xsdApiSchema, plugin_conf.SOAPAction_Header, plugin_conf.VerboseRequest)
+    errMessage, soapFaultCode = xmlgeneral.validateSOAPAction_Header (pluginId,
+                                                                      soapEnvelope_transformed,
+                                                                      plugin_conf.xsdApiSchema,
+                                                                      plugin_conf.SOAPAction_Header,
+                                                                      plugin_conf.VerboseRequest)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -149,9 +156,10 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- => we change the Route By XPath if the condition is satisfied
     if soapFaultBody == nil and plugin_conf.RouteXPathTargets then
     -- Get Route By XPath and check if the condition is satisfied
-    local rcXpath = xmlgeneral.RouteByXPath (soapEnvelope_transformed, 
-                                            plugin_conf.RouteXPathRegisterNs,
-                                            plugin_conf.RouteXPathTargets)
+    local rcXpath = xmlgeneral.RouteByXPath (pluginId,
+                                             soapEnvelope_transformed, 
+                                             plugin_conf.RouteXPathRegisterNs,
+                                             plugin_conf.RouteXPathTargets)
     -- If the condition is satisfied we change the Upstream
     if rcXpath > 0 then
       local parse_url = require("socket.url").parse
@@ -239,7 +247,6 @@ end
 -- Executed every time the Kong plugin iterator is rebuilt (after changes to configure plugins)
 ------------------------------------------------------------------------------------------------
 function plugin:configure (configs)
-  -- If required, load the 'saxon' library
   xmlgeneral.pluginConfigure (configs, xmlgeneral.RequestTypePlugin)
 end
 
@@ -248,6 +255,7 @@ end
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
   
+  print("**jerome access")
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   

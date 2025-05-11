@@ -202,7 +202,7 @@ function libsaxon4kong.deleteContext(context)
   local err
 
   if saxon4KongLib and context ~= ffi.NULL then
-    
+
     -- Check if symbol exists
     if not pcall(function() return saxon4KongLib.deleteContext end) then
       err = "'deleteContext' symbol doesn't exist in " .. libsaxon4kong.libName

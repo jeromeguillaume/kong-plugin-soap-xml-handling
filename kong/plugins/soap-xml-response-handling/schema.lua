@@ -38,5 +38,22 @@ return {
           }},
         },
     }, },
+    
+  },
+  entity_checks = {
+    { custom_entity_check = {
+      field_sources = { "config" },
+      fn = function(entity)
+        local config = entity.config
+
+        -- Check that Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
+        if ((config.xsdSoapSchemaInclude and next(config.xsdSoapSchemaInclude)) or 
+            (config.xsdApiSchemaInclude and next(config.xsdApiSchemaInclude))) and
+            config.ExternalEntityLoader_Async then
+          return nil, "config.xsdSoapSchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
+        end
+        return true
+      end
+    }},
   },
 }

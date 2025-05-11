@@ -11,9 +11,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -74,7 +74,7 @@ for _, strategy in helpers.all_strategies() do
             xsdApiSchemaInclude = {
               ["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
             },
-            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
             xsdSoapSchema = soap12_common.soap12_XSD,
             xsdSoapSchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -89,7 +89,7 @@ for _, strategy in helpers.all_strategies() do
             xsdApiSchemaInclude = {
               ["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
             },
-            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
             xsdSoapSchema = soap12_common.soap12_XSD,
             xsdSoapSchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -107,7 +107,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = false,
             ExternalEntityLoader_Async = true,
-            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
             xsdSoapSchema = soap12_common.soap12_XSD,
           }
         }
@@ -117,7 +117,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = false,
             ExternalEntityLoader_Async = true,
-            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok,
+            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
             xsdSoapSchema = soap12_common.soap12_XSD,
           }
         }

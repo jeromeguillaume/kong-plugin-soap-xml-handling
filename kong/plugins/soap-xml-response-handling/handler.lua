@@ -53,11 +53,12 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.ResponseTypePlugin, 
                                                                               pluginId,
                                                                               xmlgeneral.schemaTypeSOAP, 
-                                                                              1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (for 1st XSD entry)
+                                                                              1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
                                                                               soapEnvelopeTransformed, 
                                                                               plugin_conf.xsdSoapSchema, 
                                                                               plugin_conf.VerboseResponse, 
-                                                                              false)
+                                                                              false,
+                                                                              plugin_conf.ExternalEntityLoader_Async)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -79,7 +80,8 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                 soapEnvelopeTransformed,
                                                                 plugin_conf.xsdApiSchema,
                                                                 plugin_conf.VerboseResponse,
-                                                                false)
+                                                                false,
+                                                                plugin_conf.ExternalEntityLoader_Async)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -338,8 +340,8 @@ function plugin:header_filter(plugin_conf)
         kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON ("..xmlgeneral.JSONContentType..")")
       end
     else
-      -- The Reponse 'Content-Type' is compatible with the Request 'Content-Type'
-      kong.log.debug("No JSON<->XML Transformation: Don't change the Reponse's 'Content-Type' as it's compatible with the Request 'Content-Type'")
+      -- The Reponse 'Content-Type' is compatible with Request 'Content-Type'
+      kong.log.debug("No JSON<->XML Transformation: Don't change the 'Content-Type' of the Response as it's compatible with the 'Content-Type' of the Request")
     end
     
     -- We set the new SOAP Envelope for cascading Plugins because they are not able to retrieve it

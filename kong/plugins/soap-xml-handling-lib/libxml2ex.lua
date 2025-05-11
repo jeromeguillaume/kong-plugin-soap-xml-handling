@@ -162,10 +162,12 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local xsdSoapSchemaInclude
   local streamListen = false
   local url_cache_key = nil
-  
+
   if URL ~= ffi.NULL then
     entity_url = ffi.string(URL)
   end
+  kong.log.debug("xmlMyExternalEntityLoader, BEGIN url="..(entity_url or "nil"))
+
   url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
 
   -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set

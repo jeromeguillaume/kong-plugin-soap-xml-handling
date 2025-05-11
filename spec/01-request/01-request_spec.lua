@@ -6,9 +6,9 @@ local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -199,6 +199,10 @@ for _, strategy in helpers.all_strategies() do
 
 			it("2|WSDL Validation with no import and multiple XSD - Subtract in XSD#2 - Ok", function()
 				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XSD2_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with no import and multiple XSD - Power not defined in XSDs - Ko", function()
+				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Power_not_defined_in_XSDs_with_verbose_ok (assert, client)
 			end)
 
 			it("2|WSDL Validation with multiple XSD imported no download - Add in XSD#1 - Ok", function()

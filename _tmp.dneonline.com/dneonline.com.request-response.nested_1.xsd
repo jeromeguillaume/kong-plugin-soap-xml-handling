@@ -4,5 +4,5 @@
         targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
-  <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/dneonline.com.request-response.xsd"/>
+  <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempuri.org.request-response.xsd"/>
 </xsd:schema>

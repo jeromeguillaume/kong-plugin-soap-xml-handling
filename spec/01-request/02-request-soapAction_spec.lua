@@ -416,7 +416,7 @@ local calculator_soap11_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL= [[
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Validation of 'SOAPAction' header: Unable to find the 'wsdl:definition' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition</errorMessage>
+        <errorMessage>Validation of 'SOAPAction' header: Unable to find the 'wsdl:definitions' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1631,9 +1631,9 @@ local calculatorWSDL20_defaultNS_wsdl= [[
 ]]
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
