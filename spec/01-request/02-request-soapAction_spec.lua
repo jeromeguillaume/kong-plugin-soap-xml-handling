@@ -488,6 +488,62 @@ local calculator_soap11_Multiply_XSD_VALIDATION_WSDL20_Failed_Invalid_Pattern= [
 -- This WSDL 1.1 provides:
 --   The Namespace prefix of wsdl 1.1 is 'wsdl'
 --   The Namespace prefix of soap 1.1 is 'soap'
+--   Only HTTP transport
+--   The XSD schema is imported
+--
+-- soap 1.1 -> 1 HTTP operation defined with transport="http://schemas.xmlsoap.org/soap/http"/
+--    Add       with    soapActionRequired="true"
+----------------------------------------------------------------------------------------------------
+local calculatorWSDL11_soap_import_Ok= [[
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">
+  <wsdl:types>
+    <!-- XSD schema for Add (Request and Response) -->
+      <xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.req.res.add.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="AddSoapIn">
+    <wsdl:part name="parameters" element="tns:Add" />
+  </wsdl:message>
+  <wsdl:message name="AddSoapOut">
+    <wsdl:part name="parameters" element="tns:AddResponse" />
+  </wsdl:message>
+  <wsdl:portType name="CalculatorSoap">
+    <wsdl:operation name="Add">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">Adds two integers. This is a test WebService. ©DNE Online</wsdl:documentation>
+      <wsdl:input message="tns:AddSoapIn" />
+      <wsdl:output message="tns:AddSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="CalculatorSoap" type="tns:CalculatorSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Add">
+      <soap:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Calculator">
+    <wsdl:port name="CalculatorSoap" binding="tns:CalculatorSoap">
+      <soap:address location="http://www.dneonline.com/calculator.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
+]]
+
+----------------------------------------------------------------------------------------------------
+-- This WSDL 1.1 provides:
+--   The Namespace prefix of wsdl 1.1 is 'wsdl'
+--   The Namespace prefix of soap 1.1 is 'soap'
 --   The Namespace prefix of soap 1.2 is 'soap12'
 --   JMS and HTTP transport and the plugin supports only HTTP Transport
 --
@@ -1683,6 +1739,35 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
+        local tempui_org_add_req_res_xsd = blue_print.routes:insert{
+          paths = { "/tempuri.org.req.res.add.xsd" }
+        }
+        blue_print.plugins:insert {
+          name = "request-termination",
+          route = tempui_org_add_req_res_xsd,
+          config = {
+            status_code = 200,
+            content_type = "text/xml;charset=utf-8",
+            body = request_common.calculator_Request_Response_Add_XSD_VALIDATION
+          }	
+        }
+
+        local calculator_wsdl11_soap11_async_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL11_SOAPAction_11_async_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_wsdl11_soap11_async_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 15,
+			      ExternalEntityLoader_Async = true,
+            xsdApiSchema = calculatorWSDL11_soap_import_Ok,
+            SOAPAction_Header = "yes"
+          }
+        }
+
         local calculator_wsdl11_kong11_stands_for_soap11_ok = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculatorWSDL11_SOAPAction_kong_wsdl_kong11_ok" }
@@ -2564,6 +2649,41 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction, body)        
       end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL 1.1) - Async enabled - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL11_SOAPAction_11_async_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = calculator_soap11_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL 1.1) - Async enabled - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL11_SOAPAction_11_async_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Subtract"
+          },
+          body = calculator_soap11_Add_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_Mismatch_Header, body)
+      end)
+
 
       --------------------------------------------------------------------------------------------------
       -- WSDL 2.0 | SOAP 1.1/1.2

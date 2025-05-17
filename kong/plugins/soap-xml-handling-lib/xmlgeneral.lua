@@ -1318,7 +1318,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     
     firstCall = true
     if async then
-      kong.log.debug ("WSDL Validation, no caching due to Asynchronous external entities")
+      kong.log.debug ("WSDL Validation, no WSDL caching due to Asynchronous external entities")
     else
       kong.log.debug ("WSDL Validation, caching: Compile the WSDL and Put it in the cache")
     end
@@ -1557,7 +1557,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
     else
       cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
-      -- If not all pointers are not in the cache
+      -- If not all pointers aren't in the cache
       if not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
         -- Re-create all the pointers for consistency
         kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
@@ -1574,7 +1574,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
     if prefetch then
       kong.log.debug("XSD Validation, prefetch: compile XSD and raise the download of External Entities")
     elseif async then
-      kong.log.debug("XSD Validation, no caching due to Asynchronous external entities") 
+      kong.log.debug("XSD Validation, no XSD caching due to Asynchronous external entities") 
     else
       kong.log.debug("XSD Validation, caching: compile the XSD and Put it in the cache") 
     end
@@ -1721,7 +1721,7 @@ end
 --------------------------------------------------------------------------------------------------------
 -- Get the 'SOAPAction' value from WSDL related to the Operation Name (retrieved from the SOAP Request)
 --------------------------------------------------------------------------------------------------------
-function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName, xmlnsSOAPEnvelope_hRef, verbose)
+function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName, xmlnsSOAPEnvelope_hRef, verbose, async)
 
   local wsdlDefinitions_type  = xmlgeneral.Unknown_WSDL
   local context               = nil
@@ -1752,112 +1752,120 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
   local rc                    = false
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
-
-  -- Get the WSDL Cache table  
-  local cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[xmlgeneral.schemaTypeAPI]
+  
+  -- If asnchronous download is enabled (the WSDL is not cached)
+  if async then
+    -- Parse an XML in-memory document of the WSDL and build a tree
+    kong.log.debug ("getSOAPActionFromWSDL: no WSDL caching due to Asynchronous external entities")
+    xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)  
+  else 
+    -- Get the WSDL Cache table
+    kong.log.debug ("getSOAPActionFromWSDL: caching: Get the compiled WSDL from cache")
+    xmlWSDL_doc = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[xmlgeneral.schemaTypeAPI].xmlWsdlPtr
+  end
+  
+  -- If the XML Tree document of WSDL is not in the cache
+  if xmlWSDL_doc == nil or xmlWSDL_doc == ffi.NULL then
+    -- This code should never happen because if the pointer is null it will be raised before by 'xmlgeneral.XMLValidateWithWSDL'
+    return wsdlSoapAction_Value, wsdlRequired_Value, (errMessage or "Unable to get the XML Tree document of WSDL is not in the cache")
+  end
   
   -- Get the SOAP Action Cache table  
   local cacheSoapAction = kong.xmlSoapPtrCache.plugins[pluginId].soapAction
   
-  kong.log.debug ("getSOAPActionFromWSDL: caching: Get the compiled WSDL from cache")
-  xmlWSDL_doc = cacheWSDL.xmlWsdlPtr
-  errMessage  = cacheWSDL.xmlWsdlErrMsg
-  
-  if not errMessage then
-    -- If wsdlDefinitions_type is not in the cache and If there is no Error from Cache
-    if not cacheSoapAction.wsdlDefinitions_type and not cacheSoapAction.wsdlDefinitions_typeError then
-      -- Retrieve:
-      --  For WSDL 1.1 <wsdl:definitions> node
-      --  For WSDL 2.0 <wsdl:description> node
-      kong.log.debug ("getSOAPActionFromWSDL: caching: Retrieve 'wsdlDefinitions_type' from WSDL and Put it in the cache")
-      xmlWSDLNodePtrRoot = libxml2.xmlDocGetRootElement(xmlWSDL_doc)
-      if xmlWSDLNodePtrRoot then
-        if tonumber(xmlWSDLNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE then
-          nodeName = ffi.string(xmlWSDLNodePtrRoot.name)
-          if     nodeName == "definitions" then
-            kong.log.debug("getSOAPActionFromWSDL: <definitions> for WSDL 1.1 found")
-            wsdlDefinitions_type = xmlgeneral.WSDL1_1
-          elseif nodeName == "description" then
-            kong.log.debug("getSOAPActionFromWSDL: <description> for WSDL 2.0 found")
-            wsdlDefinitions_type = xmlgeneral.WSDL2_0
-          end
+  -- If wsdlDefinitions_type is not in the cache and If there is no Error from Cache
+  if not cacheSoapAction.wsdlDefinitions_type and not cacheSoapAction.wsdlDefinitions_typeError then
+    -- Retrieve:
+    --  For WSDL 1.1 <wsdl:definitions> node
+    --  For WSDL 2.0 <wsdl:description> node
+    kong.log.debug ("getSOAPActionFromWSDL: caching: Retrieve 'wsdlDefinitions_type' from WSDL and Put it in the cache")
+    xmlWSDLNodePtrRoot = libxml2.xmlDocGetRootElement(xmlWSDL_doc)
+    if xmlWSDLNodePtrRoot then
+      if tonumber(xmlWSDLNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE then
+        nodeName = ffi.string(xmlWSDLNodePtrRoot.name)
+        if     nodeName == "definitions" then
+          kong.log.debug("getSOAPActionFromWSDL: <definitions> for WSDL 1.1 found")
+          wsdlDefinitions_type = xmlgeneral.WSDL1_1
+        elseif nodeName == "description" then
+          kong.log.debug("getSOAPActionFromWSDL: <description> for WSDL 2.0 found")
+          wsdlDefinitions_type = xmlgeneral.WSDL2_0
         end
       end
-
-      if wsdlDefinitions_type ~= xmlgeneral.Unknown_WSDL then
-        -- Get the List of all NameSpaces of the WSDL and find the NameSpace related to WSDL and SOAP 1.1 and SOAP 1.2
-        wsdlRaw_namespaces = libxml2.xmlGetNsList(xmlWSDL_doc, xmlWSDLNodePtrRoot)
-        local i = 0
-        while wsdlRaw_namespaces and wsdlRaw_namespaces[i] ~= ffi.NULL and wsdlRaw_namespaces[i].href ~= ffi.NULL do
-          -- WSDL 1.1 namespace (example: wsdl)
-          if     ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1 then
-            if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
-              wsdlNS1_1 = ffi.string(wsdlRaw_namespaces[i].prefix)
-            else
-              -- There is no prefix for the 'wsdl' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
-              wsdlNS1_1 = "wsdl11_kong"
-            end
-          -- WSDL 2.0 namespace (example: wsdl2)
-          elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL2_0 then
-            if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
-              wsdlNS2_0 = ffi.string(wsdlRaw_namespaces[i].prefix)
-            else
-              -- There is no prefix for the 'wsdl' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
-              wsdlNS2_0 = "wsdl20_kong"
-            end
-          -- WSAM: WS-Addressing Metadata namespace
-          elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSAM then
-            if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
-              wsamNS = ffi.string(wsdlRaw_namespaces[i].prefix)
-            else
-              -- There is no prefix for the 'wsam' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
-              wsamNS = "wsam_kong"
-            end        
-          -- SOAP 1.1 NameSpace (example: soap)        
-          elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1_SOAP1_1 then
-            if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
-              wsdlNS_SOAP1_1 = ffi.string(wsdlRaw_namespaces[i].prefix)
-            else
-              -- There is no prefix for the 'SOAP 1.1' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
-              wsdlNS_SOAP1_1 = "soap11_kong"
-            end
-          -- SOAP 1.2 NameSpace (example: soap12)
-          elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1_SOAP1_2 then
-            if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
-              wsdlNS_SOAP1_2 = ffi.string(wsdlRaw_namespaces[i].prefix)
-            else
-              -- There is no prefix for the 'SOAP 1.1' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
-              wsdlNS_SOAP1_2 = "soap12_kong"
-            end
-          end
-          i = i + 1
-        end
-        cacheSoapAction.wsdlDefinitions_type  = wsdlDefinitions_type
-        cacheSoapAction.wsdlNS_SOAP1_1        = wsdlNS_SOAP1_1
-        cacheSoapAction.wsdlNS_SOAP1_2        = wsdlNS_SOAP1_2
-        cacheSoapAction.wsdlNS1_1             = wsdlNS1_1
-        cacheSoapAction.wsdlNS2_0             = wsdlNS2_0
-        cacheSoapAction.wsamNS                = wsamNS
-
-      -- Else we don't find the <definitions> or <description>
-      else
-        errMessage = "Unable to find the 'wsdl:definitions' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition"
-        cacheSoapAction.wsdlDefinitions_typeError = errMessage
-        kong.log.debug(errMessage)
-      end
-    -- Get from cache the wsdlDefinitions_type
-    else
-      kong.log.debug ("getSOAPActionFromWSDL: caching: Get 'wsdlDefinitions_type' from the cache")
-      wsdlDefinitions_type  = cacheSoapAction.wsdlDefinitions_type
-      errMessage            = cacheSoapAction.wsdlDefinitions_typeError
-      wsdlNS_SOAP1_1        = cacheSoapAction.wsdlNS_SOAP1_1
-      wsdlNS_SOAP1_2        = cacheSoapAction.wsdlNS_SOAP1_2
-      wsdlNS1_1             = cacheSoapAction.wsdlNS1_1
-      wsdlNS2_0             = cacheSoapAction.wsdlNS2_0
-      wsamNS                = cacheSoapAction.wsamNS
     end
-  end
 
+    if wsdlDefinitions_type ~= xmlgeneral.Unknown_WSDL then
+      -- Get the List of all NameSpaces of the WSDL and find the NameSpace related to WSDL and SOAP 1.1 and SOAP 1.2
+      wsdlRaw_namespaces = libxml2.xmlGetNsList(xmlWSDL_doc, xmlWSDLNodePtrRoot)
+      local i = 0
+      while wsdlRaw_namespaces and wsdlRaw_namespaces[i] ~= ffi.NULL and wsdlRaw_namespaces[i].href ~= ffi.NULL do
+        -- WSDL 1.1 namespace (example: wsdl)
+        if     ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1 then
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS1_1 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'wsdl' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS1_1 = "wsdl11_kong"
+          end
+        -- WSDL 2.0 namespace (example: wsdl2)
+        elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL2_0 then
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS2_0 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'wsdl' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS2_0 = "wsdl20_kong"
+          end
+        -- WSAM: WS-Addressing Metadata namespace
+        elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSAM then
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsamNS = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'wsam' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsamNS = "wsam_kong"
+          end        
+        -- SOAP 1.1 NameSpace (example: soap)        
+        elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1_SOAP1_1 then
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS_SOAP1_1 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'SOAP 1.1' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS_SOAP1_1 = "soap11_kong"
+          end
+        -- SOAP 1.2 NameSpace (example: soap12)
+        elseif ffi.string(wsdlRaw_namespaces[i].href) == xmlgeneral.schemaWSDL1_1_SOAP1_2 then
+          if wsdlRaw_namespaces[i].prefix ~= ffi.NULL then
+            wsdlNS_SOAP1_2 = ffi.string(wsdlRaw_namespaces[i].prefix)
+          else
+            -- There is no prefix for the 'SOAP 1.1' Namespace: we put an arbitrary value for 'xmlXPathRegisterNs'
+            wsdlNS_SOAP1_2 = "soap12_kong"
+          end
+        end
+        i = i + 1
+      end
+      cacheSoapAction.wsdlDefinitions_type  = wsdlDefinitions_type
+      cacheSoapAction.wsdlNS_SOAP1_1        = wsdlNS_SOAP1_1
+      cacheSoapAction.wsdlNS_SOAP1_2        = wsdlNS_SOAP1_2
+      cacheSoapAction.wsdlNS1_1             = wsdlNS1_1
+      cacheSoapAction.wsdlNS2_0             = wsdlNS2_0
+      cacheSoapAction.wsamNS                = wsamNS
+
+    -- Else we don't find the <definitions> or <description>
+    else
+      errMessage = "Unable to find the 'wsdl:definitions' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition"
+      cacheSoapAction.wsdlDefinitions_typeError = errMessage
+      kong.log.debug(errMessage)
+    end
+  -- Get from cache the wsdlDefinitions_type
+  else
+    kong.log.debug ("getSOAPActionFromWSDL: caching: Get 'wsdlDefinitions_type' from the cache")
+    wsdlDefinitions_type  = cacheSoapAction.wsdlDefinitions_type
+    errMessage            = cacheSoapAction.wsdlDefinitions_typeError
+    wsdlNS_SOAP1_1        = cacheSoapAction.wsdlNS_SOAP1_1
+    wsdlNS_SOAP1_2        = cacheSoapAction.wsdlNS_SOAP1_2
+    wsdlNS1_1             = cacheSoapAction.wsdlNS1_1
+    wsdlNS2_0             = cacheSoapAction.wsdlNS2_0
+    wsamNS                = cacheSoapAction.wsamNS
+  end
+  
   if not errMessage then
       kong.log.debug("getSOAPActionFromWSDL: NameSpaces found: WSDL='" .. (wsdlNS1_1 or wsdlNS2_0 or 'nil') .. 
     "', WS-Addressing_Metadata='" .. (wsamNS or 'nil') .. 
@@ -2226,7 +2234,7 @@ end
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
-function xmlgeneral.validateSOAPAction_Header (pluginId, SOAPRequest, WSDL, SOAPAction_Header, verbose)
+function xmlgeneral.validateSOAPAction_Header (pluginId, SOAPRequest, WSDL, SOAPAction_Header, verbose, async)
   local i
   local temp
   local xmlRequest_doc
@@ -2412,7 +2420,8 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, SOAPRequest, WSDL, SOAP
                                                                     WSDL, 
                                                                     request_OperationName,
                                                                     ffi.string(raw_namespaces[i].href),
-                                                                    verbose)
+                                                                    verbose,
+                                                                    async)
     if not errMessage then
       if  SOAPAction_Header_Value == nil then
         -- If the WSDL has soapActionRequired="true" attribute

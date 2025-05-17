@@ -85,8 +85,8 @@ return {
         end
 
         -- Check that Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
-        if ((config.xsdSoapSchemaInclude and next(config.xsdSoapSchemaInclude)) or 
-            (config.xsdApiSchemaInclude and next(config.xsdApiSchemaInclude))) and
+        if ((config.xsdSoapSchemaInclude and type(config.xsdSoapSchemaInclude) == 'table' and next(config.xsdSoapSchemaInclude)) or 
+            (config.xsdApiSchemaInclude  and type(config.xsdApiSchemaInclude ) == 'table' and next(config.xsdApiSchemaInclude))) and
             config.ExternalEntityLoader_Async then
           return nil, "config.xsdSoapSchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
         end

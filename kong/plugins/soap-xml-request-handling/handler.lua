@@ -117,7 +117,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                       soapEnvelope_transformed,
                                                                       plugin_conf.xsdApiSchema,
                                                                       plugin_conf.SOAPAction_Header,
-                                                                      plugin_conf.VerboseRequest)
+                                                                      plugin_conf.VerboseRequest,
+                                                                      plugin_conf.ExternalEntityLoader_Async)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
