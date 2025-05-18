@@ -5,7 +5,8 @@
 local helpers = require "spec.helpers"
 local request_common = {}
 
-request_common.max_loop = 2
+-- Number of times to loop the request for testing the caching
+request_common.max_loop_caching = 2
 
 request_common.calculator_Request= [[
 <?xml version="1.0" encoding="utf-8"?>

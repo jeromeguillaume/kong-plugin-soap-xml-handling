@@ -256,7 +256,6 @@ end
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
   
-  print("**jerome access")
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   

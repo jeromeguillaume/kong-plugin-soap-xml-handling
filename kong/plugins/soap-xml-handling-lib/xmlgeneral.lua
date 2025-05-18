@@ -1465,8 +1465,6 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
       
       kong.log.debug ("Validation for schema #" .. index)
 
-      -- Don't have to set the XSD Schema in the function call because it's already compiled and it's in the cache
-      xsdSchema = nil
       errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
       
       local msgDebug = errMessage or "Ok"
@@ -1483,6 +1481,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     end
 
   end
+  
   -- If prefetch is enabled 
   if prefetch then
     -- Get the 1st Error message
@@ -1536,9 +1535,6 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
     soapFaultCode = xmlgeneral.soapFaultCodeServer
   end
   
-  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                        ffi.C.XML_PARSE_NOWARNING)
-
   -- Get the XSD Cache table
   if prefetch or async then
     -- If prefetch is enabled
@@ -1553,13 +1549,15 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
     --    related to their TTL (refreshing their content)
     cacheXSD = {}
   else
+    -- If it's the first call => let's create the XSD cache table
     if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] then    
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
     else
+      -- Get XSD pointers from the cache table
       cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
-      -- If not all pointers aren't in the cache
+      -- If not all pointers aren't in the cache table
       if not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
-        -- Re-create all the pointers for consistency
+        -- All the pointers need to recreated for consistency
         kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
       end
     end
@@ -1572,11 +1570,11 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
   if not cacheXSD.xmlSchemaParserCtxtPtr then
 
     if prefetch then
-      kong.log.debug("XSD Validation, prefetch: compile XSD and raise the download of External Entities")
+      kong.log.debug("XSD Validation, prefetch: Compile XSD and Raise the download of External Entities")
     elseif async then
       kong.log.debug("XSD Validation, no XSD caching due to Asynchronous external entities") 
     else
-      kong.log.debug("XSD Validation, caching: compile the XSD and Put it in the cache") 
+      kong.log.debug("XSD Validation, caching: Compile the XSD and Put it in the cache") 
     end
 
     -- Create the Parser Context
@@ -1594,11 +1592,9 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
       -- Parse XSD schema
       xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
       cacheXSD.xmlSchemaPtr = xsd_schema_doc
-      print("**jerome put xsd_schema_doc in cache")
     -- Get the Schema Parser from cache
     else
       xsd_schema_doc = cacheXSD.xmlSchemaPtr
-      print("**jerome get xsd_schema_doc from cache")
     end
   end
   
@@ -1614,14 +1610,15 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
       -- Create Validation context of XSD Schema
       validation_context, errMessage = libxml2ex.xmlSchemaNewValidCtxt(xsd_schema_doc)
       cacheXSD.xmlSchemaValidCtxtPtr = validation_context
-      print("**jerome put validation_context in cache")
     else
       validation_context = cacheXSD.xmlSchemaValidCtxtPtr
-      print("**jerome get validation_context from cache")
     end
   end
 
   if not errMessage then
+    local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
+                                        ffi.C.XML_PARSE_NOWARNING)
+
     -- Load the XML to be validated against the schema
     xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, nil, nil, default_parse_options, verbose, false)
 
@@ -1769,7 +1766,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
     -- This code should never happen because if the pointer is null it will be raised before by 'xmlgeneral.XMLValidateWithWSDL'
     return wsdlSoapAction_Value, wsdlRequired_Value, (errMessage or "Unable to get the XML Tree document of WSDL is not in the cache")
   end
-  
+
   -- Get the SOAP Action Cache table  
   local cacheSoapAction = kong.xmlSoapPtrCache.plugins[pluginId].soapAction
   
