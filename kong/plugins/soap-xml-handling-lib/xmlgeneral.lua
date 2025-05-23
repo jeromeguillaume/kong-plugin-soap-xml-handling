@@ -684,6 +684,8 @@ function xmlgeneral.pluginConfigure (configs, typePlugin)
       pluginConf.WSDLs = {}
       pluginConf.WSDLs[xmlgeneral.schemaTypeSOAP] = {}
       pluginConf.WSDLs[xmlgeneral.schemaTypeAPI ] = {}
+      pluginConf.WSDLs[xmlgeneral.schemaTypeSOAP].TTL = config.ExternalEntityLoader_CacheTTL
+      pluginConf.WSDLs[xmlgeneral.schemaTypeAPI ].TTL = config.ExternalEntityLoader_CacheTTL
       pluginConf.WSDLs[xmlgeneral.schemaTypeSOAP].XSDs = {}
       pluginConf.WSDLs[xmlgeneral.schemaTypeAPI ].XSDs = {}
       
@@ -1311,6 +1313,35 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     cacheWSDL = {}
   else    
     cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child]
+    local cacheOk = true
+    
+    -- If the first time the WSDL is called
+    if not cacheWSDL.started then
+      cacheWSDL.started = ngx.now()
+    -- Else If the WSDL is too old, remove it from the cache      
+    elseif cacheWSDL.started + cacheWSDL.TTL < ngx.now() then
+      kong.log.debug ("WSDL Validation, caching: TTL ("..(cacheWSDL.TTL or 'nil').." s) is reached, so re-compile the WSDL")
+      cacheOk = false
+    -- Else check that all XSD pointers are correctly compiled in the cache
+    else
+      for k, cacheXSD in pairs (cacheWSDL.XSDs) do
+        if cacheXSD and (not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr) then
+          kong.log.debug ("WSDL Validation, caching: Not all XSDs are correctly compiled, so re-compile the WSDL")
+          cacheOk = false
+          break
+        end
+      end
+    end
+    
+    -- If we have to refresh the WSDL cache or if the XSDs attached to the WSDL are not correctly compiled
+    if not cacheOk then
+      local cacheTTL = cacheWSDL.TTL
+      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child] = {}
+      cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child]
+      cacheWSDL.started = ngx.now()
+      cacheWSDL.TTL = cacheTTL
+      cacheWSDL.XSDs = {}      
+    end
   end
   
   -- If the XML Tree document of WSDL is not in the cache
@@ -1326,6 +1357,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     -- Parse an XML in-memory document of the WSDL and build a tree
     xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
     cacheWSDL.xmlWsdlPtr = xml_doc
+    kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
   -- Get from cache the XML Tree document of WSDL
   else
     kong.log.debug ("WSDL Validation, caching: Get the compiled WSDL from cache")
@@ -1340,8 +1372,6 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     kong.log.err (errMessage)
     return errMessage, soapFaultCode
   end
-
-  kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
   
   -------------------------------------------------------------------------------------------------
   -- If it's the first call (because of Prefetch or no former successful WSDL validation)
@@ -1410,7 +1440,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     end
 
     -- Retrieve all '<xs:schema>' Nodes and 
-    -- Continue the loop until the stop depends on Prefetch/Async/Sync
+    -- Continue the loop until the stop depending on Prefetch/Async/Sync
     while currentNode ~= ffi.NULL and not (async and (validSchemaFound or XMLXSDMatching)) do
       
       if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and 
@@ -1443,7 +1473,6 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
           elseif not errMessage then
             kong.log.debug ("Found the right XSD Schema validating the SOAP/XML")
             validSchemaFound = true
-            errMessage = nil
           end
          
         end
@@ -1453,7 +1482,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     end
   end
   ----------------------------------------------------------------------------------
-  -- Here: there is no prefetch, no asynchronous
+  -- Else if there is no prefetch, no asynchronous
   ----------------------------------------------------------------------------------
   if not prefetch and not async then
 
@@ -1552,12 +1581,17 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
     -- If it's the first call => let's create the XSD cache table
     if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] then    
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
+      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].started = ngx.now()
     else
       -- Get XSD pointers from the cache table
       cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
+      -- Else If the XSD is too old, remove it from the cache
+      if cacheXSD.started + kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL < ngx.now() then
+        kong.log.debug ("XSD Validation, caching: TTL ("..(kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL or 'nil').." s) is reached, so re-compile the XSD")
+        kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
       -- If not all pointers aren't in the cache table
-      if not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
-        -- All the pointers need to recreated for consistency
+      elseif not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
+        kong.log.debug("XSD Validation, caching: All the pointers need to recreated for consistency")
         kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
       end
     end
@@ -1681,6 +1715,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
         
         -- Check validity of XML with its XSD schema
         is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)        
+
       else
         errMessage = xmlgeneral.invalidXML .. ". Unable to find the 'soap:Envelope'"
       end
@@ -1693,18 +1728,17 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
     end
     errMessage = xmlgeneral.invalidXSD .. ". " .. errMessage
   end
-
-  -- If 'is_valid' returns a 'No matching global declaration available for the validation root' => returns false (wrong schema)
-  -- Else => returns true that indicates that the right schema has been found
-  if  is_valid == xmlgeneral.libxmlNoMatchGlobalDecl then
-     XMLXSDMatching = false 
-  else 
-    XMLXSDMatching = true
-  end
     
   if not errMessage and is_valid == 0 then
     kong.log.debug ("XSD validation of " ..schemaType.. " schema: Ok, END")
   elseif errMessage then
+    -- If 'is_valid' returns a 'No matching global declaration available for the validation root' => returns false (wrong schema)
+    -- Else => returns true that indicates that the right schema has been found
+    if  is_valid == xmlgeneral.libxmlNoMatchGlobalDecl then
+      XMLXSDMatching = false 
+    else 
+      XMLXSDMatching = true
+    end
     kong.log.debug ("XSD validation of " ..schemaType.. " RC: " ..is_valid..
                     " matching of XML and XSD: " .. tostring (XMLXSDMatching) .. ", schema: Ko, " .. errMessage .. ", END")
   else

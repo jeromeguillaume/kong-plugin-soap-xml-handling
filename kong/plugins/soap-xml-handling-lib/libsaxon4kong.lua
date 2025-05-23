@@ -126,9 +126,9 @@ function libsaxon4kong.createXslt30ProcessorKong(saxonProcessor)
     -- Free memory
     saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr[0]))
   end
+
   return xslt30Processor, err
 end
-
 
 ----------------------------------
 -- Get Error Message from Context
