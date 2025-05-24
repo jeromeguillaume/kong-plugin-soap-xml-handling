@@ -1315,7 +1315,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child]
     local cacheOk = true
     
-    -- If the first time the WSDL is called
+    -- If it's the first time the WSDL is called
     if not cacheWSDL.started then
       cacheWSDL.started = ngx.now()
     -- Else If the WSDL is too old, remove it from the cache      
@@ -1374,8 +1374,11 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
   end
   
   -------------------------------------------------------------------------------------------------
-  -- If it's the first call (because of Prefetch or no former successful WSDL validation)
-  --    => Get all XSDs and compile/parse them for caching
+  -- If it's the first call due to:
+  --   -> Prefetch OR
+  --   -> Synchronous with no former successful WSDL validation OR
+  --   -> Asynchronous
+  --   => Get all XSDs and compile/parse them for caching
   -------------------------------------------------------------------------------------------------
   if firstCall then
 
@@ -1440,7 +1443,10 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
     end
 
     -- Retrieve all '<xs:schema>' Nodes and 
-    -- Continue the loop until the stop depending on Prefetch/Async/Sync
+    -- Continue the loop until & stop depending on Prefetch/Async/Sync
+    --   -> Prefetch: get all XSDs (without checking the validity of 'XMLtoValidate')
+    --   -> Async   : get the right XSD for validating the XML
+    --   -> Sync    : get all XSDs and compile/parse them for caching (done only once except if there is error or TTL cache expired)
     while currentNode ~= ffi.NULL and not (async and (validSchemaFound or XMLXSDMatching)) do
       
       if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and 
@@ -1469,10 +1475,18 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
             -- Go on next schema
             kong.log.debug ("Prefetch is enabled: go on next XSD Schema")
 
-          -- If there is no error it means that we found the right Schema validating the SOAP/XML
+          -- Else If there is no error it means that we found the right Schema validating the SOAP/XML
           elseif not errMessage then
             kong.log.debug ("Found the right XSD Schema validating the SOAP/XML")
             validSchemaFound = true
+          -- Else if there is an Error and it's a synchronous download and the First Message is not caught yet
+          elseif errMessage and not async and not firstErrMessage then
+            local j, _ = string.find(errMessage, "failed.to.load.external.entity")
+            local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+            -- If there is an error related to a failure to 'load external entity'
+            if j or k then
+              firstErrMessage = errMessage
+            end
           end
          
         end
@@ -1481,34 +1495,41 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
       currentNode = ffi.cast("xmlNode *", currentNode.next)
     end
   end
+  
   ----------------------------------------------------------------------------------
   -- Else if there is no prefetch, no asynchronous
   ----------------------------------------------------------------------------------
   if not prefetch and not async then
+    
+    -- If not all XSDs were not successfully compiled for the cache
+    if firstErrMessage then 
+      kong.log.debug("XMLValidateWithWSDL, synchronous: not all XSDs were successfully compiled for the cache") 
+      errMessage = firstErrMessage
+      soapFaultCode = xmlgeneral.soapFaultCodeServer
+    else
+      kong.log.debug("XMLValidateWithWSDL, synchronous: validate the XML with the compiled WSDL/XSDs in the cache") 
+      validSchemaFound = false
 
-    kong.log.debug("XMLValidateWithWSDL, synchronous: validate the XML with the compiled WSDL/XSDs in the cache") 
-    validSchemaFound = false
+      -- Find the right XSD (in the WSDL) for validating the XML
+      for index,value in pairs(cacheWSDL.XSDs) do
+        
+        kong.log.debug ("Validation for schema #" .. index)
 
-    -- Find the right XSD (in the WSDL) for validating the XML
-    for index,value in pairs(cacheWSDL.XSDs) do
-      
-      kong.log.debug ("Validation for schema #" .. index)
+        errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
+        
+        local msgDebug = errMessage or "Ok"
+        kong.log.debug ("Validation for schema #" .. index .. " RC_Message: '" .. msgDebug .. "'")
 
-      errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
-      
-      local msgDebug = errMessage or "Ok"
-      kong.log.debug ("Validation for schema #" .. index .. " RC_Message: '" .. msgDebug .. "'")
-
-      -- If there is a Match between the Operation Name (of XML) and the XSD
-      --   or
-      -- If there is no Error
-      if XMLXSDMatching or not errMessage then
-        kong.log.debug ("Found the right XSD Schema validating the SOAP/XML")
-        validSchemaFound = true
-        break
-      end      
+        -- If there is a Match between the Operation Name (of XML) and the XSD
+        --   or
+        -- If there is no Error
+        if XMLXSDMatching or not errMessage then
+          kong.log.debug ("Found the right XSD Schema validating the SOAP/XML")
+          validSchemaFound = true
+          break
+        end      
+      end
     end
-
   end
   
   -- If prefetch is enabled 
