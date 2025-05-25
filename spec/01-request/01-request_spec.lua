@@ -1,6 +1,9 @@
 -- Helper functions provided by Kong Gateway, see https://github.com/Kong/kong/blob/master/spec/helpers.lua
 local helpers = require "spec.helpers"
 
+-- Add a Worker Process for enabling the synchronous download of external entities
+helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
+
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
@@ -173,6 +176,14 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503_with_verbose (assert, client)
 			end)
 
+			it("2|WSDL Validation with import sync download - Ok", function()
+				request_common._2_WSDL_Validation_with_import_sync_download_Ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple imports sync download - Ko", function()
+				request_common._2_WSDL_Validation_with_multiple_imports_sync_download_Ko (assert, client)
+			end)
+
 			it("2|WSDL Validation with async download - Ok", function()
 				request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 			end)
@@ -228,6 +239,7 @@ for _, strategy in helpers.all_strategies() do
 			it("2|WSDL (v2) Validation with no import - 'wsdl2:description' - 'schema' default Namespace - Ok", function()
 				request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
 			end)
+			
 		end)
 		
 	end)

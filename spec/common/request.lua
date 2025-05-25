@@ -673,6 +673,35 @@ request_common.calculatorWSDL_req_res_multiple_imports_Ok = [[
 </wsdl:definitions>
 ]]
 
+request_common.calculatorWSDL_req_res_multiple_imports_ko = [[
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  name="tempuri.org"
+                  targetNamespace="http://tempuri.org/">
+  <wsdl:documentation>tempuri.org - Add and Subtract calculation
+  </wsdl:documentation>
+  <wsdl:types>
+    	<xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.request-response.xsd"/>
+    </xsd:schema>
+		<xsd:schema
+        xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+        attributeFormDefault="qualified"
+        elementFormDefault="qualified">
+    	<xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/DOES_NOT_EXIST"/>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
 request_common.calculatorWSDL_with_async_download_Failed = [[
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -1410,13 +1439,42 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			body = request_common.calculator_Request_Response_XSD_VALIDATION
 		}	
 	}
-	local calculator_wsdl_ok = blue_print.routes:insert{
+	
+	local calculator_wsdl_import_sync_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_import_sync_download_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_import_sync_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_Async = false,
+			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
+		}
+	}
+
+	local calculator_wsdl_multiple_imports_sync_ko = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_multiple_imports_sync_download_verbose_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_multiple_imports_sync_ko,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_Async = false,
+			xsdApiSchema = request_common.calculatorWSDL_req_res_multiple_imports_ko
+		}
+	}
+	
+	local calculator_wsdl_async_ok = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorWSDL_with_async_download_verbose_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = calculator_wsdl_ok,
+		route = calculator_wsdl_async_ok,
 		config = {
 			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 15,
@@ -2053,6 +2111,39 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 	assert.matches(request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose, body)
 end
 
+function request_common._2_WSDL_Validation_with_import_sync_download_Ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_import_sync_download_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_WSDL_Validation_with_multiple_imports_sync_download_Ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_multiple_imports_sync_download_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+	assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+end
+
 function request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_async_download_verbose_ok", {
@@ -2062,7 +2153,7 @@ function request_common._2_WSDL_Validation_with_async_download_Ok (assert, clien
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request failed: response status 500, Content-Type and right match
+	-- validate that the request failed: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
