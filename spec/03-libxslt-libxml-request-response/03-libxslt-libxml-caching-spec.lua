@@ -14,11 +14,12 @@ local caching_common = {}
 caching_common.pluginReq_log  = "\\["..pluginRequest.."\\] "
 caching_common.pluginRes_log  = "\\["..pluginResponse.."\\] "
 
-caching_common.TTL= 2
+caching_common.TTL = 2
 
 caching_common.compile_xslt               = "XSLT transformation, caching: Compile the XSLT and Put it in the cache"
 caching_common.compile_wsdl               = "WSDL Validation, caching: Compile the WSDL and Put it in the cache"
 caching_common.compile_wsdl_TTL           = "WSDL Validation, caching: TTL \\("..caching_common.TTL.." s\\) is reached, so re-compile the WSDL"
+caching_common.compile_wsdl_XSDError      = "WSDL Validation, caching: Not all XSDs are correctly compiled, so re-compile the WSDL"
 caching_common.compile_xsd                = "XSD Validation, caching: Compile the XSD and Put it in the cache"
 caching_common.compile_SOAPAction         = nil -- It doesn't exist because SOAPAction leverages WSDL caching (that is already compiled)
 caching_common.compile_routeByXPath       = "RouteByXPath, caching: Create the Parser Context and Put it in the cache"
@@ -270,6 +271,20 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
+        local calculatorWSDL_with_sync_download_invalid_import_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL_with_sync_download_invalid_import" }
+        }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_with_sync_download_invalid_import_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_Async = false,
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
+          }
+        }
+
         local calculatorWSDL_with_async_download_invalid_import_route = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculatorWSDL_with_async_download_invalid_import" }
@@ -279,9 +294,42 @@ for _, strategy in helpers.all_strategies() do
           route = calculatorWSDL_with_async_download_invalid_import_route,
           config = {
             VerboseRequest = true,
+            ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }
         }
+
+        local calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
+            xsdApiSchema = request_common.calculatorWSDL_req_res_multiple_imports_Ok,
+            xsdApiSchemaInclude = {
+              ["http://localhost:9000/tempuri.org.req.res.add.xsd"] = request_common.calculator_Request_Response_Add_XSD_VALIDATION,
+              ["http://localhost:9000/tempuri.org.req.res.subtract.xsd"] = request_common.calculator_Request_Response_Subtract_XSD_VALIDATION,
+            },
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
+            xsdApiSchema = request_common.calculatorWSDL_req_res_multiple_imports_Ok,
+            xsdApiSchemaInclude = {
+              ["http://localhost:9000/tempuri.org.req.res.add.xsd"] = request_common.calculator_Request_Response_Add_XSD_VALIDATION,
+              ["http://localhost:9000/tempuri.org.req.res.subtract.xsd"] = request_common.calculator_Request_Response_Subtract_XSD_VALIDATION,
+            },
+          }
+        }
+
         -- start kong
         assert(helpers.start_kong({
             -- use the custom test template to create a local mock server
@@ -301,7 +349,7 @@ for _, strategy in helpers.all_strategies() do
 --        assert.logfile().has.line(caching_common.xsd_prefetch)
 --      end)
 --    
---      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - ExternalEntityLoader_Async=false, - Ok", function()
+--      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Sync download, - Ok", function()
 --        -- invoke a test request
 --        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
 --          headers = {
@@ -374,7 +422,7 @@ for _, strategy in helpers.all_strategies() do
 --
 --      end)
 --     
---      it("1+2+3+4+5+6+7|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again **", function()
+--      it("1+2+3+4+5+6+7|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
 --        -- clean the log file
 --        helpers.clean_logfile()
 --
@@ -419,7 +467,7 @@ for _, strategy in helpers.all_strategies() do
 --
 --      end)
 --
---      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - ExternalEntityLoader_Async=true - Ok", function()
+--      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Async download - Ok", function()
 --        -- clean the log file
 --        helpers.clean_logfile()
 --        
@@ -453,22 +501,146 @@ for _, strategy in helpers.all_strategies() do
 --        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
 --      end)
 
-      it("2|WSDL Validation with sync download - Invalid Import", function()
+--      it("2|WSDL Validation with sync download - Invalid Import", function()
+--        -- invoke a test request
+--        local r = client:post("/calculatorWSDL_with_sync_download_invalid_import", {
+--          headers = {
+--            ["Content-Type"] = "text/xml;charset=utf-8",
+--          },
+--          body = request_common.calculator_Full_Request,
+--        })
+--
+--        -- validate that the request failed: response status 500, Content-Type and right match
+--        local body = assert.response(r).has.status(500)
+--        local content_type = assert.response(r).has.header("Content-Type")
+--        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+--        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+--	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+--
+--        -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to the error
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+--
+--      end)
+--
+--      it("2|** Execute the same test - Invalid Import: check that the definitions are compiled again (due to Error) **", function()
+--        -- clean the log file
+--        helpers.clean_logfile()
+--
+--        -- invoke a test request
+--        local r = client:post("/calculatorWSDL_with_sync_download_invalid_import", {
+--          headers = {
+--            ["Content-Type"] = "text/xml;charset=utf-8",
+--          },
+--          body = request_common.calculator_Full_Request,
+--        })
+--
+--        -- validate that the request failed: response status 500, Content-Type and right match
+--        local body = assert.response(r).has.status(500)
+--        local content_type = assert.response(r).has.header("Content-Type")
+--        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+--        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+--	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+--        
+--        -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to the error
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_XSDError)
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+--      end)
+
+--      it("2|WSDL Validation with Async download - Invalid Import", function()
+--        -- invoke a test request
+--        local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
+--          headers = {
+--            ["Content-Type"] = "text/xml;charset=utf-8",
+--          },
+--          body = request_common.calculator_Full_Request,
+--        })
+--
+--        -- validate that the request failed: response status 500, Content-Type and right match
+--        local body = assert.response(r).has.status(500)
+--        local content_type = assert.response(r).has.header("Content-Type")
+--        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+--        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+--	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+--
+--        -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to Error
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
+--      end)
+--
+--      it("** Execute the same test - Invalid Import: check that the definitions are compiled again (due to Async) **", function()
+--        -- invoke a test request
+--        local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
+--          headers = {
+--            ["Content-Type"] = "text/xml;charset=utf-8",
+--          },
+--          body = request_common.calculator_Full_Request,
+--        })
+--
+--        -- validate that the request failed: response status 500, Content-Type and right match
+--        local body = assert.response(r).has.status(500)
+--        local content_type = assert.response(r).has.header("Content-Type")
+--        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+--        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+--	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+--
+--        -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to Error
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
+--        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
+--      end)
+
+      it("2+6|WSDL Validation with multiple XSD imported no download - Add in XSD#1", function()
         -- invoke a test request
-        local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
+        local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
           },
           body = request_common.calculator_Full_Request,
         })
-
-        -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
+        
+        -- validate that the request failed: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+        assert.matches('<AddResult>12</AddResult>', body)
+        -- Plugin Request/Response: Check in the log that the WSDL / XSDs definition were compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
       end)
+
+      it("2|** Execute more or less the same test by using Subtract in XSD#2 (before TTL is exceeded): check that the definitions are still cached **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request failed: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches("<SubtractResult>4</SubtractResult>", body)
+        
+        -- Plugin Request/Response: Check in the log that the WSDL definitions were not re-compiled
+        assert.logfile().has.no.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+        assert.logfile().has.no.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+
+        -- Plugin Request/Response: Check in the log that the WSDL / XSDs definitions used the caching
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_wsdl)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+      end)
+
+
 		end)
 	end)
   ::continue::

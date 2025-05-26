@@ -184,6 +184,14 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_Validation_with_multiple_imports_sync_download_Ko (assert, client)
 			end)
 
+			it("2|WSDL Validation with multiple imports sync download - Add in XSD#1 - Ko", function()
+				request_common.with_multiple_imports_sync_Add_in_XSD1_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple imports sync download - Subtract in XSD#2 - Ko", function()
+				request_common.with_multiple_imports_sync_Subtract_in_XSD2_with_verbose_ok (assert, client)
+			end)
+
 			it("2|WSDL Validation with async download - Ok", function()
 				request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 			end)
@@ -238,6 +246,14 @@ for _, strategy in helpers.all_strategies() do
 			
 			it("2|WSDL (v2) Validation with no import - 'wsdl2:description' - 'schema' default Namespace - Ok", function()
 				request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with mixed XSD imported - included - and downloaded - Add in XSD#1 - Ok", function()
+				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with mixed XSD imported - included - and downloaded - Subtract in XSD#2 - Ok", function()
+				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
 			end)
 			
 		end)
