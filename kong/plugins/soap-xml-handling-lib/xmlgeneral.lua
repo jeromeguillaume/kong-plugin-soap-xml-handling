@@ -1610,9 +1610,9 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
       if cacheXSD.started + kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL < ngx.now() then
         kong.log.debug ("XSD Validation, caching: TTL ("..(kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL or 'nil').." s) is reached, so re-compile the XSD")
         kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
-      -- If not all pointers aren't in the cache table
+      -- If all pointers aren't in the cache table
       elseif not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
-        kong.log.debug("XSD Validation, caching: All the pointers need to recreated for consistency")
+        kong.log.debug("XSD Validation, caching: All the pointers need to be recreated for consistency")
         kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
       end
     end
