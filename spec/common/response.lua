@@ -5,7 +5,7 @@
 local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
 local xmlgeneral 			= require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
-local KongGzip				= nill
+local KongGzip				= nil
 -- Compare version strings
 if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
 	KongGzip = require "kong.tools.utils"

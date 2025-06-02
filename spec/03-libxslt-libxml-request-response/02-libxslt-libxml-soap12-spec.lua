@@ -4,6 +4,9 @@ local request_common  = require "spec.common.request"
 local response_common = require "spec.common.response"
 local soap12_common   = require "spec.common.soap12"
 
+-- Add a Worker Process for enabling the synchronous download of external entities
+helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
+
 -- matches our plugin name defined in the plugins's schema.lua
 local pluginRequest  = "soap-xml-request-handling"
 local pluginResponse = "soap-xml-response-handling"
@@ -121,6 +124,32 @@ for _, strategy in helpers.all_strategies() do
             xsdSoapSchema = soap12_common.soap12_XSD,
           }
         }
+
+        local calculator_soap12_XSD_with_sync_download_ok_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_soap12_XSD_with_sync_download_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_soap12_XSD_with_sync_download_ok_route,
+          config = {
+            VerboseRequest = false,
+            ExternalEntityLoader_Async = false,
+            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
+            xsdSoapSchema = soap12_common.soap12_XSD,
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_soap12_XSD_with_sync_download_ok_route,
+          config = {
+            VerboseResponse = false,
+            ExternalEntityLoader_Async = false,
+            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
+            xsdSoapSchema = soap12_common.soap12_XSD,
+          }
+        }
+
         -- start kong
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
@@ -133,7 +162,7 @@ for _, strategy in helpers.all_strategies() do
       lazy_teardown(function()
 				helpers.stop_kong(nil, true)
 			end)
-
+      
       it("2+6|Request and Response plugins|SOAP 1.2 - XSD (SOAP env) + WSDL (API) Validation with import no download - Ok", function()
         -- invoke a test request
         local r = client:post("/calculator_soap12_XSD_with_import_no_download_ok", {
@@ -150,10 +179,25 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
-      
-      it("2+6|Request and Response plugins|SOAP 1.2 - XSD (SOAP env) + WSDL (API) Validation with async download - Ok", function()
+      it("2+6|Request and Response plugins|SOAP 1.2 - XSD (SOAP env) + WSDL (API) Validation with Async download - Ok", function()
         -- invoke a test request
         local r = client:post("/calculator_soap12_XSD_with_async_download_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+       it("2+6|Request and Response plugins|SOAP 1.2 - XSD (SOAP env) + WSDL (API) Validation with Sync download - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculator_soap12_XSD_with_sync_download_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
           },

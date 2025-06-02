@@ -1376,7 +1376,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
   -------------------------------------------------------------------------------------------------
   -- If it's the first call due to:
   --   -> Prefetch OR
-  --   -> Synchronous with no former successful WSDL validation OR
+  --   -> Synchronous (with no former successful WSDL validation or with TTL exceeded) OR
   --   -> Asynchronous
   --   => Get all XSDs and compile/parse them for caching
   -------------------------------------------------------------------------------------------------
@@ -1928,31 +1928,41 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
   -- Create ParserContext and XPathNewContext
   if not errMessage then
 
-    -- If the XPath New Context is not in the cache and If there is no Error from Cache
-    if not cacheSoapAction.contextPtr and
-       not cacheSoapAction.contextErrMsg then
+    -- If the XPath New Context is not in the cache and If there is no Context Error from Cache
+    --  AND
+    -- If the XPath Document is not in the cache and If there is no Document Error from Cache
+    if not cacheSoapAction.contextPtr and not cacheSoapAction.contextErrMsg and
+       not cacheSoapAction.document   and not cacheSoapAction.documentErrMsg then
+      kong.log.debug ("getSOAPActionFromWSDL: caching: Compile 'contextPtr' and 'document' and Put them in the cache")
       parserCtx = libxml2.xmlNewParserCtxt()
-      document  = libxml2.xmlCtxtReadMemory(parserCtx, WSDL)
-      
+      document  = libxml2.xmlCtxtReadMemory(parserCtx, WSDL)      
       if document then
-        context = libxml2.xmlXPathNewContext(document)        
+        context = libxml2.xmlXPathNewContext(document)
         if not context then
           errMessage = "xmlXPathNewContext, no 'context' for the WSDL"
+          cacheSoapAction.contextErrMsg = errMessage
           kong.log.debug(errMessage)
         end
       else
         errMessage = "xmlCtxtReadMemory, no 'document' for the WSDL"
+        cacheSoapAction.documentErrMsg = errMessage
         kong.log.debug(errMessage)
       end
       cacheSoapAction.parserCtxPtr  = parserCtx
       cacheSoapAction.document      = document
-      cacheSoapAction.contextPtr    = context
-      cacheSoapAction.contextErrMsg = errMessage    
+      cacheSoapAction.contextPtr    = context      
     else
-        parserCtx  = cacheSoapAction.parserCtxPtr
-        document   = cacheSoapAction.document
-        context    = cacheSoapAction.contextPtr
+      kong.log.debug ("getSOAPActionFromWSDL: caching: Get 'contextPtr' and 'document' from the cache")
+      parserCtx  = cacheSoapAction.parserCtxPtr
+      document   = cacheSoapAction.document
+      context    = cacheSoapAction.contextPtr
+      if cacheSoapAction.documentErrMsg then
+        errMessage = cacheSoapAction.documentErrMsg
+      elseif cacheSoapAction.contextErrMsg then
         errMessage = cacheSoapAction.contextErrMsg
+      else
+        errMessage = nil  
+      end
     end
   end
 
@@ -2113,6 +2123,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
         kong.log.err(errMessage .. errXPathSoapAction)
       end
     end
+
   -- Else WSDL 2.0: Execute the XPath expression to find the 'Action' attribute value
   -- See RFC: https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#explicitaction
   elseif not errMessage and wsdlDefinitions_type == xmlgeneral.WSDL2_0 then
