@@ -634,6 +634,7 @@ function xmlgeneral.pluginConfigure (configs, typePlugin)
     
     kong.log.debug("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))
     
+    -- Loop over all the cache plugins and delete all the pointers
     -- Only for 'Saxon' library => Delete the current Saxon contexts
     for keyPluginId, cachePlugin in pairs (kong.xmlSoapPtrCache.plugins) do
       if cachePlugin.XSLTs then
@@ -1243,6 +1244,7 @@ end
 function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValidate, WSDL, verbose, prefetch, async)
   local xml_doc          = nil
   local errMessage       = nil
+  local contentFile      = nil
   local firstErrMessage  = nil
   local firstCall        = false
   local xsdSchema        = nil
@@ -1258,7 +1260,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
   local soapFaultCode    = xmlgeneral.soapFaultCodeServer
 
   kong.log.debug("WSDL Validation, BEGIN PluginType:"..pluginType.." child:"..child .. " prefetch:"..tostring(prefetch) .. " async:"..tostring(async))
-
+  
   -- If we have a WDSL file, we retrieve the '<wsdl:types>' Node AND the '<xs:schema>' child nodes 
   --   OR
   -- In we have a raw XSD schema '<xs:schema>'
@@ -1354,10 +1356,18 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
       kong.log.debug ("WSDL Validation, caching: Compile the WSDL and Put it in the cache")
     end
 
-    -- Parse an XML in-memory document of the WSDL and build a tree
-    xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
-    cacheWSDL.xmlWsdlPtr = xml_doc
-    kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
+    -- In the event the WSDL is a file path, read the WSDL content on the file system
+    contentFile, errMessage = libxml2ex.readFile (WSDL)
+    if contentFile then
+      WSDL = contentFile
+    end
+
+    if not errMessage then
+      -- Parse an XML in-memory document of the WSDL and build a tree
+      xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, nil, nil, default_parse_options, verbose, false)
+      cacheWSDL.xmlWsdlPtr = xml_doc
+      kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
+    end
   -- Get from cache the XML Tree document of WSDL
   else
     kong.log.debug ("WSDL Validation, caching: Get the compiled WSDL from cache")
@@ -1602,22 +1612,26 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, child, indexXSD, X
     -- If it's the first call => let's create the XSD cache table
     if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] then    
       kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
-      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD].started = ngx.now()
     else
       -- Get XSD pointers from the cache table
       cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
-      -- Else If the XSD is too old, remove it from the cache
-      if cacheXSD.started + kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL < ngx.now() then
-        kong.log.debug ("XSD Validation, caching: TTL ("..(kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL or 'nil').." s) is reached, so re-compile the XSD")
-        kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
       -- If all pointers aren't in the cache table
-      elseif not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
+      if not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
         kong.log.debug("XSD Validation, caching: All the pointers need to be recreated for consistency")
         kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
+      -- Else If the XSD is too old, remove it from the cache
+      elseif cacheXSD.started + kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL < ngx.now() then
+        kong.log.debug ("XSD Validation, caching: TTL ("..(kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL or 'nil').." s) is reached, so re-compile the XSD")
+        kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}      
       end
     end
     
     cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
+    
+    -- If the XSD is not in the cache (or just re-created) let's initialize the started time
+    if cacheXSD.started == nil then
+      cacheXSD.started = ngx.now()
+    end
     
   end
 

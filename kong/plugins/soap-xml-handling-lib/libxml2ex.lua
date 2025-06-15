@@ -148,20 +148,59 @@ local asyncDownloadEntities_callback = function(_, url_entries)
   return true
 end
 
+-- Read a file (for instance WSDL/XSD/XSLT/XML) from the filesystem
+function libxml2ex.readFile(filePath)
+  local ret
+  local file
+  local errMsg
+
+  if filePath then
+    -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
+    -- check if it's an http URL
+    local i, _ = string.find(filePath, "%s")
+    local j, _ = string.find(filePath, "^%s*http")
+    
+    if i or j then
+      local debugMsg = filePath
+      if i then
+        debugMsg = 'XML content'
+      else
+        debugMsg = 'http URL'
+      end
+      kong.log.notice("readFile: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
+
+    -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
+    else
+      -- Read the file from the filesystem
+      file, errMsg = io.open(filePath, "r")
+      if not file then
+        kong.log.err("readFile: Error opening file '" .. filePath .. "': " .. errMsg)
+      else
+        kong.log.notice("readFile: Read content file '" .. filePath .. "' - Ok")
+        
+        ret = file:read("*a")  -- Read the entire file content
+        file:close()  -- Close the file handle
+      end
+    end
+  end
+  return ret, errMsg
+end
+
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
-  local ret = nil
-  local entity_url = nil
-  local response_body
-  local err = nil
-  local cache_entity = nil
-  local cacheTTL
-  local timeout
-  local async
-  local xsdApiSchemaInclude
-  local xsdSoapSchemaInclude
-  local streamListen = false
+  local ret           = nil
+  local entity_url    = nil
+  local response_body = nil
+  local contentFile   = nil
+  local err           = nil
+  local cache_entity  = nil
+  local cacheTTL      = nil
+  local timeout       = nil
+  local async         = false
+  local streamListen  = false
   local url_cache_key = nil
+  local xsdApiSchemaInclude   = nil
+  local xsdSoapSchemaInclude  = nil
 
   if URL ~= ffi.NULL then
     entity_url = ffi.string(URL)
@@ -222,11 +261,28 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     end
   end
 
-  -- If the XSD content is found in the plugin configuration
+  -- If XSD content is included in the plugin configuration
   if response_body then
-    kong.log.debug("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration")
-  
-  -- If we Asynchronously download the External Entity
+    contentFile, err = libxml2ex.readFile (response_body)
+  else
+    -- Check that the entity_url is a file path and read the content of the file
+    contentFile, err = libxml2ex.readFile (entity_url)  
+  end
+
+  -- If a content file has been successfully retrieved
+  if contentFile then
+    -- Replace the value by the content file
+    response_body = contentFile
+  end
+
+  -- If stream is disabled and there is an error retrieving the content file
+  if streamListen == false and err then
+    kong.log.notice("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
+  -- Else If the XSD content is found in the plugin configuration or on the file system
+  elseif response_body then
+    kong.log.notice("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration or on the file system")
+
+  -- Else If we Asynchronously download the External Entity
   elseif async then
     
     kong.log.debug("REQUIRE an entry in the LRU cache url=" .. entity_url)
@@ -249,7 +305,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     -- If the Entry is not in LRU Cache of Entities
     if not cache_entity then
 
-      err = "The entity is not in the LRU cache, so download it asynchronously"
+      err = "The entity is not in the LRU cache, so asynchronously download it"
       kong.log.debug(err)
       if lruCacheEntities:count() == lruCacheEntities:capacity () then
         -- DON'T change this 'warning' message as the LRU caching is going to evict the leastest used

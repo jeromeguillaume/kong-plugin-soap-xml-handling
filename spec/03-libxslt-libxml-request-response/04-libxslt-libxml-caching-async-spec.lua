@@ -392,8 +392,8 @@ for _, strategy in helpers.all_strategies() do
 			end)
      
       it("2+6|Request and Response plugins|Check that the External Entities prefetching is done - Ok", function()
-        print("** Sleep "..(caching_common.TTL).." s for waiting the end of prefetching **")
-        ngx.sleep(caching_common.TTL)
+        print("** Sleep "..(caching_common.TTL * 2).." s for waiting the end of prefetching **")
+        ngx.sleep(caching_common.TTL * 2)
 
         -- Here we check in the log that Prefetching of WSDL and XSDs was done: this is not related a spectif test
         assert.logfile().has.line(caching_common.wsdl_prefetch)
@@ -479,8 +479,8 @@ for _, strategy in helpers.all_strategies() do
         -- clean the log file
         helpers.clean_logfile()
 
-        --print("** Sleep "..(caching_common.TTL).." s for reaching the caching TTL **")
-        --ngx.sleep(caching_common.TTL)
+        print("** Sleep "..(caching_common.TTL).." s for reaching the caching TTL **")
+        ngx.sleep(caching_common.TTL)
 
         -- invoke a test request
         local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
@@ -737,6 +737,9 @@ for _, strategy in helpers.all_strategies() do
         -- clean the log file
         helpers.clean_logfile()
         
+        print("** Sleep "..(caching_common.TTL).." s for reaching the caching TTL **")
+        ngx.sleep(caching_common.TTL)
+
         -- invoke a test request
         local r = client:post("/calculatorWSDL_with_multiple_imports_include_XSD_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
           headers = {
@@ -761,6 +764,7 @@ for _, strategy in helpers.all_strategies() do
 
 
       end)
+
       it("1|XSLT (BEFORE XSD) - Invalid XSLT input", function()
         -- clean the log file
         helpers.clean_logfile()
@@ -926,7 +930,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
       end)
 
-    it("2+6|** Execute the same test (before TTL is exceeded): check that the definitions are still cached **", function()
+      it("2+6|** Execute the same test (before TTL is exceeded): check that the definitions are still cached **", function()
         -- clean the log file
         helpers.clean_logfile()
 
@@ -978,7 +982,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
       end)
 
-      it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with import Async download - Ok", function()
+      it("2+6|SOAP 1.2 - XSD Validation (SOAP 1.2 env) with import Async download - Ok", function()
         -- clean the log file
         helpers.clean_logfile()
 
@@ -1001,7 +1005,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
       end)
 
-       it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with import Sync download - Ok", function()
+      it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with import Sync download - Ok", function()
         -- clean the log file
         helpers.clean_logfile()
 

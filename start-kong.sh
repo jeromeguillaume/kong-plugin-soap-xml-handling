@@ -12,6 +12,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-handling-lib,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib \
 --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
 --mount type=bind,source="$(pwd)"/kong/saxon/conf,destination=/usr/local/lib/kongsaxon/conf \
+--mount type=bind,source="$(pwd)"/_tmp.dneonline.com/,destination=/usr/local/xml-files/_tmp.dneonline.com \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database-soap-xml-handling" \
 -e "KONG_PG_USER=kong" \
@@ -43,7 +44,7 @@ kong/kong-gateway:3.10.0.1
 #kong/kong-gateway:3.5.0.7
 #kong/kong-gateway:3.6.1.8
 
-#-e "KONG_STREAM_LISTEN= 127.0.0.1:7099" \
+# -e "KONG_STREAM_LISTEN= 0.0.0.0:9099" \
 
 
 #kong/kong-gateway:3.8.0.0
