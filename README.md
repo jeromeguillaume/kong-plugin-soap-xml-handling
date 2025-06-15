@@ -1266,4 +1266,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Add the file support for WSDL/XSD/XSLT definition. For instance the raw WSDL content (ewample: `<wsdl:definitions...</wsdl:definitions>` can be replaced by `/usr/local/xml-files/mycontent.wsdl`)
   - Improved the performance by compiling and parsing WSDL, XSD and XSLT definitions only once per plugin (managed by a new `kong.xmlSoapPtrCache.plugins[plugin_id]` table)
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
-  - Removed useless `formatCerr` in `libsaxon-4-kong`
+  - Removed useless `formatCerr` in  `libsaxon-4-kong`
