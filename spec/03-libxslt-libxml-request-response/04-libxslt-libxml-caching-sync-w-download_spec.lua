@@ -11,10 +11,12 @@ local pluginRequest  = "soap-xml-request-handling"
 local pluginResponse = "soap-xml-response-handling"
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
+local client = nil
+local firstWorkerId = nil
+local maxRetries = 10
+
 -- Add a Worker Process for enabling the synchronous download of external entities
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
-
-local client = nil
 
 for _, strategy in helpers.all_strategies() do
   if strategy == "off" then
@@ -193,7 +195,7 @@ for _, strategy in helpers.all_strategies() do
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
         local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        local workerId = assert.response(r).has.header("X-Worker-Id")
+        firstWorkerId = assert.response(r).has.header("X-Worker-Id")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.equal("soap2", x_soap_region)
         assert.matches(response_common.calculator_Response_XML_18, body)
@@ -214,95 +216,124 @@ for _, strategy in helpers.all_strategies() do
       end)
      
       it("1+2+3+4+5+6+7|** Execute the same test (before TTL is exceeded): check that the definitions are still cached **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
+          -- clean the log file
+          helpers.clean_logfile()
 
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add",
-            ["Connection"] = "keep-alive"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-        
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-        
-        -- Plugin Request: Check in the log that the WSDL definition was not re-compiled
-        assert.logfile().has.no.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+          -- invoke a test request
+          local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
+            headers = {
+              ["Content-Type"] = "text/xml; charset=utf-8",
+              ["SOAPAction"] = "http://tempuri.org/Add",
+              ["Connection"] = "keep-alive"
+            },
+            body = request_common.calculator_Subtract_Full_Request,
+          })
+          
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 200, Content-Type and right match
+            local body = assert.response(r).has.status(200)
+            local content_type = assert.response(r).has.header("Content-Type")
+            local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+            
+            assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+            assert.equal("soap2", x_soap_region)
 
-        -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions used the caching
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
+            assert.matches(response_common.calculator_Response_XML_18, body)        
+            
+            -- Plugin Request: Check in the log that the WSDL definition was not re-compiled
+            assert.logfile().has.no.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
 
-        -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions were not re-compiled
-        assert.logfile().has.no.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions used the caching
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
 
-        -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions used the caching
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_wsdl)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions were not re-compiled
+            assert.logfile().has.no.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
 
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions used the caching
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_wsdl)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+            break
+          end          
+        end
       end)
      
       it("1+2+3+4+5+6+7|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
+          -- clean the log file
+          helpers.clean_logfile()
 
-        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
-        ngx.sleep(caching_common.TTL)
+          print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+          ngx.sleep(caching_common.TTL)
 
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add",
-            ["Connection"] = "keep-alive"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-        
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-        
-        -- Plugin Request: Check in the log that the WSDL / XSDs definitions / SOAPAction were recompiled (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_TTL)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+          -- invoke a test request
+          local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
+            headers = {
+              ["Content-Type"] = "text/xml; charset=utf-8",
+              ["SOAPAction"] = "http://tempuri.org/Add",
+              ["Connection"] = "keep-alive"
+            },
+            body = request_common.calculator_Subtract_Full_Request,
+          })
+          
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 200, Content-Type and right match
+            local body = assert.response(r).has.status(200)
+            local content_type = assert.response(r).has.header("Content-Type")
+            local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+            assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+            assert.equal("soap2", x_soap_region)
+            assert.matches(response_common.calculator_Response_XML_18, body)        
+            
+            -- Plugin Request: Check in the log that the WSDL / XSDs definitions / SOAPAction were recompiled (and not found in the cache)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_TTL)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
 
-        -- Plugin Request: Check in the log that the XSLT / SOAPAction / XPathRouting definitions used the caching
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
-        
-        -- Plugin Response: Check in the log that the WSDL / XSDs definition were recompiled (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl_TTL)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
+            -- Plugin Request: Check in the log that the XSLT / SOAPAction / XPathRouting definitions used the caching
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
+            
+            -- Plugin Response: Check in the log that the WSDL / XSDs definition were recompiled (and not found in the cache)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl_TTL)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
 
-        -- Plugin Response: Check in the log that the XSLT definition used the caching
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)        
+            -- Plugin Response: Check in the log that the XSLT definition used the caching
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)        
 
-        if client then client:close() end
+            if client then client:close() end
+            break
+          end
+        end
       end)
 
       it("2|WSDL Validation with sync download - Invalid Import", function()
@@ -319,6 +350,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request failed: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
+        firstWorkerId = assert.response(r).has.header("X-Worker-Id")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
 	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
@@ -330,30 +362,43 @@ for _, strategy in helpers.all_strategies() do
       end)
 
       it("2|** Execute the same test - Invalid Import: check that the definitions are compiled again (due to an Error) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do        
+          -- clean the log file
+          helpers.clean_logfile()
 
-        -- invoke a test request
-        local r = client:post("/calculatorWSDL_with_sync_download_invalid_import", {
-          headers = {
-            ["Content-Type"] = "text/xml;charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = request_common.calculator_Full_Request,
-        })
-
-        -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
-        
-        -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to the error
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_XSDError)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
-        if client then client:close() end
+          -- invoke a test request
+          local r = client:post("/calculatorWSDL_with_sync_download_invalid_import", {
+            headers = {
+              ["Content-Type"] = "text/xml;charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = request_common.calculator_Full_Request,
+          })
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else            
+            -- validate that the request failed: response status 500, Content-Type and right match
+            local body = assert.response(r).has.status(500)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+            assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+            assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+            
+            -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to the error
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_XSDError)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+            if client then client:close() end
+            break
+          end
+        end
       end)
             
       it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with import Sync download - Ok", function()
@@ -373,6 +418,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
+        firstWorkerId = assert.response(r).has.header("X-Worker-Id")
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
 
@@ -382,58 +428,87 @@ for _, strategy in helpers.all_strategies() do
       end)
 
       it("2+6|** Execute the same test (before TTL is exceeded): check that the definitions are still cached **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do        
 
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
+          -- clean the log file
+          helpers.clean_logfile()
 
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
+          -- invoke a test request
+          local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
+            headers = {
+              ["Content-Type"] = "application/soap+xml; charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = soap12_common.calculator_soap12_Request,
+          })
 
-        -- Plugin Request/Response: Check in the log that the XSD definition used the caching
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 200, Content-Type and right match
+            local body = assert.response(r).has.status(200)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+            assert.matches('<AddResult>12</AddResult>', body)
+
+            -- Plugin Request/Response: Check in the log that the XSD definition used the caching
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+            break
+          end
+        end
       end)
 
       it("2+6|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
-        
-        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
-        ngx.sleep(caching_common.TTL)
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
 
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
+          -- clean the log file
+          helpers.clean_logfile()
+          
+          print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+          ngx.sleep(caching_common.TTL)
+          -- invoke a test request
+          local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
+            headers = {
+              ["Content-Type"] = "application/soap+xml; charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = soap12_common.calculator_soap12_Request,
+          })
 
-        -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache) due to TTL exceeded
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
-        
-        if client then client:close() end
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 200, Content-Type and right match
+            local body = assert.response(r).has.status(200)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+            assert.matches('<AddResult>12</AddResult>', body)
 
+            -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache) due to TTL exceeded
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
+            
+            if client then client:close() end
+            break
+          end
+        end
       end)
 
       it("2+6|SOAP 1.2 - XSD Validation (SOAP env) Sync download - Included Invalid Import - Ko", function()
@@ -453,6 +528,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 500, Content-Type and right match
         local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
+        firstWorkerId = assert.response(r).has.header("X-Worker-Id")
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('Failed to parse the XML resource', body)
 
@@ -461,56 +537,84 @@ for _, strategy in helpers.all_strategies() do
       end)
 
       it("2+6|** Execute the same test - Invalid Import: check that the definitions are compiled again (due to an Error) **", function()
-              -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
 
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_included_invalid_import_no_download_route_ko", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
+          -- clean the log file
+          helpers.clean_logfile()
 
-        -- validate that the request succeeded: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('Failed to parse the XML resource', body)
+          -- invoke a test request
+          local r = client:post("/calculator_soap12_with_included_invalid_import_no_download_route_ko", {
+            headers = {
+              ["Content-Type"] = "application/soap+xml; charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = soap12_common.calculator_soap12_Request,
+          })
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 500, Content-Type and right match
+            local body = assert.response(r).has.status(500)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+            assert.matches('Failed to parse the XML resource', body)
 
-        -- Plugin Request: Check in the log that the XSD definition was recompiled due to the error
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_Error)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)        
+            -- Plugin Request: Check in the log that the XSD definition was recompiled due to the error
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_Error)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+            break
+          end
+        end
       end)
 
       it("2+6|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
 
-        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
-        ngx.sleep(caching_common.TTL)
+          -- clean the log file
+          helpers.clean_logfile()
 
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_included_invalid_import_no_download_route_ko", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
+          print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+          ngx.sleep(caching_common.TTL)
 
-        -- validate that the request succeeded: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('Failed to parse the XML resource', body)
+          -- invoke a test request
+          local r = client:post("/calculator_soap12_with_included_invalid_import_no_download_route_ko", {
+            headers = {
+              ["Content-Type"] = "application/soap+xml; charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = soap12_common.calculator_soap12_Request,
+          })
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 500, Content-Type and right match
+            local body = assert.response(r).has.status(500)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+            assert.matches('Failed to parse the XML resource', body)
 
-        -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_Error)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+            -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_Error)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
 
-        if client then client:close() end
+            if client then client:close() end
+            break
+          end
+        end
       end)
 
       it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with import Sync download - Ok", function()
@@ -530,6 +634,7 @@ for _, strategy in helpers.all_strategies() do
         -- validate that the request succeeded: response status 200, Content-Type and right match
         local body = assert.response(r).has.status(200)
         local content_type = assert.response(r).has.header("Content-Type")
+        firstWorkerId = assert.response(r).has.header("X-Worker-Id")
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
 
@@ -539,57 +644,87 @@ for _, strategy in helpers.all_strategies() do
       end)
 
       it("2+6|** Execute the same test (before TTL is exceeded): check that the definitions are still cached **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
 
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
+          -- clean the log file
+          helpers.clean_logfile()
 
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
+          -- invoke a test request
+          local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
+            headers = {
+              ["Content-Type"] = "application/soap+xml; charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = soap12_common.calculator_soap12_Request,
+          })
 
-        -- Plugin Request/Response: Check in the log that the XSD definition used the caching
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else
+            -- validate that the request succeeded: response status 200, Content-Type and right match
+            local body = assert.response(r).has.status(200)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+            assert.matches('<AddResult>12</AddResult>', body)
+
+            -- Plugin Request/Response: Check in the log that the XSD definition used the caching
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+            break
+          end
+        end
       end)
 
       it("2+6|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
+        -- Do a loop for getting the same Nginx Worker ID as the 1st Test
+        for i=1, maxRetries do
         
-        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
-        ngx.sleep(caching_common.TTL)
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
+          -- clean the log file
+          helpers.clean_logfile()
+          
+          print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+          ngx.sleep(caching_common.TTL)
+          -- invoke a test request
+          local r = client:post("/calculator_soap12_with_import_sync_download_route_ok", {
+            headers = {
+              ["Content-Type"] = "application/soap+xml; charset=utf-8",
+              ["Connection"] = "keep-alive"
+            },
+            body = soap12_common.calculator_soap12_Request,
+          })
+          
+          local workerId = assert.response(r).has.header("X-Worker-Id")
+          if workerId ~= firstWorkerId then
+            print("** First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId .. " - retrying "..i.."/"..maxRetries.." **")
+            client:close()
+            client = helpers.proxy_client()
+            if i == maxRetries then
+              assert(false, "First Nginx Worker ID=" .. firstWorkerId .. " different from the current Worker ID=" .. workerId)
+            end
+          else          
+            -- validate that the request succeeded: response status 200, Content-Type and right match
+            local body = assert.response(r).has.status(200)
+            local content_type = assert.response(r).has.header("Content-Type")
+            assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+            assert.matches('<AddResult>12</AddResult>', body)
 
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-
-        -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache) due to TTL exceeded
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
-        
-        if client then client:close() end
+            -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache) due to TTL exceeded
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
+            
+            if client then client:close() end
+            break
+          end
+        end
      end)
       
 		end)
