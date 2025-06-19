@@ -7,7 +7,7 @@
       targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
       attributeFormDefault="qualified"
       elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="/kong-plugin/spec/fixtures/calculator/2_req_res_all_operations_XSD.xml"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="/kong-plugin/spec/fixtures/calculator/2_6_All_operations_XSD.xml"/>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="AddSoapIn">

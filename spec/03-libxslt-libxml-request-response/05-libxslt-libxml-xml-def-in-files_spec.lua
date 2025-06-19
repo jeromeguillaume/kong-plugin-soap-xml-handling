@@ -51,8 +51,6 @@ for _, strategy in helpers.all_strategies() do
             path = "/ws",
           })    
         
---            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_req_res.WSDL.xml"
-
         local calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_route = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_ok" }
@@ -64,9 +62,9 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsltLibrary = xsltLibrary,
             ExternalEntityLoader_CacheTTL = 3600,
-            xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
-            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_req_res_WSDL11_soap12.xml",
-            xsltTransformAfter = caching_common.calculator_Request_XSLT_change_intB,
+            xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/1_XSLT_BEFORE.xml",
+            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12-import.xml",
+            xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/3_XSLT_AFTER.xml",
             SOAPAction_Header = "yes",
             RouteXPathTargets = {
               {
@@ -84,9 +82,9 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 3600,            
             xsltLibrary = caching_common.libxslt,
-            xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
-            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-            xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER
+            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/6_XSD-KongResult.xml",
+            xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/5_XSLT_BEFORE.xml",
+            xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/7_XSLT_AFTER.xml"
           }
         }
 
