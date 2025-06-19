@@ -6,7 +6,8 @@ caching_common.pluginResponse = "soap-xml-response-handling"
 caching_common.pluginReq_log  = "\\["..caching_common.pluginRequest.."\\] "
 caching_common.pluginRes_log  = "\\["..caching_common.pluginResponse.."\\] "
 
-caching_common.xsltLibrary = "libxslt"
+caching_common.libxslt  = "libxslt"
+caching_common.libsaxon = "saxon"
 
 caching_common.TTL = 2
 

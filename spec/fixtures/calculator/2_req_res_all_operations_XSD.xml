@@ -1,0 +1,77 @@
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="Add">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+        <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="AddResponse">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="AddResult" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Subtract">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+        <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="SubtractResponse">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="SubtractResult" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Multiply">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+        <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="MultiplyResponse">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="MultiplyResult" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Divide">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+        <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="DivideResponse">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="DivideResult" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="Power">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+        <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>
+  <xsd:element name="PowerResponse">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element minOccurs="1" maxOccurs="1" name="PowerResult" type="xsd:int" />
+      </xsd:sequence>
+    </xsd:complexType>
+  </xsd:element>  
+</xsd:schema>

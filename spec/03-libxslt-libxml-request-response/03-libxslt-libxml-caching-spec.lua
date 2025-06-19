@@ -49,16 +49,6 @@ for _, strategy in helpers.all_strategies() do
             path = "/ws",
           })
         
-        blue_print.plugins:insert {
-          name = "pre-function",
-          config = {
-            header_filter = {
-                "local pid = ngx.worker.pid() kong.response.set_header(\"X-Worker-Id\", pid or 'nil')"
-            }
-          }
-        }
-
-
         local calculator_fullSoapXml_handling_Request_Response_async_route = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculator_fullSoapXml_handling_Request_Response_Async_ok" }
@@ -68,7 +58,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_fullSoapXml_handling_Request_Response_async_route,
           config = {
             VerboseRequest = true,
-            xsltLibrary = caching_common.xsltLibrary,
+            xsltLibrary = caching_common.libxslt,
             ExternalEntityLoader_Async = true,
             ExternalEntityLoader_CacheTTL = 3600,
             xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
@@ -91,7 +81,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = true,
             ExternalEntityLoader_Async = true,
             ExternalEntityLoader_CacheTTL = 3600,            
-            xsltLibrary = caching_common.xsltLibrary,
+            xsltLibrary = caching_common.libxslt,
             xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
             xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER
@@ -153,7 +143,7 @@ for _, strategy in helpers.all_strategies() do
           -- it lacks the '<' beginning tag
           config = {
             VerboseRequest = true,
-            xsltLibrary = caching_common.xsltLibrary,
+            xsltLibrary = caching_common.libxslt,
             xsltTransformBefore = [[
               xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
               </xsl:stylesheet>
@@ -170,7 +160,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculatorRes_XSLT_beforeXSD_invalid_verbose_route,
           config = {
             VerboseResponse = true,
-            xsltLibrary = caching_common.xsltLibrary,
+            xsltLibrary = caching_common.libxslt,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
           }
         }
@@ -226,7 +216,7 @@ for _, strategy in helpers.all_strategies() do
           name = pluginRequest,
           route = calculator_soap12_with_import_async_download_route_ok,
           config = {
-            VerboseRequest = false,
+            VerboseRequest = true,
             ExternalEntityLoader_Async = true,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,            
             xsdSoapSchema = soap12_common.soap12_XSD
@@ -332,7 +322,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.SOAPAction_async)
         
-        -- Plugin Request: Check in the log that the XSLT / XPathRouting definitions used the caching
+        -- Plugin Request: Check in the log that the XSLT / XPathRouting definitions used the cache
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
         
@@ -340,7 +330,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.wsdl_async)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
 
-        -- Plugin Response: Check in the log that the XSLT definition used the caching
+        -- Plugin Response: Check in the log that the XSLT definition used the cache
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
         
       end)
@@ -434,7 +424,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.no.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
         assert.logfile().has.no.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
 
-        -- Plugin Request/Response: Check in the log that the WSDL / XSDs definitions used the caching
+        -- Plugin Request/Response: Check in the log that the WSDL / XSDs definitions used the cache
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_wsdl)
@@ -445,9 +435,6 @@ for _, strategy in helpers.all_strategies() do
         -- clean the log file
         helpers.clean_logfile()
         
-        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
-        ngx.sleep(caching_common.TTL)
-
         -- invoke a test request
         local r = client:post("/calculatorWSDL_with_multiple_imports_include_XSD_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
           headers = {
@@ -497,7 +484,7 @@ for _, strategy in helpers.all_strategies() do
 
       end)
 
-      it("2|** Execute the same test - Invalid XSLT input: check that the definition is found in the cache **", function()
+      it("1|** Execute the same test - Invalid XSLT input: check that the definition is found in the cache **", function()
         -- clean the log file
         helpers.clean_logfile()
 
@@ -516,7 +503,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
         
-        -- Plugin Request: Check in the log that the XSLT definition used the caching
+        -- Plugin Request: Check in the log that the XSLT definition used the cache
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
 
       end)
@@ -564,7 +551,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(response_common.calculator_Response_XSLT_BEFORE_Failed_verbose, body)
         
-        -- Plugin Response: Check in the log that the XSLT definition used the caching
+        -- Plugin Response: Check in the log that the XSLT definition used the cache
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
       end)
 
@@ -614,7 +601,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches(soapAction_common.calculator_soap11_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL, body)
 
-        -- Plugin Request: Check in the log that the WSDL / XSDs / SOAPAction definitions used the caching
+        -- Plugin Request: Check in the log that the WSDL / XSDs / SOAPAction definitions used the cache
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
@@ -664,7 +651,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
 
-        -- Plugin Request/Response: Check in the log that the XSD definition used the caching
+        -- Plugin Request/Response: Check in the log that the XSD definition used the cache
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
 

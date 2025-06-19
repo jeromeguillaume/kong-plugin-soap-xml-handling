@@ -79,7 +79,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_fullSoapXml_handling_Request_Response_route,
           config = {
             VerboseRequest = true,
-            xsltLibrary = caching_common.xsltLibrary,
+            xsltLibrary = caching_common.libxslt,
             ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
@@ -100,7 +100,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_fullSoapXml_handling_Request_Response_route,
           config = {
             VerboseResponse = true,
-            xsltLibrary = caching_common.xsltLibrary,
+            xsltLibrary = caching_common.libxslt,
             ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,            
             xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
@@ -253,7 +253,7 @@ for _, strategy in helpers.all_strategies() do
             -- Plugin Request: Check in the log that the WSDL definition was not re-compiled
             assert.logfile().has.no.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
 
-            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions used the caching
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions used the cache
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
@@ -265,7 +265,7 @@ for _, strategy in helpers.all_strategies() do
             -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions were not re-compiled
             assert.logfile().has.no.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
 
-            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions used the caching
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions used the cache
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_wsdl)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
@@ -315,7 +315,7 @@ for _, strategy in helpers.all_strategies() do
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
 
-            -- Plugin Request: Check in the log that the XSLT / SOAPAction / XPathRouting definitions used the caching
+            -- Plugin Request: Check in the log that the XSLT / SOAPAction / XPathRouting definitions used the cache
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
@@ -327,7 +327,7 @@ for _, strategy in helpers.all_strategies() do
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl_TTL)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
 
-            -- Plugin Response: Check in the log that the XSLT definition used the caching
+            -- Plugin Response: Check in the log that the XSLT definition used the cache
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)        
 
             if client then client:close() end
@@ -458,7 +458,7 @@ for _, strategy in helpers.all_strategies() do
             assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
             assert.matches('<AddResult>12</AddResult>', body)
 
-            -- Plugin Request/Response: Check in the log that the XSD definition used the caching
+            -- Plugin Request/Response: Check in the log that the XSD definition used the cache
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
             break
@@ -674,7 +674,7 @@ for _, strategy in helpers.all_strategies() do
             assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
             assert.matches('<AddResult>12</AddResult>', body)
 
-            -- Plugin Request/Response: Check in the log that the XSD definition used the caching
+            -- Plugin Request/Response: Check in the log that the XSD definition used the cache
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
             break

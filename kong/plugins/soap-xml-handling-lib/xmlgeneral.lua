@@ -1237,14 +1237,12 @@ function xmlgeneral.addNamespaces(xsdSchema, document, node)
   return xsdSchema
 end
 
-
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
 function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValidate, WSDL, verbose, prefetch, async)
   local xml_doc          = nil
   local errMessage       = nil
-  local contentFile      = nil
   local firstErrMessage  = nil
   local firstCall        = false
   local xsdSchema        = nil
@@ -1354,13 +1352,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, child, XMLtoValid
       kong.log.debug ("WSDL Validation, no WSDL caching due to Asynchronous external entities")
     else
       kong.log.debug ("WSDL Validation, caching: Compile the WSDL and Put it in the cache")
-    end
-
-    -- In the event the WSDL is a file path, read the WSDL content on the file system
-    contentFile, errMessage = libxml2ex.readFile (WSDL)
-    if contentFile then
-      WSDL = contentFile
-    end
+    end    
 
     if not errMessage then
       -- Parse an XML in-memory document of the WSDL and build a tree
@@ -1818,7 +1810,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
   local rc                    = false
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
-  
+    
   -- If asnchronous download is enabled (the WSDL is not cached)
   if async then
     -- Parse an XML in-memory document of the WSDL and build a tree
@@ -1949,7 +1941,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
        not cacheSoapAction.document   and not cacheSoapAction.documentErrMsg then
       kong.log.debug ("getSOAPActionFromWSDL: caching: Compile 'contextPtr' and 'document' and Put them in the cache")
       parserCtx = libxml2.xmlNewParserCtxt()
-      document  = libxml2.xmlCtxtReadMemory(parserCtx, WSDL)      
+      document, errMessage = libxml2ex.xmlCtxtReadMemory(parserCtx, WSDL)
       if document then
         context = libxml2.xmlXPathNewContext(document)
         if not context then
@@ -1958,7 +1950,9 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
           kong.log.debug(errMessage)
         end
       else
-        errMessage = "xmlCtxtReadMemory, no 'document' for the WSDL"
+        if not errMessage then
+          errMessage = "xmlCtxtReadMemory, no 'document' for the WSDL"
+        end
         cacheSoapAction.documentErrMsg = errMessage
         kong.log.debug(errMessage)
       end
@@ -2253,59 +2247,6 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, WSDL, request_OperationName
   end
 
   return wsdlSoapAction_Value, wsdlRequired_Value, errMessage
-end
-
--------------------------------------------------
--- Get the Operation Name from the SOAP Envelope
--- Exemple: OperationName='Add'
---   <soap:Envelope xmlns:xsi=....">
---      <soap:Body>
---        <Add xmlns="http://tempuri.org/">      
--------------------------------------------------
-function xmlgeneral.getOperationNameFromSOAPEnvelope (xmlRequest_doc, verbose)
-  local errMessage
-  local xmlNodePtrRoot
-  local currentNode
-  local nodeName
-  local operationName
-  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                        ffi.C.XML_PARSE_NOWARNING)
-  
-  xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(xmlRequest_doc, nil, nil, default_parse_options, verbose, false)
-
-  if not errMessage then
-    -- Get root element '<soap:Envelope>' from the SOAP Request
-    xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xmlRequest_doc)
-    if not xmlNodePtrRoot or xmlNodePtrRoot.name == ffi.NULL or (xmlNodePtrRoot.name ~= ffi.NULL and ffi.string(xmlNodePtrRoot.name)) ~= "Envelope"  then
-      errMessage = "Unable to find 'soap:Envelope'"
-    end
-  end
-  
-  -- Get the Operation Name in '<soap:Body>' (for instance '<Add>')
-  if not errMessage then
-    currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
-    -- Retrieve '<soap:Body>' Node
-    while currentNode ~= ffi.NULL do
-      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
-        nodeName = ffi.string(currentNode.name)
-        if nodeName == "Body" then
-          break
-        end
-      end
-      currentNode = ffi.cast("xmlNode *", currentNode.next)
-    end
-    if nodeName == "Body" then
-      currentNode = libxml2.xmlFirstElementChild(currentNode)
-      if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
-        operationName = ffi.string(currentNode.name)
-      else
-        errMessage = "Unable to find the Operation Name inside 'soap:Body'"
-      end
-    else
-      errMessage = "Unable to find 'soap:Body'"
-    end
-  end
-  return operationName, errMessage
 end
 
 ------------------------------------

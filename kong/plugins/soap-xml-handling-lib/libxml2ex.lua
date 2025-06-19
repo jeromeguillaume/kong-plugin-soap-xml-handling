@@ -158,8 +158,9 @@ function libxml2ex.readFile(filePath)
     -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
     -- check if it's an http URL
     local i, _ = string.find(filePath, "%s")
-    local j, _ = string.find(filePath, "^%s*http")
-    
+    local j, _ = string.find(filePath, "^http")
+    print("**jerome: i=" ..(i or 'nil'))
+    print("**jerome: j=" ..(j or 'nil'))
     if i or j then
       local debugMsg = filePath
       if i then
@@ -167,16 +168,16 @@ function libxml2ex.readFile(filePath)
       else
         debugMsg = 'http URL'
       end
-      kong.log.notice("readFile: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
+      kong.log.notice("readFile - Ok: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
 
     -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
     else
       -- Read the file from the filesystem
       file, errMsg = io.open(filePath, "r")
       if not file then
-        kong.log.err("readFile: Error opening file '" .. filePath .. "': " .. errMsg)
+        kong.log.err("readFile - Ko: Error opening file '" .. filePath .. "': " .. errMsg)
       else
-        kong.log.notice("readFile: Read content file '" .. filePath .. "' - Ok")
+        kong.log.notice("readFile - Ok: Read content file '" .. filePath .. "'")
         
         ret = file:read("*a")  -- Read the entire file content
         file:close()  -- Close the file handle
@@ -280,6 +281,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     kong.log.notice("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
   -- Else If the XSD content is found in the plugin configuration or on the file system
   elseif response_body then
+print("**jerome response_body:" .. response_body)    
     kong.log.notice("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration or on the file system")
 
   -- Else If we Asynchronously download the External Entity
@@ -410,14 +412,45 @@ end
 -- Returns:	the parser context or NULL in case of error
 function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
     local errMsg
-    local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
-    if xsd_context == ffi.NULL then
-      errMsg = "xmlSchemaNewMemParserCtxt returns null"
-      kong.log.err(errMsg)
-      return nil, errMsg
+    local contentFile
+
+    -- In the event the XML is a file path, read the XML content on the file system  
+    contentFile, errMsg = libxml2ex.readFile (xsd_schema)
+    if contentFile then
+      xsd_schema = contentFile
     end
-    
-    return ffi.gc(xsd_context, xml2.xmlSchemaFreeParserCtxt), errMsg
+
+    -- If there is no error in 'readFile'
+    if not errMsg then
+      local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
+      if xsd_context ~= ffi.NULL then
+        return ffi.gc(xsd_context, xml2.xmlSchemaFreeParserCtxt), errMsg
+      else
+        errMsg = "xmlSchemaNewMemParserCtxt returns null"
+        kong.log.err(errMsg)
+      end
+    else
+      -- A 'kong.log.err' is already done in 'readFile' function
+    end
+
+    return nil, errMsg
+end
+
+-- Parse an XML in-memory document and build a tree
+function libxml2ex.xmlCtxtReadMemory(parserCtx, WSDL)
+  local errMsg
+  local contentFile
+  local document
+
+  -- In the event the WSDL is a file path, read the WSDL content on the file system  
+  contentFile, errMsg = libxml2ex.readFile (WSDL)
+  if contentFile then
+    WSDL = contentFile
+  end
+  if not errMsg then
+    document = libxml2.xmlCtxtReadMemory(parserCtx, WSDL)
+  end
+  return document, errMsg
 end
 
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
@@ -460,30 +493,45 @@ end
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
 function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose, not_ffi_gc)
+  local contentFile
+  
   kong.ctx.shared.xmlSoapErrMessage = nil
-  
-  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
-  local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
-  
-  if xml_doc == ffi.NULL then
-    -- It returns null in case of issue on SOAP/XML posted by the consumer
-    -- We don't consider it as an Error
-    kong.log.debug("xmlReadMemory returns null")
-    return nil, kong.ctx.shared.xmlSoapErrMessage
+
+  -- In the event the XML is a file path, read the XML content on the file system
+  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (xml_document)
+  if contentFile then
+    xml_document = contentFile
   end
-  if not_ffi_gc == true then
-    -- Fix v1.2.5
-    -- Here we have to deal with a complex situation in regards of XSLT (only), the libxslt takes ownership of 'xml_doc'
-    --    First the xmlReadMemory returns 'xml_doc', then 'xml_doc' is passed to 'xsltParseStylesheetDoc' that returns a 'style' pointer
-    --    after, when the GC calls xsltFreeStylesheet(style), it frees 'style' (Good) and frees cascading 'xml_doc' but finally 
-    --    the GC calls xmlFreeDoc(xml_doc) that is already freed (Bad) and there is a 'double free or corruption (fasttop)' or 
-    --    'free(): double free detected in tcache 2')' or '[alert] 1#0: worker process **** exited on signal 11' in the Kong log
-    --    Note: 'xsltParseStylesheet' isn't concerned by that
-    -- 
-    -- So in the context of XSLT (with not_ffi_gc=true) we don't ask to GC to call xmlFreeDoc because it's done by 'xsltParseStylesheetDoc'
-    return xml_doc, kong.ctx.shared.xmlSoapErrMessage
+
+  -- If there is no error
+  if not kong.ctx.shared.xmlSoapErrMessage then
+    
+    xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
+    local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
+    
+    if xml_doc == ffi.NULL then
+      -- It returns null in case of issue on SOAP/XML posted by the consumer
+      -- We don't consider it as an Error
+      kong.log.debug("xmlReadMemory returns null")
+      return nil, kong.ctx.shared.xmlSoapErrMessage
+    end
+    if not_ffi_gc == true then
+      -- Fix v1.2.5
+      -- Here we have to deal with a complex situation in regards of XSLT (only), the libxslt takes ownership of 'xml_doc'
+      --    First the xmlReadMemory returns 'xml_doc', then 'xml_doc' is passed to 'xsltParseStylesheetDoc' that returns a 'style' pointer
+      --    after, when the GC calls xsltFreeStylesheet(style), it frees 'style' (Good) and frees cascading 'xml_doc' but finally 
+      --    the GC calls xmlFreeDoc(xml_doc) that is already freed (Bad) and there is a 'double free or corruption (fasttop)' or 
+      --    'free(): double free detected in tcache 2')' or '[alert] 1#0: worker process **** exited on signal 11' in the Kong log
+      --    Note: 'xsltParseStylesheet' isn't concerned by that
+      -- 
+      -- So in the context of XSLT (with not_ffi_gc=true) we don't ask to GC to call xmlFreeDoc because it's done by 'xsltParseStylesheetDoc'
+      return xml_doc, kong.ctx.shared.xmlSoapErrMessage
+    else
+      return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+    end
   else
-    return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+    -- There is an issue on reading file
+    return nil, kong.ctx.shared.xmlSoapErrMessage
   end
 end
 -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT

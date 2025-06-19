@@ -2191,7 +2191,7 @@ function request_common._2_WSDL_Validation_with_import_sync_download_Ok (assert,
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)

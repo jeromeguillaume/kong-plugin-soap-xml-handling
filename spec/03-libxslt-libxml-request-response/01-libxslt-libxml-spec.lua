@@ -442,7 +442,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
-      it("2|Request and Response plugins|WSDL Validation with async download - Invalid Import on Request plugin with verbose", function()
+      it("2+6|Request and Response plugins|WSDL Validation with async download - Invalid Import on Request plugin with verbose", function()
           -- invoke a test request
           local r = client:post("/calculatorWSDL_with_async_download_invalid_import_Request_verbose", {
             headers = {
