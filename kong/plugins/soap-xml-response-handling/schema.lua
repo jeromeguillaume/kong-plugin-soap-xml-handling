@@ -13,6 +13,7 @@ return {
           { ExternalEntityLoader_Async = { type = "boolean", default = false, required = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
+          { filePathPrefix = typedefs.path { required = false } },
           { VerboseResponse = { type = "boolean", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 

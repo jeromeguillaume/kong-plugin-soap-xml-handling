@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:jms="http://cxf.apache.org/transports/jms">
   <wsdl:types>
+    <!-- XSD schema for Add (Request and Response) -->
     <xsd:schema
       xmlns:xsd="http://www.w3.org/2001/XMLSchema"
       xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
       targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
       attributeFormDefault="qualified"
       elementFormDefault="qualified">
-      <xsd:import namespace="http://tempuri.org/" schemaLocation="/kong-plugin/spec/fixtures/calculator/2_6_All_operations_XSD.xml"/>
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.req.res.add.xsd"/>
+    </xsd:schema>
+    <!-- XSD schema for Subtract (Request and Response) -->
+    <xsd:schema
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+      targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
+      attributeFormDefault="qualified"
+      elementFormDefault="qualified">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:9000/tempuri.org.req.res.subtract.xsd"/>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="AddSoapIn">

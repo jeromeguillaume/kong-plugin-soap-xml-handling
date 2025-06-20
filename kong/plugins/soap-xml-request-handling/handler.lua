@@ -30,6 +30,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if plugin_conf.xsltTransformBefore then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
+                                                                                  plugin_conf.filePathPrefix,
                                                                                   xmlgeneral.xsltBeforeXSD,
                                                                                   plugin_conf.xsltLibrary,
                                                                                   plugin_conf.xsltParams,
@@ -60,6 +61,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- Validate the SOAP envelope with its schema    
     errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin,
                                                                                pluginId,
+                                                                               plugin_conf.filePathPrefix,
                                                                                xmlgeneral.schemaTypeSOAP,
                                                                                1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (for 1st XSD entry)
                                                                                soapEnvelope_transformed,
@@ -90,6 +92,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- Validate the API XML with its schema
     errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin,
                                                                 pluginId,
+                                                                plugin_conf.filePathPrefix,
                                                                 xmlgeneral.schemaTypeAPI,
                                                                 soapEnvelope_transformed,
                                                                 plugin_conf.xsdApiSchema,
@@ -114,6 +117,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     
     -- Validate the API XML with its schema
     errMessage, soapFaultCode = xmlgeneral.validateSOAPAction_Header (pluginId,
+                                                                      plugin_conf.filePathPrefix,
                                                                       soapEnvelope_transformed,
                                                                       plugin_conf.xsdApiSchema,
                                                                       plugin_conf.SOAPAction_Header,
@@ -136,6 +140,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
+                                                                                  plugin_conf.filePathPrefix,
                                                                                   xmlgeneral.xsltAfterXSD,
                                                                                   plugin_conf.xsltLibrary,
                                                                                   plugin_conf.xsltParams,
@@ -158,7 +163,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     if soapFaultBody == nil and plugin_conf.RouteXPathTargets then
     -- Get Route By XPath and check if the condition is satisfied
     local rcXpath = xmlgeneral.RouteByXPath (pluginId,
-                                             soapEnvelope_transformed, 
+                                             soapEnvelope_transformed,
                                              plugin_conf.RouteXPathRegisterNs,
                                              plugin_conf.RouteXPathTargets)
     -- If the condition is satisfied we change the Upstream

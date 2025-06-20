@@ -149,10 +149,11 @@ local asyncDownloadEntities_callback = function(_, url_entries)
 end
 
 -- Read a file (for instance WSDL/XSD/XSLT/XML) from the filesystem
-function libxml2ex.readFile(filePath)
+function libxml2ex.readFile(filePathPrefix, filePath)
   local ret
   local file
   local errMsg
+  local fullFileName
 
   if filePath then
     -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
@@ -172,12 +173,25 @@ function libxml2ex.readFile(filePath)
 
     -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
     else
-      -- Read the file from the filesystem
-      file, errMsg = io.open(filePath, "r")
-      if not file then
-        kong.log.err("readFile - Ko: Error opening file '" .. filePath .. "': " .. errMsg)
+      local endChar   = string.sub(filePathPrefix or '', -1)
+      local beginChar = string.sub(filePath, 1, 1)
+      print("**jerome: endChar=" ..(endChar or 'nil').." of filePathPrefix="..(filePathPrefix or 'nil'))
+      print("**jerome: beginChar=" ..(beginChar or 'nil').." of filePath="..(filePath or 'nil'))
+      -- If there is no File Path Prefix
+      if not filePathPrefix then
+        fullFileName = filePath
+      -- Else If last character of the filePathPrefix is not '/' and the first character of the filePath is not '/'
+      elseif endChar ~= '/' and beginChar  ~= '/' then
+        fullFileName = filePathPrefix .. '/' .. filePath
       else
-        kong.log.notice("readFile - Ok: Read content file '" .. filePath .. "'")
+        fullFileName = filePathPrefix .. filePath
+      end
+      -- Read the file from the filesystem
+      file, errMsg = io.open(fullFileName, "r")
+      if not file then
+        kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. errMsg)
+      else
+        kong.log.notice("readFile - Ok: Read content file '" .. fullFileName .. "'")
         
         ret = file:read("*a")  -- Read the entire file content
         file:close()  -- Close the file handle
@@ -202,6 +216,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local url_cache_key = nil
   local xsdApiSchemaInclude   = nil
   local xsdSoapSchemaInclude  = nil
+  local filePathPrefix        = nil
 
   if URL ~= ffi.NULL then
     entity_url = ffi.string(URL)
@@ -223,23 +238,25 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   --   AND
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
   if streamListen == false and kong.ctx.shared.xmlSoapExternalEntity then
-    cacheTTL             = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-    timeout              = kong.ctx.shared.xmlSoapExternalEntity.timeout
-    async                = kong.ctx.shared.xmlSoapExternalEntity.async
-    xsdApiSchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
-    xsdSoapSchemaInclude = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
+    cacheTTL              = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
+    timeout               = kong.ctx.shared.xmlSoapExternalEntity.timeout
+    async                 = kong.ctx.shared.xmlSoapExternalEntity.async
+    xsdApiSchemaInclude   = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
+    xsdSoapSchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
+    filePathPrefix        = kong.ctx.shared.xmlSoapExternalEntity.filePathPrefix
   -- Else this function is called in the context of the nginx 'configure' phase, which is not related to an end-user Request
   --   so there is no 'kong.ctx.shared'
   else
-    cacheTTL             = libxml2ex.externalEntityCacheTTL
-    timeout              = libxml2ex.externalEntityTimeout
+    cacheTTL              = libxml2ex.externalEntityCacheTTL
+    timeout               = libxml2ex.externalEntityTimeout
     if streamListen then
-      async              = false
+      async               = false
     else
-      async              = true
+      async               = true
     end
-    xsdApiSchemaInclude  = nil
-    xsdSoapSchemaInclude = nil
+    xsdApiSchemaInclude   = nil
+    xsdSoapSchemaInclude  = nil
+    filePathPrefix        = nil
   end
 
   -- if the SOAP XSD content is included in the plugin configuration
@@ -264,10 +281,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
 
   -- If XSD content is included in the plugin configuration
   if response_body then
-    contentFile, err = libxml2ex.readFile (response_body)
+    contentFile, err = libxml2ex.readFile (filePathPrefix, response_body)
   else
     -- Check that the entity_url is a file path and read the content of the file
-    contentFile, err = libxml2ex.readFile (entity_url)  
+    contentFile, err = libxml2ex.readFile (filePathPrefix, entity_url)
   end
 
   -- If a content file has been successfully retrieved
@@ -281,7 +298,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     kong.log.notice("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
   -- Else If the XSD content is found in the plugin configuration or on the file system
   elseif response_body then
-print("**jerome response_body:" .. response_body)    
+    print("**jerome response_body:" .. response_body)    
     kong.log.notice("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration or on the file system")
 
   -- Else If we Asynchronously download the External Entity
@@ -410,12 +427,12 @@ end
 -- buffer:	a pointer to a char array containing the schemas
 -- size:	the size of the array
 -- Returns:	the parser context or NULL in case of error
-function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
+function libxml2ex.xmlSchemaNewMemParserCtxt (filePathPrefix, xsd_schema)
     local errMsg
     local contentFile
 
     -- In the event the XML is a file path, read the XML content on the file system  
-    contentFile, errMsg = libxml2ex.readFile (xsd_schema)
+    contentFile, errMsg = libxml2ex.readFile (filePathPrefix, xsd_schema)
     if contentFile then
       xsd_schema = contentFile
     end
@@ -437,13 +454,13 @@ function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
 end
 
 -- Parse an XML in-memory document and build a tree
-function libxml2ex.xmlCtxtReadMemory(parserCtx, WSDL)
+function libxml2ex.xmlCtxtReadMemory(parserCtx, filePathPrefix, WSDL)
   local errMsg
   local contentFile
   local document
 
   -- In the event the WSDL is a file path, read the WSDL content on the file system  
-  contentFile, errMsg = libxml2ex.readFile (WSDL)
+  contentFile, errMsg = libxml2ex.readFile (filePathPrefix, WSDL)
   if contentFile then
     WSDL = contentFile
   end
@@ -492,13 +509,13 @@ end
 -- encoding:	the document encoding, or NULL
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
-function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose, not_ffi_gc)
+function libxml2ex.xmlReadMemory (xml_document, filePathPrefix, base_url_document, document_encoding, options, verbose, not_ffi_gc)
   local contentFile
   
   kong.ctx.shared.xmlSoapErrMessage = nil
 
   -- In the event the XML is a file path, read the XML content on the file system
-  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (xml_document)
+  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (filePathPrefix, xml_document)
   if contentFile then
     xml_document = contentFile
   end

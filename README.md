@@ -1263,7 +1263,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
 - v1.4.0
-  - Added the file support for WSDL, XSD and XSLT definitions. For instance the raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>` can be replaced by `/usr/local/xml-files/mycontent.wsdl`)
+  - Added the file support for WSDL, XSD and XSLT definitions. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`) put on the Kong Gateway file system
   - Improved the performance by compiling and parsing WSDL, XSD and XSLT definitions only once per plugin (managed by a new `kong.xmlSoapPtrCache.plugins[plugin_id]` table)
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`
