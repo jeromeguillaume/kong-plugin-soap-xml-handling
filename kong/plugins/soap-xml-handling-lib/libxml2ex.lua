@@ -197,7 +197,10 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
     -- Read the file from the filesystem
     file, errMsg = io.open(fullFileName, "r")
     if not file then
-      kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. errMsg)
+      if errMsg then
+        errMsg = "'" .. errMsg .. "'"
+      end
+      kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. (errMsg or 'nil'))
     else
       kong.log.notice("readFile - Ok: Read content file '" .. fullFileName .. "'")
       

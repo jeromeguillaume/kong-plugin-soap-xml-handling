@@ -1,0 +1,6 @@
+xs:schema
+  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns:tns="http://schemas.xmlsoap.org/soap/envelope/"
+  targetNamespace="http://schemas.xmlsoap.org/soap/envelope/">
+
+</xs:schema>
