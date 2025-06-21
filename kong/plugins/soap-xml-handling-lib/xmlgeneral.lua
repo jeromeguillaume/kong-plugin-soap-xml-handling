@@ -1048,7 +1048,7 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, filePathPrefix, xs
   if not cacheXslt.xmlXsltPtr and not cacheXslt.xmlXsltErrMsg then
     kong.log.debug ("XSLT transformation, caching: Compile the XSLT and Put it in the cache")
     -- Load the XSLT document
-    xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, filePathPrefix, nil, nil, default_parse_options, verbose, true)
+    xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, true, filePathPrefix, nil, nil, default_parse_options, verbose, true)
     cacheXslt.xmlXsltPtr    = xslt_doc
     cacheXslt.xmlXsltErrMsg = errMessage
   -- Get from cache the XML Tree document of XSLT
@@ -1079,7 +1079,7 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, filePathPrefix, xs
       soapFaultCode = xmlgeneral.soapFaultCodeServer
     else
       -- Load the complete XML document (with <soap:Envelope>)
-      xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+      xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoTransform, false, filePathPrefix, nil, nil, default_parse_options, verbose, false)
       if errMessage ~= nil then
         errMessage = xmlgeneral.invalidXML .. ". " .. errMessage
       end
@@ -1252,13 +1252,13 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
   local firstErrMessage  = nil
   local firstCall        = false
   local xsdSchema        = nil
-  local currentNode      = nil
   local xmlNsXsdPrefix   = nil
   local cacheWSDL        = nil
   local wsdlNodeFound    = false
   local typesNodeFound   = false
   local validSchemaFound = false
   local XMLXSDMatching   = false
+  local currentNode      = ffi.NULL
   local nodeName         = ""
   local index            = 0
   local soapFaultCode    = xmlgeneral.soapFaultCodeServer
@@ -1362,7 +1362,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
 
     if not errMessage then
       -- Parse an XML in-memory document of the WSDL and build a tree
-      xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+      xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)
       cacheWSDL.xmlWsdlPtr = xml_doc
       kong.log.debug("XMLValidateWithWSDL, xmlReadMemory - Ok")
     end
@@ -1451,7 +1451,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
     end
 
     -- Retrieve all '<xs:schema>' Nodes and 
-    -- Continue the loop until & stop depending on Prefetch/Async/Sync
+    -- Continue the "until & stop" loop depends on Prefetch/Async/Sync
     --   -> Prefetch: get all XSDs (without checking the validity of 'XMLtoValidate')
     --   -> Async   : get the right XSD for validating the XML
     --   -> Sync    : get all XSDs and compile/parse them for caching (done only once except if there is error or TTL cache expired)
@@ -1645,7 +1645,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, ch
     end
 
     -- Create the Parser Context
-    xsd_context, errMessage = libxml2ex.xmlSchemaNewMemParserCtxt(filePathPrefix, XSDSchema)
+    xsd_context, errMessage = libxml2ex.xmlSchemaNewMemParserCtxt(true, filePathPrefix, XSDSchema)
     cacheXSD.xmlSchemaParserCtxtPtr = xsd_context
   -- Get the Parser Context from cache
   else
@@ -1687,7 +1687,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, ch
                                         ffi.C.XML_PARSE_NOWARNING)
 
     -- Load the XML to be validated against the schema
-    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(XMLtoValidate, false, filePathPrefix, nil, nil, default_parse_options, verbose, false)
 
     -- If there is an error on 'xmlReadMemory' call
     if errMessage then
@@ -1821,7 +1821,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, filePathPrefix, WSDL, reque
   if async then
     -- Parse an XML in-memory document of the WSDL and build a tree
     kong.log.debug ("getSOAPActionFromWSDL: no WSDL caching due to Asynchronous external entities")
-    xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, filePathPrefix, nil, nil, default_parse_options, verbose, false)  
+    xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)  
   else 
     -- Get the WSDL Cache table
     kong.log.debug ("getSOAPActionFromWSDL: caching: Get the compiled WSDL from cache")
@@ -1947,7 +1947,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, filePathPrefix, WSDL, reque
        not cacheSoapAction.document   and not cacheSoapAction.documentErrMsg then
       kong.log.debug ("getSOAPActionFromWSDL: caching: Compile 'contextPtr' and 'document' and Put them in the cache")
       parserCtx = libxml2.xmlNewParserCtxt()
-      document, errMessage = libxml2ex.xmlCtxtReadMemory(parserCtx, filePathPrefix, WSDL)
+      document, errMessage = libxml2ex.xmlCtxtReadMemory(parserCtx, true, filePathPrefix, WSDL)
       if document then
         context = libxml2.xmlXPathNewContext(document)
         if not context then
@@ -2368,7 +2368,7 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, filePathPrefix, SOAPReq
   
   -- Parse an XML in-memory document from the SOAP Request and build a tree
   if not errMessage then
-    xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(SOAPRequest, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+    xmlRequest_doc, errMessage = libxml2ex.xmlReadMemory(SOAPRequest, false, filePathPrefix, nil, nil, default_parse_options, verbose, false)
   end
 
   -- Get root element '<soap:Envelope>' from the SOAP Request

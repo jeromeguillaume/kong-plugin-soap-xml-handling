@@ -149,55 +149,63 @@ local asyncDownloadEntities_callback = function(_, url_entries)
 end
 
 -- Read a file (for instance WSDL/XSD/XSLT/XML) from the filesystem
-function libxml2ex.readFile(filePathPrefix, filePath)
+function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   local ret
   local file
   local errMsg
   local fullFileName
 
-  if filePath then
-    -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
-    -- check if it's an http URL
-    local i, _ = string.find(filePath, "%s")
-    local j, _ = string.find(filePath, "^http")
-    print("**jerome: i=" ..(i or 'nil'))
-    print("**jerome: j=" ..(j or 'nil'))
-    if i or j then
-      local debugMsg = filePath
-      if i then
-        debugMsg = 'XML content'
-      else
-        debugMsg = 'http URL'
-      end
-      kong.log.notice("readFile - Ok: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
+  -- In the context of 'filePath' contains the XML sent by the consumer or by the server (i.e. <soap:Envelope>)
+  if hasToRead == false or not filePath then
+    -- Don't try to read a file as it's just an XML content or 'filePath' is nil
+    return nil, nil
+  end
 
-    -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
+  -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
+  -- check if it's an http URL
+  local i, _ = string.find(filePath, "%s")
+  local j, _ = string.find(filePath, "^http")
+  print("**jerome: i=" ..(i or 'nil'))
+  print("**jerome: j=" ..(j or 'nil'))
+  
+  if i or j then
+    local debugMsg = filePath
+    if i then
+      debugMsg = 'XML content'
     else
-      local endChar   = string.sub(filePathPrefix or '', -1)
-      local beginChar = string.sub(filePath, 1, 1)
-      print("**jerome: endChar=" ..(endChar or 'nil').." of filePathPrefix="..(filePathPrefix or 'nil'))
-      print("**jerome: beginChar=" ..(beginChar or 'nil').." of filePath="..(filePath or 'nil'))
-      -- If there is no File Path Prefix
-      if not filePathPrefix then
-        fullFileName = filePath
-      -- Else If last character of the filePathPrefix is not '/' and the first character of the filePath is not '/'
-      elseif endChar ~= '/' and beginChar  ~= '/' then
-        fullFileName = filePathPrefix .. '/' .. filePath
-      else
-        fullFileName = filePathPrefix .. filePath
-      end
-      -- Read the file from the filesystem
-      file, errMsg = io.open(fullFileName, "r")
-      if not file then
-        kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. errMsg)
-      else
-        kong.log.notice("readFile - Ok: Read content file '" .. fullFileName .. "'")
-        
-        ret = file:read("*a")  -- Read the entire file content
-        file:close()  -- Close the file handle
-      end
+      debugMsg = 'http URL'
+    end
+    kong.log.notice("readFile - Ok: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
+
+  -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
+  else
+    local endChar   = string.sub(filePathPrefix or '', -1)
+    local beginChar = string.sub(filePath, 1, 1)
+    print("**jerome: endChar=" ..(endChar or 'nil').." of filePathPrefix="..(filePathPrefix or 'nil'))
+    print("**jerome: beginChar=" ..(beginChar or 'nil').." of filePath="..(filePath or 'nil'))
+    -- If there is no File Path Prefix 
+    --   OR 
+    -- If the File Path starts by '/' => ignore the File Path Prefix 
+    if not filePathPrefix or beginChar == '/' then
+      fullFileName = filePath
+    -- Else If last character of the filePathPrefix is not '/' and the first character of the filePath is not '/'
+    elseif endChar ~= '/' and beginChar  ~= '/' then
+      fullFileName = filePathPrefix .. '/' .. filePath
+    else
+      fullFileName = filePathPrefix .. filePath
+    end
+    -- Read the file from the filesystem
+    file, errMsg = io.open(fullFileName, "r")
+    if not file then
+      kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. errMsg)
+    else
+      kong.log.notice("readFile - Ok: Read content file '" .. fullFileName .. "'")
+      
+      ret = file:read("*a")  -- Read the entire file content
+      file:close()  -- Close the file handle
     end
   end
+  
   return ret, errMsg
 end
 
@@ -281,10 +289,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
 
   -- If XSD content is included in the plugin configuration
   if response_body then
-    contentFile, err = libxml2ex.readFile (filePathPrefix, response_body)
+    contentFile, err = libxml2ex.readFile (true, filePathPrefix, response_body)
   else
     -- Check that the entity_url is a file path and read the content of the file
-    contentFile, err = libxml2ex.readFile (filePathPrefix, entity_url)
+    contentFile, err = libxml2ex.readFile (true, filePathPrefix, entity_url)
   end
 
   -- If a content file has been successfully retrieved
@@ -423,16 +431,16 @@ function libxml2ex.initializeExternalEntityLoader()
   xml2.xmlSetExternalEntityLoader(libxml2ex.xmlMyExternalEntityLoader);
 end
 
--- Create an XML Schemas parse context for that memory buffer expected to contain an XML Schemas file.
+-- Create an XML Schema parsed context for that memory buffer expected to contain an XML Schema file
 -- buffer:	a pointer to a char array containing the schemas
 -- size:	the size of the array
 -- Returns:	the parser context or NULL in case of error
-function libxml2ex.xmlSchemaNewMemParserCtxt (filePathPrefix, xsd_schema)
+function libxml2ex.xmlSchemaNewMemParserCtxt (hasToRead, filePathPrefix, xsd_schema)
     local errMsg
     local contentFile
 
     -- In the event the XML is a file path, read the XML content on the file system  
-    contentFile, errMsg = libxml2ex.readFile (filePathPrefix, xsd_schema)
+    contentFile, errMsg = libxml2ex.readFile (hasToRead, filePathPrefix, xsd_schema)
     if contentFile then
       xsd_schema = contentFile
     end
@@ -454,13 +462,13 @@ function libxml2ex.xmlSchemaNewMemParserCtxt (filePathPrefix, xsd_schema)
 end
 
 -- Parse an XML in-memory document and build a tree
-function libxml2ex.xmlCtxtReadMemory(parserCtx, filePathPrefix, WSDL)
+function libxml2ex.xmlCtxtReadMemory(parserCtx, hasToRead, filePathPrefix, WSDL)
   local errMsg
   local contentFile
   local document
 
   -- In the event the WSDL is a file path, read the WSDL content on the file system  
-  contentFile, errMsg = libxml2ex.readFile (filePathPrefix, WSDL)
+  contentFile, errMsg = libxml2ex.readFile (hasToRead, filePathPrefix, WSDL)
   if contentFile then
     WSDL = contentFile
   end
@@ -509,13 +517,13 @@ end
 -- encoding:	the document encoding, or NULL
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
-function libxml2ex.xmlReadMemory (xml_document, filePathPrefix, base_url_document, document_encoding, options, verbose, not_ffi_gc)
+function libxml2ex.xmlReadMemory (xml_document, hasToRead, filePathPrefix, base_url_document, document_encoding, options, verbose, not_ffi_gc)
   local contentFile
   
   kong.ctx.shared.xmlSoapErrMessage = nil
 
   -- In the event the XML is a file path, read the XML content on the file system
-  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (filePathPrefix, xml_document)
+  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (hasToRead, filePathPrefix, xml_document)
   if contentFile then
     xml_document = contentFile
   end
