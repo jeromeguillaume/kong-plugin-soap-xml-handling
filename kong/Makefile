@@ -8,7 +8,7 @@ kong_saxon_all: local_lib_arm64 local_lib_amd64 kong_saxon_docker_hub kong_saxon
 # All architectures: Build the Kong image (based on 'kong/kong-gateway') with the Saxon libraries and push it on Docker Hub
 kong_saxon_docker_hub:
 	# Build on multiplatform (arm64 and amd64) and push on Docker Hub registry
-	docker buildx build --platform=linux/arm64,linux/amd64 --file=./saxon/Dockerfile_Kong_Saxon -t jeromeguillaume/kong-soap-xml:3.10.0.2-1.4.0-12.5-beta.0 --push .
+	docker buildx build --platform=linux/arm64,linux/amd64 --file=./saxon/Dockerfile_Kong_Saxon -t jeromeguillaume/kong-soap-xml:3.10.0.1-1.4.0-12.5-beta.0 --push .
 
 # All architectures: Build an initContainer image (based on 'alpine') with the Saxon libraries and push it on Docker Hub
 kong_saxon_initcontainer_docker_hub:
