@@ -72,7 +72,7 @@ Example for `config.xsdApiSchema`:
   - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
   - File WSDL definition: `/usr/local/apiclient.wsdl`
 
-The user is in charge of putting the definition files on the Kong Gateway file system.
+The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
 ### Import and External entities
 WSDL and XSD definitions can import other definitions by using `<import>` tag:
@@ -87,7 +87,7 @@ The plugins manage both types of import:
 
 The External entities are processed in this order:
   1) Read the content from the file system (related to the `config.filePathPrefix`)
-  2) Get the content from the plugin configuration (`config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`)
+  2) Get the content from the plugin configuration (defined in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`)
   3) Download Synchronously or Asynchronously the external Entity URL (related to the `config.ExternalEntityLoader_Async`)
 
 ### Caching
@@ -105,7 +105,7 @@ The External entities are processed in this order:
 2) When importing definitions, it is recommended to configure the plugins preferably in this order:
     1) Use the File definition (in case of high number of `soap-xml-handling` plugins)
     2) Put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
-    3) Use URL External Entities (and choose the type of download: synchronous or asynchronous)
+    3) Use External Entities URL (and choose the type of download: Synchronous or Asynchronous)
 
 ### Error management
 In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
@@ -128,7 +128,7 @@ If `Verbose` is enabled:
 |config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
-|config.filePathPrefix|N/A|File Path Prefix of external entity file. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name doesn't start by a `/`|
+|config.filePathPrefix|N/A|File Path Prefix of external entity file. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
@@ -1362,5 +1362,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.4.0-beta.0
   - Added the file support for WSDL, XSD and XSLT definitions. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`) put on the Kong Gateway file system
   - Improved the performance by compiling and parsing WSDL, XSD and XSLT definitions only once per plugin (managed by a new `kong.xmlSoapPtrCache.plugins[plugin_id]` table)
+  - Checked that the Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`
