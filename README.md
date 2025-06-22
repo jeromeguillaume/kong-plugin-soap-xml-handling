@@ -69,19 +69,26 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 ### XML Definitions in files
 The XML definitions (for WSDL/XSD/XSLT) can be put on the Kong Gateway file system rather using a raw definition. 
 Example for `config.xsdApiSchema`:
-- WSDL raw definition: `<wsdl:definitions> ... </wsdl:definitions>`
-- WSDL file definition: `/usr/local/apiclient.wsdl`
+  - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
+  - File WSDL definition: `/usr/local/apiclient.wsdl`
 
 The user is in charge of putting the definition files on the Kong Gateway file system.
 
 ### Import and External entities
 WSDL and XSD definitions can import other definitions by using `<import>` tag:
-- URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
-- File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
+  - URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
+  - File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
 
 The plugins manage both types of import:
-- URL (`http(s)://`): the plugins synchronously or asynchronously download the definition
-- File: the plugins read the definition from the Kong Gateway file system
+  - URL (`http(s)://`): the plugins synchronously or asynchronously download the definition
+  - File: the plugins read the definition from the Kong Gateway file system
+    - An absolute path can be used (like: `/usr/local/apiclient.wsdl`) and `config.filePathPrefix` is ignored
+    - A relative path can be used (like: `../../apiclient.wsdl`) related to the `config.filePathPrefix`
+
+The External entities are processed in this order:
+  1) Read the content from the file system (related to the `config.filePathPrefix`)
+  2) Get the content from the plugin configuration (`config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`)
+  3) Download Synchronously or Asynchronously the external Entity URL (related to the `config.ExternalEntityLoader_Async`)
 
 ### Caching
 - The plugins compile/parse the WSDL/XSD/XSLT definitions and keep them in a Kong memory cache for improving performance
@@ -121,6 +128,7 @@ If `Verbose` is enabled:
 |config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
+|config.filePathPrefix|N/A|File Path Prefix of external entity file. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name doesn't start by a `/`|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
@@ -129,14 +137,14 @@ If `Verbose` is enabled:
 |config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
-|config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags|
-|config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It's the **recommended** option instead of using `ExternalEntityLoader_Async`|
-|config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`|
-|config.xsdSoapSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity|
+|config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
+|config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
+|config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
+|config.xsdSoapSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
-|config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`
-|config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`|
-|config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`|
+|config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`|
+|config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`. It can be a raw definition or a file name containing the definition|
+|config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`. It can be a raw definition or a file name containing the definition|
 
 <a id="deployment"></a>
 
