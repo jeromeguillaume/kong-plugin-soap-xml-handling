@@ -219,6 +219,92 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
+        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = 3600,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
+            xsltTransformBefore = "../../1_XSLT_BEFORE.xslt",
+            xsdSoapSchema = "../../2_6_soap11.xsd",
+            xsdApiSchema = "../../2_6_WSDL11_soap12_file_import_relative_path.wsdl",
+            xsltTransformAfter = "../../3_XSLT_AFTER.xslt",
+            SOAPAction_Header = "yes",
+            RouteXPathTargets = {
+              {
+                  URL= "http://ws.soap2.calculator:8080/ws",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+                  XPathCondition= "5"
+              },
+            }
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = 3600,            
+            xsltLibrary = caching_common.libxslt,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
+            xsltTransformBefore = "../../5_XSLT_BEFORE.xslt",
+            xsdSoapSchema = "../../2_6_soap11.xsd",
+            xsdApiSchema = "../../2_6_WSDL11_soap12_KongResult.wsdl",
+            xsltTransformAfter = "../../7_XSLT_AFTER.xslt"
+          }
+        }
+
+        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            ExternalEntityLoader_Async = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
+            xsltTransformBefore = "../../1_XSLT_BEFORE.xslt",
+            xsdSoapSchema = "../../2_6_soap11.xsd",
+            xsdApiSchema = "../../2_6_WSDL11_soap12_file_import_relative_path.wsdl",
+            xsltTransformAfter = "../../3_XSLT_AFTER.xslt",
+            SOAPAction_Header = "yes",
+            RouteXPathTargets = {
+              {
+                  URL= "http://ws.soap2.calculator:8080/ws",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+                  XPathCondition= "5"
+              },
+            }
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_Async = true,
+            ExternalEntityLoader_CacheTTL = 3600,            
+            xsltLibrary = caching_common.libxslt,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
+            xsltTransformBefore = "../../5_XSLT_BEFORE.xslt",
+            xsdSoapSchema = "../../2_6_soap11.xsd",
+            xsdApiSchema = "../../2_6_WSDL11_soap12_KongResult.wsdl",
+            xsltTransformAfter = "../../7_XSLT_AFTER.xslt"
+          }
+        }
+
         local calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_route = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_ok" }
@@ -705,6 +791,46 @@ for _, strategy in helpers.all_strategies() do
       it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix - No import - Async - Ok", function()
         -- invoke a test request
         local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_async_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.equal("soap2", x_soap_region)
+        assert.matches(response_common.calculator_Response_XML_18, body)        
+        
+			end)
+
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix and Relative path - No import - Sync - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.equal("soap2", x_soap_region)
+        assert.matches(response_common.calculator_Response_XML_18, body)        
+        
+			end)
+
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix and Relative path - No import - Async - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add"

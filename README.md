@@ -23,7 +23,78 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config)
 
-In case of misconfiguration the Plugin sends to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
+---
+
+1. [Information and Recommendation](#information_recommendation)
+2. [Configuration Reference](#configuration_reference)
+3. [How to deploy SOAP/XML Handling plugins](#deployment)
+    1. [Docker](#docker)
+    2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
+    3. [Schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
+    4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
+4. [Quick Test: How to test an XML calculator Web Service without the plugins](#Quick_Test)
+    1. [Kong Gateway - online calculator](#Quick_Test_Kong_Gateway_online)
+    2. [Kong Gateway - local Docker calculator](#Quick_Test_Kong_Gateway_local_Docker)
+    3. [Kong Ingress Controller (KIC) - online calculator](#Quick_Test_KIC_online)
+5. [Main Example: How to test XML Handling plugins with calculator](#Main_Example)
+    1. [Example #1: Request | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_1)
+    2. [Example #2: Request | XSD VALIDATION](#Main_Example_2)
+    3. [Example #3: Request | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_3)
+    4. [Example #4: Request | ROUTING BY XPATH](#Main_Example_4)
+    5. [Example #5: Response | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_5)
+    6. [Example #6: Response | XSD VALIDATION](#Main_Example_6)
+    7. [Example #7: Response | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_7)
+6. [Miscellaneous examples](#Miscellaneous_examples)
+    1. [Example (A) : Response | Use a SOAP/XML WebService with gzip](#Miscellaneous_example_A)
+    2. [Example (B) : Request | Use a WSDL definition, which imports an XSD schema from an external entity](#Miscellaneous_example_B)
+    3. [Example (C1): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration](#Miscellaneous_example_C1)
+    4. [Example (C2): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration for KIC](#Miscellaneous_example_C2)
+    5. [Example (D) : Request and Response | XSLT 3.0 with the saxon library](#Miscellaneous_example_D)
+    6. [Example (E) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_E)
+    7. [Example (F) : Request | validate the SOAPAction Http header](#Miscellaneous_example_F)
+    8. [Example (G): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_G)
+7. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
+8. [Plugins Testing](#Plugins_Testing)
+9. [Known Limitations](#Known_Limitations)
+10. [Changelog](#Changelog)
+
+![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
+
+![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
+
+<a id="information_recommendation"></a>
+
+## Information and Recommendation
+### XML Definitions in files
+The XML definitions (for WSDL/XSD/XSLT) can be put on the Kong Gateway file system rather using a raw definition. 
+Example for `config.xsdApiSchema`:
+- WSDL raw definition: `<wsdl:definitions> ... </wsdl:definitions>`
+- WSDL file definition: `/usr/local/apiclient.wsdl`
+
+The user is in charge of putting the definition files on the Kong Gateway file system.
+
+### External entities
+WSDL and XSD definitions can import other definitions by using `<import>` tag:
+- URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
+- File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
+
+The plugins manage both types of import:
+- URL (`http(s)://`): the plugins synchronously or asynchronously download the definition
+- File: the plugins read the defintion from the Kong Gateway file system
+
+### Caching
+The plugins compile/parse the WSDL/XSD/XSLT definitions and keep them in a Kong memory cache for improving performance. In case of errors due to incorrect WSDL/XSD definitions (e.g. missing a leading "<"), the plugins compile/parse the definitions again; for XSLT definitions, the error message is kept in the cache.
+
+### Recommendation
+1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
+
+2) When importing definitions, it is recommended to configure the plugins preferably in this order:
+    1) Use Files
+    2) Use External Entities and put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
+    3) Use External Entities (and choose the type of download: synchronous or asynchronous)
+
+### Error management
+In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
   - `<faultstring>`: name of the handling process of the plugin
   - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Web Service)
@@ -34,44 +105,6 @@ In case of misconfiguration the Plugin sends to the consumer a SOAP Fault (HTTP 
 If `Verbose` is enabled:
 - the `<errorMessage>` contains the detail of the error
 - the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Web Service
-
----
-
-1. [Configuration Reference](#configuration_reference)
-2. [How to deploy SOAP/XML Handling plugins](#deployment)
-    1. [Docker](#docker)
-    2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
-    3. [Schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
-    4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
-3. [Quick Test: How to test an XML calculator Web Service without the plugins](#Quick_Test)
-    1. [Kong Gateway - online calculator](#Quick_Test_Kong_Gateway_online)
-    2. [Kong Gateway - local Docker calculator](#Quick_Test_Kong_Gateway_local_Docker)
-    3. [Kong Ingress Controller (KIC) - online calculator](#Quick_Test_KIC_online)
-4. [Main Example: How to test XML Handling plugins with calculator](#Main_Example)
-    1. [Example #1: Request | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_1)
-    2. [Example #2: Request | XSD VALIDATION](#Main_Example_2)
-    3. [Example #3: Request | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_3)
-    4. [Example #4: Request | ROUTING BY XPATH](#Main_Example_4)
-    5. [Example #5: Response | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_5)
-    6. [Example #6: Response | XSD VALIDATION](#Main_Example_6)
-    7. [Example #7: Response | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_7)
-5. [Miscellaneous examples](#Miscellaneous_examples)
-    1. [Example (A) : Response | Use a SOAP/XML WebService with gzip](#Miscellaneous_example_A)
-    2. [Example (B) : Request | Use a WSDL definition, which imports an XSD schema from an external entity](#Miscellaneous_example_B)
-    3. [Example (C1): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration](#Miscellaneous_example_C1)
-    4. [Example (C2): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration for KIC](#Miscellaneous_example_C2)
-    5. [Example (D) : Request and Response | XSLT 3.0 with the saxon library](#Miscellaneous_example_D)
-    6. [Example (E) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_E)
-    7. [Example (F) : Request | validate the SOAPAction Http header](#Miscellaneous_example_F)
-    8. [Example (G): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_G)
-6. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
-7. [Plugins Testing](#Plugins_Testing)
-8. [Known Limitations](#Known_Limitations)
-9. [Changelog](#Changelog)
-
-![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
-
-![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
 
 <a id="configuration_reference"></a>
 
@@ -1262,7 +1295,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Changed the `SOAP Fault` message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
-- v1.4.0
+- v1.4.0-beta.0
   - Added the file support for WSDL, XSD and XSLT definitions. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`) put on the Kong Gateway file system
   - Improved the performance by compiling and parsing WSDL, XSD and XSLT definitions only once per plugin (managed by a new `kong.xmlSoapPtrCache.plugins[plugin_id]` table)
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`

@@ -12,6 +12,9 @@ local pluginRequest  = caching_common.pluginRequest
 local pluginResponse = caching_common.pluginResponse
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
+-- Force the number of Worker Process (for checking the cache behavior on the same worker)
+helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "1")
+
 for _, strategy in helpers.all_strategies() do
   if strategy == "off" then
     goto continue

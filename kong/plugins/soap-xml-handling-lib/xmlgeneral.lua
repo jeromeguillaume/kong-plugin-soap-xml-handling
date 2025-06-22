@@ -933,6 +933,7 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, 
   local xml_transformed_dump
   local context
   local errFaultCode
+  local contentFile
   local soapFaultCode = xmlgeneral.soapFaultCodeServer
   
   kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
@@ -949,10 +950,24 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, 
     if not cacheXslt.xsltPtr and not cacheXslt.xsltErrMsg then
       kong.log.debug ("XSLT transformation, caching: Compile the XSLT and Put it in the cache")
       
-      -- Compile the XSLT document
-      context, errMessage = libsaxon4kong.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor,
-                                                             kong.xmlSoapSaxon.xslt30Processor,
-                                                             XSLT)
+      libxml2ex.readFile(true, filePathPrefix, XSLT)
+
+      -- Check that the XSLT is a file path and read the content of the file
+      contentFile, errMessage = libxml2ex.readFile (true, filePathPrefix, XSLT)
+  
+      -- If a content file has been successfully retrieved
+      if contentFile then
+        -- Replace the value by the content file
+        XSLT = contentFile
+      end
+
+      if not errMessage then
+        -- Compile the XSLT document
+        context, errMessage = libsaxon4kong.compileStylesheet (kong.xmlSoapSaxon.saxonProcessor,
+                                                              kong.xmlSoapSaxon.xslt30Processor,
+                                                              XSLT)
+      end
+
       if errMessage then
         errMessage = xmlgeneral.invalidXSLT .. ". " .. errMessage    
       end
@@ -1039,7 +1054,7 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, filePathPrefix, xs
   end
 
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                      ffi.C.XML_PARSE_NOWARNING)
+                                        ffi.C.XML_PARSE_NOWARNING)
 
   -- Get the XSLT Cache table  
   local cacheXslt = kong.xmlSoapPtrCache.plugins[pluginId].XSLTs[xsltBeforeAfterXSD]

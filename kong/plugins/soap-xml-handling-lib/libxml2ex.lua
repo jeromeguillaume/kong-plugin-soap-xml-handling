@@ -165,8 +165,6 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   -- check if it's an http URL
   local i, _ = string.find(filePath, "%s")
   local j, _ = string.find(filePath, "^http")
-  print("**jerome: i=" ..(i or 'nil'))
-  print("**jerome: j=" ..(j or 'nil'))
   
   if i or j then
     local debugMsg = filePath
@@ -175,14 +173,12 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
     else
       debugMsg = 'http URL'
     end
-    kong.log.notice("readFile - Ok: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
+    kong.log.debug("readFile - Ok: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
 
   -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
   else
     local endChar   = string.sub(filePathPrefix or '', -1)
     local beginChar = string.sub(filePath, 1, 1)
-    print("**jerome: endChar=" ..(endChar or 'nil').." of filePathPrefix="..(filePathPrefix or 'nil'))
-    print("**jerome: beginChar=" ..(beginChar or 'nil').." of filePath="..(filePath or 'nil'))
     -- If there is no File Path Prefix 
     --   OR 
     -- If the File Path starts by '/' => ignore the File Path Prefix 
@@ -202,7 +198,7 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
       end
       kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. (errMsg or 'nil'))
     else
-      kong.log.notice("readFile - Ok: Read content file '" .. fullFileName .. "'")
+      kong.log.debug("readFile - Ok: Read content file '" .. fullFileName .. "'")
       
       ret = file:read("*a")  -- Read the entire file content
       file:close()  -- Close the file handle
@@ -306,11 +302,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
 
   -- If stream is disabled and there is an error retrieving the content file
   if streamListen == false and err then
-    kong.log.notice("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
+    kong.log.debug("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
   -- Else If the XSD content is found in the plugin configuration or on the file system
   elseif response_body then
-    print("**jerome response_body:" .. response_body)    
-    kong.log.notice("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration or on the file system")
+    kong.log.debug("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration or on the file system")
 
   -- Else If we Asynchronously download the External Entity
   elseif async then

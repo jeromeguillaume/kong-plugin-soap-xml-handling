@@ -2,9 +2,10 @@
 -- Some characters, called magic characters, have special meanings when used in a pattern. The magic characters are
 -- ( ) . % + - * ? [ ^ $
 
-local helpers         = require "spec.helpers"
-local request_common  = require "spec.common.request"
-local response_common = require "spec.common.response"
+local helpers           = require "spec.helpers"
+local request_common    = require "spec.common.request"
+local response_common   = require "spec.common.response"
+local soapAction_common = require "spec.common.soapAction"
 
 local saxon_common = {}
 
@@ -97,6 +98,34 @@ saxon_common.error_message_Response_XSD_validation_400_No_Content_Type_error_fro
   message_verbose = "Invalid XML input. Error code: 4, Line: 1, Message: Start tag expected, '<' not found",
   backend_http_code = 400
 }
+
+saxon_common.error_XML_message_Request_XSLT_transfo_before_XSD_val_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <detail>
+        <errorMessage>Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+saxon_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <detail>
+        <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
 
 saxon_common.httpbin_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
@@ -312,6 +341,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     config = {
       VerboseRequest = true,
       xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
       xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
     }
   }
@@ -321,9 +351,11 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     config = {
       VerboseResponse = true,
       xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
       xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
     }
   }
+  
   local httpbin_XML_2_JSON_Transformation_ok_route = blue_print.routes:insert{
 		service = httpbin_service,
 		paths = { "/calculator_XML_2_JSON_Transformation_ok" }
