@@ -46,10 +46,10 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
     7. [Example #7: Response | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_7)
 6. [Miscellaneous examples](#Miscellaneous_examples)
     1. [Example (A) : Response | Use a SOAP/XML WebService with gzip](#Miscellaneous_example_A)
-    2. [Example (B) : Request | Use a WSDL definition, which imports XSD schemas from files external entity](#Miscellaneous_example_B)
+    2. [Example (B) : Request | Use a WSDL definition, which imports XSD schemas from external entity FILE](#Miscellaneous_example_B)
     3. [Example (C1): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration](#Miscellaneous_example_C1)
     4. [Example (C2): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration for KIC](#Miscellaneous_example_C2)
-    5. [Example (D) : Request | Use a WSDL definition, which imports an XSD schema from an URL external entity](#Miscellaneous_example_D)
+    5. [Example (D) : Request | Use a WSDL definition, which imports an XSD schema from an external entity URL](#Miscellaneous_example_D)
     6. [Example (E) : Request and Response | XSLT 3.0 with the saxon library](#Miscellaneous_example_E)
     7. [Example (F) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_F)
     8. [Example (G) : Request | validate the SOAPAction Http header](#Miscellaneous_example_G)
@@ -85,12 +85,12 @@ The plugins manage both types of import:
 
 ### Caching
 - The plugins compile/parse the WSDL/XSD/XSLT definitions and keep them in a Kong memory cache for improving performance
-- WSDL/XSD: in case of error due to incorrect definition (e.g. missing a leading "<"), the plugins compile/parse the definition again
+- WSDL/XSD: in case of error due to incorrect definition (e.g. missing a leading "<"), the plugins compile/parse the definition again on each call
 - XSLT: the error message is kept in the cache
 - WSDL/XSD: when the TTL is reached the plugins compile/parse once more
-- The difference in behavior (WSDL/XSD vs XSLT) comes from the URL external entities that can be downloaded without any guarantee of the result (and the download of URL external entities is only provided by WSDL/XSD)
+- The difference in behavior (WSDL/XSD vs XSLT) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by WSDL/XSD)
 - If the plugin configuration changes, the cache is refreshed for all plugins (even if there is a change in only one plugin)
-- The caching is not compatible with Asynchronous download of URL External Entities (`config.ExternalEntityLoader_Async`=`true`)
+- The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Recommendation
 1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
@@ -655,7 +655,7 @@ Content-Encoding: gzip
 
 <a id="Miscellaneous_example_B"></a>
 
-### Example (B): Request and Response | `WSDL VALIDATION`: use a WSDL definition, which imports XSD schemas from files external entity (Example: `/usr/local/my.wsdl`)
+### Example (B): Request and Response | `WSDL VALIDATION`: use a WSDL definition, which imports XSD schemas from  external entity FILE (Example: `/usr/local/my.wsdl`)
 Call correctly `calculator`. The XSD schema content is read from the Kong file system
 
 0) Place the following files on the Kong Gateway file system following the directory name :
@@ -770,7 +770,7 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 
 <a id="Miscellaneous_example_D"></a>
 
-### Example (D): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from an URL external entity (i.e.: http(s)://)
+### Example (D): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from an external entity URL (i.e.: http(s)://)
 Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
