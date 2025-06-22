@@ -222,16 +222,11 @@ extern "C" const char* stylesheetTransformXmlKong( const void *saxonProcessor_vo
   const char* retval = nullptr;
   try{
     context = (Context*) context_void;
-    formatCerr ("parseXmlFromString Before", "");
     XdmNode* input = saxonProcessor->parseXmlFromString(xml_string);
-    formatCerr ("parseXmlFromString After", "");
-    if (input == nullptr) {
-      formatCerr ("throw std::runtime_error", "");
+    if (input == nullptr) {      
       throw std::runtime_error("parsing input XML failed");
     }
-    formatCerr ("transformToString Before", "");
     output_string = context->_xsltExecutable->transformToString(input);
-    formatCerr ("transformToString After", "");
     delete input;
     if (output_string == nullptr) {
       throw std::runtime_error("XSLT executable failed");

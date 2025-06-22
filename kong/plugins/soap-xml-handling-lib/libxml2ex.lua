@@ -24,7 +24,7 @@ if not loaded then
   end
 end
 
-libxml2ex.xmlSoapSleepAsync       = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to download Asynchronously XSD content
+libxml2ex.xmlSoapSleepAsync       = 0.075 -- Duration sleep (in second) of the Prefetech/Queue to Asynchronously download XSD content
 libxml2ex.externalEntityCacheTTL  = 3600  -- default TTL     value for the context of the XSD Validation Prefetch
 libxml2ex.externalEntityTimeout   = 1     -- default Timeout value for the context of the XSD Validation Prefetch
 libxml2ex.sizeOfLRUCache          = 2000  -- Size of size of LRU Cache (1 entry per XSD URL/External Entity)
@@ -148,24 +148,88 @@ local asyncDownloadEntities_callback = function(_, url_entries)
   return true
 end
 
+-- Read a file (for instance WSDL/XSD/XSLT/XML) from the filesystem
+function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
+  local ret
+  local file
+  local errMsg
+  local fullFileName
+
+  -- In the context of 'filePath' contains the XML sent by the consumer or by the server (i.e. <soap:Envelope>)
+  if hasToRead == false or not filePath then
+    -- Don't try to read a file as it's just an XML content or 'filePath' is nil
+    return nil, nil
+  end
+
+  -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
+  -- check if it's an http URL
+  local i, _ = string.find(filePath, "%s")
+  local j, _ = string.find(filePath, "^http")
+  
+  if i or j then
+    local debugMsg = filePath
+    if i then
+      debugMsg = 'XML content'
+    else
+      debugMsg = 'http URL'
+    end
+    kong.log.debug("readFile - Ok: filePath='" .. debugMsg .. "' is not a file, so don't read the content")
+
+  -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
+  else
+    local endChar   = string.sub(filePathPrefix or '', -1)
+    local beginChar = string.sub(filePath, 1, 1)
+    -- If there is no File Path Prefix 
+    --   OR 
+    -- If the File Path starts by '/' => ignore the File Path Prefix 
+    if not filePathPrefix or beginChar == '/' then
+      fullFileName = filePath
+    -- Else If last character of the filePathPrefix is not '/' and the first character of the filePath is not '/'
+    elseif endChar ~= '/' and beginChar  ~= '/' then
+      fullFileName = filePathPrefix .. '/' .. filePath
+    else
+      fullFileName = filePathPrefix .. filePath
+    end
+    -- Read the file from the filesystem
+    file, errMsg = io.open(fullFileName, "r")
+    if not file then
+      if errMsg then
+        errMsg = "'" .. errMsg .. "'"
+      end
+      kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. (errMsg or 'nil'))
+    else
+      kong.log.debug("readFile - Ok: Read content file '" .. fullFileName .. "'")
+      
+      ret = file:read("*a")  -- Read the entire file content
+      file:close()  -- Close the file handle
+    end
+  end
+  
+  return ret, errMsg
+end
+
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
-  local ret = nil
-  local entity_url = nil
-  local response_body
-  local err = nil
-  local cache_entity = nil
-  local cacheTTL
-  local timeout
-  local async
-  local xsdApiSchemaInclude
-  local xsdSoapSchemaInclude
-  local streamListen = false
+  local ret           = nil
+  local entity_url    = nil
+  local response_body = nil
+  local contentFile   = nil
+  local err           = nil
+  local cache_entity  = nil
+  local cacheTTL      = nil
+  local timeout       = nil
+  local async         = false
+  local streamListen  = false
   local url_cache_key = nil
-  
+  local xsdApiSchemaInclude   = nil
+  local xsdSoapSchemaInclude  = nil
+  local filePathPrefix        = nil
+
   if URL ~= ffi.NULL then
     entity_url = ffi.string(URL)
   end
+  kong.log.debug("xmlMyExternalEntityLoader, BEGIN url="..(entity_url or "nil"))
+
   url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
 
   -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
@@ -181,23 +245,25 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   --   AND
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
   if streamListen == false and kong.ctx.shared.xmlSoapExternalEntity then
-    cacheTTL             = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-    timeout              = kong.ctx.shared.xmlSoapExternalEntity.timeout
-    async                = kong.ctx.shared.xmlSoapExternalEntity.async
-    xsdApiSchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
-    xsdSoapSchemaInclude = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
+    cacheTTL              = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
+    timeout               = kong.ctx.shared.xmlSoapExternalEntity.timeout
+    async                 = kong.ctx.shared.xmlSoapExternalEntity.async
+    xsdApiSchemaInclude   = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
+    xsdSoapSchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
+    filePathPrefix        = kong.ctx.shared.xmlSoapExternalEntity.filePathPrefix
   -- Else this function is called in the context of the nginx 'configure' phase, which is not related to an end-user Request
   --   so there is no 'kong.ctx.shared'
   else
-    cacheTTL             = libxml2ex.externalEntityCacheTTL
-    timeout              = libxml2ex.externalEntityTimeout
+    cacheTTL              = libxml2ex.externalEntityCacheTTL
+    timeout               = libxml2ex.externalEntityTimeout
     if streamListen then
-      async              = false
+      async               = false
     else
-      async              = true
+      async               = true
     end
-    xsdApiSchemaInclude  = nil
-    xsdSoapSchemaInclude = nil
+    xsdApiSchemaInclude   = nil
+    xsdSoapSchemaInclude  = nil
+    filePathPrefix        = nil
   end
 
   -- if the SOAP XSD content is included in the plugin configuration
@@ -220,11 +286,28 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     end
   end
 
-  -- If the XSD content is found in the plugin configuration
+  -- If XSD content is included in the plugin configuration
   if response_body then
-    kong.log.debug("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration")
-  
-  -- If we download Asynchronously the External Entity
+    contentFile, err = libxml2ex.readFile (true, filePathPrefix, response_body)
+  else
+    -- Check that the entity_url is a file path and read the content of the file
+    contentFile, err = libxml2ex.readFile (true, filePathPrefix, entity_url)
+  end
+
+  -- If a content file has been successfully retrieved
+  if contentFile then
+    -- Replace the value by the content file
+    response_body = contentFile
+  end
+
+  -- If stream is disabled and there is an error retrieving the content file
+  if streamListen == false and err then
+    kong.log.debug("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
+  -- Else If the XSD content is found in the plugin configuration or on the file system
+  elseif response_body then
+    kong.log.debug("xmlMyExternalEntityLoader: found the XSD content of '" .. entity_url .. "' in the plugin configuration or on the file system")
+
+  -- Else If we Asynchronously download the External Entity
   elseif async then
     
     kong.log.debug("REQUIRE an entry in the LRU cache url=" .. entity_url)
@@ -247,7 +330,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     -- If the Entry is not in LRU Cache of Entities
     if not cache_entity then
 
-      err = "The entity is not in the LRU cache, so download it asynchronously"
+      err = "The entity is not in the LRU cache, so asynchronously download it"
       kong.log.debug(err)
       if lruCacheEntities:count() == lruCacheEntities:capacity () then
         -- DON'T change this 'warning' message as the LRU caching is going to evict the leastest used
@@ -267,7 +350,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
       }
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
 
-      -- Download Asynchronously the new entity from a given URL
+      -- Asynchronously Download the new entity from a given URL
       local rcAsync, errAsync = kong.xmlSoapAsync.entityLoader.downloadExtEntitiesQueue.enqueue(
                                      queue_conf, 
                                      asyncDownloadEntities_callback, 
@@ -291,7 +374,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
       lruCacheEntities:set(url_cache_key, cache_entity, nil)
 
       kong.log.debug("UPDATE an existing entry in LRU cache and download it => url=" .. entity_url .. " ttl=" .. cacheTTL .." timeout=" .. timeout)
-      -- Update Asynchronously the existing entity from a given URL
+      -- Asynchronously Update the existing entity from a given URL
       local rcAsync, errAsync = kong.xmlSoapAsync.entityLoader.downloadExtEntitiesQueue.enqueue(
                                      queue_conf, 
                                      asyncDownloadEntities_callback, 
@@ -309,7 +392,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     end
     kong.log.debug(string.format("Current LRU cache %d/%d capacity", lruCacheEntities:count(), lruCacheEntities:capacity()))
 
-  -- Else we download Synchronously the External Entity
+  -- Else we Synchronously download the External Entity
   else
     
     -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
@@ -346,31 +429,61 @@ function libxml2ex.initializeExternalEntityLoader()
   xml2.xmlSetExternalEntityLoader(libxml2ex.xmlMyExternalEntityLoader);
 end
 
--- Create an XML Schemas parse context for that memory buffer expected to contain an XML Schemas file.
+-- Create an XML Schema parsed context for that memory buffer expected to contain an XML Schema file
 -- buffer:	a pointer to a char array containing the schemas
 -- size:	the size of the array
 -- Returns:	the parser context or NULL in case of error
-function libxml2ex.xmlSchemaNewMemParserCtxt (xsd_schema)
-    
-    local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
-    
-    if xsd_context == ffi.NULL then
-        kong.log.err("xmlSchemaNewMemParserCtxt returns null")
-        return nil
+function libxml2ex.xmlSchemaNewMemParserCtxt (hasToRead, filePathPrefix, xsd_schema)
+    local errMsg
+    local contentFile
+
+    -- In the event the XML is a file path, read the XML content on the file system  
+    contentFile, errMsg = libxml2ex.readFile (hasToRead, filePathPrefix, xsd_schema)
+    if contentFile then
+      xsd_schema = contentFile
     end
-    
-    return ffi.gc(xsd_context, xml2.xmlSchemaFreeParserCtxt)
+
+    -- If there is no error in 'readFile'
+    if not errMsg then
+      local xsd_context = xml2.xmlSchemaNewMemParserCtxt(xsd_schema, #xsd_schema)
+      if xsd_context ~= ffi.NULL then
+        return ffi.gc(xsd_context, xml2.xmlSchemaFreeParserCtxt), errMsg
+      else
+        errMsg = "xmlSchemaNewMemParserCtxt returns null"
+        kong.log.err(errMsg)
+      end
+    else
+      -- A 'kong.log.err' is already done in 'readFile' function
+    end
+
+    return nil, errMsg
+end
+
+-- Parse an XML in-memory document and build a tree
+function libxml2ex.xmlCtxtReadMemory(parserCtx, hasToRead, filePathPrefix, WSDL)
+  local errMsg
+  local contentFile
+  local document
+
+  -- In the event the WSDL is a file path, read the WSDL content on the file system  
+  contentFile, errMsg = libxml2ex.readFile (hasToRead, filePathPrefix, WSDL)
+  if contentFile then
+    WSDL = contentFile
+  end
+  if not errMsg then
+    document = libxml2.xmlCtxtReadMemory(parserCtx, WSDL)
+  end
+  return document, errMsg
 end
 
 -- Parse a schema definition resource and build an internal XML Schema structure which can be used to validate instances.
--- ctxt:	a schema validation context
+-- xsd_context:	a schema validation context
 -- Returns:	the internal XML Schema structure built from the resource or NULL in case of error
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     kong.ctx.shared.xmlSoapErrMessage = nil
 
     xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
-    
     if xsd_schema_doc == ffi.NULL then
       return nil, kong.ctx.shared.xmlSoapErrMessage
     end
@@ -384,14 +497,15 @@ jit.off(libxml2ex.xmlSchemaParse)
 -- schema:	a precompiled XML Schemas
 -- Returns:	the validation context or NULL in case of error
 function libxml2ex.xmlSchemaNewValidCtxt (xsd_schema_doc)
+    local errMsg
     local validation_context = xml2.xmlSchemaNewValidCtxt(xsd_schema_doc)
-    
     if validation_context == ffi.NULL then
-      kong.log.err("xmlSchemaNewValidCtxt returns null")
-      return nil
+      errMsg = "xmlSchemaNewValidCtxt returns null"
+      kong.log.err(errMsg)
+      return nil, errMsg
     end
 
-    return ffi.gc(validation_context, xml2.xmlSchemaFreeValidCtxt)
+    return ffi.gc(validation_context, xml2.xmlSchemaFreeValidCtxt), errMsg
 end
 
 -- Parse an XML in-memory document and build a tree.
@@ -401,31 +515,46 @@ end
 -- encoding:	the document encoding, or NULL
 -- options:	a combination of xmlParserOption
 -- Returns:	the resulting document tree
-function libxml2ex.xmlReadMemory (xml_document, base_url_document, document_encoding, options, verbose, not_ffi_gc)
+function libxml2ex.xmlReadMemory (xml_document, hasToRead, filePathPrefix, base_url_document, document_encoding, options, verbose, not_ffi_gc)
+  local contentFile
+  
   kong.ctx.shared.xmlSoapErrMessage = nil
-  
-  xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
-  local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
-  
-  if xml_doc == ffi.NULL then
-    -- It returns null in case of issue on SOAP/XML posted by the consumer
-    -- We don't consider it as an Error
-    kong.log.debug("xmlReadMemory returns null")
-    return nil, kong.ctx.shared.xmlSoapErrMessage
+
+  -- In the event the XML is a file path, read the XML content on the file system
+  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (hasToRead, filePathPrefix, xml_document)
+  if contentFile then
+    xml_document = contentFile
   end
-  if not_ffi_gc == true then
-    -- Fix v1.2.5
-    -- Here we have to deal with a complex situation in regards of XSLT (only), the libxslt takes ownership of 'xml_doc'
-    --    First the xmlReadMemory returns 'xml_doc', then 'xml_doc' is passed to 'xsltParseStylesheetDoc' that returns a 'style' pointer
-    --    after, when the GC calls xsltFreeStylesheet(style), it frees 'style' (Good) and frees cascading 'xml_doc' but finally 
-    --    the GC calls xmlFreeDoc(xml_doc) that is already freed (Bad) and there is a 'double free or corruption (fasttop)' or 
-    --    'free(): double free detected in tcache 2')' or '[alert] 1#0: worker process **** exited on signal 11' in the Kong log
-    --    Note: 'xsltParseStylesheet' isn't concerned by that
-    -- 
-    -- So in the context of XSLT (with not_ffi_gc=true) we don't ask to GC to call xmlFreeDoc because it's done by 'xsltParseStylesheetDoc'
-    return xml_doc, kong.ctx.shared.xmlSoapErrMessage
+
+  -- If there is no error
+  if not kong.ctx.shared.xmlSoapErrMessage then
+    
+    xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
+    local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
+    
+    if xml_doc == ffi.NULL then
+      -- It returns null in case of issue on SOAP/XML posted by the consumer
+      -- We don't consider it as an Error
+      kong.log.debug("xmlReadMemory returns null")
+      return nil, kong.ctx.shared.xmlSoapErrMessage
+    end
+    if not_ffi_gc == true then
+      -- Fix v1.2.5
+      -- Here we have to deal with a complex situation in regards of XSLT (only), the libxslt takes ownership of 'xml_doc'
+      --    First the xmlReadMemory returns 'xml_doc', then 'xml_doc' is passed to 'xsltParseStylesheetDoc' that returns a 'style' pointer
+      --    after, when the GC calls xsltFreeStylesheet(style), it frees 'style' (Good) and frees cascading 'xml_doc' but finally 
+      --    the GC calls xmlFreeDoc(xml_doc) that is already freed (Bad) and there is a 'double free or corruption (fasttop)' or 
+      --    'free(): double free detected in tcache 2')' or '[alert] 1#0: worker process **** exited on signal 11' in the Kong log
+      --    Note: 'xsltParseStylesheet' isn't concerned by that
+      -- 
+      -- So in the context of XSLT (with not_ffi_gc=true) we don't ask to GC to call xmlFreeDoc because it's done by 'xsltParseStylesheetDoc'
+      return xml_doc, kong.ctx.shared.xmlSoapErrMessage
+    else
+      return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+    end
   else
-    return ffi.gc(xml_doc, xml2.xmlFreeDoc), kong.ctx.shared.xmlSoapErrMessage
+    -- There is an issue on reading file
+    return nil, kong.ctx.shared.xmlSoapErrMessage
   end
 end
 -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT

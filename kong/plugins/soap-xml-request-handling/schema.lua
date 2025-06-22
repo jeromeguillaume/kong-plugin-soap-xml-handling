@@ -13,6 +13,7 @@ return {
           { ExternalEntityLoader_Async = { type = "boolean", default = false, required = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
+          { filePathPrefix = typedefs.path { required = false } },
           { RouteXPathRegisterNs = { type = "array",  required = false, 
               elements = {type = "string"}, 
                 default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"},
@@ -83,7 +84,13 @@ return {
             return nil, "config.RouteXPathRegisterNs: invalid NameSpace or URI. The syntax is 'ns,uri' without space"
           end
         end
-        
+
+        -- Check that Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
+        if ((config.xsdSoapSchemaInclude and type(config.xsdSoapSchemaInclude) == 'table' and next(config.xsdSoapSchemaInclude)) or 
+            (config.xsdApiSchemaInclude  and type(config.xsdApiSchemaInclude ) == 'table' and next(config.xsdApiSchemaInclude))) and
+            config.ExternalEntityLoader_Async then
+          return nil, "config.xsdSoapSchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
+        end
         return true
       end
     }},

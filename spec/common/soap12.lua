@@ -12,6 +12,17 @@ soap12_common.calculator_soap12_Request= [[
 </soap12:Envelope>
 ]]
 
+soap12_common.calculator_soap12_Subtract_Request = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+  <soap12:Body>
+		<Subtract xmlns="http://tempuri.org/">
+			<intA>5</intA>
+			<intB>1</intB>
+		</Subtract>
+  </soap12:Body>
+</soap12:Envelope>
+]]
 
 soap12_common.soap12_XSD = [[
 <!-- Schema defined in the SOAP Version 1.2 Part 1 specification

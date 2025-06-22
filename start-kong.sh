@@ -12,6 +12,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 --mount type=bind,source="$(pwd)"/kong/plugins/soap-xml-handling-lib,destination=/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib \
 --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
 --mount type=bind,source="$(pwd)"/kong/saxon/conf,destination=/usr/local/lib/kongsaxon/conf \
+--mount type=bind,source="$(pwd)"/spec/fixtures/,destination=/kong-plugin/spec/fixtures \
 -e "KONG_DATABASE=postgres" \
 -e "KONG_PG_HOST=kong-database-soap-xml-handling" \
 -e "KONG_PG_USER=kong" \
@@ -29,7 +30,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e "SOAP_USERNAME=KongUser" \
 -e "SOAP_PASSWORD=KongP@sswOrd!" \
--e "KONG_LOG_LEVEL=notice" \
+-e "KONG_LOG_LEVEL=debug" \
 -e KONG_LICENSE_DATA \
 -p 9000:9000 \
 -p 9443:9443 \
@@ -37,13 +38,13 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 9002:9002 \
 -p 9444:9444 \
 --platform linux/$ARCHITECTURE \
-kong/kong-gateway:3.10.0.0
+kong/kong-gateway:3.10.0.1
 
 #kong/kong-gateway:3.4.3.13
 #kong/kong-gateway:3.5.0.7
 #kong/kong-gateway:3.6.1.8
 
-#-e "KONG_STREAM_LISTEN= 127.0.0.1:7099" \
+# -e "KONG_STREAM_LISTEN= 0.0.0.0:9099" \
 
 
 #kong/kong-gateway:3.8.0.0

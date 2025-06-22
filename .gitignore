@@ -1,3 +1,4 @@
+start-kong-konnect.sh
 kong/plugins/.DS_Store
 kong/saxon/notes.txt
 tls.crt

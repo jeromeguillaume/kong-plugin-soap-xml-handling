@@ -126,9 +126,9 @@ function libsaxon4kong.createXslt30ProcessorKong(saxonProcessor)
     -- Free memory
     saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr[0]))
   end
+
   return xslt30Processor, err
 end
-
 
 ----------------------------------
 -- Get Error Message from Context
@@ -202,7 +202,7 @@ function libsaxon4kong.deleteContext(context)
   local err
 
   if saxon4KongLib and context ~= ffi.NULL then
-    
+
     -- Check if symbol exists
     if not pcall(function() return saxon4KongLib.deleteContext end) then
       err = "'deleteContext' symbol doesn't exist in " .. libsaxon4kong.libName

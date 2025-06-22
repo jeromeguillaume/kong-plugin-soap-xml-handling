@@ -1,14 +1,17 @@
 -- Helper functions provided by Kong Gateway, see https://github.com/Kong/kong/blob/master/spec/helpers.lua
 local helpers = require "spec.helpers"
 
+-- Add a Worker Process for enabling the synchronous download of external entities
+helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
+
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -30,7 +33,7 @@ for _, strategy in helpers.all_strategies() do
     -- a nested describe defines an actual test on the plugin behavior
     describe("libxml+libxslt |", function()
 			
-			lazy_setup(function()			
+			lazy_setup(function()
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
         -- This function also truncates any existing data in an existing db.
@@ -51,8 +54,8 @@ for _, strategy in helpers.all_strategies() do
 			
 			lazy_teardown(function()
 				helpers.stop_kong(nil, true)
-			end)
-
+			end)				
+				
 			it ("1|XSLT (BEFORE XSD) - Valid transformation", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
 			end)
@@ -173,6 +176,22 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503_with_verbose (assert, client)
 			end)
 
+			it("2|WSDL Validation with import sync download - Ok", function()
+				request_common._2_WSDL_Validation_with_import_sync_download_Ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple imports sync download - Ko", function()
+				request_common._2_WSDL_Validation_with_multiple_imports_sync_download_Ko (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple imports sync download - Add in XSD#1 - Ko", function()
+				request_common.with_multiple_imports_sync_Add_in_XSD1_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation with multiple imports sync download - Subtract in XSD#2 - Ko", function()
+				request_common.with_multiple_imports_sync_Subtract_in_XSD2_with_verbose_ok (assert, client)
+			end)
+
 			it("2|WSDL Validation with async download - Ok", function()
 				request_common._2_WSDL_Validation_with_async_download_Ok (assert, client)
 			end)
@@ -201,6 +220,10 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XSD2_with_verbose_ok (assert, client)
 			end)
 
+			it("2|WSDL Validation with no import and multiple XSD - Power not defined in XSDs - Ko", function()
+				request_common._2_WSDL_Validation_no_Import_multiple_XSD_Power_not_defined_in_XSDs_with_verbose_ok (assert, client)
+			end)
+
 			it("2|WSDL Validation with multiple XSD imported no download - Add in XSD#1 - Ok", function()
 				request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_download_Add_in_XSD1_with_verbose_ok (assert, client)
 			end)
@@ -225,6 +248,14 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_defaultNS_with_verbose_ok (assert, client)
 			end)
 
+			it("2|WSDL Validation with mixed XSD imported - included - and downloaded - Add in XSD#1 - Ok", function()
+				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL Validation with mixed XSD imported - included - and downloaded - Subtract in XSD#2 - Ok", function()
+				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
+			end)
+			
 		end)
 		
 	end)
