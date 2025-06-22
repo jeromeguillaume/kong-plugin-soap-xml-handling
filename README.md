@@ -89,9 +89,9 @@ The plugins compile/parse the WSDL/XSD/XSLT definitions and keep them in a Kong 
 1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
 
 2) When importing definitions, it is recommended to configure the plugins preferably in this order:
-  1) Use Files
-  2) Use External Entities and put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
-  3) Use External Entities (and choose the type of download: synchronous or asynchronous)
+    1) Use Files
+    2) Use External Entities and put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
+    3) Use External Entities (and choose the type of download: synchronous or asynchronous)
 
 ### Error management
 In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
