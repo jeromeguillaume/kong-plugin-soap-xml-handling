@@ -655,21 +655,23 @@ Content-Encoding: gzip
 
 <a id="Miscellaneous_example_B"></a>
 
-### Example (B): Request and Response | `WSDL VALIDATION`: use a WSDL definition, which imports XSD schemas from  external entity FILE (Example: `/usr/local/my.wsdl`)
-Call correctly `calculator`. The XSD schema content is read from the Kong file system
+### Example (B): Request and Response | `WSDL VALIDATION`: use a WSDL definition, which imports XSD schemas from an external entity FILE (Example: `/usr/local/my.wsdl`)
+Call correctly `calculator`. The XSD schema of SOAP and API content is read from the Kong file system
 
 0) Place the following files on the Kong Gateway file system following the directory name :
   - [`/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd`](/spec/fixtures/calculator/2_6_soap11.xsd)
-  - [`/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import_relative_path.wsdl`](/spec/fixtures/calculator/2_6_soap11.xsd))
-  - [`/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import_relative_path.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import_relative_path.wsdl)
-
+  - [`/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl)
+  - The WSDL imports 2 XSDs that need to be put on the filse system:
+    - [`/kong-plugin/spec/fixtures/calculator/2_6_Add_XSD.xsd`](/spec/fixtures/calculator/2_6_Add_XSD.xsd)
+    - [`/kong-plugin/spec/fixtures/calculator/2_6_Subtract_XSD.xsd`](/spec/fixtures/calculator/2_6_Subtract_XSD.xsd)
+  
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `filePathPrefix` property with this value: `/kong-plugin/spec/fixtures/calculator`
 - `xsdSoapSchema` = [`2_6_soap11.xsd`](/spec/fixtures/calculator/2_6_soap11.xsd)
-- `xsdApiSchema` = [`2_6_WSDL11_soap12_file_import_relative_path.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import_relative_path.wsdl)
+- `xsdApiSchema` = [`2_6_WSDL11_soap12_file_import.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl)
 
 3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
