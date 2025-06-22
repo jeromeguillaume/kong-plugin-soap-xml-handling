@@ -67,7 +67,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 
 ## Information and Recommendation
 ### XML Definitions in files
-The XML definitions (for WSDL/XSD/XSLT) can be put on the Kong Gateway file system rather using a raw definition. 
+The XML definitions (for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`) can be put on the Kong Gateway file system rather using a raw definition. 
 Example for `config.xsdApiSchema`:
   - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
   - File WSDL definition: `/usr/local/apiclient.wsdl`
