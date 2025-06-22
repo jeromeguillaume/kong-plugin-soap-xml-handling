@@ -670,14 +670,14 @@ Call correctly `calculator`. The XSD schema of SOAP and API content is read from
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
 - `filePathPrefix` property with this value: `/kong-plugin/spec/fixtures/calculator`
-- `xsdSoapSchema` = [`2_6_soap11.xsd`](/spec/fixtures/calculator/2_6_soap11.xsd)
-- `xsdApiSchema` = [`2_6_WSDL11_soap12_file_import.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl)
+- `xsdSoapSchema` property with this value: `2_6_soap11.xsd`
+- `xsdApiSchema`  property with this value: `2_6_WSDL11_soap12_file_import.wsdl`
 
 3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
 - `filePathPrefix` property with this value: `/kong-plugin/spec/fixtures/calculator`
-- `xsdSoapSchema` = [`2_6_soap11.xsd`](/spec/fixtures/calculator/2_6_soap11.xsd)
-- `xsdApiSchema` = [`2_6_WSDL11_soap12_file_import_relative_path.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import_relative_path.wsdl)
+- `xsdSoapSchema` property with this value: `2_6_soap11.xsd`
+- `xsdApiSchema`  property with this value: `2_6_WSDL11_soap12_file_import.wsdl`
 
 4) Call the `calculator` through the Kong Gateway Route
 ```
