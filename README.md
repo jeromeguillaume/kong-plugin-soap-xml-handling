@@ -658,7 +658,7 @@ Content-Encoding: gzip
 ### Example (B): Request and Response | `WSDL VALIDATION`: use a WSDL definition, which imports XSD schemas from an external entity FILE (Example: `/usr/local/my.wsdl`)
 Call correctly `calculator`. The XSD schema of SOAP and API content is read from the Kong file system
 
-0) Place the following files on the Kong Gateway file system following the directory name :
+0) Place the following files on the Kong Gateway file system. Feel free to adapt the directory name:
   - [`/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd`](/spec/fixtures/calculator/2_6_soap11.xsd)
   - [`/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl`](/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl)
   - The WSDL imports 2 XSDs that need to be put on the filse system:
