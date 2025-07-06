@@ -30,7 +30,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e "SOAP_USERNAME=KongUser" \
 -e "SOAP_PASSWORD=KongP@sswOrd!" \
--e "KONG_LOG_LEVEL=debug" \
+-e "KONG_LOG_LEVEL=notice" \
 -e KONG_LICENSE_DATA \
 -p 9000:9000 \
 -p 9443:9443 \
