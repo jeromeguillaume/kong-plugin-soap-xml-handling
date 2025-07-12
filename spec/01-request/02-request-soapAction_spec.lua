@@ -597,19 +597,6 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_wsdl11_soap_wsdl_not_defined_in_plugin_ko = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculatorWSDL11_SOAPAction_wsdl_not_defined_in_plugin_ko" }
-          }
-        blue_print.plugins:insert {
-          name = PLUGIN_NAME,
-          route = calculator_wsdl11_soap_wsdl_not_defined_in_plugin_ko,
-          config = {
-            VerboseRequest = true,
-            SOAPAction_Header = "yes"
-          }
-        }
-        
         local calculator_wsdl11_soap_xsd_defined_instead_of_wsdl_ko = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculatorWSDL11_SOAPAction_xsd_defined_instead_of_wsdl_ko" }
@@ -1247,23 +1234,6 @@ for _, strategy in helpers.all_strategies() do
       --------------------------------------------------------------------------------------------------
       -- WSDL 1.1 / WSDL 2.0 | SOAP 1.1/1.2 Miscellaneous
       --------------------------------------------------------------------------------------------------
-      it("2|WSDL Validation - 'SOAPAction' Http header - WSDL not defined in the plugin - Ko", function()
-        -- invoke a test request
-        local r = client:post("/calculatorWSDL11_SOAPAction_wsdl_not_defined_in_plugin_ko", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
-          },
-          body = soapAction_common.calculator_soap11_Add_Request,
-        })
-
-        -- validate that the request succeeded: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap11_XSD_VALIDATION_Failed_NO_WSDL_Definition, body)        
-      end)
-
       it("2|WSDL Validation - 'SOAPAction' Http header - XSD defined instead of WSDL - Ko", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL11_SOAPAction_xsd_defined_instead_of_wsdl_ko", {

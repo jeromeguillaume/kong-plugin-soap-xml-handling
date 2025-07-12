@@ -53,6 +53,19 @@ return {
             config.ExternalEntityLoader_Async then
           return nil, "config.xsdSoapSchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
         end
+
+        -- Check that if the SOAP Schema inclusion is defined, the 'xsdApiSchema' is defined too
+        if (config.xsdSoapSchemaInclude and type(config.xsdSoapSchemaInclude) == 'table' and next(config.xsdSoapSchemaInclude)) and  
+            type(config.xsdSoapSchema) == 'userdata' then
+          return nil, "config.xsdSoapSchema must be defined if config.xsdSoapSchemaInclude is defined"
+        end
+
+        -- Check that if the API Schema inclusion is defined, the 'xsdSoapSchema' is defined too
+        if (config.xsdApiSchemaInclude and type(config.xsdApiSchemaInclude) == 'table' and next(config.xsdApiSchemaInclude)) and  
+            type(config.xsdApiSchema) == 'userdata' then
+          return nil, "config.xsdApiSchema must be defined if config.xsdApiSchemaInclude is defined"
+        end
+
         return true
       end
     }},
