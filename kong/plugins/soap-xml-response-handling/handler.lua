@@ -26,6 +26,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if plugin_conf.xsltTransformBefore then
     soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
                                                                                  pluginId,
+                                                                                 plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                                  plugin_conf.filePathPrefix,
                                                                                  xmlgeneral.xsltBeforeXSD,
                                                                                  plugin_conf.xsltLibrary,
@@ -53,6 +54,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- Validate the SOAP envelope with its schema
     errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.ResponseTypePlugin, 
                                                                               pluginId,
+                                                                              plugin_conf.ExternalEntityLoader_CacheTTL,                                                                               
                                                                               plugin_conf.filePathPrefix,
                                                                               xmlgeneral.schemaTypeSOAP, 
                                                                               1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
@@ -78,6 +80,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   
     errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin,
                                                                 pluginId,
+                                                                plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                 plugin_conf.filePathPrefix,
                                                                 xmlgeneral.schemaTypeAPI,
                                                                 soapEnvelopeTransformed,
@@ -101,6 +104,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
     soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
                                                                                  pluginId,
+                                                                                 plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                                  plugin_conf.filePathPrefix,
                                                                                  xmlgeneral.xsltAfterXSD,
                                                                                  plugin_conf.xsltLibrary,

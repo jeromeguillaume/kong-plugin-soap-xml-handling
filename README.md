@@ -1002,7 +1002,7 @@ HTTP/1.1 500 Internal Server Error
 ...
 <faultstring>Request - XSD validation failed</faultstring>
 <detail>
-   <errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required</errorMessage>
+   <errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</errorMessage>
 </detail>
 ```
 - Use previous command defined, **set ```SOAPAction:"http://tempuri.org/Subtract"```** and Kong says: 
