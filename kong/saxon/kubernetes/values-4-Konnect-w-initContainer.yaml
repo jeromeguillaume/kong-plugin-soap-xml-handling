@@ -34,7 +34,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.0-12.5-beta.1
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.0-12.5-beta.2
     imagePullPolicy: Always
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:

@@ -91,12 +91,13 @@ The External entities are processed in this order:
   3) Download Synchronously or Asynchronously the external Entity URL (related to the `config.ExternalEntityLoader_Async`)
 
 ### Caching
-- The plugins compile/parse the WSDL/XSD/XSLT definitions and keep them in a Kong memory cache for improving performance
-- WSDL/XSD: in case of error due to incorrect definition (e.g. missing a leading "<"), the plugins compile/parse the definition again on each call
-- XSLT: the error message is kept in the cache
-- WSDL/XSD: when the TTL is reached the plugins compile/parse once more
-- The difference in behavior (WSDL/XSD vs XSLT) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by WSDL/XSD)
-- If the plugin configuration changes, the cache is refreshed for all plugins (even if there is a change in only one plugin)
+- The plugins compile/parse the WSDL/XSD/XSLT definitions and keep them in a `kong_db_cache` memory cache for improving performance:
+  - When the TTL is reached, the plugins compile/parse the definitions once more
+  - When the plugin configuration is changed, all the caches are invalidated and the plugins compile/parse the definitions once more (even if there is a change in only one plugin)
+- What's the behavior of plugins in the event of a compilation error (for instance due to an incorrect definition, e.g. missing a leading "<"):
+  - WSDL/XSD: in case of error  the plugins compile/parse the definition again on each call
+  - XSLT/SOAPAction validation: the error message is kept in the cache
+  - The difference in behavior (WSDL/XSD vs XSLT/SOAPAction validation) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by WSDL/XSD)
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Recommendation
@@ -126,7 +127,7 @@ If `Verbose` is enabled:
 |FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
-|config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download|
+|config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download. Plus, keep in `kong_db_cache` memory cache the compilation and parsing of WSDL/SOAPAction/XSD/XSLT/RouteByXPath definitions during the time specified|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.filePathPrefix|N/A|File Path Prefix of external entity file. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
@@ -1254,7 +1255,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
-5) When two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins that have been deleted**. It's related to the WSDL/XSD/XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. It is recommended not to change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
+5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. It is recommended not to change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
 
 <a id="Changelog"></a>
 
@@ -1360,12 +1361,12 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Changed the `SOAP Fault` message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
-- v1.4.0-beta.1
+- v1.4.0-beta.2
   - Added the file support for WSDL, XSD and XSLT definitions. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`). The The user is in charge of putting the XML definition files on the Kong Gateway file system
-  - Improved the performance by compiling and parsing WSDL, XSD and XSLT definitions only once per plugin (managed by a new `kong.xmlSoapPtrCache.plugins[plugin_id]` table)
+  - Improved the performance by compiling and parsing WSDL, SOAPAction, XSD, XSLT and Route By XPath definitions only once per plugin and stored in `kong_db_cache` memory cache (except for Saxon XSLT in `kong.xmlSoapSaxonPtrCache.plugins[plugin_id]`)
   - Added schema controls:
     - Check that the Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
     - Check that if `SchemaInclude` are defined the corresponding root definitions are also defined in `xsdSoapSchema` and `xsdApiSchema`
-    - Check that if `SOAPAction_Header` is enabled the `xsdApiSchema`is also defined
+    - Check that if `SOAPAction_Header` is enabled the `xsdApiSchema` is also defined
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`

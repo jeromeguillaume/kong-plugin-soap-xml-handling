@@ -26,7 +26,7 @@ for _, strategy in helpers.all_strategies() do
 
     -- before_each runs before each child describe
     before_each(function()              
-        client = helpers.proxy_client()        
+        client = helpers.proxy_client()
     end)
 
     -- after_each runs after each child describe
@@ -63,7 +63,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsltLibrary = caching_common.libxslt,
             ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
             xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
             xsltTransformAfter = caching_common.calculator_Request_XSLT_change_intB,
@@ -83,7 +83,46 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,            
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,            
+            xsltLibrary = caching_common.libxslt,
+            xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
+            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
+            xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER
+          }
+        }
+
+        local calculator_fullSoapXml_handling_Request_Response_sync_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_Sync_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_fullSoapXml_handling_Request_Response_sync_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = caching_common.libxslt,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
+            xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
+            xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+            xsltTransformAfter = caching_common.calculator_Request_XSLT_change_intB,
+            SOAPAction_Header = "yes",
+            RouteXPathTargets = {
+              {
+                  URL= "http://ws.soap2.calculator:8080/ws",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+                  XPathCondition= "5"
+              },
+            }
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_fullSoapXml_handling_Request_Response_sync_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,            
             xsltLibrary = caching_common.libxslt,
             xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
@@ -298,7 +337,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
       end)
 
-      it("1+2+3+4+5+6+7|** Execute the same test: check that the definitions are compiled again (due to Asynchronous) **", function()
+      it("1+2+3+4+5+6+7|** Execute the same test: check that the WSDL/XSD definitions are compiled again (due to Asynchronous) and XSLT/RouteByXPath are still cached (before TTL is exceeded) **", function()
         -- clean the log file
         helpers.clean_logfile()
         
@@ -335,6 +374,161 @@ for _, strategy in helpers.all_strategies() do
 
         -- Plugin Response: Check in the log that the XSLT definition used the cache
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
+        
+      end) 
+
+      it("1+2+3+4+5+6+7|** Execute the same test: check that the WSDL/XSD definitions are compiled again (due to Asynchronous) and XSLT/RouteByXPath are compiled again (after TTL is exceeded) **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+        
+        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+        ngx.sleep(caching_common.TTL)
+
+        -- invoke a test request
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Async_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.equal("soap2", x_soap_region)
+        assert.matches(response_common.calculator_Response_XML_18, body)        
+
+                -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction / XPathRouting definitions were compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.SOAPAction_async)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_routeByXPath)
+        
+        -- Plugin Response: Check in the log that the XSLT / WSDL definition were compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.wsdl_async)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
+        
+      end)      
+
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Sync download - Ok", function()
+        -- clean the log file
+        helpers.clean_logfile()
+        
+        -- invoke a test request
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Sync_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.equal("soap2", x_soap_region)
+        assert.matches(response_common.calculator_Response_XML_18, body)        
+
+        -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction / XPathRouting definitions were compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_SOAPAction_ctx_doc)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_routeByXPath)
+        
+        -- Plugin Response: Check in the log that the XSLT / WSDL definition were compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
+      end)
+
+      it("1+2+3+4+5+6+7|** Execute the same test (before TTL is exceeded): check that the definitions are still cached **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+        
+        -- invoke a test request
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Sync_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.equal("soap2", x_soap_region)
+        assert.matches(response_common.calculator_Response_XML_18, body)        
+
+        -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction / XPathRouting definitions used the cache
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
+        
+        -- Plugin Response: Check in the log that the XSLT / WSDL definition used the cache
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_wsdl)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+        
+      end)
+      
+      it("1+2+3+4+5+6+7|** Execute the same test (after TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+        ngx.sleep(caching_common.TTL)
+        
+        -- invoke a test request
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Sync_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.equal("soap2", x_soap_region)
+        assert.matches(response_common.calculator_Response_XML_18, body)        
+
+        -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction / XPathRouting definitions were recompiled due to TTL exceeded
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_TTL)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_SOAPAction_ctx_doc)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_routeByXPath)
+        
+        -- Plugin Response: Check in the log that the XSLT / WSDL definition were recompiled due to TTL exceeded
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl_TTL)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
         
       end)
       
@@ -438,6 +632,9 @@ for _, strategy in helpers.all_strategies() do
         -- clean the log file
         helpers.clean_logfile()
         
+        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+        ngx.sleep(caching_common.TTL)
+
         -- invoke a test request
         local r = client:post("/calculatorWSDL_with_multiple_imports_include_XSD_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
           headers = {
@@ -608,6 +805,7 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
         
       end)
 
@@ -760,6 +958,30 @@ for _, strategy in helpers.all_strategies() do
         -- Plugin Request: Check in the log that the XSD definition was recompiled (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
       end)
+      
+      it("2|** Execute the same test - Invalid SOAP XSD input: check that the definition compiled again (due to error) **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculatorXSD_SOAP_invalid_verbose", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Request,
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose, body)
+
+        -- Plugin Request: Check in the log that the XSD definition was recompiled (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+      end)
+
 		end)
 
 	end)
