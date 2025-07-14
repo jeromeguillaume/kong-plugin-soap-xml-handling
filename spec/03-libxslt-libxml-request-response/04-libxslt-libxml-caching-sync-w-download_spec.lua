@@ -26,6 +26,7 @@ for _, strategy in helpers.all_strategies() do
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     
     setup(function()
+
     end)
 
     -- before_each runs before each child describe
@@ -34,13 +35,13 @@ for _, strategy in helpers.all_strategies() do
         -- *** Don't create a 'client' on each test
         -- *** So the 'Connection=keep-alive' is usable for guaranteeing to go on the same Nginx worker PID ***
         -- ***
-        -- client = helpers.proxy_client()        
+        --client = helpers.proxy_client()        
     end)
 
     -- after_each runs after each child describe
     after_each(function()
       -- *** See comment above ***
-      -- if client then client:close() end
+      --if client then client:close() end
     end)
 
     -- a nested describe defines an actual test on the plugin behavior
@@ -68,6 +69,11 @@ for _, strategy in helpers.all_strategies() do
                 "local pid = ngx.worker.pid() kong.response.set_header(\"X-Worker-Id\", pid or 'nil')"
             }
           }
+        }
+
+        local calculator_no_plugin_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_no_plugin_ok" }
         }
 
         local calculator_fullSoapXml_handling_Request_Response_route = blue_print.routes:insert{
@@ -178,9 +184,33 @@ for _, strategy in helpers.all_strategies() do
       lazy_teardown(function()
 				helpers.stop_kong(nil, true)
 			end)
-     
+
+      -- An 'invalidations:kong_db_cache' is done on the first request: the 'invalidation' prevents the Pongo script to correctly test the caching mechanism
+      -- So call this request to trigger the 'invalidation' before the "soap-xml-handling" plugins are called
+      --
+      -- Example of 'invalidation' log:
+      -- 2025/07/13 19:44:45 [debug] 127#0: *6 [lua] callback.lua:107: do_event(): worker-events: handling event; source=mlcache, event=mlcache:invalidations:kong_db_cache, wid=0
+      it("N/A|No plugin, - Ok", function()
+        -- invoke a test request      
+        client = helpers.proxy_client()
+        local r = client:post("/calculator_no_plugin_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8"
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+        if client then client:close() end
+      end)
+
       it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Sync download, - Ok", function()
-        -- invoke a test request
+        -- invoke a test request        
         client = helpers.proxy_client()
         local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
           headers = {
@@ -273,7 +303,8 @@ for _, strategy in helpers.all_strategies() do
           end          
         end
       end)
-     
+
+      
       it("1+2+3+4+5+6+7|** Execute the same test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
         -- Do a loop for getting the same Nginx Worker ID as the 1st Test
         for i=1, maxRetries do
@@ -310,25 +341,23 @@ for _, strategy in helpers.all_strategies() do
             assert.equal("soap2", x_soap_region)
             assert.matches(response_common.calculator_Response_XML_18, body)        
             
-            -- Plugin Request: Check in the log that the WSDL / XSDs definitions / SOAPAction were recompiled (and not found in the cache)
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions were compiled for the 1st time (and not found in the cache)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_TTL)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
-
-            -- Plugin Request: Check in the log that the XSLT / SOAPAction / XPathRouting definitions used the cache
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
-            
-            -- Plugin Response: Check in the log that the WSDL / XSDs definition were recompiled (and not found in the cache)
-            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_SOAPAction_ctx_doc)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_routeByXPath)
+
+            -- Plugin Response: Check in the log that the XSLT / WSDL /XSDs definition were compiled for the 1st time (and not found in the cache)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl_TTL)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
+            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
 
-            -- Plugin Response: Check in the log that the XSLT definition used the cache
-            assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)        
 
             if client then client:close() end
             break
@@ -533,6 +562,7 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('Failed to parse the XML resource', body)
 
         -- Plugin Request: Check in the log that the XSD definition was recompiled (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)        
       end)
 
@@ -608,7 +638,7 @@ for _, strategy in helpers.all_strategies() do
             assert.matches('Failed to parse the XML resource', body)
 
             -- Plugin Request/Response: Check in the log that the XSD definition was recompiled (and not found in the cache)
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_Error)
+            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
 
             if client then client:close() end

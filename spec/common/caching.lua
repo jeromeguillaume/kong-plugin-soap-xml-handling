@@ -13,10 +13,10 @@ caching_common.TTL = 2
 
 caching_common.compile_xslt               = "XSLT transformation, caching: Compile the XSLT and Put it in the cache"
 caching_common.compile_wsdl               = "WSDL Validation, caching: Compile the WSDL and Put it in the cache"
-caching_common.compile_wsdl_TTL           = "WSDL Validation, caching: TTL \\("..caching_common.TTL.." s\\) is reached, so re-compile the WSDL"
+caching_common.compile_wsdl_TTL           = "WSDL Validation, 'configure' phase has been triggered or caching TTL \\("..caching_common.TTL.." s\\) is reached, so re-compile the WSDL"
 caching_common.compile_wsdl_XSDError      = "WSDL Validation, caching: Not all XSDs are correctly compiled, so re-compile the WSDL"
 caching_common.compile_xsd                = "XSD Validation, caching: Compile the XSD and Put it in the cache"
-caching_common.compile_xsd_TTL            = "XSD Validation, caching: TTL \\("..caching_common.TTL.." s\\) is reached, so re-compile the XSD"
+caching_common.compile_xsd_TTL            = "XSD Validation, 'configure' phase has been triggered or caching TTL \\("..caching_common.TTL.." s\\) is reached, so re-compile the XSD"
 caching_common.compile_xsd_Error          = "XSD Validation, caching: All the pointers need to be recreated for consistency"
 caching_common.compile_SOAPAction         = nil -- It doesn't exist because SOAPAction leverages WSDL caching (that is already compiled)
 caching_common.compile_SOAPAction_ctx_doc = "getSOAPActionFromWSDL: caching: Compile 'contextPtr' and 'document' and Put them in the cache"

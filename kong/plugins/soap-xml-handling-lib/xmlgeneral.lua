@@ -9,25 +9,27 @@ local libsaxon4kong     = require("kong.plugins.soap-xml-handling-lib.libsaxon4k
 local loaded, xml2 = pcall(ffi.load, "xml2")
 local loaded, xslt = pcall(ffi.load, "xslt")
 
-xmlgeneral.HTTPClientCodeSOAPFault  = 400
-xmlgeneral.HTTPServerCodeSOAPFault  = 500
+xmlgeneral.HTTPClientCodeSOAPFault    = 400
+xmlgeneral.HTTPServerCodeSOAPFault    = 500
 
-xmlgeneral.RequestTypePlugin  = 1
-xmlgeneral.ResponseTypePlugin = 2
+xmlgeneral.RequestTypePlugin          = 1
+xmlgeneral.ResponseTypePlugin         = 2
 
-xmlgeneral.RequestTextError   = "Request"
-xmlgeneral.ResponseTextError  = "Response"
-xmlgeneral.GeneralError       = "General process failed"
-xmlgeneral.GenericError       = "SOAP/XML process failure"
-xmlgeneral.SepTextError       = " - "
-xmlgeneral.XSLTError          = "XSLT transformation failed"
-xmlgeneral.XSDError           = "XSD validation failed"
-xmlgeneral.BeforeXSD          = " (before XSD validation)"
-xmlgeneral.AfterXSD           = " (after XSD validation)"
-xmlgeneral.invalidXML         = "Invalid XML input"
-xmlgeneral.invalidXSLT        = "Invalid XSLT definition"
-xmlgeneral.invalidXSD         = "Invalid XSD schema"
-xmlgeneral.invalidWSDL_XSD    = "Invalid WSDL/XSD schema"
+xmlgeneral.RequestTextError           = "Request"
+xmlgeneral.ResponseTextError          = "Response"
+xmlgeneral.GeneralError               = "General process failed"
+xmlgeneral.GenericError               = "SOAP/XML process failure"
+xmlgeneral.SepTextError               = " - "
+xmlgeneral.XSLTError                  = "XSLT transformation failed"
+xmlgeneral.XSDError                   = "XSD validation failed"
+xmlgeneral.BeforeXSD                  = " (before XSD validation)"
+xmlgeneral.AfterXSD                   = " (after XSD validation)"
+xmlgeneral.invalidXML                 = "Invalid XML input"
+xmlgeneral.invalidXSLT                = "Invalid XSLT definition"
+xmlgeneral.invalidXSD                 = "Invalid XSD schema"
+xmlgeneral.invalidWSDL_XSD            = "Invalid WSDL/XSD schema"
+xmlgeneral.errorGettingPtrsCacheTable = "Error while getting Pointers Cache Table: "
+xmlgeneral.invalidPtrsCacheTable      = "Invalid Pointers Cache Table"
 
 xmlgeneral.soapFaultCodeNone    = 0   -- Fault Code type is 'None'
 xmlgeneral.soapFaultCodeServer  = 1   -- Fault Code type is 'Server' (The Kong GW and Upstream)
@@ -69,21 +71,23 @@ xmlgeneral.SOAPAction_Header_Yes      = "yes"
 xmlgeneral.startInternalkongRoot      = "<InternalkongRoot>"
 xmlgeneral.endInternalkongRoot        = "</InternalkongRoot>"
 
-xmlgeneral.XMLContentTypeBody     = 1
-xmlgeneral.JSONContentTypeBody    = 2
-xmlgeneral.unknownContentTypeBody = 3
+xmlgeneral.XMLContentTypeBody         = 1
+xmlgeneral.JSONContentTypeBody        = 2
+xmlgeneral.unknownContentTypeBody     = 3
 
-xmlgeneral.prefetchStatusInit     = 0
-xmlgeneral.prefetchStatusOk       = 1
-xmlgeneral.prefetchStatusRunning  = 2
-xmlgeneral.prefetchStatusKo       = 3
-xmlgeneral.prefetchQueueTimeout   = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
-xmlgeneral.prefetchReqQueueName   = "-prefetch-request-schema"
-xmlgeneral.prefetchResQueueName   = "-prefetch-response-schema"
+xmlgeneral.xmlSoapPtrCache            = "soap-xml-pc-" 
 
-xmlgeneral.libxmlNoMatchGlobalDecl  = 1845  -- libxml Error code for 'No matching global declaration available for the validation root'.
-                                            -- It means that the operation Name (example: Add/Subtract/Divide, etc.)
-                                            -- that is 1st child of '<soap:Body>' can't be found in the XSD
+xmlgeneral.prefetchStatusInit         = 0
+xmlgeneral.prefetchStatusOk           = 1
+xmlgeneral.prefetchStatusRunning      = 2
+xmlgeneral.prefetchStatusKo           = 3
+xmlgeneral.prefetchQueueTimeout       = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
+xmlgeneral.prefetchReqQueueName       = "-prefetch-request-schema"
+xmlgeneral.prefetchResQueueName       = "-prefetch-response-schema"
+
+xmlgeneral.libxmlNoMatchGlobalDecl    = 1845  -- libxml Error code for 'No matching global declaration available for the validation root'.
+                                              -- It means that the operation Name (example: Add/Subtract/Divide, etc.)
+                                              -- that is 1st child of '<soap:Body>' can't be found in the XSD
 
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
@@ -446,375 +450,6 @@ function xmlgeneral.initializeSaxon()
   end
 end
 
------------------------------------------------------------------------------------------------
--- Callback function called by 'kong.tools.queue' to Asynchronously Prefetch Schema Validation
------------------------------------------------------------------------------------------------
-local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_entries)
-  local errMessage
-  local soapFaultCode
-  local child
-  local WSDL
-  local verbose
-  local xsdHashKey
-  local filePathPrefix
-  local rc = true  
-  kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin - PluginType:"..conf.typePlugin)
-    
-  local count = 0  
-
-  -- Loop over all WSDL/XSDs
-  for k, prefetchConf_entry in pairs (prefetchConf_entries) do
-    
-    count = count + 1
-    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
-    xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
-    
-    -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
-    if xsdHashKey then
-      WSDL            = prefetchConf_entry.xsdSchemaInclude
-      verbose         = prefetchConf_entry.VerboseRequest
-      child           = prefetchConf_entry.child
-      filePathPrefix  = prefetchConf_entry.filePathPrefix
-
-      -- If the prefetch has been successfully done 
-      if  xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusOk then
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback - prefetchStatus='Ok' - Nothing to do")
-        -- Go on the next Entry
-        goto continue
-      elseif xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusInit then
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback - First execution")
-      end
-      xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusRunning
-
-      -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
-      -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
-      errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.typePlugin, nil, filePathPrefix, child, nil, WSDL, verbose, true, true)
-
-      -- If the prefetch succeeded
-      if not errMessage then
-        xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
-        xsdHashKey.duration = ngx.now() - xsdHashKey.started
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success** | PluginType:"..conf.typePlugin.."| count: "..count.."| duration=" .. xsdHashKey.duration)
-      else
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback: PluginType:"..conf.typePlugin.." err: " .. errMessage)
-        local j, _ = string.find(errMessage, "failed.to.load.external.entity")
-        local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
-        -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
-        if j == nil and k == nil then
-          xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
-        end
-      end
-
-      -- If the Prefetch status is still 'Running' it means that there is no syntax Error 
-      -- but not all external entities are downloaded
-      if xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusRunning then
-        xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
-        rc = false
-        errMessage = "Not all external entities are downloaded. This process must be performed (at least) once more"
-      else
-        -- At this stage the status could be 'prefetchStatusKo' related to a WSDL/XSD syntax error, in this case
-        -- no need to return 'false' because at the next execution there will have the same result (i.e. a syntax error)
-        rc = true
-        errMessage = nil
-      end
-      kong.log.debug("asyncPrefetch_Schema_Validation_callback - PluginType:"..conf.typePlugin.." Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or "'N/A'"))
-    
-    -- Else the XSD 'hashKey' is not found in the 'entityLoader.hashKeys'
-    else
-      rc = false
-      errMessage = "PluginType:"..conf.typePlugin.." Unable to find XSD HashKey '" .. (prefetchConf_entry.xsdHashKey or "nil") .. "' in the 'entityLoader.hashKeys'"
-      kong.log.debug("asyncPrefetch_Schema_Validation_callback: " .. errMessage)
-    end
-    ::continue::
-  end
-  return rc, errMessage
-end
-
----------------------------------------------------------------------------------------
--- Process linked with the 'configure' phase
---  libxml -> Enable the prefetch Validation of SOAP Schema and WSDL/XSD Api Schemas
---            It concerns the new ones and the existing schemas that previously failed
----------------------------------------------------------------------------------------
-function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, typePlugin, filePathPrefix, xsdSchemaInclude, child, queueName, queue_conf)
-
-  local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
-  -- If it's the 1st time the XSD Schema is seen
-  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
-    kong.log.debug("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
-      prefetchStatus = xmlgeneral.prefetchStatusInit,
-      started  = ngx.now(),
-      duration =  0
-
-    }
-  -- Else If the XSD Schema is already known and the Prefetch status is Ko
-  elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
-    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
-    -- So let's try another Prefetch
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].started  = ngx.now()
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].duration =  0
-
-  else
-    -- Else If the XSD Schema is already known and the Prefetch status is Init/Running/Ok
-    --   => Don't change anything
-    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is already known and the Prefetch status is Init/Running/Ok")
-  end
-
-  -- Set the information of the plugin using the Schema
-  if typePlugin == xmlgeneral.RequestTypePlugin then
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ReqPluginRemove = false
-  else
-    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ResPluginRemove = false
-  end
-
-  -- If the Prefetch has the 'Init' status
-  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusInit then
-    local prefetchConf = {
-      xsdSchemaInclude = xsdSchemaInclude,
-      VerboseRequest = config.VerboseRequest,
-      ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
-      xsdHashKey = xsdHashKey,
-      child = child,
-      filePathPrefix = config.filePathPrefix
-    }
-    local conf = {}
-    conf.typePlugin = typePlugin
-
-    -- Asynchronously execute the Prefetch of External Entities
-    local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, conf , prefetchConf)
-    if err then
-      kong.log.err("XSD_Validation_Prefetch, prefetchQueue: " .. err)
-    end
-  end
-end
-
-----------------------------------------------------------------------------------------------
--- Process linked with the 'configure' phase
---  libxml -> Enable the prefetch Validation
---  saxon  -> If required load the 'saxon' library
---  libxml+libxslt+saxon => Initialize a Cache Table for Compiling and Parsing WSDL/XSD, XSLT
---
--- If there is a change in Request  Plugins, 'pluginConfigure' is called
--- If there is a change in Response Plugins, 'pluginConfigure' is called another time
----------------------------------------------------------------------------------------------
-function xmlgeneral.pluginConfigure (configs, typePlugin)
-  local saxon = false
-  local iCount = 0
-
-  if configs then
-    local queueName
-    
-    if typePlugin == xmlgeneral.RequestTypePlugin then
-      queueName = libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName
-    else
-      queueName = libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName
-    end
-
-    local queue_conf  =
-    {
-      name = queueName,                   -- name of the queue (required)
-      log_tag = libxml2ex.queueNamePrefix,-- tag string to identify plugin or application area in logs
-      max_batch_size = 100,               -- maximum number of entries in one batch (default 1)
-      max_coalescing_delay = 1,           -- maximum number of seconds after first entry before a batch is sent
-      max_entries = 10000,                -- maximum number of entries on the queue (default 10000)
-      max_bytes = nil,                                    -- maximum number of bytes on the queue (default nil)
-      initial_retry_delay = libxml2ex.xmlSoapSleepAsync,  -- initial delay when retrying a failed batch, doubled for each subsequent retry
-      max_retry_time = xmlgeneral.prefetchQueueTimeout,   -- maximum number of seconds before a failed batch is dropped
-      max_retry_delay = libxml2ex.xmlSoapSleepAsync * 4,  -- maximum delay between send attempts, caps exponential retry
-      concurrency_limit = 1             -- specify the number of delivery timers (`-1` means no limit at all, and each entry would create an individual timer for sending)
-    }
-
-    -- Prepare the purge of 'entityLoader.hashKeys' that are no longer useful
-    -- Firstly, consider that all entries have to be deleted
-    for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
-      if typePlugin == xmlgeneral.RequestTypePlugin then
-        entityHashKey.ReqPluginRemove = true
-      else
-        entityHashKey.ResPluginRemove = true
-      end
-      iCount = iCount + 1
-    end
-    
-    kong.log.debug("pluginConfigure, BEGIN #entityLoader.hashKeys=" .. tostring(iCount))
-    
-    -- Loop over all the cache plugins and delete all the pointers
-    -- Only for 'Saxon' library => Delete the current Saxon contexts
-    for keyPluginId, cachePlugin in pairs (kong.xmlSoapPtrCache.plugins) do
-      if cachePlugin.XSLTs then
-        -- If 'XSLT before XSD' is defined for Saxon libary
-        --    and
-        -- If there is a current Contex
-        --    and
-        -- If the plugin Type of Cache is concerned by the 'configure' phase (Request or Response plugin)
-        if cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD] and
-           cachePlugin.xsltLibrary == 'saxon' and
-           cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD].xsltPtr ~= ffi.NULL and
-           cachePlugin.typePlugin == typePlugin then
-          libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD].xsltPtr)
-          cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD].xsltPtr = ffi.NULL
-        end
-
-        -- If 'XSLT after XSD' is defined for Saxon libary
-        --    and
-        -- If there is a current Contex
-        --    and
-        -- If the plugin Type of Cache is concerned by the 'configure' phase (Request or Response plugin)
-        if cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD] and 
-           cachePlugin.xsltLibrary == 'saxon' and
-           cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr ~= ffi.NULL and
-           cachePlugin.typePlugin == typePlugin then
-          libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr)
-          cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr = ffi.NULL
-        end
-        
-        -- If the Plugin Cache is concerned by the 'configure' phase (Request or Response plugin)
-        if cachePlugin.typePlugin == typePlugin then
-          -- Remove the Cache Entry in case the plugin is no longer used
-          -- For plugins still alive, the Cache Entities will be re-created in the loop below
-          kong.xmlSoapPtrCache.plugins[keyPluginId] = nil
-        end
-
-      end
-    end
-    
-    -- Parse all instances of the plugin
-    for keyConfig, config in ipairs(configs) do
-      local plugin_id = config.__plugin_id
-
-      -- Initialize the Pointers cache of the plugin for Loading and Parsing the WSDL/XSD and XSLT schemas
-      kong.xmlSoapPtrCache.plugins[plugin_id] = {}
-      local pluginConf = kong.xmlSoapPtrCache.plugins[plugin_id]
-      pluginConf.typePlugin = typePlugin      
-      pluginConf.WSDLs = {}
-      pluginConf.WSDLs[xmlgeneral.schemaTypeSOAP] = {}
-      pluginConf.WSDLs[xmlgeneral.schemaTypeAPI ] = {}
-      pluginConf.WSDLs[xmlgeneral.schemaTypeSOAP].TTL = config.ExternalEntityLoader_CacheTTL
-      pluginConf.WSDLs[xmlgeneral.schemaTypeAPI ].TTL = config.ExternalEntityLoader_CacheTTL
-      pluginConf.WSDLs[xmlgeneral.schemaTypeSOAP].XSDs = {}
-      pluginConf.WSDLs[xmlgeneral.schemaTypeAPI ].XSDs = {}
-      
-      pluginConf.xsltLibrary = config.xsltLibrary
-      pluginConf.XSLTs = {}
-      pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD ] = {}
-      pluginConf.XSLTs[xmlgeneral.xsltAfterXSD  ] = {}
-      pluginConf.soapAction = {}
-      pluginConf.routeByXPath = {}
-      
-      -- If saxon library is enabled
-      if config.xsltLibrary == 'saxon' then
-        saxon = true
-      end
-
-      -- Check if there is 'xsdSoapSchemaInclude' for SOAP Envelope
-      local xsdSoapSchemaInclude = false
-      if config.xsdSoapSchemaInclude then
-        for k,v in pairs(config.xsdSoapSchemaInclude) do            
-          xsdSoapSchemaInclude = true
-          break
-        end
-      end
-
-      -- Check if there is 'xsdApiSchemaInclude' for API Envelope
-      local xsdApiSchemaInclude = false
-      if config.xsdApiSchemaInclude then
-        for k,v in pairs(config.xsdApiSchemaInclude) do            
-          xsdApiSchemaInclude = true
-          break
-        end
-      end
-      
-      -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
-      -- so the Schema included in the plugin conf or the Asynchronous download can't work
-      if #kong.configuration.stream_listeners > 0 and 
-        (xsdSoapSchemaInclude or xsdApiSchemaInclude or config.ExternalEntityLoader_Async) then
-        kong.log.err(libxml2ex.stream_listen_err)
-      -- If Asynchronous is enabled
-      elseif config.ExternalEntityLoader_Async then
-        kong.log.debug("pluginConfigure, Async")
-
-        -- If a SOAP XSD Schema is defined and
-        -- If the XSD content is NOT included in the plugin configuration
-        if      config.xsdSoapSchema and
-            not xsdSoapSchemaInclude then
-          kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
-          xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, typePlugin, config.filePathPrefix, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP, queueName, queue_conf)
-        end
-
-        -- If an API XSD Schema is defined and
-        -- If the XSD content is NOT included in the plugin configuration
-        if      config.xsdApiSchema  and
-            not xsdApiSchemaInclude then
-          kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
-          xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, typePlugin, config.filePathPrefix, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
-        end          
-      end
-    end
-
-    -- Lastly, purge the 'entityLoader.hashKeys'
-    --    => Free memory of XSD entries that are no longer used due to a plugin change/deletion
-    --    For an effective deletion of a XSD shared by the Request AND Response plugin, we have to 'wait' 
-    --    the 'configure' phase of both plugins: 'Request' AND 'Response' plugins
-    for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
-      if  (entityHashKey.ReqPluginRemove == nil or entityHashKey.ReqPluginRemove == true ) and
-          (entityHashKey.ResPluginRemove == nil or entityHashKey.ResPluginRemove == true ) and
-          entityHashKey.prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
-        kong.log.debug("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=" .. k)
-        kong.xmlSoapAsync.entityLoader.hashKeys [k] = nil
-      end
-    end
-    
-    -- If the 'saxon' is not already Initialized 
-    --    and
-    -- If the 'saxon' library is enabled at least by 1 plugin
-    if kong.xmlSoapSaxon == nil and saxon then
-      -- Initialize Saxon
-      xmlgeneral.initializeSaxon()
-    end
-
-    iCount = 0
-    for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
-      iCount = iCount + 1
-    end
-    kong.log.debug("pluginConfigure: END #entityLoader.hashKeys=" .. tostring(iCount))
-  end
-end
-
-----------------------------------------------
--- Do a sleep for waiting the end of Prefetch
-----------------------------------------------
-function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchemaInclude, queuename)
-  local rc = false
-  local xsdApiSchemaIncluded = false
-
-  -- If Asynchronous is enabled
-  if ExternalEntityLoader_Async then
-    
-    -- Check if there is XSD content in the plugin configuration
-    if xsdApiSchemaInclude and next(xsdApiSchemaInclude) then
-      xsdApiSchemaIncluded = true
-    end
-    
-    -- If there is NO XSD content included in the plugin configuration
-    if not xsdApiSchemaIncluded then
-      local nowTime = ngx.now()
-      -- Wait for:
-      --     The end of Prefetch Validation of the XSD schema and
-      --     The timeout Prefetch (avoiding infinite loop)
-      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
-            (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
-              -- This 'sleep' happens only one time per Plugin configuration update
-        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
-        rc = true
-      end
-    else
-      -- As the XSD content is included in the plugin, don't wait the asynchronous download of XSD content
-    end
-  end
-  
-  return rc
-end
-
 ---------------------------------------------------------------------------------
 -- Initialize the SOAP/XML plugin
 -- Setup a 'libxml2' Error handler
@@ -824,10 +459,11 @@ end
 ---------------------------------------------------------------------------------
 function xmlgeneral.initializeXmlSoapPlugin ()
   
-  -- Performance capability: Initialize the cache of Pointers for Loading and Parsing the WSDL/XSD and XSLT schemas
-  if not kong.xmlSoapPtrCache then
-    kong.xmlSoapPtrCache = {}
-    kong.xmlSoapPtrCache.plugins = {}
+  -- Performance capability for 'Saxon': Initialize the cache of Pointers for Loading and Parsing the WSDL/XSD and XSLT schemas
+  -- Note: Performance capability for 'libxml2' and 'libxslt': there is another mechanism based on 'kong.cache'
+  if not kong.xmlSoapSaxonPtrCache then
+    kong.xmlSoapSaxonPtrCache = {}
+    kong.xmlSoapSaxonPtrCache.plugins = {}
   end
   
   -- Initialize the Error Handlers only one time for the Nginx process and for the Plugin
@@ -889,6 +525,413 @@ function xmlgeneral.initializeXmlSoapPlugin ()
   end
 end
 
+-----------------------------------------------------------------------------------------------
+-- Callback function called by 'kong.tools.queue' to Asynchronously Prefetch Schema Validation
+-----------------------------------------------------------------------------------------------
+local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_entries)
+  local errMessage
+  local soapFaultCode
+  local child
+  local WSDL
+  local verbose
+  local xsdHashKey
+  local filePathPrefix
+  local rc = true  
+  kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin - PluginType:"..conf.pluginType)
+    
+  local count = 0  
+
+  -- Loop over all WSDL/XSDs
+  for k, prefetchConf_entry in pairs (prefetchConf_entries) do
+    
+    count = count + 1
+    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
+    xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
+    
+    -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
+    if xsdHashKey then
+      WSDL            = prefetchConf_entry.xsdSchemaInclude
+      verbose         = prefetchConf_entry.VerboseRequest
+      child           = prefetchConf_entry.child
+      filePathPrefix  = prefetchConf_entry.filePathPrefix
+
+      -- If the prefetch has been successfully done 
+      if  xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusOk then
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback - prefetchStatus='Ok' - Nothing to do")
+        -- Go on the next Entry
+        goto continue
+      elseif xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusInit then
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback - First execution")
+      end
+      xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusRunning
+
+      -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
+      -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
+      errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.pluginType, nil, conf.cacheTTL, filePathPrefix, child, nil, WSDL, verbose, true, true)
+
+      -- If the prefetch succeeded
+      if not errMessage then
+        xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
+        xsdHashKey.duration = ngx.now() - xsdHashKey.started
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success** | PluginType:"..conf.pluginType.."| count: "..count.."| duration=" .. xsdHashKey.duration)
+      else
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: PluginType:"..conf.pluginType.." err: " .. errMessage)
+        local j, _ = string.find(errMessage, "failed.to.load.external.entity")
+        local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+        -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
+        if j == nil and k == nil then
+          xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
+        end
+      end
+
+      -- If the Prefetch status is still 'Running' it means that there is no syntax Error 
+      -- but not all external entities are downloaded
+      if xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusRunning then
+        xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
+        rc = false
+        errMessage = "Not all external entities are downloaded. This process must be performed (at least) once more"
+      else
+        -- At this stage the status could be 'prefetchStatusKo' related to a WSDL/XSD syntax error, in this case
+        -- no need to return 'false' because at the next execution there will have the same result (i.e. a syntax error)
+        rc = true
+        errMessage = nil
+      end
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback - PluginType:"..conf.pluginType.." Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or "'N/A'"))
+    
+    -- Else the XSD 'hashKey' is not found in the 'entityLoader.hashKeys'
+    else
+      rc = false
+      errMessage = "PluginType:"..conf.pluginType.." Unable to find XSD HashKey '" .. (prefetchConf_entry.xsdHashKey or "nil") .. "' in the 'entityLoader.hashKeys'"
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback: " .. errMessage)
+    end
+    ::continue::
+  end
+  return rc, errMessage
+end
+
+---------------------------------------------------------------------------------------
+-- Process linked with the 'configure' phase
+--  libxml -> Enable the prefetch Validation of SOAP Schema and WSDL/XSD Api Schemas
+--            It concerns the new ones and the existing schemas that previously failed
+---------------------------------------------------------------------------------------
+function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, xsdSchemaInclude, child, queueName, queue_conf)
+
+  local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
+  -- If it's the 1st time the XSD Schema is seen
+  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
+    kong.log.debug("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
+      prefetchStatus = xmlgeneral.prefetchStatusInit,
+      started  = ngx.now(),
+      duration =  0
+
+    }
+  -- Else If the XSD Schema is already known and the Prefetch status is Ko
+  elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
+    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
+    -- So let's try another Prefetch
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].started  = ngx.now()
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].duration =  0
+
+  else
+    -- Else If the XSD Schema is already known and the Prefetch status is Init/Running/Ok
+    --   => Don't change anything
+    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is already known and the Prefetch status is Init/Running/Ok")
+  end
+
+  -- Set the information of the plugin using the Schema
+  if pluginType == xmlgeneral.RequestTypePlugin then
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ReqPluginRemove = false
+  else
+    kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].ResPluginRemove = false
+  end
+
+  -- If the Prefetch has the 'Init' status
+  if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusInit then
+    local prefetchConf = {
+      xsdSchemaInclude = xsdSchemaInclude,
+      VerboseRequest = config.VerboseRequest,
+      ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
+      xsdHashKey = xsdHashKey,
+      child = child,
+      filePathPrefix = config.filePathPrefix
+    }
+    local conf = {}
+    conf.pluginType = pluginType
+    conf.cacheTTL = config.ExternalEntityLoader_CacheTTL
+
+    -- Asynchronously execute the Prefetch of External Entities
+    local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, conf , prefetchConf)
+    if err then
+      kong.log.err("XSD_Validation_Prefetch, prefetchQueue: " .. err)
+    end
+  end
+end
+
+----------------------------------------------------------------------------------------------
+-- Process linked with the 'configure' phase
+--  libxml -> Enable the prefetch Validation
+--  saxon  -> If required load the 'saxon' library
+--  libxml+libxslt+saxon: 
+--    => Initialize a Cache Table for Compiling and Parsing WSDL/XSD, XSLT
+--    => Delete the Cache Table if the plugin is deleted
+--
+-- If there is a change in Request  Plugins, 'pluginConfigure' is called
+-- If there is a change in Response Plugins, 'pluginConfigure' is called another time
+---------------------------------------------------------------------------------------------
+function xmlgeneral.pluginConfigure (configs, pluginType)
+  local saxon = false
+  local countHashKeys = 0
+  local countPointersCache = 0
+
+  if configs then
+    local queueName
+    
+    if pluginType == xmlgeneral.RequestTypePlugin then
+      queueName = libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName
+    else
+      queueName = libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName
+    end
+
+    local queue_conf  =
+    {
+      name = queueName,                   -- name of the queue (required)
+      log_tag = libxml2ex.queueNamePrefix,-- tag string to identify plugin or application area in logs
+      max_batch_size = 100,               -- maximum number of entries in one batch (default 1)
+      max_coalescing_delay = 1,           -- maximum number of seconds after first entry before a batch is sent
+      max_entries = 10000,                -- maximum number of entries on the queue (default 10000)
+      max_bytes = nil,                                    -- maximum number of bytes on the queue (default nil)
+      initial_retry_delay = libxml2ex.xmlSoapSleepAsync,  -- initial delay when retrying a failed batch, doubled for each subsequent retry
+      max_retry_time = xmlgeneral.prefetchQueueTimeout,   -- maximum number of seconds before a failed batch is dropped
+      max_retry_delay = libxml2ex.xmlSoapSleepAsync * 4,  -- maximum delay between send attempts, caps exponential retry
+      concurrency_limit = 1             -- specify the number of delivery timers (`-1` means no limit at all, and each entry would create an individual timer for sending)
+    }
+    
+    -- Prepare the purge of 'entityLoader.hashKeys' (related to Async External Entities URL) that are no longer useful
+    -- Firstly, consider that all entries have to be deleted
+    for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
+      if pluginType == xmlgeneral.RequestTypePlugin then
+        entityHashKey.ReqPluginRemove = true
+      else
+        entityHashKey.ResPluginRemove = true
+      end
+      countHashKeys = countHashKeys + 1
+    end
+    kong.log.debug("pluginConfigure, Begin #entityLoader.hashKeys=" .. tostring(countHashKeys))      
+    
+    -- Purge the Pointers cache table for plugins using 'Saxon':
+    --  If the Pointers cache table that has been marked (as 'To Be Deleted') during the previous call of 'configure' phase => delete it
+    --    => It gives more chance for long pending Web Service to send the reponse and to be process by the Response plugin
+    --  Other Pointers cache tables are marked (as 'To Be Deleted') but, based on the content 'configs' sent by the CP, the flag will be set to 'false'
+    for keyPluginId, cachePlugin in next, kong.xmlSoapSaxonPtrCache.plugins do
+      
+      if cachePlugin.pluginType == pluginType then        
+        -- If during the previous call of 'configure' phase, the cache table has been marked as to be deleted
+        if cachePlugin.toBeDeleted == true then
+          if cachePlugin.XSLTs then
+            -- If 'XSLT before XSD' is defined for Saxon libary
+            --    and
+            -- If there is a current Contex
+            if cachePlugin.xsltLibrary == 'saxon' and 
+              cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD] and              
+              cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD].xsltPtr ~= ffi.NULL then
+              libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD].xsltPtr)
+              cachePlugin.XSLTs[xmlgeneral.xsltBeforeXSD].xsltPtr = ffi.NULL
+            end
+
+            -- If 'XSLT after XSD' is defined for Saxon libary
+            --    and
+            -- If there is a current Contex
+            if cachePlugin.xsltLibrary == 'saxon' and 
+              cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD] and               
+              cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr ~= ffi.NULL then
+              libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr)
+              cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr = ffi.NULL
+            end
+          end
+          
+          kong.log.debug("pluginConfigure for Saxon, pluginId=" .. keyPluginId .. " is deleted from the cache")
+          kong.xmlSoapSaxonPtrCache.plugins[keyPluginId] = nil -- Delete the whole cache of the plugin
+          countPointersCache = countPointersCache + 1
+        else
+          -- First consider that the plugin should be deleted and
+          -- mark the cache as 'To Be Deleted' for the next 'configure' phase sent by the CP
+          cachePlugin.toBeDeleted = true
+        end         
+      end
+    end
+
+    kong.log.debug("pluginConfigure for Saxon, Deleted #Pointers Cache tables=" .. countPointersCache)
+
+    -- Parse all instances of the plugin sent by the Control Plane for:
+    --  => 'libxml2' and 'libxslt' libraries:
+    --        Invalidate the Pointers cache table stored in 'kong.cache' 
+    --  => 'Saxon' library:
+    --        Creating the Pointers cache table
+    --          OR
+    --        Forcing a refresh of the table
+    for keyConfig, config in ipairs(configs) do
+      local plugin_id = config.__plugin_id
+      
+      -- 'libxml2' and 'libxslt' libraries: Invalidate the Pointers cache table
+      kong.cache:invalidate_local(xmlgeneral.xmlSoapPtrCache..plugin_id)
+
+      -- 'Saxon' library:
+      if config.xsltLibrary == 'saxon' then
+        
+        saxon = true
+
+        -- If it's the first time this pluginId is seen: initialize the Pointers cache of the plugin 
+        -- for Loading and Parsing the WSDL/XSD and XSLT schemas
+        if not kong.xmlSoapSaxonPtrCache.plugins[plugin_id] then
+          kong.xmlSoapSaxonPtrCache.plugins[plugin_id] = {}
+          local pluginConf = kong.xmlSoapSaxonPtrCache.plugins[plugin_id]
+          pluginConf.pluginType = pluginType                
+          pluginConf.xsltLibrary = config.xsltLibrary
+          pluginConf.XSLTs = {}
+          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD] = {}
+          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD ] = {}
+          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD].started = ngx.now()
+          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD ].started = ngx.now()
+        else
+          -- Force the refresh of the Pointers cache on next end-user Request
+          -- and don't create a new table of Pointers cache (like the 1st time: 'pluginConf.XSLTs = {}')
+          --    => so it avoids that pending requests crash due to old pointers (that aren't available anymore)
+          local pluginConf = kong.xmlSoapSaxonPtrCache.plugins[plugin_id]
+          local timeToRefresh = ngx.now() - config.ExternalEntityLoader_CacheTTL - 1
+          
+          -- Force a refresh for Pointers cache
+          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD].started = timeToRefresh
+          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD ].started = timeToRefresh
+        end
+
+        -- As the plugin_id is sent by the CP for keeping in memory the Pointers cache table => set the flag to 'false'
+        kong.xmlSoapSaxonPtrCache.plugins[plugin_id].toBeDeleted = false
+      end
+      
+      -- Check if there is 'xsdSoapSchemaInclude' for SOAP Envelope
+      local xsdSoapSchemaInclude = false
+      if config.xsdSoapSchemaInclude and next(config.xsdSoapSchemaInclude) then
+        xsdSoapSchemaInclude = true
+      end
+
+      -- Check if there is 'xsdApiSchemaInclude' for API Envelope
+      local xsdApiSchemaInclude = false
+      if config.xsdApiSchemaInclude and next(config.xsdApiSchemaInclude) then
+        xsdApiSchemaInclude = true
+      end
+      
+      -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
+      -- so the Schema included in the plugin conf or the Asynchronous download can't work
+      if #kong.configuration.stream_listeners > 0 and 
+        (xsdSoapSchemaInclude or xsdApiSchemaInclude or config.ExternalEntityLoader_Async) then
+        kong.log.err(libxml2ex.stream_listen_err)
+      -- If Asynchronous is enabled
+      elseif config.ExternalEntityLoader_Async then
+        kong.log.debug("pluginConfigure, Async")
+
+        -- If a SOAP XSD Schema is defined and
+        -- If the XSD content is NOT included in the plugin configuration
+        if      config.xsdSoapSchema and
+            not xsdSoapSchemaInclude then
+          kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
+          xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP, queueName, queue_conf)
+        end
+
+        -- If an API XSD Schema is defined and
+        -- If the XSD content is NOT included in the plugin configuration
+        if      config.xsdApiSchema  and
+            not xsdApiSchemaInclude then
+          kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
+          xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
+        end          
+      end
+    end
+
+    -- Lastly, purge the 'entityLoader.hashKeys'
+    --    => Free memory of XSD entries that are no longer used due to a plugin change/deletion
+    --    For an effective deletion of a XSD shared by the Request AND Response plugin, we have to 'wait' 
+    --    the 'configure' phase of both plugins: 'Request' AND 'Response' plugins
+    for k, entityHashKey in next, kong.xmlSoapAsync.entityLoader.hashKeys do
+      if  (entityHashKey.ReqPluginRemove == nil or entityHashKey.ReqPluginRemove == true ) and
+          (entityHashKey.ResPluginRemove == nil or entityHashKey.ResPluginRemove == true ) and
+          entityHashKey.prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
+        kong.log.debug("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=" .. k)
+        kong.xmlSoapAsync.entityLoader.hashKeys [k] = nil
+      end
+    end
+        
+    -- If the 'saxon' is not already Initialized 
+    --    and
+    -- If the 'saxon' library is enabled at least by 1 plugin
+    if kong.xmlSoapSaxon == nil and saxon then
+      -- Initialize Saxon
+      xmlgeneral.initializeSaxon()
+    end
+
+    local log_level = kong.configuration.log_level
+    -- DEBUG only
+    if log_level == "debug" then      
+      -- DEBUG only: Get the number of 'entityLoader.hashKeys' (related to Async External Entities URL)    
+      countHashKeys = 0
+      for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
+        countHashKeys = countHashKeys + 1
+      end
+      kong.log.debug("pluginConfigure: End #entityLoader.hashKeys=" .. tostring(countHashKeys))
+
+      -- DEBUG only: Get the number of Pointers Cache table and the numbers that will be deleted on next Configure phase
+      countPointersCache = 0
+      local countPointersCacheTBD = 0
+      for k,v in next, kong.xmlSoapSaxonPtrCache.plugins do
+        if v.pluginType == pluginType then
+          countPointersCache = countPointersCache + 1
+          if v.toBeDeleted == true then
+            kong.log.debug("pluginConfigure for Saxon, pluginId=" .. k .. " mark as deleted in the cache")  
+            countPointersCacheTBD = countPointersCacheTBD + 1
+          end
+        end
+      end
+      kong.log.debug("pluginConfigure for Saxon, #Pointers_Cache_tables=" .. countPointersCache .. " #Marked_as_deleted="..countPointersCacheTBD)
+    end
+  end
+end
+
+----------------------------------------------
+-- Do a sleep for waiting the end of Prefetch
+----------------------------------------------
+function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchemaInclude, queuename)
+  local rc = false
+  local xsdApiSchemaIncluded = false
+
+  -- If Asynchronous is enabled
+  if ExternalEntityLoader_Async then
+    
+    -- Check if there is XSD content in the plugin configuration
+    if xsdApiSchemaInclude and next(xsdApiSchemaInclude) then
+      xsdApiSchemaIncluded = true
+    end
+    
+    -- If there is NO XSD content included in the plugin configuration
+    if not xsdApiSchemaIncluded then
+      local nowTime = ngx.now()
+      -- Wait for:
+      --     The end of Prefetch Validation of the XSD schema and
+      --     The timeout Prefetch (avoiding infinite loop)
+      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
+            (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
+              -- This 'sleep' happens only one time per Plugin configuration update
+        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
+        rc = true
+      end
+    else
+      -- As the XSD content is included in the plugin, don't wait the asynchronous download of XSD content
+    end
+  end
+  
+  return rc
+end
+
 ----------------------------------------------------------------------------------------
 -- Prepare a XML declaration (which starts by '<?')
 -- The XLST removes it; so if the user defines its xslt file with 
@@ -928,7 +971,7 @@ end
 ---------------------------------------------------
 -- libsaxon: Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, xsltBeforeAfterXSD, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, cacheTTL, filePathPrefix, xsltBeforeAfterXSD, xsltParams, XMLtoTransform, XSLT, verbose)
   local errMessage
   local xml_transformed_dump
   local context
@@ -938,20 +981,29 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, 
   
   kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
 
+  -- If the Pointers cache table is not initialized, return an error
+  if not (  kong.xmlSoapSaxonPtrCache.plugins[pluginId] and 
+            kong.xmlSoapSaxonPtrCache.plugins[pluginId].XSLTs and
+            kong.xmlSoapSaxonPtrCache.plugins[pluginId].XSLTs[xsltBeforeAfterXSD]) then
+    return nil, xmlgeneral.invalidPtrsCacheTable, xmlgeneral.soapFaultCodeServer
+  end
+
   -- Get the XSLT Cache table  
-  local cacheXslt = kong.xmlSoapPtrCache.plugins[pluginId].XSLTs[xsltBeforeAfterXSD]
-  
+  local cacheXslt = kong.xmlSoapSaxonPtrCache.plugins[pluginId].XSLTs[xsltBeforeAfterXSD]
+      
   -- Check if Saxon for Kong library is correctly loaded
   errMessage = libsaxon4kong.isSaxonforKongLoaded()
   
   if not errMessage then
 
     -- If the compiled XSLT is not in the cache and If there is no Error from Cache
-    if not cacheXslt.xsltPtr and not cacheXslt.xsltErrMsg then
+    --   OR
+    -- If the XSLT is to be refreshed (due to a change of the plugin configuration or the TTL is reached)
+    if (not cacheXslt.xsltPtr and not cacheXslt.xsltErrMsg) 
+        or 
+        cacheXslt.started + cacheTTL < ngx.now() then
       kong.log.debug ("XSLT transformation, caching: Compile the XSLT and Put it in the cache")
-      
-      libxml2ex.readFile(true, filePathPrefix, XSLT)
-
+            
       -- Check that the XSLT is a file path and read the content of the file
       contentFile, errMessage = libxml2ex.readFile (true, filePathPrefix, XSLT)
   
@@ -967,12 +1019,19 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, 
                                                               kong.xmlSoapSaxon.xslt30Processor,
                                                               XSLT)
       end
-
+      
       if errMessage then
         errMessage = xmlgeneral.invalidXSLT .. ". " .. errMessage    
       end
+      -- If there is a current Context pointer, delete it and replace it with the new one
+      if cacheXslt.xsltPtr ~= ffi.NULL then
+        kong.log.debug ("XSLT transformation, caching: Delete the current compiled XSLT from cache and replace it with the new one")
+        libsaxon4kong.deleteContext (cacheXslt.xsltPtr)
+      end
       cacheXslt.xsltPtr     = context
       cacheXslt.xsltErrMsg  = errMessage
+      cacheXslt.started     = ngx.now()
+      
     else
       kong.log.debug ("XSLT transformation, caching: Get the compiled XSLT from cache")
       context     = cacheXslt.xsltPtr
@@ -982,20 +1041,6 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, 
   end
 
   if not errMessage then
-    -- If the XSLT Transformation is configured with a Template (example: <xsl:template name="main">)
-    -- see example in the repo: _tmp.xslt.transformation/xslt-v3-tester_kong_json-to-xml_with_template.xslt
-    -- xsltSaxonTemplate='main' and xsltSaxonTemplateParam='request-body'
-    --if plugin_conf.xsltSaxonTemplate and plugin_conf.xsltSaxonTemplateParam then
-      -- Transform the XML doc with XSLT transformation by invoking a template
-    --  xml_transformed_dump, errMessage = libsaxon4kong.stylesheetInvokeTemplate ( 
-    --                                        kong.xmlSoapSaxon.saxonProcessor,
-    --                                        context,
-    --                                        plugin_conf.xsltSaxonTemplate, 
-    --                                        plugin_conf.xsltSaxonTemplateParam,
-    --                                        XMLtoTransform
-    --                                      )
-    --else
-
     -- Transform the XML doc with XSLT transformation
     xml_transformed_dump, errMessage = libsaxon4kong.stylesheetTransformXml ( 
                                           kong.xmlSoapSaxon.saxonProcessor,
@@ -1015,9 +1060,6 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, filePathPrefix, 
     end
   end
   
-  -- Here don't free Context memory:
-  --  'xmlgeneral.pluginConfigure' is in charge for freeing memory (by calling 'deleteContext(context)')
-
   if errMessage == nil then
     kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
   else
@@ -1030,7 +1072,7 @@ end
 ---------------------------------------------------
 -- libxslt: Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, filePathPrefix, xsltBeforeAfterXSD, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, cacheTTL, filePathPrefix, xsltBeforeAfterXSD, xsltParams, XMLtoTransform, XSLT, verbose)
   local errMessage  = nil
   local err         = nil
   local style       = nil
@@ -1055,9 +1097,19 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, filePathPrefix, xs
 
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING)
-
-  -- Get the XSLT Cache table  
-  local cacheXslt = kong.xmlSoapPtrCache.plugins[pluginId].XSLTs[xsltBeforeAfterXSD]
+  -- Get the Pointers table from Cache
+  local ptrsCacheTable, err = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, pluginType)
+  if err then
+    return nil, xmlgeneral.errorGettingPtrsCacheTable .. err, xmlgeneral.soapFaultCodeServer
+  -- If the Pointers cache table is not initialized, return an error
+  elseif not (  ptrsCacheTable and 
+                ptrsCacheTable.XSLTs and
+                ptrsCacheTable.XSLTs[xsltBeforeAfterXSD] ) then
+    return nil, xmlgeneral.invalidPtrsCacheTable, xmlgeneral.soapFaultCodeServer
+  end
+  
+  -- Get the XSLT Cache table
+  local cacheXslt = ptrsCacheTable.XSLTs[xsltBeforeAfterXSD]
   
   -- If the XML Tree document of XSLT is not in the cache and If there is no Error from Cache
   if not cacheXslt.xmlXsltPtr and not cacheXslt.xmlXsltErrMsg then
@@ -1066,6 +1118,7 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, filePathPrefix, xs
     xslt_doc, errMessage = libxml2ex.xmlReadMemory(XSLT, true, filePathPrefix, nil, nil, default_parse_options, verbose, true)
     cacheXslt.xmlXsltPtr    = xslt_doc
     cacheXslt.xmlXsltErrMsg = errMessage
+    
   -- Get from cache the XML Tree document of XSLT
   else
     kong.log.debug ("XSLT transformation, caching: Get the compiled XSLT from cache")
@@ -1147,7 +1200,7 @@ end
 ---------------------------------------------------
 -- Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform(pluginType, pluginId, filePathPrefix, xsltBeforeAfterXSD, xsltLibrary, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform(pluginType, pluginId, cacheTTL, filePathPrefix, xsltBeforeAfterXSD, xsltLibrary, xsltParams, XMLtoTransform, XSLT, verbose)
   local errMessage
   local xml_transformed_dump
   local soapFaultCode = xmlgeneral.soapFaultCodeServer
@@ -1155,6 +1208,7 @@ function xmlgeneral.XSLTransform(pluginType, pluginId, filePathPrefix, xsltBefor
   if xsltLibrary == 'libxslt' then
     xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libxlt(pluginType,
                                                                                      pluginId,
+                                                                                     cacheTTL,
                                                                                      filePathPrefix,
                                                                                      xsltBeforeAfterXSD,
                                                                                      xsltParams,
@@ -1168,6 +1222,7 @@ function xmlgeneral.XSLTransform(pluginType, pluginId, filePathPrefix, xsltBefor
     end
     xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libsaxon(pluginType,
                                                                                        pluginId,
+                                                                                       cacheTTL,
                                                                                        filePathPrefix,
                                                                                        xsltBeforeAfterXSD,
                                                                                        xsltParams,
@@ -1258,10 +1313,30 @@ function xmlgeneral.addNamespaces(xsdSchema, document, node)
   return xsdSchema
 end
 
+---------------------------------------
+-- Initialize the Pointers Cache table
+---------------------------------------
+function xmlgeneral.initPointersCacheTable(pluginType)
+  local pointersCacheTable = {}
+  pointersCacheTable.pluginType = pluginType  
+  pointersCacheTable.WSDLs = {}
+  pointersCacheTable.WSDLs[xmlgeneral.schemaTypeSOAP] = {}
+  pointersCacheTable.WSDLs[xmlgeneral.schemaTypeAPI ] = {}
+  pointersCacheTable.WSDLs[xmlgeneral.schemaTypeSOAP].XSDs = {}
+  pointersCacheTable.WSDLs[xmlgeneral.schemaTypeAPI ].XSDs = {}
+  
+  pointersCacheTable.XSLTs = {}
+  pointersCacheTable.XSLTs[xmlgeneral.xsltBeforeXSD ] = {}
+  pointersCacheTable.XSLTs[xmlgeneral.xsltAfterXSD  ] = {}
+  pointersCacheTable.soapAction = {}
+  pointersCacheTable.routeByXPath = {}
+  return pointersCacheTable
+end
+
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
-function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, child, XMLtoValidate, WSDL, verbose, prefetch, async)
+function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePathPrefix, child, XMLtoValidate, WSDL, verbose, prefetch, async)
   local xml_doc          = nil
   local errMessage       = nil
   local firstErrMessage  = nil
@@ -1326,25 +1401,32 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
     --    The prefetch is done for each distinct (hash) WSDL and not for each plugin and the goal is to asynchronously download external entities
     --    Here we have:
     --        prefetch=true
-    --        pluginId=nil <- unable to call kong.xmlSoapPtrCache.plugins[pluginId]
+    --        pluginId=nil <- unable to call kong.cache:get(..pluginId..)
     --  OR 
     -- If asnchronous download is enabled
     --    Don't try to cache the compiled WSDL because there is no guarantee for getting all new External Entities at time 
     --    related to their TTL (refreshing their content)
     cacheWSDL = {}
-  else    
-    cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child]
-    local cacheOk = true
+  else
+    -- Get the Pointers table from Cache
+    local ptrsCacheTable, err = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, pluginType)
+    if err then
+      return xmlgeneral.errorGettingPtrsCacheTable .. err, xmlgeneral.soapFaultCodeServer
+    -- If the Pointers cache table is not initialized, return an error
+    elseif not (  ptrsCacheTable and 
+                  ptrsCacheTable.WSDLs and 
+                  ptrsCacheTable.WSDLs[child] and
+                  ptrsCacheTable.WSDLs[child].XSDs) then
+      return xmlgeneral.invalidPtrsCacheTable, xmlgeneral.soapFaultCodeServer
+    end
+    cacheWSDL = ptrsCacheTable.WSDLs[child]
     
-    -- If it's the first time the WSDL is called
-    if not cacheWSDL.started then
-      cacheWSDL.started = ngx.now()
-    -- Else If the WSDL is too old, remove it from the cache      
-    elseif cacheWSDL.started + cacheWSDL.TTL < ngx.now() then
-      kong.log.debug ("WSDL Validation, caching: TTL ("..(cacheWSDL.TTL or 'nil').." s) is reached, so re-compile the WSDL")
-      cacheOk = false
-    -- Else check that all XSD pointers are correctly compiled in the cache
+    local cacheOk = true
+    -- If there is no XSD definitions it means that the WSDL is not compiled yet
+    if not next(cacheWSDL.XSDs) then
+      kong.log.debug ("WSDL Validation, 'configure' phase has been triggered or caching TTL ("..(cacheTTL or 'nil').." s) is reached, so re-compile the WSDL")
     else
+      -- Check that all XSD pointers are correctly compiled in the cache
       for k, cacheXSD in pairs (cacheWSDL.XSDs) do
         if cacheXSD and (not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr) then
           kong.log.debug ("WSDL Validation, caching: Not all XSDs are correctly compiled, so re-compile the WSDL")
@@ -1353,14 +1435,11 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
         end
       end
     end
-    
-    -- If we have to refresh the WSDL cache or if the XSDs attached to the WSDL are not correctly compiled
+
+    -- If the XSDs attached to the WSDL are not correctly compiled
     if not cacheOk then
-      local cacheTTL = cacheWSDL.TTL
-      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child] = {}
-      cacheWSDL = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child]
-      cacheWSDL.started = ngx.now()
-      cacheWSDL.TTL = cacheTTL
+      ptrsCacheTable.WSDLs[child] = {}
+      cacheWSDL = ptrsCacheTable.WSDLs[child]
       cacheWSDL.XSDs = {}      
     end
   end
@@ -1400,8 +1479,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
   -- If it's the first call due to:
   --   -> Prefetch OR
   --   -> Synchronous (with no former successful WSDL validation or with TTL exceeded) OR
-  --   -> Asynchronous
-  --   => Get all XSDs and compile/parse them for caching
+  --   -> Asynchronous: Get all XSDs and compile/parse them for caching
   -------------------------------------------------------------------------------------------------
   if firstCall then
 
@@ -1486,7 +1564,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
           
           errMessage = nil
           -- Validate the XML with the <xs:schema>'
-          errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
+          errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
                     
           -- If prefetch is enabled
           if prefetch then
@@ -1538,7 +1616,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, filePathPrefix, c
         
         kong.log.debug ("Validation for schema #" .. index)
 
-        errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
+        errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
         
         local msgDebug = errMessage or "Ok"
         kong.log.debug ("Validation for schema #" .. index .. " RC_Message: '" .. msgDebug .. "'")
@@ -1572,7 +1650,7 @@ end
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
-function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, child, indexXSD, XMLtoValidate, XSDSchema, verbose, prefetch, async)
+function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, indexXSD, XMLtoValidate, XSDSchema, verbose, prefetch, async)
   local xml_doc            = nil
   local errMessage         = nil
   local err                = nil
@@ -1582,7 +1660,6 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, ch
   local currentNode        = nil
   local XMLXSDMatching     = false
   local nodeName           = ""
-  local libxml2            = require("xmlua.libxml2")
   local soapFaultCode      = xmlgeneral.soapFaultCodeServer
   local cacheXSD           = nil
   local xsd_context        = nil
@@ -1615,36 +1692,39 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, ch
     --    The prefetch is done for each distinct (hash) XSD and not for each plugin and the goal is to asynchronously download external entities
     --    Here we have:
     --        prefetch=true
-    --        pluginId=nil <- unable to call kong.xmlSoapPtrCache.plugins[pluginId]
+    --        pluginId=nil <- unable to call kong.cache:get(..pluginId..)
     --  OR 
     -- If asnchronous download is enabled
     --    Don't try to cache the compiled XSD because there is no guarantee for getting all new External Entities at time 
     --    related to their TTL (refreshing their content)
     cacheXSD = {}
   else
-    -- If it's the first call => let's create the XSD cache table
-    if not kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] then    
-      kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
+
+    -- Get the Pointers table from Cache
+    local ptrsCacheTable, err = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, pluginType)
+    if err then
+      return xmlgeneral.errorGettingPtrsCacheTable .. err, false, xmlgeneral.soapFaultCodeServer
+    -- If the Pointers cache table is not correctly initialized, return an error
+    elseif not (  ptrsCacheTable and 
+                  ptrsCacheTable.WSDLs and
+                  ptrsCacheTable.WSDLs[child] and
+                  ptrsCacheTable.WSDLs[child].XSDs) then
+      return xmlgeneral.invalidPtrsCacheTable, false, xmlgeneral.soapFaultCodeServer
+    -- If 'configure' phase has been triggered or TTL is reached => let's create the XSD cache table
+    elseif not ptrsCacheTable.WSDLs[child].XSDs[indexXSD] then
+      ptrsCacheTable.WSDLs[child].XSDs[indexXSD] = {}
+      kong.log.debug ("XSD Validation, 'configure' phase has been triggered or caching TTL ("..(cacheTTL or 'nil').." s) is reached, so re-compile the XSD")
     else
       -- Get XSD pointers from the cache table
-      cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
+      cacheXSD = ptrsCacheTable.WSDLs[child].XSDs[indexXSD]
       -- If all pointers aren't in the cache table
       if not cacheXSD.xmlSchemaParserCtxtPtr or not cacheXSD.xmlSchemaPtr or not cacheXSD.xmlSchemaValidCtxtPtr then
         kong.log.debug("XSD Validation, caching: All the pointers need to be recreated for consistency")
-        kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}
-      -- Else If the XSD is too old, remove it from the cache
-      elseif cacheXSD.started + kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL < ngx.now() then
-        kong.log.debug ("XSD Validation, caching: TTL ("..(kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].TTL or 'nil').." s) is reached, so re-compile the XSD")
-        kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD] = {}      
+        ptrsCacheTable.WSDLs[child].XSDs[indexXSD] = {}      
       end
     end
     
-    cacheXSD = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[child].XSDs[indexXSD]
-    
-    -- If the XSD is not in the cache (or just re-created) let's initialize the started time
-    if cacheXSD.started == nil then
-      cacheXSD.started = ngx.now()
-    end
+    cacheXSD = ptrsCacheTable.WSDLs[child].XSDs[indexXSD]
     
   end
 
@@ -1658,7 +1738,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, filePathPrefix, ch
     else
       kong.log.debug("XSD Validation, caching: Compile the XSD and Put it in the cache") 
     end
-
+    
     -- Create the Parser Context
     xsd_context, errMessage = libxml2ex.xmlSchemaNewMemParserCtxt(true, filePathPrefix, XSDSchema)
     cacheXSD.xmlSchemaParserCtxtPtr = xsd_context
@@ -1800,7 +1880,7 @@ end
 --------------------------------------------------------------------------------------------------------
 -- Get the 'SOAPAction' value from WSDL related to the Operation Name (retrieved from the SOAP Request)
 --------------------------------------------------------------------------------------------------------
-function xmlgeneral.getSOAPActionFromWSDL (pluginId, filePathPrefix, WSDL, request_OperationName, xmlnsSOAPEnvelope_hRef, verbose, async)
+function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, WSDL, request_OperationName, xmlnsSOAPEnvelope_hRef, verbose, async)
 
   local wsdlDefinitions_type  = xmlgeneral.Unknown_WSDL
   local context               = nil
@@ -1826,6 +1906,9 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, filePathPrefix, WSDL, reque
   local targetNamespace       = nil
   local interfaceName         = nil
   local pattern               = nil
+  local ptrsCacheTable        = nil
+  local cacheWSDL             = nil
+  local cacheSoapAction       = nil
   local wsdlRequired_Value    = false
   local wsdl2_0_ActionFound   = false
   local rc                    = false
@@ -1837,23 +1920,35 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, filePathPrefix, WSDL, reque
     -- Parse an XML in-memory document of the WSDL and build a tree
     kong.log.debug ("getSOAPActionFromWSDL: no WSDL caching due to Asynchronous external entities")
     xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)  
+    cacheSoapAction = {}
   else 
     -- Get the WSDL Cache table
-    kong.log.debug ("getSOAPActionFromWSDL: caching: Get the compiled WSDL from cache")
-    xmlWSDL_doc = kong.xmlSoapPtrCache.plugins[pluginId].WSDLs[xmlgeneral.schemaTypeAPI].xmlWsdlPtr
+    kong.log.debug ("getSOAPActionFromWSDL: caching: Get the compiled WSDL from cache")    
+    -- Get the Pointers table from Cache
+    ptrsCacheTable, errMessage = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, pluginType)
+    
+    if errMessage then
+      errMessage = xmlgeneral.errorGettingPtrsCacheTable .. errMessage
+    -- If the Pointers cache table is not initialized, return an error
+    elseif not (  ptrsCacheTable and 
+                  ptrsCacheTable.WSDLs and 
+                  ptrsCacheTable.WSDLs[xmlgeneral.schemaTypeAPI] and
+                  ptrsCacheTable.soapAction) then
+      errMessage = xmlgeneral.invalidPtrsCacheTable
+    else
+      xmlWSDL_doc     = ptrsCacheTable.WSDLs[xmlgeneral.schemaTypeAPI].xmlWsdlPtr
+      cacheSoapAction = ptrsCacheTable.soapAction
+    end    
   end
   
   -- If the XML Tree document of WSDL is not in the cache
-  if xmlWSDL_doc == nil or xmlWSDL_doc == ffi.NULL then
+  if xmlWSDL_doc == nil or xmlWSDL_doc == ffi.NULL or errMessage then
     -- This code should never happen because if the pointer is null it will be raised before by 'xmlgeneral.XMLValidateWithWSDL'
     return wsdlSoapAction_Value, wsdlRequired_Value, (errMessage or "Unable to get the XML Tree document of WSDL is not in the cache")
   end
 
-  -- Get the SOAP Action Cache table  
-  local cacheSoapAction = kong.xmlSoapPtrCache.plugins[pluginId].soapAction
-  
   -- If wsdlDefinitions_type is not in the cache and If there is no Error from Cache
-  if not cacheSoapAction.wsdlDefinitions_type and not cacheSoapAction.wsdlDefinitions_typeError then
+  if (not cacheSoapAction.wsdlDefinitions_type and not cacheSoapAction.wsdlDefinitions_typeError) then
     -- Retrieve:
     --  For WSDL 1.1 <wsdl:definitions> node
     --  For WSDL 2.0 <wsdl:description> node
@@ -1933,6 +2028,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, filePathPrefix, WSDL, reque
       cacheSoapAction.wsdlDefinitions_typeError = errMessage
       kong.log.debug(errMessage)
     end
+    
   -- Get from cache the wsdlDefinitions_type
   else
     kong.log.debug ("getSOAPActionFromWSDL: caching: Get 'wsdlDefinitions_type' from the cache")
@@ -2273,7 +2369,7 @@ end
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
-function xmlgeneral.validateSOAPAction_Header (pluginId, filePathPrefix, SOAPRequest, WSDL, SOAPAction_Header, verbose, async)
+function xmlgeneral.validateSOAPAction_Header (pluginId, cacheTTL, filePathPrefix, SOAPRequest, WSDL, SOAPAction_Header, verbose, async)
   local i
   local temp
   local xmlRequest_doc
@@ -2456,6 +2552,7 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, filePathPrefix, SOAPReq
   if not errMessage then
     wsdlSOAPAction_Header_Value, wsdlRequired_Value, errMessage = xmlgeneral.getSOAPActionFromWSDL(
                                                                     pluginId,
+                                                                    cacheTTL,
                                                                     filePathPrefix,
                                                                     WSDL, 
                                                                     request_OperationName,
@@ -2490,21 +2587,39 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, filePathPrefix, SOAPReq
 end
 
 ---------------------------------------------
--- Search a XPath and Compare it to a value
+-- Search an XPath and Compare it to a value
 ---------------------------------------------
-function xmlgeneral.RouteByXPath (pluginId, XMLtoSearch, XPathRegisterNs, RouteXPathTargets)
+function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLtoSearch, XPathRegisterNs, RouteXPathTargets)
   local rcXpath         = 0
   local rc              = false
   local parserCtx       = nil
   local context         = nil
   local document        = nil
   local errMessage      = nil
+  local ptrsCacheTable  = nil
 
   kong.log.debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
-
-  -- Get the 'Route By XPath' Cache table  
-  local cacheRouteByXPath = kong.xmlSoapPtrCache.plugins[pluginId].routeByXPath
   
+  -- Get the Pointers table from Cache
+  ptrsCacheTable, errMessage = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, xmlgeneral.RequestTypePlugin)
+
+  if errMessage then
+    errMessage = xmlgeneral.errorGettingPtrsCacheTable .. errMessage
+  -- If the Pointers cache table is not initialized, return an error
+  elseif not (  ptrsCacheTable and 
+                ptrsCacheTable.routeByXPath ) then    
+    errMessage = xmlgeneral.invalidPtrsCacheTable
+  end
+
+  if errMessage then
+    errMessage = "RouteByXPath, " .. errMessage
+    kong.log.err(errMessage)
+    return nil
+  end
+  
+  -- Get the 'Route By XPath' Cache table  
+  local cacheRouteByXPath = ptrsCacheTable.routeByXPath
+    
   -- If the Parser Context is not in the cache
   if not cacheRouteByXPath.parserCtxPtr then
     kong.log.debug ("RouteByXPath, caching: Create the Parser Context and Put it in the cache")

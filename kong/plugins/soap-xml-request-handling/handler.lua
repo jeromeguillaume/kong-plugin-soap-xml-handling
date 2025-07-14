@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.3.2",
+    VERSION = "1.4.0",
   }
 
 local xmlgeneral = nil
@@ -30,6 +30,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if plugin_conf.xsltTransformBefore then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
+                                                                                  plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                                   plugin_conf.filePathPrefix,
                                                                                   xmlgeneral.xsltBeforeXSD,
                                                                                   plugin_conf.xsltLibrary,
@@ -61,6 +62,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- Validate the SOAP envelope with its schema    
     errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin,
                                                                                pluginId,
+                                                                               plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                                plugin_conf.filePathPrefix,
                                                                                xmlgeneral.schemaTypeSOAP,
                                                                                1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (for 1st XSD entry)
@@ -92,6 +94,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- Validate the API XML with its schema
     errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin,
                                                                 pluginId,
+                                                                plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                 plugin_conf.filePathPrefix,
                                                                 xmlgeneral.schemaTypeAPI,
                                                                 soapEnvelope_transformed,
@@ -117,6 +120,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     
     -- Validate the API XML with its schema
     errMessage, soapFaultCode = xmlgeneral.validateSOAPAction_Header (pluginId,
+                                                                      plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                       plugin_conf.filePathPrefix,
                                                                       soapEnvelope_transformed,
                                                                       plugin_conf.xsdApiSchema,
@@ -140,6 +144,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
+                                                                                  plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                                   plugin_conf.filePathPrefix,
                                                                                   xmlgeneral.xsltAfterXSD,
                                                                                   plugin_conf.xsltLibrary,
@@ -162,10 +167,11 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- => we change the Route By XPath if the condition is satisfied
     if soapFaultBody == nil and plugin_conf.RouteXPathTargets then
     -- Get Route By XPath and check if the condition is satisfied
-    local rcXpath = xmlgeneral.RouteByXPath (pluginId,
-                                             soapEnvelope_transformed,
-                                             plugin_conf.RouteXPathRegisterNs,
-                                             plugin_conf.RouteXPathTargets)
+    local rcXpath = xmlgeneral.RouteByXPath ( pluginId,
+                                              plugin_conf.ExternalEntityLoader_CacheTTL,
+                                              soapEnvelope_transformed,
+                                              plugin_conf.RouteXPathRegisterNs,
+                                              plugin_conf.RouteXPathTargets)
     -- If the condition is satisfied we change the Upstream
     if rcXpath > 0 then
       local parse_url = require("socket.url").parse
@@ -209,7 +215,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       else
         kong.log.err("RouteByXPath: Unable to get scheme or host")
       end
-    end
+    end    
   end
   
   -- If there is no Error
@@ -219,11 +225,11 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- Change the Request 'Content-Type' according to the soapEnvelope_transformed Type
     local bodyContentType = xmlgeneral.getBodyContentType(soapEnvelope_transformed)
     
-    -- If the Request 'Content-Type' is JSON and the soapEnvelopeTransformed type is XML
+    -- If the Request's 'Content-Type' is JSON and the soapEnvelopeTransformed type is XML
     if kong.ctx.shared.contentType.request == xmlgeneral.JSON and bodyContentType == xmlgeneral.XMLContentTypeBody then
       kong.service.request.set_header("Content-Type", xmlgeneral.SOAP1_1ContentType)
       kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML ("..xmlgeneral.SOAP1_1ContentType..")")
-    -- Else If the Request 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
+    -- Else If the Request's 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
     elseif kong.ctx.shared.contentType.request ~= xmlgeneral.JSON and bodyContentType == xmlgeneral.JSONContentTypeBody then
       -- Check if the body has been transformed to a JSON type, due to an XSLT transformation (SOAP/XML -> JSON)
       kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)

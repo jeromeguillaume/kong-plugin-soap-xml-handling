@@ -733,7 +733,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = false,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
-			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
 		}
 	}
 
@@ -779,7 +779,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchemaInclude = {
 				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
-			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
+			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
 		}
 	}
 

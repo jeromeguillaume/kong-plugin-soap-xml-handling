@@ -61,6 +61,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_REQ_RES_XSLT_beforeXSD_with_xslt_Params_ok_route,
           config = {
             xsltLibrary = caching_common.libsaxon,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_with_params,
             xsltParams = {
               ["intA_param"] = "1111",
@@ -73,6 +74,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_REQ_RES_XSLT_beforeXSD_with_xslt_Params_ok_route,
           config = {
             xsltLibrary = caching_common.libsaxon,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_with_params,
             xsltParams = {
               ["result_tag"] = "kongResultFromParam",
@@ -91,6 +93,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             xsltLibrary = caching_common.libsaxon,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = [[
               xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
               </xsl:stylesheet>
@@ -108,6 +111,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             xsltLibrary = caching_common.libsaxon,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
           }
         }
@@ -144,15 +148,18 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches("<kongResultFromParam>4444</kongResultFromParam>", body)
 
-        -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction / XPathRouting definitions were compiled for the 1st time (and not found in the cache)
+        -- Plugin Request: Check in the log that the XSLT definition was compiled for the 1st time (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
         
-        -- Plugin Response: Check in the log that the XSLT / WSDL definition were compiled for the 1st time (and not found in the cache)
+        -- Plugin Response: Check in the log that the XSLT definition was compiled for the 1st time (and not found in the cache)        
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)        
       end)
 
-      it("1+5|** Execute the same test: check that the definition is found in the cache **", function()
-                -- invoke a test request
+      it("1+5|** Execute the same test (before TTL is exceeded): check that the XSLT definition is found in the cache **", function()
+        -- clean the log file
+          helpers.clean_logfile()
+
+        -- invoke a test request
         local r = client:post("/calculator_REQ_RES_XLST_with_xslt_Params_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
@@ -171,6 +178,34 @@ for _, strategy in helpers.all_strategies() do
         
         -- Plugin Response: Check in the log that the XSLT definition used the caching
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
+      end)
+
+      it("1+5|** Execute the same test (after TTL is exceeded): check that the XSLT definition is compiled again (due to TTL exceeded) **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+        
+        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+        ngx.sleep(caching_common.TTL)
+
+        -- invoke a test request
+        local r = client:post("/calculator_REQ_RES_XLST_with_xslt_Params_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches("<kongResultFromParam>4444</kongResultFromParam>", body)
+        
+        -- Plugin Request: Check in the log that the XSLT definition was compiled again
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
+        
+        -- Plugin Response: Check in the log that the XSLT definition was compiled again
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)        
       end)
 
       it("1|XSLT (BEFORE XSD) - Invalid XSLT input", function()
