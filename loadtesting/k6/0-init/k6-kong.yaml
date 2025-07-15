@@ -1190,10 +1190,10 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: http://calculator2.ws-calculator:8080/ws
-        RouteXPath: /soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name()
-          = 'intA']
-        RouteXPathCondition: "5"
+        RouteXPathTargets:
+        - URL: http://calculator2.ws-calculator:8080/ws
+          XPath: /soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name()='intA']
+          XPathCondition: "5"
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "yes"

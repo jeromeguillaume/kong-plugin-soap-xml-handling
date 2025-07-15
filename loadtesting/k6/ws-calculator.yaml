@@ -24,7 +24,7 @@ spec:
         app: calculator
     spec:
       containers:
-      - image: jeromeguillaume/ws-soap-calculator:1.0.4
+      - image: jeromeguillaume/ws-soap-calculator:lastest
         name: ws-soap-calculator
         ports:
         - containerPort: 8080

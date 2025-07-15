@@ -1,7 +1,7 @@
 # Load testing benchmark
 
 ## Load Testing results
-The results are delivered for Kong `v3.9` - Medium size (4 CPU / 8 GB RAM) and SOAP/XML plugins `v1.4.0`:
+The results are delivered for Kong `v3.9` - Medium size (4 CPU / 8 GB RAM) and SOAP/XML plugins `v1.2.5`:
 - There is no memory leak and no restart of Kong GW pod observed after 24h tests:
   - Tested for `libxml2`, `libxslt` and `saxon`
 - A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negligible way the respone time and delivers the expected benefit
@@ -23,25 +23,18 @@ Deploy the stack **in this order** (for having `podAntiAffinity`):
     - 8 vCPUs and 32 GB ram per node
     - 3 nodes
 2) Kong GW configuration:
-  - Create the configMap related to the plugins: [configMap-plugins.sh](/loadtesting/k6/0-init/cp-gke/configMap-plugins.sh)
   - Kong GW version: `kong/kong-gateway:3.10.0.0`
   - `saxon` version: `SaxonC-HE v12.5.0`
   - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
   - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)
   - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and it's not supported by the Response plugin
-  - Create the custom plugins on Konnect Maagement Plane
+  - Create a `kong-proxy` Kubernetes service
   - Those specific parameters are defined in:
     - [values.yaml](/loadtesting/k6/0-init/cp-gke/values.yaml) without Saxon
     - [valuesSaxon.yaml](/loadtesting/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
     - [kong-svc.yaml](/loadtesting/k6/0-init/kong-svc.yaml) 
-  - Create a `kong-proxy` Kubernetes service
   - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtesting/k6/0-init/k6-kong.yaml) deck file. It includes the `Prometheus` plugin
 3) Prometheus / Grafana stack
-  - Execute [prometheus-grafana.sh](/loadtesting/k6/0-init/cp-gke/prometheus-grafana.sh)
-  - Open Grafana in the browser (see output of `prometheus-grafana.sh` for getting the URL and user/password)
-  - Configure a Data Source: menu Connections / Data Sources, add, select Prometheus and URL=`http://prometheus-server.monitoring`
-  - Download JSON of [Kong Dashboard for Grafana](https://grafana.com/grafana/dashboards/7424-kong-official/)
-  - Import Kong Dashboard: menu Dahboards / New / Import and put the `Kong Dashboard JSON`
 4) K6: load testing tool
   - See [Running distributed load tests on Kubernetes](https://grafana.com/blog/2022/06/23/running-distributed-load-tests-on-kubernetes/)
   - `make deploy`

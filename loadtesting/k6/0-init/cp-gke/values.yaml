@@ -1,6 +1,6 @@
 image:
   repository: kong/kong-gateway
-  tag: "3.9"
+  tag: "3.10.0.1"
   pullPolicy: Always
 
 secretVolumes:
@@ -13,10 +13,11 @@ env:
   role: data_plane
   database: "off"
   cluster_mtls: pki
-  cluster_control_plane: 130d4abacf.eu.cp0.konghq.com:443
-  cluster_server_name: 130d4abacf.eu.cp0.konghq.com
-  cluster_telemetry_endpoint: 130d4abacf.eu.tp0.konghq.com:443
-  cluster_telemetry_server_name: 130d4abacf.eu.tp0.konghq.com
+  cluster_control_plane: d7cd0ff14a.eu.cp0.konghq.com:443
+  cluster_dp_labels: "type:docker-kubernetesOS"
+  cluster_server_name: d7cd0ff14a.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: d7cd0ff14a.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: d7cd0ff14a.eu.tp0.konghq.com
   cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
   cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
   lua_ssl_trusted_certificate: system
@@ -48,13 +49,10 @@ plugins:
     - name: libxslt
       path: libxslt
 
-proxy:
-  annotations:
-    prometheus.io/port: "8100"
-    prometheus.io/scrape: "true"
-  labels:
-    enable-metrics: true
-  
+podAnnotations: 
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8100"
+
 ingressController:
   enabled: false
   installCRDs: false
