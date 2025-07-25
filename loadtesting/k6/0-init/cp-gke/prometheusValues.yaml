@@ -1,6 +1,10 @@
 server:
   global:
-    scrape_interval: 15s
+    scrape_interval: 30s
+    scrape_timeout: 25s
+
+  #remote_write:
+  #  - url: 'http://prometheus-server.monitoring.svc.cluster.local:9090/api/v1/write'
 
   # configuration du scrape
   additionalScrapeConfigs:

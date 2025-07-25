@@ -23,6 +23,10 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config)
 
+![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
+
+![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
+
 ---
 
 1. [Information and Recommendation](#information_recommendation)
@@ -58,10 +62,6 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 8. [Plugins Testing](#Plugins_Testing)
 9. [Known Limitations](#Known_Limitations)
 10. [Changelog](#Changelog)
-
-![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
-
-![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
 
 <a id="information_recommendation"></a>
 

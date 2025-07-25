@@ -31,3 +31,4 @@ backup/
 to_do.txt
 kong/saxon/kubernetes/tls.crt
 kong/saxon/kubernetes/tls.key
+loadtesting/_temp

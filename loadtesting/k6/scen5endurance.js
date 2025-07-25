@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { sleep } from 'k6';
 
-const host='kong-proxy.kong:8443';
-//const host='35.241.175.116';
+//const host='kong-proxy.kong:8443';
+const host='35.237.168.227';
 
 export const options = {
   insecureSkipTLSVerify: true,
@@ -11,17 +11,17 @@ export const options = {
     scenOk: {
       exec: 'scen5endurance',
       
-      /*executor: 'per-vu-iterations',
+      executor: 'per-vu-iterations',
       vus: 1,
       iterations: 1,
-      maxDuration: '1s',*/
+      maxDuration: '1s',
       
-      executor: 'ramping-vus',
+      /*executor: 'ramping-vus',
       startvus: 20,
       stages: [
         { duration: '24h', target: 20 },
       ],
-      gracefulRampDown: '5s',
+      gracefulRampDown: '5s',*/
     },
   },
 };
@@ -38,7 +38,7 @@ export function scen5endurance () {
     </soap:Body>
   </soap:Envelope>`;
   
-  const result = http.post('https://'+host+'/scen5endurance', calcReq, {
+  const result = http.post('https://'+host+'/scen5', calcReq, {
     headers: { 
         'Content-Type': 'text/xml; charset=utf-8',
         'SOAPAction': 'http://tempuri.org/Add'

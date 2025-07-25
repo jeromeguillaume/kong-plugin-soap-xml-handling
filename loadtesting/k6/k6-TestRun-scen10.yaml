@@ -1,15 +1,15 @@
 apiVersion: k6.io/v1alpha1
 kind: TestRun
 metadata:
-  name: scen5
+  name: scen10saxonendurance100
 spec:
-  parallelism: 1
+  parallelism: 10
   #separate: true
   script:
     configMap:
-      name: scen5
-      file: scen5.js
-  arguments: --tag testId=scen5
+      name: scen10saxonendurance100
+      file: scen10saxonendurance100.js
+  arguments: --tag testId=scen10saxonendurance100
   runner:
     resources:
       limits:
@@ -49,5 +49,4 @@ spec:
                 operator: In
                 values:
                 - kong-kong
-                - calculator
             topologyKey: kubernetes.io/hostname

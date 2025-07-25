@@ -9,7 +9,7 @@ export const options = {
   insecureSkipTLSVerify: true,
   scenarios: {
     scenOk: {
-      exec: 'scen10saxonendurance',
+      exec: 'scen10saxon',
       
       /*executor: 'per-vu-iterations',
       vus: 1,
@@ -17,16 +17,19 @@ export const options = {
       maxDuration: '1s',*/
       
       executor: 'ramping-vus',
-      startvus: 20,
+      startvus: 0,
       stages: [
-        { duration: '24h', target: 20 },
+        { duration: '30s', target: 6 },
+        { duration: '30s', target: 12 },
+        { duration: '30s', target: 20 },
+        { duration: '900s', target: 20 },
       ],
       gracefulRampDown: '5s',
     },
   },
 };
 
-export function scen10saxonendurance () {
+export function scen10saxon () {
   const XMLRequest = 
 `<?xml version="1.0" encoding="UTF-8"?>
 <root>
@@ -54,7 +57,7 @@ export function scen10saxonendurance () {
     'http response status code is 200': result.status === 200,
     'Content-Type': result.headers['Content-Type'] === 'text/xml; charset=utf-8',
   });
-  
+
   if (result.status === 200) {
     check(result, {
     "XML Result": result =>
@@ -62,6 +65,4 @@ export function scen10saxonendurance () {
    });
 
   }
-
-  sleep (0.025);
 }
