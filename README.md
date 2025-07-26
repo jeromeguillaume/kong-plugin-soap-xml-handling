@@ -1361,9 +1361,10 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Changed the `SOAP Fault` message format following the W3C specification for [SOAP 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507) and [SOAP 1.2](https://www.w3.org/TR/soap12-part1/#soapfault)
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
-- v1.4.0-beta.2
+- v1.4.0-beta.2.2
   - Added the file support for WSDL, XSD and XSLT definitions. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`). The user is in charge of putting the XML definition files on the Kong Gateway file system
   - Improved the performance by compiling and parsing WSDL, SOAPAction, XSD, XSLT and Route By XPath definitions only once per plugin and stored in `kong_db_cache` memory cache (except for Saxon XSLT in `kong.xmlSoapSaxonPtrCache.plugins[plugin_id]`)
+  - Saxon: fixed a string memory issue (by using `strcpy` in `kong-adapter.cpp`.`getErrMessage`)
   - Added schema controls:
     - Check that the Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
     - Check that if `SchemaInclude` are defined the corresponding root definitions are also defined in `xsdSoapSchema` and `xsdApiSchema`

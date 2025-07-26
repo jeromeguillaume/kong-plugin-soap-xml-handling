@@ -52,14 +52,14 @@ void formatCerr(string msg, string detailedMsg)
 
 extern "C" const char *getErrMessage( const void* context_void )
 {
-  const char *errMessage = nullptr;
+  char *errMessage = nullptr;
   const Context *context = reinterpret_cast<const Context*>(context_void);
   
   if ( context != nullptr )
   {
     if ( context->errMessage.length()){
       errMessage = new char [context->errMessage.length() + 1];
-      errMessage = context->errMessage.c_str();
+      strcpy(errMessage, context->errMessage.c_str());
     }
   }
   else{

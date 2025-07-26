@@ -61,9 +61,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
@@ -500,9 +497,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
@@ -672,9 +666,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
@@ -842,9 +833,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "yes"
@@ -1012,9 +1000,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
@@ -1113,9 +1098,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
@@ -1770,9 +1752,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"
@@ -1847,9 +1826,6 @@ services:
         ExternalEntityLoader_Async: false
         ExternalEntityLoader_CacheTTL: 3600
         ExternalEntityLoader_Timeout: 1
-        RouteToPath: null
-        RouteXPath: null
-        RouteXPathCondition: null
         RouteXPathRegisterNs:
         - soap,http://schemas.xmlsoap.org/soap/envelope/
         SOAPAction_Header: "no"

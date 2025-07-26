@@ -16,26 +16,30 @@ See detailed results:
   - [Results of Endurance Testing (24h)](#endurance_testing_results): for checking that there is no memory leak in the SOAP/XML plugins
   - [Results of Concurrent Testing with error](#concurrent_testing_with_error_results): for checking that there is no side effect of an error request on a query without error
 
-## Architecture test
+## Deployment of the Architecture test
 Deploy the stack **in this order** (for having `podAntiAffinity`):
 1) Google Kubernetes Engine (GKE)
   - Use the `c2-standard-8` GKE cloud instance size:
     - 8 vCPUs and 32 GB ram per node
     - 3 nodes
 2) Kong GW configuration:
+  - Create a Control Plane on Konnect Management Plane
+  - Create the custom plugins on Konnect Management Plane
+  - Create the `kong` namespace
   - Create the configMap related to the plugins: [configMap-plugins.sh](/loadtesting/k6/0-init/cp-gke/configMap-plugins.sh)
-  - Kong GW version: `kong/kong-gateway:3.10.0.1`
-  - `saxon` version: `SaxonC-HE v12.5.0`
-  - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
-  - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)
-  - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and it's not supported by the Response plugin
-  - Create the custom plugins on Konnect Maagement Plane
-  - Those specific parameters are defined in:
+  - Deploy the Kong Data Plane by using Helm with those parameters:
     - [values.yaml](/loadtesting/k6/0-init/cp-gke/values.yaml) without Saxon
     - [valuesSaxon.yaml](/loadtesting/k6/0-init/cp-gke/valuesSaxon.yaml) with Saxon
-    - [kong-svc.yaml](/loadtesting/k6/0-init/kong-svc.yaml) 
-  - Create a `kong-proxy` Kubernetes service
-  - The Kong entities (Service/Route/Plugin) are defined in [k6-kong.yaml](/loadtesting/k6/0-init/k6-kong.yaml) deck file. It includes the `Prometheus` plugin
+    - General Information:
+      - Kong GW version: `kong/kong-gateway:3.10.0.1`
+      - `saxon` version: `SaxonC-HE v12.5.0`
+      - One Kong node with 4 Nginx workers (`nginx_worker_processes`: `4`)
+      - Kong `Medium` size: the node is limited to 4 vCPU and 8 GB (`resources.requests` and `resources.limits`)
+      - Disable `http2` on `proxy_listen` as it's the default protocol used by K6 and it's not supported by the Response plugin
+  - Create a `kong-proxy` Kubernetes service (used by K6 scripts):
+    - [kong-svc.yaml](/loadtesting/k6/0-init/kong-svc.yaml)
+  - Import the Kong entities (Service/Route/Plugin) by executing: [deck_sync.sh](/loadtesting/k6/0-init/deck_sync.sh)
+    - It includes the `Prometheus` plugin  
 3) Prometheus / Grafana stack
   - Execute [monitoring.sh](/loadtesting/k6/0-init/cp-gke/monitoring.sh)
   - Open Grafana in the browser (see output of `monitoring.sh` for getting the URL and user/password)
@@ -44,7 +48,7 @@ Deploy the stack **in this order** (for having `podAntiAffinity`):
   - Download JSON of the [Kong Dashboard for Grafana](https://grafana.com/grafana/dashboards/7424-kong-official/)
   - Import Kong Dashboard: menu Dahboards / New / Import and put the `Kong Dashboard Grafana` JSON
   - Download JSON of the [K6 Dashboard for Grafana](https://grafana.com/grafana/dashboards/14801-k6-dashboard/)
-  - Import K6 Dashboard: menu Dahboards / New / Import and put the `Kong Dashboard Grafana` JSON
+  - Import K6 Dashboard: menu Dahboards / New / Import and put the `K6 Dashboard Grafana` JSON
 4) K6: load testing tool
   - Helm installation
   ```bash
@@ -111,7 +115,6 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
   - Have `replicas: 5` in [ws-calculator.yaml](/loadtesting/k6/ws-calculator.yaml) for a better stability and endurance
   - Since this is not a performance testing there is a `sleep()` in the script for reducing the pace: the `sleep()` duration is subtracted from the performance duration metrics (`avg`, `p95`, `p99`)
-- Performance and Endurance Testing: for `calculator` scenario 5  the  Kong node consumes 8 GB of memory at peak so it may be necessary to allocate a little bit more memory (~8.5 GB)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
   - Collect the `Kong Linux Memory` (observed at the end of the test)
@@ -168,10 +171,10 @@ Objective: check that there is no side effect of an error request on a query wit
 |calculator|2|WSDL and SOAPAction Validation (req plugin only)|N/A|7988 rps|0.95 ms|2.36 ms|4.85 ms|7.09 ms|1.4 Gib|4.4 GB|6.3 GB
 |calculator|3|XSD Validation (req plugin only)|N/A|9209 rps|0.96 ms|2.05 ms|4.48 ms|6.39 ms|1.3 Gib|4.8 GB|7.2 GB
 |calculator|4|XSLT Transformation (req plugin only)|libxslt|6316 rps|0.96 ms|2.99 ms|6.31 ms|9.07 ms|1.1 Gib|3.3 GB|5 GB
-|calculator|5|All options for req and res plugins|libxslt| rps| ms| ms| ms| ms| Gib| GB| GB
-|calculator|6|WSDL Validation (res plugin only)|N/A| rps| ms| ms| ms| ms| Gib| GB| GB
-|calculator|7|XSLT Transformation (res plugin only)|libxslt| rps| ms| ms| ms| ms| Gib| GB| GB
-|calculator|8|XSLT Transformation (req plugin only)|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
+|calculator|5|All options for req and res plugins|libxslt|3133 rps|0.99 ms|6.05 ms|11.15 ms|16.91 ms|1.7 Gib|1.8 GB|1.7 GB
+|calculator|6|WSDL Validation (res plugin only)|N/A|8314 rps|0.95 ms|2.27 ms|4.66 ms|7 ms|1.3 Gib|4.3 GB|6.6 GB
+|calculator|7|XSLT Transformation (res plugin only)|libxslt|7267 rps|0.95 ms|2.6 ms|5.34 ms|7.76 ms|1.4 Gib|3.8 GB| 5.7 GB
+|calculator|8|XSLT Transformation (req plugin only)|saxon|5016 rps|0.98 ms|3.77 ms|6.64 ms|9.37 ms|1.2 Gib|2.7 GB|3.9 GB
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
 |calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon| rps| ms| ms| ms| ms| Gib| GB| GB
 |httbin|0|Kong proxy with no plugins|N/A| rps| ms| ms| ms| ms| Gib| GB| GB

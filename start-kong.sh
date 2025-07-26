@@ -21,8 +21,8 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_ADMIN_ACCESS_LOG=/dev/stdout" \
 -e "KONG_PROXY_ERROR_LOG=/dev/stderr" \
 -e "KONG_ADMIN_ERROR_LOG=/dev/stderr" \
--e "KONG_PROXY_LISTEN=0.0.0.0:9000, 0.0.0.0:9443 ssl http2" \
--e "KONG_ADMIN_LISTEN=0.0.0.0:9001, 0.0.0.0:9444 ssl http2" \
+-e "KONG_PROXY_LISTEN=0.0.0.0:9000, 0.0.0.0:9443 ssl" \
+-e "KONG_ADMIN_LISTEN=0.0.0.0:9001, 0.0.0.0:9444 ssl" \
 -e "KONG_ADMIN_GUI_LISTEN=0.0.0.0:9002, 0.0.0.0:9445 ssl" \
 -e "KONG_ADMIN_GUI_URL=http://localhost:9002" \
 -e "KONG_PLUGINS=bundled,soap-xml-request-handling,soap-xml-response-handling" \
@@ -30,7 +30,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -e "KONG_NGINX_WORKER_PROCESSES=1" \
 -e "SOAP_USERNAME=KongUser" \
 -e "SOAP_PASSWORD=KongP@sswOrd!" \
--e "KONG_LOG_LEVEL=debug" \
+-e "KONG_LOG_LEVEL=notice" \
 -e KONG_LICENSE_DATA \
 -p 9000:9000 \
 -p 9443:9443 \
@@ -39,6 +39,11 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 9444:9444 \
 --platform linux/$ARCHITECTURE \
 kong/kong-gateway:3.10.0.1
+
+
+#-e "KONG_PROXY_LISTEN=0.0.0.0:9000, 0.0.0.0:9443 ssl http2" \
+#-e "KONG_ADMIN_LISTEN=0.0.0.0:9001, 0.0.0.0:9444 ssl http2" \
+
 
 #kong/kong-gateway:3.4.3.13
 #kong/kong-gateway:3.5.0.7
