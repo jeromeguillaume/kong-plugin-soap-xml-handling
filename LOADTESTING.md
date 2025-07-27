@@ -6,13 +6,13 @@ The results are delivered for Kong `v3.10` - Medium size (4 CPU / 8 GB RAM) and 
   - Tested for `libxml2`, `libxslt` and `saxon`
 - A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negligible way the respone time and delivers the expected benefit
   - For instance, the `Kong proxy latency p95` (time taken by Kong itself) is similar to the reference measure:  0.96 ms (with plugins) vs 0.96 ms (without plugins)
-- All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations with `libxslt` and XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 4 times and the `Kong proxy latency p95` is 0.99 ms compared to the reference measure without plugins 0.95 ms
+- All the features (`WSDL` and `SOAPAction` validation, 2 x `XSLT Transformations` with `libxslt` and `XPath Routing`) applied simultaneously on both plugins reduce the throughput (rps) by 4 times and the `Kong proxy latency p95` is 0.99 ms compared to the reference measure without plugins 0.95 ms
   - Due to the complex nature of SOAP/XML, the plugin involves a high CPU usage than a simple proxyfication without plugin. So pay attention to correcly size the number of CPUs for the Kong node (vertical scaling) and/or the number of nodes (horizontal scaling)
 - XSLT v1.0: `libxslt` is more efficient than `saxon` in terms of throughput (+35% rps) and the `Kong proxy latency p95` is similar: 0.96 ms for `libxslt` vs 0.98 ms for `saxon`
   - XSLT v2.0 or 3.0: only `saxon` supports them
 - The `v1.4.0` optimizes the performance by compiling and parsing the XML defintions only once in comparison to the former releases where the XML defintions were compiled and parsed on each call, so:
   - The Kong memory usage is 4x lower
-  - The throughput is ~2,4x higher
+  - The throughput is ~2.4x higher
 
 See detailed results:
   - [Results of Performance Testing](#performance_testing_results): for measuring the performance of the SOAP/XML plugins in a context of high usage

@@ -91,14 +91,15 @@ The External entities are processed in this order:
   3) Download Synchronously or Asynchronously the external Entity URL (related to the `config.ExternalEntityLoader_Async`)
 
 ### Caching
-- The plugins compile/parse the WSDL/SOAPAction/XSD/XSLT/RouteByXPath definitions and keep them in a `kong_db_cache` memory cache for improving performance:
+- The plugins compile/parse the `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions and keep them in a `kong_db_cache` memory cache for improving performance:
   - When the TTL is reached, the plugins compile/parse the definitions once more
   - When the plugin configuration is changed, all the caches are invalidated and the plugins compile/parse the definitions once more (even if there is a change in only one plugin)
 - What's the behavior of plugins in the event of a compilation error (for instance due to an incorrect definition, e.g. missing a leading "<"):
   - WSDL/XSD: in case of error  the plugins compile/parse the definition again on each call
   - XSLT/SOAPAction/RouteByXPath: the error message is kept in the cache
   - The difference in behavior (WSDL/XSD vs XSLT/SOAPAction/RouteByXPath) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by WSDL/XSD)
-- The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
+- The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`
+- 
 
 ### Recommendation
 1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
@@ -1362,8 +1363,10 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Added a MIME type detection of the request for answering with the same type of MIME on error (For SOAP 1.1: `Content-Type: text/xml` and for SOAP 1.2: `Content-Type: application/soap+xml`)
   - Renamed the docker image to `jeromeguillaume/kong-soap-xml` (former name: `jeromeguillaume/kong-saxon`) and `jeromeguillaume/kong-soap-xml-initcontainer` (former name: `jeromeguillaume/kong-saxon-initcontainer`)
 - v1.4.0
-  - Added the file support for WSDL, XSD and XSLT definitions. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`). The user is in charge of putting the XML definition files on the Kong Gateway file system
-  - Improved the performance by compiling and parsing WSDL, SOAPAction, XSD, XSLT and Route By XPath definitions only once per plugin and stored in `kong_db_cache` memory cache (except for Saxon XSLT in `kong.xmlSoapSaxonPtrCache.plugins[plugin_id]`)
+  - Added the file support for `WSDL`, `XSD` and `XSLT definitions`. The raw WSDL content (example: `<wsdl:definitions...</wsdl:definitions>`) can be replaced by a file path (example: `/usr/local/kongxml-files/mycontent.wsdl`). The user is in charge of putting the XML definition files on the Kong Gateway file system
+  - Improved the performance by compiling and parsing `WSDL`, `SOAPAction`, `XSD`, `XSLT` and `Route By XPath` definitions only once per plugin and stored in `kong_db_cache` memory cache (except for Saxon XSLT in `kong.xmlSoapSaxonPtrCache.plugins[plugin_id]`), so:
+    - The Kong memory usage is 4x lower
+    - The throughput is ~2.4x higher
   - Saxon: fixed a string memory issue (by using `strcpy` in `kong-adapter.cpp`.`getErrMessage`)
   - Added schema controls:
     - Check that the Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
