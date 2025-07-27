@@ -98,7 +98,7 @@ The External entities are processed in this order:
   - `WSDL`/`XSD`: in case of error  the plugins compile/parse the definition again on each call
   - `XSLT`/`SOAPAction`/`RouteByXPath`: the error message is kept in the cache
   - The difference in behavior (`WSDL`/`XSD` vs `XSLT`/`SOAPAction`/`RouteByXPath`) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by `WSDL`/`XSD`)
-- The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`
+- The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Recommendation
 1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
