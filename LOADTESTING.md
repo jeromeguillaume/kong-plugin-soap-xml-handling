@@ -16,7 +16,7 @@ The results are delivered for Kong `v3.10` - Medium size (4 CPU / 8 GB RAM) and 
 
 See detailed results:
   - [Results of Performance Testing](#performance_testing_results): for measuring the performance of the SOAP/XML plugins in a context of high usage
-  - [Results of Endurance Testing (24h)](#endurance_testing_results): for checking that there is no memory leak in the SOAP/XML plugins
+  - [Results of Endurance Testing (24h) and 100 x Kong routes)](#endurance_testing_results_100_routes): for checking that there is no memory leak in the SOAP/XML plugins
   - [Results of Concurrent Testing with error](#concurrent_testing_with_error_results): for checking that there is no side effect of an error request on a query without error
 
 ## Deployment of the Architecture test
@@ -197,7 +197,7 @@ Scenario 1 `calculator` - WSDL Validation (req plugin only): RPS per route/servi
 Scenario 1 `calculator` - WSDL Validation (req plugin only): Kong Proxy Latency per Service
 ![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen1-kong-proxy-latency_.jpeg?raw=true "Scenario 1 - WSDL Validation (req plugin only)")
 
-<a id="endurance_testing_results"></a>
+<a id="endurance_testing_results_100_routes"></a>
 
 ## Results of Endurance Testing (24h) and 100 x Kong routes
 Here the performance is not the main objective, we check that:
