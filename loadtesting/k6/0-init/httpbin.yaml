@@ -12,7 +12,7 @@ metadata:
   name: httpbin
   namespace: httpbin
 spec:
-  replicas: 20
+  replicas: 5
   selector:
     matchLabels:
       app: httpbin

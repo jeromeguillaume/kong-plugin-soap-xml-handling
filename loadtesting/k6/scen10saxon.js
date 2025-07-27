@@ -2,8 +2,7 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { sleep } from 'k6';
 
-const host='localhost:9443';
-//const host='kong-proxy.kong:8443';
+const host='kong-proxy.kong:8443';
 //const host='35.241.175.116';
 
 export const options = {
@@ -49,7 +48,7 @@ export function scen10saxon () {
 </root>`;
     
   
-  const result = http.post('https://'+host+'/scen10saxon/__________XXXXXXXXXXXX______anything', XMLRequest, {
+  const result = http.post('https://'+host+'/scen10saxon/anything', XMLRequest, {
     headers: { 
       'Content-Type': 'text/xml; charset=utf-8',
     },

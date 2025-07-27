@@ -5,6 +5,8 @@ import { sleep } from 'k6';
 const host='kong-proxy.kong:8443';
 //const host='35.241.175.116';
 
+const calcSleep = 0.005;
+
 export const options = {
   insecureSkipTLSVerify: true,
   scenarios: {
@@ -19,12 +21,10 @@ export const options = {
       executor: 'ramping-vus',
       startvus: 0,
       stages: [
-        { duration: '30s', target: 6 },
-        { duration: '30s', target: 12 },
-        { duration: '30s', target: 20 },
-        { duration: '900s', target: 20 },
+        { duration: '1m', target: 10 },
+        { duration: '24h', target: 20 },
       ],
-      gracefulRampDown: '5s',
+      gracefulRampDown: '30s',
     },
   },
 };
@@ -48,7 +48,7 @@ export function scen10saxon () {
 </root>`;
     
   
-  const result = http.post('https://'+host+'/scen10saxon/anything', XMLRequest, {
+  const result = http.post('https://'+host+'/scen10saxon/XXXX_______anything', XMLRequest, {
     headers: { 
       'Content-Type': 'text/xml; charset=utf-8',
     },
@@ -62,7 +62,7 @@ export function scen10saxon () {
     check(result, {
     "XML Result": result =>
       !(result.body === undefined) && result.body.includes(XMLRequest),
-   });
-
+   });   
   }
+  sleep (calcSleep);
 }

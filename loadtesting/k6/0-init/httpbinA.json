@@ -46,14 +46,65 @@
           ]
         },
         "post": {
-          "description": "returns all your request",
-          "operationId": "anything-post",
-          "responses": {
-            "200": {
-              "description": "The anything endpoint"
+          "summary": "Echo request",
+          "description": "Echoes back the request body and headers.",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "val1": { "type": "string" },
+                    "val2": { "type": "string" },
+                    "val3": { "type": "string" },
+                    "val4": { "type": "string" }
+                  },
+                  "required": ["val1", "val2", "val3", "val4"]
+                },
+                "example": {
+                  "val1": "value1-value1-value1-value1-value1",
+                  "val2": "value2-value2-value2-value2-value2",
+                  "val3": "value3-value3-value3-value3-value3",
+                  "val4": "value4-value4-value4-value4-value4"
+                }
+              }
             }
           },
-          "summary": "Return anything data.",
+          "responses": {
+            "200": {
+              "description": "Successful echo",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "args": { "type": "object" },
+                      "data": { "type": "string" },
+                      "files": { "type": "object" },
+                      "form": { "type": "object" },
+                      "headers": {
+                        "type": "object",
+                        "additionalProperties": { "type": "string" }
+                      },
+                      "json": {
+                        "type": "object",
+                        "properties": {
+                          "val1": { "type": "string" },
+                          "val2": { "type": "string" },
+                          "val3": { "type": "string" },
+                          "val4": { "type": "string" }
+                        }
+                      },
+                      "method": { "type": "string" },
+                      "origin": { "type": "string" },
+                      "url": { "type": "string" }
+                    }
+                  }
+                }
+              }
+            }
+          },
           "tags": [
             "Anything"
           ]
