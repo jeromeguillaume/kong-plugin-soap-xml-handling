@@ -195,7 +195,7 @@ Objective: check that there is no side effect of an error request on a query wit
 Scenario 1 `calculator` - WSDL Validation (req plugin only): RPS per route/service by status code
 ![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen1-rps.jpeg?raw=true "Scenario 1 - WSDL Validation (req plugin only)")
 Scenario 1 `calculator` - WSDL Validation (req plugin only): Kong Proxy Latency per Service
-![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen1-kong-proxy-latency_.jpeg?raw=true "Scenario 1 - WSDL Validation (req plugin only)")
+![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen1-kong-proxy-latency.jpeg?raw=true "Scenario 1 - WSDL Validation (req plugin only)")
 
 <a id="endurance_testing_results"></a>
 
