@@ -129,7 +129,7 @@ If `Verbose` is enabled:
 |config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download. Plus, keep in `kong_db_cache` memory cache the compilation and parsing of `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions during the time specified|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
-|config.filePathPrefix|N/A|File Path Prefix of external entity files and XML definition fi;es. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
+|config.filePathPrefix|N/A|File Path Prefix of external entity files and XML definition files. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
