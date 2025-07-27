@@ -4,12 +4,15 @@
 The results are delivered for Kong `v3.10` - Medium size (4 CPU / 8 GB RAM) and SOAP/XML plugins `v1.4.0`:
 - There is no memory leak and no restart of Kong GW pod observed after 24h tests:
   - Tested for `libxml2`, `libxslt` and `saxon`
-- A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negliGiBle way the respone time and delivers the expected benefit
-  - For instance, the `Kong proxy latency p95` (time taken by Kong itself) is very close to the reference measure:  1.10 ms (with plugins) vs 0.95 ms (without plugins)
-- All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations with `libxslt` and XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 10 times and the `Kong proxy latency p95` is ~4 ms compared to the reference measure without plugins 0.95 ms
+- A basic policy (Validation or Transformation or XPath Routing) done by a plugin (Request or Reponse) impacts in a negligible way the respone time and delivers the expected benefit
+  - For instance, the `Kong proxy latency p95` (time taken by Kong itself) is similar to the reference measure:  0.96 ms (with plugins) vs 0.96 ms (without plugins)
+- All the features (WSDL and SOAPAction validation, 2 x XSLT Transformations with `libxslt` and XPath Routing) applied simultaneously on both plugins reduce the throughput (rps) by 4 times and the `Kong proxy latency p95` is 0.99 ms compared to the reference measure without plugins 0.95 ms
   - Due to the complex nature of SOAP/XML, the plugin involves a high CPU usage than a simple proxyfication without plugin. So pay attention to correcly size the number of CPUs for the Kong node (vertical scaling) and/or the number of nodes (horizontal scaling)
-- XSLT v1.0: `libxslt` is more efficient than `saxon` in terms of throughput (+50% rps) and `Kong proxy latency p95` (50% lower). 
+- XSLT v1.0: `libxslt` is more efficient than `saxon` in terms of throughput (+35% rps) and the `Kong proxy latency p95` is similar: 0.96 ms for `libxslt` vs 0.98 ms for `saxon`
   - XSLT v2.0 or 3.0: only `saxon` supports them
+- The `v1.4.0` optimizes the performance by compiling and parsing the XML defintions only once in comparison to the former releases where the XML defintions were compiled and parsed on each call, so:
+  - The Kong memory usage is 4x lower
+  - The throughput is ~2,4x higher
 
 See detailed results:
   - [Results of Performance Testing](#performance_testing_results): for measuring the performance of the SOAP/XML plugins in a context of high usage
@@ -79,7 +82,12 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
   - `k6 run scen1.js`
 - Start a Load testing on Kubernetes
   - Configure `executor: 'ramping-vus` and `{ duration: '900s', target: 20 }` in the `scenX.js`
-  - Configure [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.)
+  - Configure [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) with the right scenario (scen0, scen1, scen2, etc.). For other types of tests like Endurance Testing or `httpbin` or `go-bench-suite` use:
+    - Use [k6-TestRun-scenhttpbin.yaml](/loadtesting/k6/k6-TestRun-scenhttpbin.yaml)
+    - Use [k6-TestRun-scengobench0.yaml](/loadtesting/k6/k6-TestRun-scengobench0.yaml)
+    - Use [k6-TestRun-scen5endurance100.yaml](/loadtesting/k6/k6-TestRun-scen5endurance100.yaml)
+    - Use [k6-TestRun-scen9endurance100.yaml](/loadtesting/k6/k6-TestRun-scen9endurance100.yaml)
+    - Use [k6-TestRun-scen10endurance100.yaml](/loadtesting/k6/k6-TestRun-scen10endurance100.yaml)
   - Apply the configuration and start the test: `kubectl apply -f k6-TestRun.yaml`
 - Collect and check the results once the job has the `succeeded` status
   -  The command is for instance: `kubectl logs scen1-1-wxyz`
@@ -172,7 +180,7 @@ Objective: check that there is no side effect of an error request on a query wit
 |calculator|1|WSDL Validation (req plugin only)|N/A|9071 rps|0.95 ms|2.08 ms|4.55 ms|6.6 ms|1.3 GiB|4.7 GB|7.1 GB
 |calculator|2|WSDL and SOAPAction Validation (req plugin only)|N/A|7988 rps|0.95 ms|2.36 ms|4.85 ms|7.09 ms|1.4 GiB|4.4 GB|6.3 GB
 |calculator|3|XSD Validation (req plugin only)|N/A|9209 rps|0.96 ms|2.05 ms|4.48 ms|6.39 ms|1.3 GiB|4.8 GB|7.2 GB
-|calculator|4|XSLT Transformation (req plugin only)|libxslt|6316 rps|0.96 ms|2.99 ms|6.31 ms|9.07 ms|1.1 GiB|3.3 GB|5 GB
+|calculator|4|XSLT Transformation (req plugin only)|libxslt|6815 rps|0.96 ms|2.78 ms|5.77 ms|8.33 ms|1.2 GiB|3.61 GB|5.3 GB
 |calculator|5|All options for req and res plugins|libxslt|3133 rps|0.99 ms|6.05 ms|11.15 ms|16.91 ms|1.7 GiB|1.8 GB|1.7 GB
 |calculator|6|WSDL Validation (res plugin only)|N/A|8314 rps|0.95 ms|2.27 ms|4.66 ms|7 ms|1.3 GiB|4.3 GB|6.6 GB
 |calculator|7|XSLT Transformation (res plugin only)|libxslt|7267 rps|0.95 ms|2.6 ms|5.34 ms|7.76 ms|1.4 GiB|3.8 GB| 5.7 GB
@@ -180,14 +188,14 @@ Objective: check that there is no side effect of an error request on a query wit
 |calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|3433 rps|0.98 ms|5.52 ms|8.87 ms|12.33 ms|1.4 GiB|0.68 GB|1.6 GB
 |calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|2853 rps|0.98 ms|6.64 ms|10.5 ms|15.41 ms|1.3 GiB|1.5 GB|2.1 GB
 |httbin|0|Kong proxy with no plugins|N/A|10931 rps|0.96 ms|25.46 ms|46.6 ms|83.2 ms|1 GiB|5.6 GB|16.9 GB
-|httbin|1|OAS Validation (req plugin only)|N/A| rps| ms| ms| ms| ms| GiB| GB| GB
-|httbin|2|OAS Validation (req and res plugins)|N/A| rps| ms| ms| ms| ms| GiB| GB| GB
+|httbin|1|OAS Validation (req plugin only)|N/A|9311 rps|0.97 ms|29.94 ms|60.2 ms|99.23 ms|1.1 GiB|4.8 GB|14.4 GB
+|httbin|2|OAS Validation (req and res plugins)|N/A|8173 rps|0.98 ms|34.08 ms|51.77 ms|105.12 ms|1 GiB|4.2 GB|12.7 GB
 |go-bench-suite|0|Kong proxy with no plugins|N/A|18797 rps|0.96 ms|4.94 ms|10.54 ms|20.55 ms|1.2 GiB|2.2 GB GB|12.7 GB
 
 Scenario 4 `calculator` - XSLT Transformation `libxslt`: RPS per route/service by status code
-![Alt text](/loadtesting/synthesis/images_v1.2.5/loadtesting-scen4-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen4-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 Scenario 4 `calculator` - XSLT Transformation `libxslt`: Kong Proxy Latency per Service
-![Alt text](/loadtesting/synthesis/images_v1.2.5/loadtesting-scen4-kong-proxy-latency.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen4-kong-proxy-latency.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 
 <a id="endurance_testing_results"></a>
 

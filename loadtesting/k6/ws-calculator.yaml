@@ -13,7 +13,7 @@ metadata:
   name: calculator
   namespace: ws-calculator
 spec:
-  replicas: 2
+  replicas: 4
   selector:
     matchLabels:
       app: calculator
@@ -61,7 +61,7 @@ metadata:
   name: calculator2
   namespace: ws-calculator
 spec:
-  replicas: 2
+  replicas: 0
   selector:
     matchLabels:
       app: calculator2
