@@ -26,6 +26,7 @@ export const options = {
         { duration: '900s', target: 300 },
       ],
       gracefulRampDown: '5s',
+
     },
   },
 };

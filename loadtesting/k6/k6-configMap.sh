@@ -10,11 +10,8 @@ kubectl create configmap scen8saxon   --from-file ./scen8saxon.js   -o yaml --dr
 kubectl create configmap scen9saxon   --from-file ./scen9saxon.js   -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen10saxon  --from-file ./scen10saxon.js  -o yaml --dry-run=client | kubectl apply -f - 
 
-kubectl create configmap scen5endurance           --from-file ./scen5endurance.js       -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen5endurance100        --from-file ./scen5endurance100.js    -o yaml --dry-run=client | kubectl apply -f - 
-kubectl create configmap scen9saxonendurance      --from-file ./scen9saxonendurance.js  -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen9saxonendurance100   --from-file ./scen9saxonendurance100.js  -o yaml --dry-run=client | kubectl apply -f - 
-kubectl create configmap scen10saxonendurance     --from-file ./scen10saxonendurance.js -o yaml --dry-run=client | kubectl apply -f - 
 kubectl create configmap scen10saxonendurance100  --from-file ./scen10saxonendurance100.js -o yaml --dry-run=client | kubectl apply -f - 
 
 kubectl create configmap scen1concurrent --from-file ./scen1concurrent.js -o yaml --dry-run=client | kubectl apply -f - 

@@ -115,7 +115,7 @@ Each deployment (Kong GW, K6, Upstream) has `podAntiAffinity` property for havin
 - Endurance testing
   - Duration = 24 hours
   - Have `spec.parallelism: 10` in [k6-TestRun.yaml](/loadtesting/k6/k6-TestRun.yaml) for stability and avoid the K6 `failed` status
-  - Have `replicas: 5` in [ws-calculator.yaml](/loadtesting/k6/ws-calculator.yaml) for a better stability and endurance
+  - Have `replicas: 3` in [ws-calculator.yaml](/loadtesting/k6/ws-calculator.yaml) for a better stability and endurance
   - Since this is not a performance testing there is a `sleep()` in the script for reducing the pace: the `sleep()` duration is subtracted from the performance duration metrics (`avg`, `p95`, `p99`)
 - At the end of the K6 execution:
   - Collect the K6 results for `Requests per second`, `Avg`, `p95`, `p99`, `Data Sent`, `Data Rcvd` metrics
@@ -177,12 +177,12 @@ Objective: check that there is no side effect of an error request on a query wit
 |calculator|6|WSDL Validation (res plugin only)|N/A|8314 rps|0.95 ms|2.27 ms|4.66 ms|7 ms|1.3 GiB|4.3 GB|6.6 GB
 |calculator|7|XSLT Transformation (res plugin only)|libxslt|7267 rps|0.95 ms|2.6 ms|5.34 ms|7.76 ms|1.4 GiB|3.8 GB| 5.7 GB
 |calculator|8|XSLT Transformation (req plugin only)|saxon|5016 rps|0.98 ms|3.77 ms|6.64 ms|9.37 ms|1.2 GiB|2.7 GB|3.9 GB
-|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon| rps| ms| ms| ms| ms| GiB| GB| GB
-|calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon| rps| ms| ms| ms| ms| GiB| GB| GB
-|httbin|0|Kong proxy with no plugins|N/A| rps| ms| ms| ms| ms| GiB| GB| GB
+|calculator|9|XSLT v3.0 - JSON to SOAP/XML for req and res plugins|saxon|3433 rps|0.98 ms|5.52 ms|8.87 ms|12.33 ms|1.4 GiB|0.68 GB|1.6 GB
+|calculator|10|XSLT v3.0 - XML (client) to JSON (server) for req and res plugins|saxon|2853 rps|0.98 ms|6.64 ms|10.5 ms|15.41 ms|1.3 GiB|1.5 GB|2.1 GB
+|httbin|0|Kong proxy with no plugins|N/A|10931 rps|0.96 ms|25.46 ms|46.6 ms|83.2 ms|1 GiB|5.6 GB|16.9 GB
 |httbin|1|OAS Validation (req plugin only)|N/A| rps| ms| ms| ms| ms| GiB| GB| GB
 |httbin|2|OAS Validation (req and res plugins)|N/A| rps| ms| ms| ms| ms| GiB| GB| GB
-|go-bench-suite|0|Kong proxy with no plugins|N/A| rps| ms| ms| ms| ms| GiB| GB GB| GB
+|go-bench-suite|0|Kong proxy with no plugins|N/A|18797 rps|0.96 ms|4.94 ms|10.54 ms|20.55 ms|1.2 GiB|2.2 GB GB|12.7 GB
 
 Scenario 4 `calculator` - XSLT Transformation `libxslt`: RPS per route/service by status code
 ![Alt text](/loadtesting/synthesis/images_v1.2.5/loadtesting-scen4-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
@@ -228,8 +228,8 @@ Scenario 10 `calculator` - XSLT v3.0 - JSON to SOAP/XML for req and res plugins 
 Here the performance is not the main objective, we check in the K6 results that the "Ok" route leading to an expected 200 actually returns a 200 despite a high number of 500 errors implied concurently by the "Ko" route
 |Service name|Scenario|Test type|XSLT Library|Requests per second|Kong Proxy Latency p95|K6 Avg|K6 p95|K6 p99|Kong Linux Memory|Data Sent|Data Rcvd
 |:--|:--|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|
-|calculator|1|WSDL Validation (req plugin only) with errors|N/A|4277 rps|0.99 ms|8.9 ms|16 ms|58.4 ms|2.7 GiB|2.3 GB|3.3 GB
-|calculator|3|XSD Validation (req plugin only) with errors|N/A|4479 rps|1 ms|8.5 ms|17.5 ms|45.1 ms|2.2 GiB|2.5 GB|3.9 GB
+|calculator|1|WSDL Validation (req plugin only) with errors|N/A|8550 rps|0.96 ms|4.43 ms|9.37 ms|17.27 ms|1.3 GiB|4.5 GB|6.3 GB
+|calculator|3|XSD Validation (req plugin only) with errors|N/A|7946 rps|0.96 ms|4.77 ms|9.95 ms|18.16 ms|1.5 GiB|4.3 GB|6.6 GB
 
 Scenario 3 `calculator` - XSD Validation with Error: RPS per route/service by status code
-![Alt text](/loadtesting/synthesis/images_v1.2.5/loadtesting-scen3concurrent-rps.jpeg?raw=true "Scenario 3 - XSD Validation with Error")
+![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen3concurrent-rps.jpeg?raw=true "Scenario 3 - XSD Validation with Error")

@@ -3,7 +3,7 @@ import { check } from 'k6';
 import { sleep } from 'k6';
 
 const host='kong-proxy.kong:8443';
-//const host='35.237.168.227';
+//const host='34.140.144.78';
 
 
 export const options = {
@@ -97,19 +97,20 @@ export function scen1ko () {
     'scen1ko - Content-Type': result.headers['Content-Type'] === 'text/xml; charset=utf-8',
   });
 
-  console.log('result.body:' + result.body);
+  //console.log('result.body:' + result.body);
   const expectedError = 
 `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request - XSD validation failed</faultstring>
-      <detail>Unable to find a suitable Schema to validate the SOAP/XML</detail>
+      <detail>
+        <errorMessage>Unable to find a suitable Schema to validate the SOAP/XML</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
-</soap:Envelope>
-`;
+</soap:Envelope>`;
 
   check(result.body, { 'scen1ko - calculator Failed': result.body == expectedError });
 }
