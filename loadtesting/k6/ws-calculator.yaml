@@ -13,7 +13,7 @@ metadata:
   name: calculator
   namespace: ws-calculator
 spec:
-  replicas: 4
+  replicas: 10
   selector:
     matchLabels:
       app: calculator
@@ -33,10 +33,10 @@ spec:
           value: soap1
         resources:
           limits:
-            cpu: 8
+            cpu: 2
             memory: 2Gi
           requests:
-            cpu: 2
+            cpu: 1
             memory: 1Gi
       affinity:
         podAntiAffinity:

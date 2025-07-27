@@ -192,10 +192,10 @@ Objective: check that there is no side effect of an error request on a query wit
 |httbin|2|OAS Validation (req and res plugins)|N/A|8173 rps|0.98 ms|34.08 ms|51.77 ms|105.12 ms|1 GiB|4.2 GB|12.7 GB
 |go-bench-suite|0|Kong proxy with no plugins|N/A|18797 rps|0.96 ms|4.94 ms|10.54 ms|20.55 ms|1.2 GiB|2.2 GB GB|12.7 GB
 
-Scenario 4 `calculator` - XSLT Transformation `libxslt`: RPS per route/service by status code
-![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen4-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
-Scenario 4 `calculator` - XSLT Transformation `libxslt`: Kong Proxy Latency per Service
-![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen4-kong-proxy-latency.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+Scenario 1 `calculator` - WSDL Validation (req plugin only): RPS per route/service by status code
+![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen1-rps.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
+Scenario 1 `calculator` - WSDL Validation (req plugin only): Kong Proxy Latency per Service
+![Alt text](/loadtesting/synthesis/images_v1.4.0/loadtesting-scen1-kong-proxy-latency.jpeg?raw=true "Scenario 4 - XSLT Transformation - libxslt")
 
 <a id="endurance_testing_results"></a>
 
