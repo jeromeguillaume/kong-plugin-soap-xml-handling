@@ -1,6 +1,6 @@
 image:
   repository: kong/kong-gateway
-  tag: "3.9"
+  tag: "3.10.0.2"
   pullPolicy: Always
 
 secretVolumes:
@@ -13,10 +13,11 @@ env:
   role: data_plane
   database: "off"
   cluster_mtls: pki
-  cluster_control_plane: 130d4abacf.eu.cp0.konghq.com:443
-  cluster_server_name: 130d4abacf.eu.cp0.konghq.com
-  cluster_telemetry_endpoint: 130d4abacf.eu.tp0.konghq.com:443
-  cluster_telemetry_server_name: 130d4abacf.eu.tp0.konghq.com
+  cluster_dp_labels: "type:docker-kubernetesOS"
+  cluster_control_plane: d7cd0ff14a.eu.cp0.konghq.com:443
+  cluster_server_name: d7cd0ff14a.eu.cp0.konghq.com
+  cluster_telemetry_endpoint: d7cd0ff14a.eu.tp0.konghq.com:443
+  cluster_telemetry_server_name: d7cd0ff14a.eu.tp0.konghq.com
   cluster_cert: /etc/secrets/kong-cluster-cert/tls.crt
   cluster_cert_key: /etc/secrets/kong-cluster-cert/tls.key
   lua_ssl_trusted_certificate: system
@@ -39,7 +40,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.0-12.5-beta.2
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.0-12.5
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
@@ -51,13 +52,18 @@ deployment:
   - name: kongsaxon-vol
     mountPath: /usr/local/lib/kongsaxon
 
-proxy:
-  annotations:
-    prometheus.io/port: "8100"
-    prometheus.io/scrape: "true"
-  labels:
-    enable-metrics: true
-  
+extraConfigMaps:
+- name: kong-plugin-spec-fixtures
+  mountPath: /kong-plugin/spec/fixtures/calculator
+- name: kong-plugin-spec-fixtures-json-2-xml
+  mountPath: /kong-plugin/spec/fixtures/calculator/JSON_2_XML
+- name: kong-plugin-spec-fixtures-xml-2-json
+  mountPath: /kong-plugin/spec/fixtures/calculator/XML_2_JSON
+
+podAnnotations: 
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8100"
+
 ingressController:
   enabled: false
   installCRDs: false

@@ -15,9 +15,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "1")
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     

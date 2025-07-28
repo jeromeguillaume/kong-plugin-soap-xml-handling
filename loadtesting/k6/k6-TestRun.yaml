@@ -1,18 +1,19 @@
 apiVersion: k6.io/v1alpha1
 kind: TestRun
 metadata:
-  name: scenhttpbin2
+  name: scen1
 spec:
-  parallelism: 1
+  parallelism: 2
+  #separate: true
   script:
     configMap:
-      name: scenhttpbin2
-      file: scenhttpbin2.js
-  arguments: --tag testId=scenhttpbin2
+      name: scen1
+      file: scen1.js
+  arguments: --tag testId=scen1
   runner:
     resources:
       limits:
-        cpu: 8
+        cpu: 2
         memory: 8Gi
       requests:
         cpu: "0.5"
@@ -25,17 +26,14 @@ spec:
       - name: K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM
         value: 'true'
       - name: K6_PROMETHEUS_RW_SERVER_URL
-        value: 'http://prometheus.monitoring.svc.cluster.local:9090/api/v1/write'
+        value: 'http://prometheus-server.monitoring.svc.cluster.local/api/v1/write'
       - name: K6_INSECURE_SKIP_TLS_VERIFY
         value: 'true'
       - name: K6_OUT
-        value: experimental-prometheus-rw
+        #value: influxdb=http://influxdb.monitoring.svc.cluster.local:8086
+        #value: experimental-prometheus-rw
       - name: ENTITY_CONFIG_SIZE
         value: '1'
-      #- name: K6_VUS
-      #  value: '50'
-      #- name: k6_DURATION
-      #  value: '60s'
       - name: BASIC_AUTH_ENABLED
         value: 'false'
       - name: KEY_AUTH_ENABLED

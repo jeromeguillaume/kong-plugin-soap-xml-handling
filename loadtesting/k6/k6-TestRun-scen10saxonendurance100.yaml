@@ -1,0 +1,52 @@
+apiVersion: k6.io/v1alpha1
+kind: TestRun
+metadata:
+  name: scen10saxonendurance100
+spec:
+  parallelism: 10
+  #separate: true
+  script:
+    configMap:
+      name: scen10saxonendurance100
+      file: scen10saxonendurance100.js
+  arguments: --tag testId=scen10saxonendurance100
+  runner:
+    resources:
+      limits:
+        cpu: 4
+        memory: 8Gi
+      requests:
+        cpu: "0.5"
+        memory: 2Gi
+    env:
+      - name: K6_SUMMARY_TREND_STATS
+        value: 'min,max,avg,p(90),p(95),p(99)'
+      - name: K6_PROMETHEUS_RW_TREND_STATS
+        value: 'avg,p(90),p(95),p(99),min,max,med,med,count,sum'
+      - name: K6_PROMETHEUS_RW_TREND_AS_NATIVE_HISTOGRAM
+        value: 'true'
+      - name: K6_PROMETHEUS_RW_SERVER_URL
+        value: 'http://prometheus-server.monitoring.svc.cluster.local/api/v1/write'
+      - name: K6_INSECURE_SKIP_TLS_VERIFY
+        value: 'true'
+      - name: K6_OUT
+        #value: influxdb=http://influxdb.monitoring.svc.cluster.local:8086
+        #value: experimental-prometheus-rw
+      - name: ENTITY_CONFIG_SIZE
+        value: '1'
+      - name: BASIC_AUTH_ENABLED
+        value: 'false'
+      - name: KEY_AUTH_ENABLED
+        value: 'false'
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - kong-kong
+            topologyKey: kubernetes.io/hostname

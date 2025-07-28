@@ -3,7 +3,7 @@ import { check } from 'k6';
 import { sleep } from 'k6';
 
 const host='kong-proxy.kong:8443';
-//const host='35.241.175.116';
+//const host='34.38.216.67';
 
 
 export const options = {
@@ -94,16 +94,17 @@ export function scen3ko () {
 
   const expectedError = 
 `<?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
       <faultstring>Request - XSD validation failed</faultstring>
-      <detail>Error Node: Add_DOES_NOT_EXIST, Error code: 1845, Line: 4, Message: Element '{http://tempuri.org/}Add_DOES_NOT_EXIST': No matching global declaration available for the validation root.</detail>
+      <detail>
+        <errorMessage>Error Node: Add_DOES_NOT_EXIST, Error code: 1845, Line: 4, Message: Element '{http://tempuri.org/}Add_DOES_NOT_EXIST': No matching global declaration available for the validation root.</errorMessage>
+      </detail>
     </soap:Fault>
   </soap:Body>
-</soap:Envelope>
-`;
+</soap:Envelope>`;
 
   check(result, {
     'scen3ko - http response status code is 500': result.status === 500,

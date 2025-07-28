@@ -13,7 +13,7 @@ metadata:
   name: calculator
   namespace: ws-calculator
 spec:
-  replicas: 1
+  replicas: 10
   selector:
     matchLabels:
       app: calculator
@@ -24,7 +24,7 @@ spec:
         app: calculator
     spec:
       containers:
-      - image: jeromeguillaume/ws-soap-calculator:1.0.4
+      - image: jeromeguillaume/ws-soap-calculator:latest
         name: ws-soap-calculator
         ports:
         - containerPort: 8080
@@ -33,10 +33,10 @@ spec:
           value: soap1
         resources:
           limits:
-            cpu: 8
+            cpu: 2
             memory: 2Gi
           requests:
-            cpu: 2
+            cpu: 1
             memory: 1Gi
       affinity:
         podAntiAffinity:
@@ -61,7 +61,7 @@ metadata:
   name: calculator2
   namespace: ws-calculator
 spec:
-  replicas: 1
+  replicas: 0
   selector:
     matchLabels:
       app: calculator2

@@ -3,7 +3,7 @@ import { check } from 'k6';
 import { sleep } from 'k6';
 
 const host='kong-proxy.kong:8443';
-//const host='35.241.175.116';
+//const host='35.237.168.227';
 
 
 export const options = {
@@ -26,6 +26,7 @@ export const options = {
         { duration: '900s', target: 300 },
       ],
       gracefulRampDown: '5s',
+
     },
   },
 };

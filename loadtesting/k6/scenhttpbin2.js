@@ -2,8 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { sleep } from 'k6';
 
-const host='kong-proxy.kong:8443';
-//const host='35.241.175.116';
+//const host='kong-proxy.kong:8443';
+const host='35.237.168.227';
 
 
 export const options = {

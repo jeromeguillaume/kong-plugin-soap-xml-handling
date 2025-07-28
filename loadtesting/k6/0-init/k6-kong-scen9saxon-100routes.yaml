@@ -1,0 +1,3418 @@
+_format_version: "3.0"
+_info:
+  defaults: {}
+  select_tags:
+  - k6-endurance-scen9
+services:
+- connect_timeout: 60000
+  enabled: true
+  host: calculator.ws-calculator
+  name: k8s-calculator-endurance-scen9
+  path: /ws
+  port: 8080
+  protocol: http
+  read_timeout: 60000
+  retries: 5
+  routes:
+  - name: scen9saxon_0001
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0001
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0002
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0002
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0003
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0003
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0004
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0004
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0005
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0005
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0006
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0006
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0007
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0007
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0008
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0008
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0009
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0009
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0010
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0010
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0011
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0011
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0012
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0012
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0013
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0013
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0014
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0014
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0015
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0015
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0016
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0016
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0017
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0017
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0018
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0018
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0019
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0019
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0020
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0020
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0021
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0021
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0022
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0022
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0023
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0023
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0024
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0024
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0025
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0025
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0026
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0026
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0027
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0027
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0028
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0028
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0029
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0029
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0030
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0030
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0031
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0031
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0032
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0032
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0033
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0033
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0034
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0034
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0035
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0035
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0036
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0036
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0037
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0037
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0038
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0038
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0039
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0039
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0040
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0040
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0041
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0041
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0042
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0042
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0043
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0043
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0044
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0044
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0045
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0045
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0046
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0046
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0047
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0047
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0048
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0048
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0049
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0049
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0050
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0050
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0051
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0051
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0052
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0052
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0053
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0053
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0054
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0054
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0055
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0055
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0056
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0056
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0057
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0057
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0058
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0058
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0059
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0059
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0060
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0060
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0061
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0061
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0062
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0062
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0063
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0063
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0064
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0064
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0065
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0065
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0066
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0066
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0067
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0067
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0068
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0068
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0069
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0069
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0070
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0070
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0071
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0071
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0072
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0072
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0073
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0073
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0074
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0074
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0075
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0075
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0076
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0076
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0077
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0077
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0078
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0078
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0079
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0079
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0080
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0080
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0081
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0081
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0082
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0082
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0083
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0083
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0084
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0084
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0085
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0085
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0086
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0086
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0087
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0087
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0088
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0088
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0089
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0089
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0090
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0090
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0091
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0091
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0092
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0092
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0093
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0093
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0094
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0094
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0095
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0095
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0096
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0096
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0097
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0097
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0098
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0098
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0099
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0099
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+  - name: scen9saxon_0100
+    https_redirect_status_code: 426
+    path_handling: v0
+    paths:
+    - /scen9saxon_0100
+    plugins:
+    - name: soap-xml-request-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseRequest: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformBefore: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/1_json2xml_XSLT_BEFORE.xslt
+      enabled: true
+      protocols:
+      - http
+      - https
+    - name: soap-xml-response-handling      
+      config:
+        ExternalEntityLoader_Async: false
+        ExternalEntityLoader_CacheTTL: 3600
+        ExternalEntityLoader_Timeout: 1
+        VerboseResponse: true
+        xsdApiSchema: /kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl
+        xsdApiSchemaInclude: {}
+        xsdSoapSchema: /kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd
+        xsdSoapSchemaInclude: {}
+        xsltLibrary: saxon
+        xsltTransformAfter: /kong-plugin/spec/fixtures/calculator/JSON_2_XML/7_json2xml_XSLT_AFTER.xslt
+
+  write_timeout: 60000
