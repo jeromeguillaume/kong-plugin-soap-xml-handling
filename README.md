@@ -32,7 +32,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 1. [Information and Recommendation](#information_recommendation)
 2. [Configuration Reference](#configuration_reference)
 3. [How to deploy SOAP/XML Handling plugins](#deployment)
-    1. [Docker](#docker)
+    1. [Docker Compose](#docker_compose)
     2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
     3. [Schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
     4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
@@ -151,7 +151,7 @@ If `Verbose` is enabled:
 
 ## How to deploy SOAP/XML Handling plugins
 
-<a id="docker"></a>
+<a id="docker_compose"></a>
 
 ###  How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker Compose
 1) Do a Git Clone of this repo
@@ -162,7 +162,7 @@ git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```sh
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
-2) Go to the root directory for having access to [`docker-compose.yml`](/docker-compose.yml). Pay attention to [`.env`](/.env) file for Docker Compose configuring: architecture (arm64/amd64) and current direcory
+2) Go to the root directory for having access to [`docker-compose.yml`](/docker-compose.yml). Pay attention to [`.env`](/.env) file for Docker Compose configuration: architecture (arm64/amd64) and current direcory
 ```sh
 cd ./kong-plugin-soap-xml-handling
 ```
