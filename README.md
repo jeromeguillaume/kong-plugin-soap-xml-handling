@@ -153,20 +153,23 @@ If `Verbose` is enabled:
 
 <a id="docker"></a>
 
-###  How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+###  How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker Compose
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
-2) Create and prepare a PostgreDB called `kong-database-soap-xml-handling`.
-[See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database)
-3) Provision a license of Kong Enterprise Edition and put the content in `KONG_LICENSE_DATA` environment variable. The following license is only an example. You must use the following format, but provide your own content
+2) Provision a license of Kong Enterprise Edition and put the content in `KONG_LICENSE_DATA` environment variable. The following license is only an example. You must use the following format, but provide your own content
 ```sh
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
-4) Start the standalone Kong Gateway
+2) Go to the root directory for having access to [`docker-compose.yml`](/docker-compose.yml). Pay attention to [`.env`](/.env) file for Docker Compose configuring: architecture (arm64/amd64) and current direcory
 ```sh
-./start-kong.sh
+cd ./kong-plugin-soap-xml-handling
+```
+
+3) Start the standalone Kong Gateway with a PostgreSQL
+```sh
+docker compose up -d
 ```
 <a id="Konnect_CP_for_Kong_Gateway"></a>
 
@@ -1100,7 +1103,7 @@ The plugin applies an XSLT Transformation on XML request by using `<xsl:param>` 
 - `<intB>` value transformed to `3333`
 - `<Username>` value transformed to `KongUser` referenced in a Vault `{vault://env/soap-username}`
 - `<Password>` value transformed to `KongP@sswOrd!` referenced in a Vault `{vault://env/soap-password}`
-0) Add the following environment variables at the Kong Linux level, for instance for a Docker deployment (see [start-kong.sh](start-kong.sh)):
+0) Add the following environment variables at the Kong Linux level, for instance for a Docker Compose deployment (see [docker-compose.yml](docker-compose.yml)):
 ```sh
 -e "SOAP_USERNAME=KongUser" \
 -e "SOAP_PASSWORD=KongP@sswOrd!" \

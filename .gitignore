@@ -1,4 +1,3 @@
-start-kong-konnect.sh
 kong/plugins/.DS_Store
 kong/saxon/notes.txt
 tls.crt
@@ -23,10 +22,10 @@ luacov.report.out
 # exclude Pongo containerid file
 .containerid
 .busted
-so/
+kong/saxon/so/arm64/*
+kong/saxon/so/amd64/*
 kong/saxon/zip/*.zip
 kong/saxon/include/*.h
-backup/
 .VSCodeCounter/
 to_do.txt
 kong/saxon/kubernetes/tls.crt

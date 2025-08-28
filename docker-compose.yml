@@ -1,0 +1,89 @@
+volumes:
+  kong_db_data: {}  # Named volume to persist Postgres data across container restarts
+
+networks:
+  kong-soap-xml-net:      # Custom bridge network for isolated Kong and Postgres communication
+    driver: bridge
+
+# Common environment variables used by Kong services (bootstrap and CP)
+x-kong-config: &kong-env
+  KONG_DATABASE: postgres             # Use Postgres as the backing database
+  KONG_PG_HOST: kong-database-soap-xml-handling      # Hostname of the Postgres service
+  KONG_PG_DATABASE: kong              # Name of the database to connect to
+  KONG_PG_USER: kong                  # Database username
+  KONG_PG_PASSWORD: kong              # Database password
+  KONG_LICENSE_DATA: "${KONG_LICENSE_DATA}"  # Kong Enterprise license passed via environment variable
+
+services:
+
+  kong-database-soap-xml-handling:
+    container_name: kong-database-soap-xml-handling
+    image: postgres:latest           # Official Postgres image
+    restart: on-failure              # Restart if the container fails
+    volumes:
+      - kong_db_data:/var/lib/postgresql/data  # Mount the volume for persistent data
+    networks:
+      - kong-soap-xml-net                  # Connect to the shared Kong network
+    environment:
+      POSTGRES_USER: kong            # Set DB user inside the container
+      POSTGRES_DB: kong              # Create this database on first run
+      POSTGRES_PASSWORD: kong        # Set the password for the DB user
+    healthcheck:                     # Ensure the DB is ready before starting dependent services
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - '5432:5432'                  # Optional: expose Postgres on localhost for debugging
+
+  kong-bootstrap:
+    image: 'kong/kong-gateway:3.11.0.2'  # Kong Gateway image (default to latest version)
+    platform: linux/${ARCHITECTURE}
+    container_name: kong-bootstrap
+    networks:
+      - kong-soap-xml-net
+    depends_on:
+      kong-database-soap-xml-handling:
+        condition: service_healthy   # Wait until Postgres is up and healthy
+    restart: on-failure
+    environment:
+      <<: *kong-env                 # Reuse environment config from x-kong-config
+      KONG_PASSWORD: handyshake    # Admin GUI password (required for RBAC)
+    command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
+
+  kong-gateway-soap-xml-handling:
+    image: 'kong/kong-gateway:3.11.0.2'  # Main Kong Gateway Control Plane (default to latest version)
+    platform: linux/${ARCHITECTURE}
+    container_name: kong-gateway-soap-xml-handling
+    restart: on-failure
+    networks:
+      - kong-soap-xml-net
+    volumes:
+      - ${PROJECT_DIR}/kong/plugins/soap-xml-request-handling:/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
+      - ${PROJECT_DIR}/kong/plugins/soap-xml-response-handling:/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling
+      - ${PROJECT_DIR}/kong/plugins/soap-xml-handling-lib:/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib
+      - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
+      - ${PROJECT_DIR}/kong/saxon/conf:/usr/local/lib/kongsaxon/conf
+      - ${PROJECT_DIR}/spec/fixtures/:/kong-plugin/spec/fixtures
+    environment:
+      <<: *kong-env
+      KONG_PROXY_LISTEN: 0.0.0.0:9000, 0.0.0.0:9443 ssl
+      KONG_ADMIN_LISTEN: 0.0.0.0:9001, 0.0.0.0:9444 ssl
+      KONG_ADMIN_GUI_LISTEN: 0.0.0.0:9002, 0.0.0.0:9445 ssl
+      KONG_ADMIN_GUI_URL: http://localhost:9002
+      KONG_PLUGINS: bundled,soap-xml-request-handling,soap-xml-response-handling
+      LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
+      KONG_NGINX_WORKER_PROCESSES: 1
+      KONG_PASSWORD: handyshake  # Required for logging in to Kong Manager (RBAC)
+      SOAP_USERNAME: KongUser
+      SOAP_PASSWORD: KongP@sswOrd!
+      KONG_LOG_LEVEL: notice
+    depends_on:
+      kong-bootstrap:
+        condition: service_completed_successfully  # Start only after bootstrap has succeeded
+    ports:
+      - "9000:9000"
+      - "9443:9443"
+      - "9001:9001"
+      - "9002:9002"
+      - "9444:9444"

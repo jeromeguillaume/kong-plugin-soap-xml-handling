@@ -3,15 +3,15 @@
 #include <map>
 #include <string.h>
 
-#include <SaxonProcessor.h>
-#include <XdmValue.h>
-#include <XdmItem.h>
-#include <XdmNode.h>
-#include <XdmFunctionItem.h>
-#include <DocumentBuilder.h>
-#include <XdmMap.h>
-#include <XdmArray.h>
-#include <SchemaValidator.h>
+#include <saxonc/SaxonProcessor.h>
+#include <saxonc/XdmValue.h>
+#include <saxonc/XdmItem.h>
+#include <saxonc/XdmNode.h>
+#include <saxonc/XdmFunctionItem.h>
+#include <saxonc/DocumentBuilder.h>
+#include <saxonc/XdmMap.h>
+#include <saxonc/XdmArray.h>
+#include <saxonc/SchemaValidator.h>
 
 #include <string>
 #include <thread>

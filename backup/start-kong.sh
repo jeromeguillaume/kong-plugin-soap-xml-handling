@@ -38,7 +38,7 @@ docker run -d --name kong-gateway-soap-xml-handling \
 -p 9002:9002 \
 -p 9444:9444 \
 --platform linux/$ARCHITECTURE \
-kong/kong-gateway:3.10.0.1
+kong/kong-gateway:3.11.0.2
 
 
 #-e "KONG_PROXY_LISTEN=0.0.0.0:9000, 0.0.0.0:9443 ssl http2" \

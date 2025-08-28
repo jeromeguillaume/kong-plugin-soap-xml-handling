@@ -1,3 +1,3 @@
 # Copy following files into ./kong-plugin-soap-xml-handling/kong/saxon/zip
-  libsaxon-HEC-linux-aarch64-v12.5.0.zip
-  libsaxon-HEC-linux-x86_64-v12.5.0.zip
+  SaxonCHE-linux-aarch64-12-8-0.zip
+  SaxonCHE-linux-x86_64-12-8-0.zip
