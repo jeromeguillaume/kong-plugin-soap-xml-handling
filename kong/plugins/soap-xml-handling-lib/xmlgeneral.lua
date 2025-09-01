@@ -920,7 +920,7 @@ function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdApiSchem
       --     The timeout Prefetch (avoiding infinite loop)
       while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
             (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
-              -- This 'sleep' happens only one time per Plugin configuration update
+        -- This 'sleep' happens only one time per Plugin configuration update
         ngx.sleep(libxml2ex.xmlSoapSleepAsync)
         rc = true
       end

@@ -18,6 +18,9 @@ local maxRetries = 10
 -- Add a Worker Process for enabling the synchronous download of external entities
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+helpers.setenv("KONG_LOG_LEVEL", "debug")
+
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue

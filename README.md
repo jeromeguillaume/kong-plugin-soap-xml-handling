@@ -71,6 +71,7 @@ The XML definitions (for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`) can be
 Example for `config.xsdApiSchema`:
   - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
   - File WSDL definition: `/usr/local/apiclient.wsdl`
+    - The file name must not include space or tabulation
 
 The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
@@ -78,6 +79,7 @@ The user is in charge of putting the XML definition files on the Kong Gateway fi
 WSDL and XSD definitions can import other definitions by using `<import>` tag:
   - URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
   - File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
+    - The file name must not include space or tabulation
 
 The plugins manage both types of import:
   - URL (`http(s)://`): the plugins synchronously or asynchronously download the definition
@@ -169,7 +171,7 @@ cd ./kong-plugin-soap-xml-handling
 
 3) Start the standalone Kong Gateway with a PostgreSQL
 ```sh
-docker compose up -d
+docker-compose up -d
 ```
 <a id="Konnect_CP_for_Kong_Gateway"></a>
 
@@ -1376,3 +1378,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Check that if `SOAPAction_Header` is enabled the `xsdApiSchema` is also defined
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`
+- v1.4.1
+  - Bumped `saxon` Home Edition from v12.5 to v12.8
+  - `saxon`: removed useless carriage returns in the event of error (corrupting JSON message)
+  - Moved from `docker run` sample to `docker-compose` sample

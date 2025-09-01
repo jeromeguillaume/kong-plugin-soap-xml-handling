@@ -65,7 +65,7 @@ saxon_common.error_message_Request_XSLT_transfo_before_XSD_val = {
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_val_verbose = {
   message = 'Request - XSLT transformation failed (before XSD validation)',
-  message_verbose = 'Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.'
+  message_verbose = 'Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.'
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Template_val_verbose = {
@@ -79,7 +79,7 @@ saxon_common.error_message_Response_XSLT_transfo_after_XSD_val = {
 
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
   message = 'Response - XSLT transformation failed (after XSD validation)',
-  message_verbose = 'Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.',
+  message_verbose = 'Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.',
   backend_http_code = 200
 }
 
@@ -107,7 +107,7 @@ saxon_common.error_XML_message_Request_XSLT_transfo_before_XSD_val_verbose = [[
       <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
-        <errorMessage>Invalid XSLT definition. SXXP0003:  Error reported by XML parser: Content is not allowed in prolog.</errorMessage>
+        <errorMessage>Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -515,8 +515,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
       VerboseRequest = true,
       xsltLibrary = xsltLibrary,
       -- it lacks the '<' beginning tag
-      xsltTransformBefore = [[
-				xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+      xsltTransformBefore = [[xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				</xsl:stylesheet>
 			]]
     }
@@ -576,8 +575,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
       VerboseResponse = true,
       xsltLibrary = xsltLibrary,
       -- it lacks the '<' beginning tag
-      xsltTransformAfter = [[
-				xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+      xsltTransformAfter = [[xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 				</xsl:stylesheet>
 			]]
     }
