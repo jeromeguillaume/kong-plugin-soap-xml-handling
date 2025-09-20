@@ -295,7 +295,7 @@ function plugin:header_filter(plugin_conf)
     -- If the Request Content-Type is JSON, we apply the same Content-Type on the Response for sending a JSON Error
     if kong.ctx.shared.contentType.request == xmlgeneral.JSON then
       kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
-      kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON ("..xmlgeneral.JSONContentType..")")
+      kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON (", xmlgeneral.JSONContentType, ")")
     -- Else the Request Content-Type is XML
     else
       -- Force the XML Content-Type
@@ -316,7 +316,7 @@ function plugin:header_filter(plugin_conf)
       local soapInflated, err = KongGzip.deflate_gzip(soapEnvelopeTransformed)
       
       if err then
-        kong.log.err("Failed to deflate the gzipped SOAP/XML Body: " .. err)
+        kong.log.err("Failed to deflate the gzipped SOAP/XML Body: ", err)
         -- We are unable to deflate/zip new transformed SOAP/XML Body, so we remove the 'Content-Encoding' header
         -- and we return the non deflated/zipped content
         kong.response.clear_header("Content-Encoding")
@@ -338,14 +338,14 @@ function plugin:header_filter(plugin_conf)
       -- If the soapEnvelopeTransformed type is XML
       if bodyContentType == xmlgeneral.XMLContentTypeBody then
         kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
-        kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from JSON to XML ("..xmlgeneral.getContentType(kong.ctx.shared.contentType.request)..")")
+        kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from JSON to XML (", xmlgeneral.getContentType(kong.ctx.shared.contentType.request), ")")
       end
     -- Else If the Response 'Content-Type' is XML and the Request 'Content-Type' is JSON
     elseif jsonResponse ~= xmlgeneral.JSON and kong.ctx.shared.contentType.request == xmlgeneral.JSON then
       -- If the soapEnvelopeTransformed type is JSON
       if bodyContentType == xmlgeneral.JSONContentTypeBody then
         kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
-        kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON ("..xmlgeneral.JSONContentType..")")
+        kong.log.debug("JSON<->XML Transformation: Change the Reponse's 'Content-Type' from XML to JSON (", xmlgeneral.JSONContentType, ")")
       end
     else
       -- The Reponse 'Content-Type' is compatible with Request 'Content-Type'

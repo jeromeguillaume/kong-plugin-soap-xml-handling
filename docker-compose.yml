@@ -33,8 +33,6 @@ services:
       interval: 5s
       timeout: 10s
       retries: 10
-    ports:
-      - '5432:5432'                  # Optional: expose Postgres on localhost for debugging
 
   kong-bootstrap:
     image: 'kong/kong-gateway:3.11.0.2'  # Kong Gateway image (default to latest version)

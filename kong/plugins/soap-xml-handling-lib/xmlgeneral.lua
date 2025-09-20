@@ -167,7 +167,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
     -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
     errorMessage = string.gsub(errorMessage, "<", "Less Than")
     errorMessage = string.gsub(errorMessage, ">", "Greater Than")
-    kong.log.err ("<faultstring>" .. ErrMsg .. "</faultstring><detail>".. errorMessage .. "</detail>")    
+    kong.log.err ("<faultstring>", ErrMsg, "</faultstring><detail>", errorMessage, "</detail>")    
   end
 
   -- If it's a SOAP 1.1 request, send a SOAP 1.1 fault message
@@ -251,7 +251,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
 
   -- Else the Fault Message is a JSON text
   else
-    kong.log.err ("message: '" .. ErrMsg .. "' message_verbose: '".. errorMessage .. "'")
+    kong.log.err ("message: '", ErrMsg, "' message_verbose: '", errorMessage, "'")
     soapErrMsg = "{\n    \"message\": \"" .. ErrMsg .. "\""
     if VerboseResponse then
       soapErrMsg = soapErrMsg .. ",\n    \"message_verbose\": \"" .. errorMessage .. "\""
@@ -440,10 +440,10 @@ function xmlgeneral.initializeSaxon()
       end
 
       if errMessage then
-        kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
+        kong.log.err ("initializeSaxon: errMessage: ", errMessage)
       end
     else
-      kong.log.err ("initializeSaxon: errMessage: " .. errMessage)
+      kong.log.err ("initializeSaxon: errMessage: ", errMessage)
     end
   else
     kong.log.debug ("initializeSaxon: 'saxon' is already initialized => nothing to do")
@@ -537,7 +537,7 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
   local xsdHashKey
   local filePathPrefix
   local rc = true  
-  kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin - PluginType:"..conf.pluginType)
+  kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin - PluginType:", conf.pluginType)
     
   local count = 0  
 
@@ -545,7 +545,7 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
   for k, prefetchConf_entry in pairs (prefetchConf_entries) do
     
     count = count + 1
-    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: " .. count .. "/" .. #prefetchConf_entries)
+    kong.log.debug("asyncPrefetch_Schema_Validation_callback : #prefetch: ", count, "/", #prefetchConf_entries)
     xsdHashKey = kong.xmlSoapAsync.entityLoader.hashKeys[prefetchConf_entry.xsdHashKey]
     
     -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
@@ -573,9 +573,9 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
       if not errMessage then
         xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
         xsdHashKey.duration = ngx.now() - xsdHashKey.started
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success** | PluginType:"..conf.pluginType.."| count: "..count.."| duration=" .. xsdHashKey.duration)
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: **Success** | PluginType:", conf.pluginType, "| count: ", count, "| duration=", xsdHashKey.duration)
       else
-        kong.log.debug("asyncPrefetch_Schema_Validation_callback: PluginType:"..conf.pluginType.." err: " .. errMessage)
+        kong.log.debug("asyncPrefetch_Schema_Validation_callback: PluginType:", conf.pluginType, " err: ", errMessage)
         local j, _ = string.find(errMessage, "failed.to.load.external.entity")
         local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
         -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
@@ -596,13 +596,13 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
         rc = true
         errMessage = nil
       end
-      kong.log.debug("asyncPrefetch_Schema_Validation_callback - PluginType:"..conf.pluginType.." Last status: " .. tostring(xsdHashKey.prefetchStatus) .. " Last message: " .. (errMessage or "'N/A'"))
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback - PluginType:", conf.pluginType, " Last status: ", tostring(xsdHashKey.prefetchStatus), " Last message: ", (errMessage or "'N/A'"))
     
     -- Else the XSD 'hashKey' is not found in the 'entityLoader.hashKeys'
     else
       rc = false
       errMessage = "PluginType:"..conf.pluginType.." Unable to find XSD HashKey '" .. (prefetchConf_entry.xsdHashKey or "nil") .. "' in the 'entityLoader.hashKeys'"
-      kong.log.debug("asyncPrefetch_Schema_Validation_callback: " .. errMessage)
+      kong.log.debug("asyncPrefetch_Schema_Validation_callback: ", errMessage)
     end
     ::continue::
   end
@@ -619,7 +619,7 @@ function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType,
   local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
   -- If it's the 1st time the XSD Schema is seen
   if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
-    kong.log.debug("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=" .. xsdHashKey)
+    kong.log.debug("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=", xsdHashKey)
     kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] = {
       prefetchStatus = xmlgeneral.prefetchStatusInit,
       started  = ngx.now(),
@@ -628,7 +628,7 @@ function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType,
     }
   -- Else If the XSD Schema is already known and the Prefetch status is Ko
   elseif kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusKo then
-    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=" .. xsdHashKey)
+    kong.log.debug("XSD_Validation_Prefetch: the XSD Schema is known but the Prefetch status is Ko. Let's try another Prefetch, hashKey=", xsdHashKey)
     -- So let's try another Prefetch
     kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus = xmlgeneral.prefetchStatusInit
     kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].started  = ngx.now()
@@ -664,7 +664,7 @@ function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType,
     -- Asynchronously execute the Prefetch of External Entities
     local rc, err = kong.xmlSoapAsync.entityLoader.prefetchQueue.enqueue(queue_conf, asyncPrefetch_Schema_Validation_callback, conf , prefetchConf)
     if err then
-      kong.log.err("XSD_Validation_Prefetch, prefetchQueue: " .. err)
+      kong.log.err("XSD_Validation_Prefetch, prefetchQueue: ", err)
     end
   end
 end
@@ -718,7 +718,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
       end
       countHashKeys = countHashKeys + 1
     end
-    kong.log.debug("pluginConfigure, Begin #entityLoader.hashKeys=" .. tostring(countHashKeys))      
+    kong.log.debug("pluginConfigure, Begin #entityLoader.hashKeys=" , tostring(countHashKeys))      
     
     -- Purge the Pointers cache table for plugins using 'Saxon':
     --  If the Pointers cache table that has been marked (as 'To Be Deleted') during the previous call of 'configure' phase => delete it
@@ -751,7 +751,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
             end
           end
           
-          kong.log.debug("pluginConfigure for Saxon, pluginId=" .. keyPluginId .. " is deleted from the cache")
+          kong.log.debug("pluginConfigure for Saxon, pluginId=", keyPluginId, " is deleted from the cache")
           kong.xmlSoapSaxonPtrCache.plugins[keyPluginId] = nil -- Delete the whole cache of the plugin
           countPointersCache = countPointersCache + 1
         else
@@ -762,7 +762,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
       end
     end
 
-    kong.log.debug("pluginConfigure for Saxon, Deleted #Pointers Cache tables=" .. countPointersCache)
+    kong.log.debug("pluginConfigure for Saxon, Deleted #Pointers Cache tables=", countPointersCache)
 
     -- Parse all instances of the plugin sent by the Control Plane for:
     --  => 'libxml2' and 'libxslt' libraries:
@@ -857,7 +857,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
       if  (entityHashKey.ReqPluginRemove == nil or entityHashKey.ReqPluginRemove == true ) and
           (entityHashKey.ResPluginRemove == nil or entityHashKey.ResPluginRemove == true ) and
           entityHashKey.prefetchStatus ~= xmlgeneral.prefetchStatusRunning then
-        kong.log.debug("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=" .. k)
+        kong.log.debug("pluginConfigure: remove XSD Api Schema in 'entityLoader.hashKeys' hashKey=", k)
         kong.xmlSoapAsync.entityLoader.hashKeys [k] = nil
       end
     end
@@ -878,7 +878,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
       for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
         countHashKeys = countHashKeys + 1
       end
-      kong.log.debug("pluginConfigure: End #entityLoader.hashKeys=" .. tostring(countHashKeys))
+      kong.log.debug("pluginConfigure: End #entityLoader.hashKeys=", tostring(countHashKeys))
 
       -- DEBUG only: Get the number of Pointers Cache table and the numbers that will be deleted on next Configure phase
       countPointersCache = 0
@@ -887,12 +887,12 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
         if v.pluginType == pluginType then
           countPointersCache = countPointersCache + 1
           if v.toBeDeleted == true then
-            kong.log.debug("pluginConfigure for Saxon, pluginId=" .. k .. " mark as deleted in the cache")  
+            kong.log.debug("pluginConfigure for Saxon, pluginId=", k, " mark as deleted in the cache")
             countPointersCacheTBD = countPointersCacheTBD + 1
           end
         end
       end
-      kong.log.debug("pluginConfigure for Saxon, #Pointers_Cache_tables=" .. countPointersCache .. " #Marked_as_deleted="..countPointersCacheTBD)
+      kong.log.debug("pluginConfigure for Saxon, #Pointers_Cache_tables=", countPointersCache, " #Marked_as_deleted=", countPointersCacheTBD)
     end
   end
 end
@@ -979,7 +979,7 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, cacheTTL, filePa
   local contentFile
   local soapFaultCode = xmlgeneral.soapFaultCodeServer
   
-  kong.log.debug ("XSLT transformation, BEGIN: " .. XMLtoTransform)
+  kong.log.debug ("XSLT transformation, BEGIN: ", XMLtoTransform)
 
   -- If the Pointers cache table is not initialized, return an error
   if not (  kong.xmlSoapSaxonPtrCache.plugins[pluginId] and 
@@ -1061,9 +1061,9 @@ function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, cacheTTL, filePa
   end
   
   if errMessage == nil then
-    kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
+    kong.log.debug ("XSLT transformation, END: ", xml_transformed_dump)
   else
-    kong.log.debug ("XSLT transformation, END with error: " .. errMessage)
+    kong.log.debug ("XSLT transformation, END with error: ", errMessage)
   end
   
   return xml_transformed_dump, errMessage, soapFaultCode
@@ -1082,8 +1082,8 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, cacheTTL, filePath
   local xml_transformed_dump  = ""
   local xmlNodePtrRoot        = nil
   local soapFaultCode         = xmlgeneral.soapFaultCodeServer
-  
-  kong.log.debug("XSLT transformation, BEGIN: " .. XMLtoTransform)
+
+  kong.log.debug("XSLT transformation, BEGIN: ", XMLtoTransform)
   
   -- If it's the Request Plugin
   if pluginType == xmlgeneral.RequestTypePlugin then
@@ -1178,7 +1178,7 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, cacheTTL, filePath
 
         -- Remove empty Namespace (example: xmlns="") added by XSLT library or transformation 
         xml_transformed_dump = xml_transformed_dump:gsub(' xmlns=""', '')
-        kong.log.debug ("XSLT transformation, END: " .. xml_transformed_dump)
+        kong.log.debug ("XSLT transformation, END: ", xml_transformed_dump)
       else
         errMessage = "error calling 'xmlC14NDocSaveTo'"
       end
@@ -1188,7 +1188,7 @@ function xmlgeneral.XSLTransform_libxlt(pluginType, pluginId, cacheTTL, filePath
   end
   
   if errMessage ~= nil then
-    kong.log.debug ("XSLT transformation, END with error: " .. errMessage)
+    kong.log.debug ("XSLT transformation, END with error: ", errMessage)
   end
 
   -- xmlCleanupParser()
@@ -1230,7 +1230,7 @@ function xmlgeneral.XSLTransform(pluginType, pluginId, cacheTTL, filePathPrefix,
                                                                                        XSLT,
                                                                                        verbose)
   else
-    kong.log.err("XSLTransform: unknown library " .. xsltLibrary)
+    kong.log.err("XSLTransform: unknown library ", xsltLibrary)
   end
   return xml_transformed_dump, errMessage, soapFaultCode
 end
@@ -1353,7 +1353,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
   local index            = 0
   local soapFaultCode    = xmlgeneral.soapFaultCodeServer
 
-  kong.log.debug("WSDL Validation, BEGIN PluginType:"..pluginType.." child:"..child .. " prefetch:"..tostring(prefetch) .. " async:"..tostring(async))
+  kong.log.debug("WSDL Validation, BEGIN PluginType:", pluginType, " child:", child, " prefetch:", tostring(prefetch), " async:", tostring(async))
   
   -- If we have a WDSL file, we retrieve the '<wsdl:types>' Node AND the '<xs:schema>' child nodes 
   --   OR
@@ -1424,7 +1424,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
     local cacheOk = true
     -- If there is no XSD definitions it means that the WSDL is not compiled yet
     if not next(cacheWSDL.XSDs) then
-      kong.log.debug ("WSDL Validation, 'configure' phase has been triggered or caching TTL ("..(cacheTTL or 'nil').." s) is reached, so re-compile the WSDL")
+      kong.log.debug ("WSDL Validation, 'configure' phase has been triggered or caching TTL (", (cacheTTL or 'nil')," s) is reached, so re-compile the WSDL")
     else
       -- Check that all XSD pointers are correctly compiled in the cache
       for k, cacheXSD in pairs (cacheWSDL.XSDs) do
@@ -1513,7 +1513,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
       while currentNode ~= ffi.NULL and not typesNodeFound do
         if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and 
           currentNode.name ~= ffi.NULL then
-          kong.log.debug ("currentNode.name: '" .. ffi.string(currentNode.name) .. "'")
+          kong.log.debug ("currentNode.name: '", ffi.string(currentNode.name), "'")
           nodeName = ffi.string(currentNode.name)
           if nodeName == "types" then
             typesNodeFound = true
@@ -1557,7 +1557,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
         if nodeName == "schema" then        
           index = index + 1
           xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, currentNode, 1, 1)
-          kong.log.debug ("Cache/Prefetch - schema #" .. index .. ", length: " .. #xsdSchema .. ", dump: " .. xsdSchema)
+          kong.log.debug ("Cache/Prefetch - schema #", index, ", length: ", #xsdSchema, ", dump: ", xsdSchema)
           
           -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
           xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)
@@ -1614,12 +1614,12 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
       -- Find the right XSD (in the WSDL) for validating the XML
       for index,value in pairs(cacheWSDL.XSDs) do
         
-        kong.log.debug ("Validation for schema #" .. index)
+        kong.log.debug ("Validation for schema #", index)
 
         errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)
         
         local msgDebug = errMessage or "Ok"
-        kong.log.debug ("Validation for schema #" .. index .. " RC_Message: '" .. msgDebug .. "'")
+        kong.log.debug ("Validation for schema #", index, " RC_Message: '", msgDebug, "'")
 
         -- If there is a Match between the Operation Name (of XML) and the XSD
         --   or
@@ -1672,8 +1672,8 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
   else
     schemaType = "API"
   end
-  
-  kong.log.debug("XSD Validation for '".. schemaType.. "', BEGIN PluginType: "..pluginType .." prefetch:"..tostring(prefetch).." async:"..tostring(async))
+
+  kong.log.debug("XSD Validation for '", schemaType, "', BEGIN PluginType: ", pluginType, " prefetch:", tostring(prefetch), " async:", tostring(async))
 
   -- If it's the Request Plugin
   if pluginType == xmlgeneral.RequestTypePlugin then
@@ -1713,7 +1713,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
     -- If 'configure' phase has been triggered or TTL is reached => let's create the XSD cache table
     elseif not ptrsCacheTable.WSDLs[child].XSDs[indexXSD] then
       ptrsCacheTable.WSDLs[child].XSDs[indexXSD] = {}
-      kong.log.debug ("XSD Validation, 'configure' phase has been triggered or caching TTL ("..(cacheTTL or 'nil').." s) is reached, so re-compile the XSD")
+      kong.log.debug ("XSD Validation, 'configure' phase has been triggered or caching TTL (", (cacheTTL or 'nil'), " s) is reached, so re-compile the XSD")
     else
       -- Get XSD pointers from the cache table
       cacheXSD = ptrsCacheTable.WSDLs[child].XSDs[indexXSD]
@@ -1806,7 +1806,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
       while currentNode ~= ffi.NULL and not bodyNodeFound do
         if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and
            currentNode.name ~= ffi.NULL then
-          kong.log.debug ("XSD validation - CurrentNode.name: " .. ffi.string(currentNode.name))
+          kong.log.debug ("XSD validation - CurrentNode.name: ", ffi.string(currentNode.name))
           nodeName = ffi.string(currentNode.name)
           if nodeName == "Body" then
             bodyNodeFound = true
@@ -1829,7 +1829,9 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
       
       if xmlNodePtrChildWS ~= ffi.NULL and tonumber(xmlNodePtrChildWS.type) == ffi.C.XML_ELEMENT_NODE then
         -- Dump in a String the WebService part
-        kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrChildWS, 1, 1))
+        if kong.configuration.log_level == "debug" then
+          kong.log.debug ("XSD validation ", schemaType, " part: '", libxml2ex.xmlNodeDump(xml_doc, xmlNodePtrChildWS, 1, 1), "'")
+        end
         -- Check validity of One element with its XSD schema
         is_valid, errMessage = libxml2ex.xmlSchemaValidateOneElement (validation_context, xmlNodePtrChildWS, verbose)        
       else
@@ -1839,8 +1841,9 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
       -- Get Root Element, which is <soap:Envelope>
       local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
       if xmlNodePtrRoot ~= ffi.NULL then
-        kong.log.debug ("XSD validation ".. schemaType .." part: " .. libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1))
-        
+        if kong.configuration.log_level == "debug" then
+          kong.log.debug ("XSD validation ", schemaType, " part: '", libxml2ex.xmlNodeDump	(xml_doc, xmlNodePtrRoot, 1, 1), "'")
+        end
         -- Check validity of XML with its XSD schema
         is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)        
 
@@ -1858,7 +1861,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
   end
     
   if not errMessage and is_valid == 0 then
-    kong.log.debug ("XSD validation of " ..schemaType.. " schema: Ok, END")
+    kong.log.debug ("XSD validation of ", schemaType, " schema: Ok, END")
   elseif errMessage then
     -- If 'is_valid' returns a 'No matching global declaration available for the validation root' => returns false (wrong schema)
     -- Else => returns true that indicates that the right schema has been found
@@ -1867,11 +1870,11 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
     else 
       XMLXSDMatching = true
     end
-    kong.log.debug ("XSD validation of " ..schemaType.. " RC: " ..is_valid..
-                    " matching of XML and XSD: " .. tostring (XMLXSDMatching) .. ", schema: Ko, " .. errMessage .. ", END")
+    kong.log.debug ("XSD validation of ", schemaType, " RC: ", is_valid,
+                    " matching of XML and XSD: ", tostring (XMLXSDMatching), ", schema: Ko, ", errMessage, ", END")
   else
     errMessage = "Ko"
-    kong.log.debug ("XSD validation of " .. schemaType .. " schema: " .. errMessage .. ", END")
+    kong.log.debug ("XSD validation of ", schemaType, " schema: ", errMessage, ", END")
   end
 
   return errMessage, XMLXSDMatching, soapFaultCode
@@ -2042,10 +2045,10 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
   end
   
   if not errMessage then
-      kong.log.debug("getSOAPActionFromWSDL: NameSpaces found: WSDL='" .. (wsdlNS1_1 or wsdlNS2_0 or 'nil') .. 
-    "', WS-Addressing_Metadata='" .. (wsamNS or 'nil') .. 
-    "', SOAP1.1='" .. (wsdlNS_SOAP1_1 or 'nil') .. 
-    "', SOAP1.2='" .. (wsdlNS_SOAP1_2 or 'nil') .. "'")
+      kong.log.debug("getSOAPActionFromWSDL: NameSpaces found: WSDL='", (wsdlNS1_1 or wsdlNS2_0 or 'nil'), 
+    "', WS-Addressing_Metadata='", (wsamNS or 'nil'), 
+    "', SOAP1.1='", (wsdlNS_SOAP1_1 or 'nil'), 
+    "', SOAP1.2='", (wsdlNS_SOAP1_2 or 'nil'), "'")
   end
 
   -- Create ParserContext and XPathNewContext
@@ -2206,6 +2209,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
     object = libxml2.xmlXPathEvalExpression(xpathReqRequired, context)    
 
     errXPathSoapAction = " | XPath expression='".. xpathReqRequired.. "'"
+    
     if object ~= ffi.NULL then
       -- If we found the XPath element
       if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then
@@ -2214,14 +2218,14 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
         else
           wsdlRequired_Value = false
         end
-        kong.log.debug("getSOAPActionFromWSDL: 'soapActionRequired' found in the WSDL: '" ..tostring(wsdlRequired_Value).."'")
+        kong.log.debug("getSOAPActionFromWSDL: 'soapActionRequired' found in the WSDL: '", tostring(wsdlRequired_Value), "'")
       else
         -- As the attribute is optional, there is no error
-        kong.log.debug("getSOAPActionFromWSDL: the optional 'xpathReqRequired' attribute is not found" .. errXPathSoapAction)
+        kong.log.debug("getSOAPActionFromWSDL: the optional 'xpathReqRequired' attribute is not found", (errXPathSoapAction or "nil"))
       end
     else
       errMessage = "Invalid XPath expression for 'soapActionRequired' attribute"
-      kong.log.err(errMessage .. errXPathSoapAction)
+      kong.log.err(errMessage, errXPathSoapAction)
     end
 
     if not errMessage then
@@ -2238,14 +2242,14 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
         
         -- If 'soapAction' attribute has a content
         if wsdlSoapAction_Value and wsdlSoapAction_Value ~= '' then
-          kong.log.debug("getSOAPActionFromWSDL: 'soapAction' found in the WSDL: '" .. wsdlSoapAction_Value .. "'")
+          kong.log.debug("getSOAPActionFromWSDL: 'soapAction' found in the WSDL: '", wsdlSoapAction_Value, "'")
         else
           errMessage = "Unable to get the value of '"..wsdlNS_SOAP..":operation soapAction' attribute in the WSDL linked with '" ..request_OperationName.. "' Operation name"
-          kong.log.err(errMessage ..  errXPathSoapAction)
+          kong.log.err(errMessage,  errXPathSoapAction)
         end
       else
         errMessage = "Invalid XPath expression for 'soapAction'"
-        kong.log.err(errMessage .. errXPathSoapAction)
+        kong.log.err(errMessage, errXPathSoapAction)
       end
     end
 
@@ -2270,14 +2274,14 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
       -- If 'Action' attribute has a content
       if wsdlSoapAction_Value and wsdlSoapAction_Value ~= '' then        
         wsdl2_0_ActionFound = true
-        kong.log.debug("getSOAPActionFromWSDL: 'Action' found in the WSDL: '" .. wsdlSoapAction_Value .. "'")
+        kong.log.debug("getSOAPActionFromWSDL: 'Action' found in the WSDL: '", wsdlSoapAction_Value, "'")
       else
         -- Here it's not an error because 'Action' attribute is optional
-        kong.log.debug("getSOAPActionFromWSDL: No 'Action' attribute in the WSDL linked with '" ..request_OperationName.. "' Operation name" .. errXPathSoapAction .. ". Apply the default 'Action' pattern")
+        kong.log.debug("getSOAPActionFromWSDL: No 'Action' attribute in the WSDL linked with '", request_OperationName, "' Operation name", errXPathSoapAction, ". Apply the default 'Action' pattern")
       end      
     else
       errMessage = "Invalid XPath expression 'Action'"
-      kong.log.err(errMessage .. errXPathSoapAction)
+      kong.log.err(errMessage, errXPathSoapAction)
     end
     -- If the Action is not found: apply the 'Default Action Pattern for WSDL 2.0'
     if not errMessage and not wsdl2_0_ActionFound then
@@ -2340,10 +2344,10 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
           errMessage = "Invalid XPath expression for 'pattern' attribute" .. errXPathSoapAction
         end
       end
-      kong.log.debug( "getSOAPActionFromWSDL: Names and Attributes found in WSDL for 'Default Action Pattern for WSDL':" ..
-      "', targetNamespace='" .. (targetNamespace or 'nil') .. 
-      "', interface='"       .. (interfaceName or 'nil') .. 
-      "', pattern='"         .. (pattern or 'nil') .. "'")
+      kong.log.debug( "getSOAPActionFromWSDL: Names and Attributes found in WSDL for 'Default Action Pattern for WSDL':",
+      "', targetNamespace='", (targetNamespace or 'nil'),
+      "', interface='"      , (interfaceName or 'nil'), 
+      "', pattern='"        , (pattern or 'nil'), "'")
 
       if not errMessage then
         local delimiter
@@ -2539,7 +2543,7 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, cacheTTL, filePathPrefi
       currentNode = libxml2.xmlFirstElementChild(currentNode)
       if currentNode ~= ffi.NULL and tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
         request_OperationName = ffi.string(currentNode.name)
-        kong.log.debug("validate 'SOAPAction' Header - Found in SOAP Request: operationName=" .. request_OperationName)
+        kong.log.debug("validate 'SOAPAction' Header - Found in SOAP Request: operationName=", request_OperationName)
       else
         errMessage = "Unable to find the Operation Name inside 'Body' tag"
       end
@@ -2577,7 +2581,7 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, cacheTTL, filePathPrefi
   end
   
   if not errMessage then
-    kong.log.debug("validate 'SOAPAction' Header - Successful validation of '" .. (SOAPAction_Header_Value or '') .. "' value")  
+    kong.log.debug("validate 'SOAPAction' Header - Successful validation of '", (SOAPAction_Header_Value or ''), "' value")  
   else
     errMessage = "Validation of 'SOAPAction' header: " .. errMessage
     kong.log.debug (errMessage)
@@ -2598,7 +2602,7 @@ function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLtoSearch, XPathRegister
   local errMessage      = nil
   local ptrsCacheTable  = nil
 
-  kong.log.debug("RouteByXPath, XMLtoSearch: " .. XMLtoSearch)
+  kong.log.debug("RouteByXPath, XMLtoSearch: ", XMLtoSearch)
   
   -- Get the Pointers table from Cache
   ptrsCacheTable, errMessage = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, xmlgeneral.RequestTypePlugin)
@@ -2645,7 +2649,7 @@ function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLtoSearch, XPathRegister
   
   if not errMessage then
     -- Register NameSpace(s)
-    kong.log.debug("XPathRegisterNs length: " .. #XPathRegisterNs)
+    kong.log.debug("XPathRegisterNs length: ", #XPathRegisterNs)
     
     -- Go on each NameSpace definition
     for i = 1, #XPathRegisterNs do
@@ -2661,7 +2665,7 @@ function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLtoSearch, XPathRegister
         rc = libxml2.xmlXPathRegisterNs(context, prefix, uri)
       end
       if rc then
-        kong.log.debug("RouteByXPath, successful registering NameSpace for '" .. XPathRegisterNs[i] .. "'")
+        kong.log.debug("RouteByXPath, successful registering NameSpace for '", XPathRegisterNs[i], "'")
       else
         errMessage = "RouteByXPath, failure registering NameSpace for '" .. XPathRegisterNs[i] .. "'"
         kong.log.err(errMessage)
@@ -2673,14 +2677,14 @@ function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLtoSearch, XPathRegister
     -- Go on each Route XPath Target
     for i, RouteXPathTarget in pairs(RouteXPathTargets) do
       
-      kong.log.debug ("RouteByXPath: XPath expression: '"..RouteXPathTarget.XPath.."'")
+      kong.log.debug ("RouteByXPath: XPath expression: '", RouteXPathTarget.XPath, "'")
       local object = libxml2.xmlXPathEvalExpression(RouteXPathTarget.XPath, context)
       if object ~= ffi.NULL then
         
         -- If we found the XPath element
         if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then        
             local nodeContent = libxml2.xmlNodeGetContent(object.nodesetval.nodeTab[0])
-            kong.log.debug("libxml2.xmlNodeGetContent: " .. nodeContent)
+            kong.log.debug("libxml2.xmlNodeGetContent: ", (nodeContent or "nil"))
             if nodeContent == RouteXPathTarget.XPathCondition then
               rcXpath = i
               break
@@ -2695,9 +2699,9 @@ function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLtoSearch, XPathRegister
   end
 
   if rcXpath > 0 then
-    kong.log.debug ("RouteByXPath: Ok, "..
-                    "with XPath='" ..RouteXPathTargets[rcXpath].XPath.. 
-                    "' and XPathCondition='" ..RouteXPathTargets[rcXpath].XPathCondition.."'")
+    kong.log.debug ("RouteByXPath: Ok, ",
+                    "with XPath='", RouteXPathTargets[rcXpath].XPath,
+                    "' and XPathCondition='", RouteXPathTargets[rcXpath].XPathCondition, "'")
   else
     kong.log.debug ("RouteByXPath: Ko, not having the proper XPath expression or the right condition")
   end

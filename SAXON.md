@@ -221,9 +221,9 @@ The default SOAP 1.1 `Content-Type` is applied on the request: `text/xml; charse
 
 2) If the Kong Gateway Service called `calculator` exists, remove it
 
-3) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx
+3) Create a Kong Gateway Service named `calculator` with this URL: https://calculator.apim.eu/ws
 
-4) Create a Route on the Service `calculator` with the `path` value `/calculator`
+4) Create a Route on the Service `calculator` with the `path` value `/JSON_2_XML`
 
 5) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
@@ -276,7 +276,7 @@ The default SOAP 1.1 `Content-Type` is applied on the request: `text/xml; charse
 
 7) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
 ```sh
-http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
+http -v POST http://localhost:8000/JSON_2_XML operation=Add intA:=50 intB:=10
 ```
 ```
 Content-Type: application/json
@@ -314,7 +314,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 
 2) Create a Kong Gateway Service named `httpbin` with this URL: http://httpbin.apim.eu. A simple HTTP Request & Response REST API Service.
 
-3) Create a Route on the Service `httpbin` with the `path` value `/httpbin`
+3) Create a Route on the Service `httpbin` with the `path` value `/XML_2_JSON`
 
 4) Add `soap-xml-request-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseRequest` enabled
@@ -360,7 +360,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 
 5) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request
 ```xml
-http POST http://localhost:8000/httpbin/anything \
+http POST http://localhost:8000/XML_2_JSON/anything \
 Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <root>

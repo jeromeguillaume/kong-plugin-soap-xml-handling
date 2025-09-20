@@ -211,7 +211,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
         else
           query = ''
         end
-        kong.log.debug("Upstream changed successfully to " .. parsed.scheme .. "://" .. parsed.host .. ":" .. tonumber(port) .. path .. query)
+        kong.log.debug("Upstream changed successfully to ", parsed.scheme, "://", parsed.host, ":", tonumber(port), path, query)
       else
         kong.log.err("RouteByXPath: Unable to get scheme or host")
       end
@@ -228,12 +228,12 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     -- If the Request's 'Content-Type' is JSON and the soapEnvelopeTransformed type is XML
     if kong.ctx.shared.contentType.request == xmlgeneral.JSON and bodyContentType == xmlgeneral.XMLContentTypeBody then
       kong.service.request.set_header("Content-Type", xmlgeneral.SOAP1_1ContentType)
-      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML ("..xmlgeneral.SOAP1_1ContentType..")")
+      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from JSON to XML (", xmlgeneral.SOAP1_1ContentType, ")")
     -- Else If the Request's 'Content-Type' is XML and the soapEnvelopeTransformed type is JSON
     elseif kong.ctx.shared.contentType.request ~= xmlgeneral.JSON and bodyContentType == xmlgeneral.JSONContentTypeBody then
       -- Check if the body has been transformed to a JSON type, due to an XSLT transformation (SOAP/XML -> JSON)
       kong.service.request.set_header("Content-Type", xmlgeneral.JSONContentType)
-      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON ("..xmlgeneral.JSONContentType..")")
+      kong.log.debug("JSON<->XML Transformation: Change the Request's 'Content-Type' from XML to JSON (", xmlgeneral.JSONContentType, ")")
     else
       -- The Request 'Content-Type' is compatible with the Body
       kong.log.debug("JSON<->XML Transformation: Don't change the Request's 'Content-Type' as it's compatible with the Body type")

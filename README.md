@@ -1382,3 +1382,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped `saxon` Home Edition from v12.5 to v12.8
   - `saxon`: removed useless carriage returns in the event of error (corrupting JSON message)
   - Moved from `docker run` sample to `docker-compose` sample
+  - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value, the `kong.log` detects it and retuns a "nil" string)
