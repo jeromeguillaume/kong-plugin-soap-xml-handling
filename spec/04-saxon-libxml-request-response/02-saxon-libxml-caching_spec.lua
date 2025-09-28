@@ -15,6 +15,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 -- Force the number of Worker Process (for checking the cache behavior on the same worker)
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "1")
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+helpers.setenv("KONG_LOG_LEVEL", "debug")
+
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue
@@ -94,8 +97,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsltLibrary = caching_common.libsaxon,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsltTransformBefore = [[
-              xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+            xsltTransformBefore = [[xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
               </xsl:stylesheet>
             ]]
           }	
@@ -157,7 +159,7 @@ for _, strategy in helpers.all_strategies() do
 
       it("1+5|** Execute the same test (before TTL is exceeded): check that the XSLT definition is found in the cache **", function()
         -- clean the log file
-          helpers.clean_logfile()
+        helpers.clean_logfile()
 
         -- invoke a test request
         local r = client:post("/calculator_REQ_RES_XLST_with_xslt_Params_ok", {

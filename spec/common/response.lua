@@ -733,6 +733,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = false,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
+			ExternalEntityLoader_Timeout = 5,
 			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
 		}
 	}
@@ -748,6 +749,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = false,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
+			ExternalEntityLoader_Timeout = 5,
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
 		}
 	}
@@ -763,6 +765,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = true,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
+			ExternalEntityLoader_Timeout = 5,
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
 		}
 	}

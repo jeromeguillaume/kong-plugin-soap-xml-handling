@@ -29,6 +29,7 @@ ffi.cdef [[
 ]]
 
 local saxon4KongLib = nil
+local splitn = require("kong.tools.string").splitn
 
 libsaxon4kong.libName = "libsaxon-4-kong.so"
 libsaxon4kong.symbolNotFound = "Internal error. A symbol is not found in the Shared Object library"
@@ -156,12 +157,32 @@ function libsaxon4kong.getErrorMessage(context)
       err = ffi.string(errorMessage_ptr)
       saxon4KongLib.free(ffi.cast("char*", errorMessage_ptr))
       
-      -- If the last character is a 'New line' (or \n) character => remove it
-      if err:sub(#err, #err) == '\n' then
-        err = err:sub(1, -2)  
+      -- Workaround a SaxonC issue (https://saxonica.plan.io/issues/6894) 
+      --     => SaxonApiException adds multiple times the same error
+      -- If the 'splitn' function is defined
+      if splitn then        
+        local errArray = splitn(err, '\n')
+        local err2
+        -- Only take the 2 first parts of Err msg (separated by a return carriage)
+        for k, v in pairs(errArray) do
+          -- Trim leading and trailing spaces
+          v = v:match("^%s*(.-)%s*$")
+          if  k == 2 and v and #v > 0 then
+            err2 = err2 .. ". "  .. v
+            break
+          elseif k == 1 then
+            err2 = v
+          end
+        end
+        if err2 then
+          err = err2
+        end      
+      -- Else the 'splitn' function is not defined (for fomer Kong releases)
+      else
+        err = string.gsub(err, ".\n", ". ")
+        err = string.gsub(err, "\n", ". ")
       end
-      
-    end
+    end    
   end
   return err
 end
@@ -300,8 +321,6 @@ function libsaxon4kong.stylesheetInvokeTemplate (saxonProcessor, context, templa
   
   return xml_transformed, err
 end
-
-
 
 ---------------------------------------------------
 -- Transform the XML document with XSLT Stylesheet

@@ -937,6 +937,41 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_missing_intB_Add_Fa
   </soap:Body>
 </soap:Envelope>]]
 
+request_common.productsXSD = [[
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="root">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="products"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="products">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element maxOccurs="unbounded" ref="product"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="product">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="version"/>
+        <xs:element ref="releaseDate"/>
+        <xs:element ref="saas"/>
+        <xs:element ref="description"/>
+      </xs:sequence>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="version" type="xs:integer"/>
+  <xs:element name="releaseDate" type="xs:string"/>
+  <xs:element name="saas" type="xs:boolean"/>
+  <xs:element name="description" type="xs:string"/>
+</xs:schema>
+]]
+
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
 -------------------------------------------------------------------------------
@@ -1533,6 +1568,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
+			ExternalEntityLoader_Timeout = 5,
 			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
 		}
 	}
@@ -1548,6 +1584,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseRequest = false,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
+			ExternalEntityLoader_Timeout = 5,
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
 		}
 	}
@@ -1562,6 +1599,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 15,
 			ExternalEntityLoader_Async = true,
+			ExternalEntityLoader_Timeout = 5,
 			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
 		}
 	}
@@ -1685,6 +1723,39 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsdApiSchemaInclude = {
 				["http://localhost:9000/tempuri.org.req.res.add.xsd"] = request_common.calculator_Request_Response_Add_XSD_VALIDATION
 			},
+		}
+	}
+
+	local local_products_req_termination_route = blue_print.routes:insert{
+		paths = { "/local_products_req_termination" }
+	}
+	blue_print.plugins:insert {
+		name = "request-termination",
+		route = local_products_req_termination_route,
+		config = {
+			status_code = 200,
+			content_type = "text/xml;charset=utf-8",
+			body = "<message>Ok</message>"
+		}	
+	}
+	local products_local_service = blue_print.services:insert({
+		protocol = "http",
+		host = "localhost",
+		port = 9000,
+		path = "/local_products_req_termination",
+	})
+	
+	local productsXSD_large_body_16k_with_verbose_ko = blue_print.routes:insert{
+		service = products_local_service,
+		paths = { "/productsXSD_large_body_16k_with_verbose_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = productsXSD_large_body_16k_with_verbose_ko,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			xsdApiSchema = request_common.productsXSD,
 		}
 	}
 
@@ -2503,6 +2574,25 @@ function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_an
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches('<SubtractResult>4</SubtractResult>', body)
+end
+
+function request_common._2_XSD_Validation_large_body_16k_with_verbose_ko (assert, client)
+	
+	local products_soapEnv_16k = helpers.file.read("/kong-plugin/spec/fixtures/products/2-products-soapEnv-16k.xml")
+
+	-- invoke a test request
+	local r = client:post("/productsXSD_large_body_16k_with_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = products_soapEnv_16k,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('Unable to get the body request. See logs for more details', body)
 end
 
 return request_common

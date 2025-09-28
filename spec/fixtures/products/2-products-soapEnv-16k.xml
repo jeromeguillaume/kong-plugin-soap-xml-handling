@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <root>
+      <products>
+        <product name="product0000">
+          <version>0000</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0000-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0001">
+          <version>0001</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0001-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0002">
+          <version>0002</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0002-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0003">
+          <version>0003</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0003-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0004">
+          <version>0004</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0004-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0005">
+          <version>0005</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0005-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0006">
+          <version>0006</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0006-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0007">
+          <version>0007</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0007-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0008">
+          <version>0008</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0008-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0009">
+          <version>0009</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0009-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0010">
+          <version>0010</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0010-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0011">
+          <version>0011</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0011-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0012">
+          <version>0012</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0012-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0013">
+          <version>0013</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0013-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0014">
+          <version>0014</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0014-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0015">
+          <version>0015</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0015-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0016">
+          <version>0016</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0016-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0017">
+          <version>0017</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0017-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0018">
+          <version>0018</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0018-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0019">
+          <version>0019</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0019-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0020">
+          <version>0020</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0020-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0021">
+          <version>0021</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0021-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0022">
+          <version>0022</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0022-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0023">
+          <version>0023</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0023-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0024">
+          <version>0024</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0024-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0025">
+          <version>0025</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0025-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0026">
+          <version>0026</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0026-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0027">
+          <version>0027</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0027-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0028">
+          <version>0028</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0028-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0029">
+          <version>0029</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0029-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0030">
+          <version>0030</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0030-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0031">
+          <version>0031</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0031-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0032">
+          <version>0032</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0032-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0033">
+          <version>0033</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0033-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0034">
+          <version>0034</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0034-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0035">
+          <version>0035</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0035-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0036">
+          <version>0036</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0036-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0037">
+          <version>0037</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0037-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0038">
+          <version>0038</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0038-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0039">
+          <version>0039</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0039-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0040">
+          <version>0040</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0040-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0041">
+          <version>0041</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0041-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0042">
+          <version>0042</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0042-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0043">
+          <version>0043</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0043-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0044">
+          <version>0044</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0044-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0045">
+          <version>0045</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0045-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0046">
+          <version>0046</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0046-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0047">
+          <version>0047</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0047-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0048">
+          <version>0048</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0048-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+        <product name="product0049">
+          <version>0049</version>
+          <releaseDate>2025/01/01</releaseDate>
+          <saas>true</saas>
+          <description>0049-AAAAAAAAAAAAAAAAAAAA-BBBBBBBBBBBBBBBBBBBB-CCCCCCCCCCCCCCCCCCCC-DDDDDDDDDDDDDDDDDDDD-EEEEEEEEEEEEEEEEEEEE</description>
+        </product>
+      </products>
+    </root>
+  </soap:Body>
+</soap:Envelope>

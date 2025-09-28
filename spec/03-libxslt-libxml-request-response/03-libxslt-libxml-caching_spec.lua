@@ -14,6 +14,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 -- Force the number of Worker Process (for checking the cache behavior on the same worker)
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "1")
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+helpers.setenv("KONG_LOG_LEVEL", "debug")
+
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue
@@ -910,8 +913,8 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
       end)
-      
-      it("2+6|SOAP 1.2 - XSD Validation (SOAP 1.2 env) with import Async download - Ok", function()
+
+      it("2+6|** Execute the same test: check that the SOAP 1.2 XSD definitions are compiled again (due to Asynchronous) **", function()
         -- clean the log file
         helpers.clean_logfile()
 
@@ -933,9 +936,8 @@ for _, strategy in helpers.all_strategies() do
         -- Plugin Request/Response: Check in the log that the XSD definition was compiled due to Asynchronous download
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
-        
       end)
-      
+        
       it("2|XSD Validation - Invalid SOAP XSD input", function()
         -- clean the log file
         helpers.clean_logfile()

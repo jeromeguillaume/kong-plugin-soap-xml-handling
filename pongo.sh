@@ -24,7 +24,7 @@
 pongo up
 
 # Run pongo tests by using the code of plugins stored locally
-#KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.10.0.1-1.4.0-12.5 pongo run --lpath=$PWD/spec/common
+#KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8 pongo run --lpath=$PWD/spec/common
 
 # Run pongo tests by using the code of plugins included in the Docker image
-KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.10.0.1-1.4.0-12.5 pongo run
+KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8 pongo run

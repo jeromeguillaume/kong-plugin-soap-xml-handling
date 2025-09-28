@@ -32,7 +32,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 1. [Information and Recommendation](#information_recommendation)
 2. [Configuration Reference](#configuration_reference)
 3. [How to deploy SOAP/XML Handling plugins](#deployment)
-    1. [Docker](#docker)
+    1. [Docker Compose](#docker_compose)
     2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
     3. [Schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
     4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
@@ -71,6 +71,7 @@ The XML definitions (for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`) can be
 Example for `config.xsdApiSchema`:
   - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
   - File WSDL definition: `/usr/local/apiclient.wsdl`
+    - The file name must not include space or tabulation
 
 The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
@@ -78,6 +79,7 @@ The user is in charge of putting the XML definition files on the Kong Gateway fi
 WSDL and XSD definitions can import other definitions by using `<import>` tag:
   - URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
   - File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
+    - The file name must not include space or tabulation
 
 The plugins manage both types of import:
   - URL (`http(s)://`): the plugins synchronously or asynchronously download the definition
@@ -107,6 +109,9 @@ The External entities are processed in this order:
     1) Use the File definition (in case of high number of `soap-xml-handling` plugins)
     2) Put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
     3) Use External Entities URL (and choose the type of download: Synchronous or Asynchronous)
+
+3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request. The default value is `8k`. The response body isn't concerned and it has no limit.
+    - In the event the request body size is reached, an error is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
 
 ### Error management
 In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
@@ -151,22 +156,25 @@ If `Verbose` is enabled:
 
 ## How to deploy SOAP/XML Handling plugins
 
-<a id="docker"></a>
+<a id="docker_compose"></a>
 
-###  How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker
+###  How to deploy SOAP/XML Handling plugins in Kong Gateway (standalone) | Docker Compose
 1) Do a Git Clone of this repo
 ```sh
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
-2) Create and prepare a PostgreDB called `kong-database-soap-xml-handling`.
-[See documentation](https://docs.konghq.com/gateway/latest/install/docker/#prepare-the-database)
-3) Provision a license of Kong Enterprise Edition and put the content in `KONG_LICENSE_DATA` environment variable. The following license is only an example. You must use the following format, but provide your own content
+2) Provision a license of Kong Enterprise Edition and put the content in `KONG_LICENSE_DATA` environment variable. The following license is only an example. You must use the following format, but provide your own content
 ```sh
  export KONG_LICENSE_DATA='{"license":{"payload":{"admin_seats":"1","customer":"Example Company, Inc","dataplanes":"1","license_creation_date":"2023-04-07","license_expiration_date":"2023-04-07","license_key":"00141000017ODj3AAG_a1V41000004wT0OEAU","product_subscription":"Konnect Enterprise","support_plan":"None"},"signature":"6985968131533a967fcc721244a979948b1066967f1e9cd65dbd8eeabe060fc32d894a2945f5e4a03c1cd2198c74e058ac63d28b045c2f1fcec95877bd790e1b","version":"1"}}'
 ```
-4) Start the standalone Kong Gateway
+2) Go to the root directory for having access to [`docker-compose.yml`](/docker-compose.yml). Pay attention to [`.env`](/.env) file for Docker Compose configuration: architecture (arm64/amd64) and current direcory
 ```sh
-./start-kong.sh
+cd ./kong-plugin-soap-xml-handling
+```
+
+3) Start the standalone Kong Gateway with a PostgreSQL
+```sh
+docker-compose up -d
 ```
 <a id="Konnect_CP_for_Kong_Gateway"></a>
 
@@ -1100,7 +1108,7 @@ The plugin applies an XSLT Transformation on XML request by using `<xsl:param>` 
 - `<intB>` value transformed to `3333`
 - `<Username>` value transformed to `KongUser` referenced in a Vault `{vault://env/soap-username}`
 - `<Password>` value transformed to `KongP@sswOrd!` referenced in a Vault `{vault://env/soap-password}`
-0) Add the following environment variables at the Kong Linux level, for instance for a Docker deployment (see [start-kong.sh](start-kong.sh)):
+0) Add the following environment variables at the Kong Linux level, for instance for a Docker Compose deployment (see [docker-compose.yml](docker-compose.yml)):
 ```sh
 -e "SOAP_USERNAME=KongUser" \
 -e "SOAP_PASSWORD=KongP@sswOrd!" \
@@ -1373,3 +1381,9 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Check that if `SOAPAction_Header` is enabled the `xsdApiSchema` is also defined
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`
+- v1.4.1
+  - Detect the usage of a large body request greater than `KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE` and avoid a Lua `unexpected error occurred`
+  - Bumped `saxon` Home Edition from v12.5 to v12.8
+  - `saxon`: removed useless carriage returns in the event of error (corrupting JSON message)
+  - Moved from `docker run` sample to `docker compose` sample
+  - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value the `kong.log` detects it and retuns a `nil` string)

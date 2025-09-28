@@ -1,41 +1,53 @@
-FROM kong/kong-gateway:3.10.0.1 AS base
+FROM kong/kong-gateway:3.11.0.2 AS base
 
 USER root
-RUN apt-get update && apt-get install -y build-essential zsh unzip
+RUN apt-get update && apt-get install -y build-essential zsh unzip cmake
 
 #########################
 # ARM64
 #########################
 FROM --platform=linux/arm64 base AS build_arm64
-COPY ./saxon/zip/libsaxon-HEC-linux-aarch64-v12.5.0.zip /
+COPY ./saxon/zip/SaxonCHE-linux-aarch64-12-8-0.zip /
 
-RUN unzip libsaxon-HEC-linux-aarch64-v12.5.0.zip
-RUN rm /libsaxon-HEC-linux-aarch64-v12.5.0.zip
-RUN mv /libsaxon-HEC-linux-aarch64-v12.5.0/libs/nix/libsaxon-hec-12.5.0.so /usr/local/lib/
+RUN unzip SaxonCHE-linux-aarch64-12-8-0.zip -d /
+RUN rm /SaxonCHE-linux-aarch64-12-8-0.zip
 
-COPY ./saxon/kong-adapter-makefile libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/Makefile
-COPY ./saxon/kong-adapter.cpp libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/
+RUN mkdir -p /SaxonCHE-linux-aarch64-12-8-0/kong/build
+RUN mkdir -p /SaxonCHE-linux-aarch64-12-8-0/kong/src
+WORKDIR /SaxonCHE-linux-aarch64-12-8-0/kong
+COPY ./saxon/CMakeLists.txt .
+COPY ./saxon/kong-adapter.cpp ./src
 
-RUN cd libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API && make 
-RUN cp libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/libsaxon-4-kong.so /usr/local/lib &&\
-    rm -rf libsaxon-HEC-linux-aarch64-v12.5.0
+WORKDIR /SaxonCHE-linux-aarch64-12-8-0/kong/build
+RUN cmake ..
+RUN cmake --build .  -- VERBOSE=1
+RUN mkdir /usr/local/lib/arm64
+RUN cp ./libsaxon-4-kong.so /usr/local/lib/arm64 &&\
+    rm -rf SaxonCHE-linux-aarch64-12-8-0
+RUN cp /SaxonCHE-linux-aarch64-12-8-0/SaxonCHE/lib/libsaxonc* /usr/local/lib/arm64
 
 #########################
 # AMD64
 #########################
 FROM --platform=linux/amd64 base AS build_amd64
-COPY ./saxon/zip/libsaxon-HEC-linux-x86_64-v12.5.0.zip /
+COPY ./saxon/zip/SaxonCHE-linux-x86_64-12-8-0.zip /
 
-RUN unzip libsaxon-HEC-linux-x86_64-v12.5.0.zip && \
-    rm /libsaxon-HEC-linux-x86_64-v12.5.0.zip && \
-    mv /libsaxon-HEC-linux-amd64-v12.5.0/libs/nix/libsaxon-hec-12.5.0.so /usr/local/lib/
+RUN unzip SaxonCHE-linux-x86_64-12-8-0.zip -d /
+RUN rm /SaxonCHE-linux-x86_64-12-8-0.zip
 
-COPY ./saxon/kong-adapter-makefile libsaxon-HEC-linux-amd64-v12.5.0/Saxon.C.API/Makefile
-COPY ./saxon/kong-adapter.cpp libsaxon-HEC-linux-amd64-v12.5.0/Saxon.C.API/
+RUN mkdir -p /SaxonCHE-linux-x86_64-12-8-0/kong/build
+RUN mkdir -p /SaxonCHE-linux-x86_64-12-8-0/kong/src
+WORKDIR /SaxonCHE-linux-x86_64-12-8-0/kong
+COPY ./saxon/CMakeLists.txt .
+COPY ./saxon/kong-adapter.cpp ./src
 
-RUN cd libsaxon-HEC-linux-amd64-v12.5.0/Saxon.C.API && make
-RUN cp libsaxon-HEC-linux-amd64-v12.5.0/Saxon.C.API/libsaxon-4-kong.so /usr/local/lib && \
-    rm -rf /libsaxon-HEC-linux-amd64-v12.5.0
+WORKDIR /SaxonCHE-linux-x86_64-12-8-0/kong/build
+RUN cmake ..
+RUN cmake --build .  -- VERBOSE=1
+RUN mkdir /usr/local/lib/amd64
+RUN cp ./libsaxon-4-kong.so /usr/local/lib/amd64 &&\
+    rm -rf SaxonCHE-linux-x86_64-12-8-0
+RUN cp /SaxonCHE-linux-x86_64-12-8-0/SaxonCHE/lib/libsaxonc* /usr/local/lib/amd64
 
 #########################
 # Final BUILD

@@ -138,9 +138,9 @@ for _, strategy in helpers.all_strategies() do
 				response_common._5_6_7_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (assert, client)
 			end)
 
-			it ("5+7|XSLT (AFTER XSD) - With xslt Params - Ok", function()
-				response_common._5_7_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
-			end)
+      it ("5+7|XSLT (AFTER XSD) - With xslt Params - Ok", function()
+			response_common._5_7_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
+      end)
 
       it("6|WSDL Validation with async download - Ok", function()
 				response_common._6_WSDL_Validation_with_async_download_Ok (assert, client)

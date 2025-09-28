@@ -1,6 +1,6 @@
 image:
   repository: jeromeguillaume/kong-soap-xml
-  tag: "3.10.0.1-1.4.0-12.5"
+  tag: "3.11.0.2-1.4.1-12.8"
 
 secretVolumes:
 - kong-cluster-cert

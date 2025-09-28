@@ -12,14 +12,14 @@ So the purpose is to integrate `Saxon HE` to Kong for XSLT Transformation only. 
 The `Saxon HE` for C/C++ (ie. [SaxonC-HE](https://www.saxonica.com/html/download/c.html)) library is not included in the [kong/kong-gateway](https://hub.docker.com/r/kong/kong-gateway) Enterprise Edition Docker image. For that: build your own Kong Docker images or use a Kubernetes initContainer.
 The `SaxonC` documentation is [here](https://www.saxonica.com/saxon-c/documentation12/index.html).
 
-Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~60MB.
+Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~100MB.
 
 ## Prerequisite: download the `SaxonC-HE` Zip package
-1) The `SaxonC-HE` v12.5.0 is used
+1) The `SaxonC-HE` v12.8.0 is used
 - Linux AArch64:
-[https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-aarch64-v12.5.0.zip)
+[https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-aarch64-12-8-0.zip](https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-aarch64-12-8-0.zip)
 - Linux Intel x86_64:
-[https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip](https://downloads.saxonica.com/SaxonC/HE/12/libsaxon-HEC-linux-x86_64-v12.5.0.zip)
+[https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-x86_64-12-8-0.zip](https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-x86_64-12-8-0.zip)
 - General download page:
 [here](https://www.saxonica.com/html/download/c.html)
 2) Fork this repository
@@ -28,34 +28,37 @@ Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with
 cd kong-plugin-soap-xml-handling/kong/saxon
 ```
 ## Extract/Build the `Saxon` Shared Objects and the Docker images
-- The `Saxon - Kong` integration requires 2 Shared Objects that are extracted and built with the `make` command:
-  - `libsaxon-hec-12.5.0.so`: C++ shared object extracted from `libsaxon-HEC-linux-<arch>-v12.5.0.zip`
+- The `Saxon - Kong` integration requires 2 types of Shared Objects that are extracted and built with the `make` command:
+  - `libsaxonc*`: C++ shared objects (example: `libsaxonc-core-he.so.12.8.0`) extracted  from `SaxonCHE-linux-<arch>-12-8-0.zip`
   - `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
-- Prerequisite
-  - Copy `libsaxon-HEC` zip files
+- Prerequisite: Unzip `SaxonCHE-linux` zip files
+```sh
+unzip ~/Downloads/SaxonCHE-linux-aarch64-12-8-0.zip -d /tmp
+unzip ~/Downloads/SaxonCHE-linux-x86_64-12-8-0.zip -d /tmp
+```
   - Copy inlude files (`.h`) for C/C++ syntax checking
 ```sh
-cd ./kong-plugin-soap-xml-handling/kong/saxon
-cp <Downloads>/libsaxon-HEC-linux-aarch64-v12.5.0.zip ./zip
-cp <Downloads>/libsaxon-HEC-linux-x86_64-v12.5.0.zip ./zip
+cd ./kong-plugin-soap-xml-handling/kong/saxon/include
+cp /tmp/SaxonCHE-linux-aarch64-12-8-0/SaxonCHE/include/*.h .
+cp /tmp/SaxonCHE-linux-aarch64-12-8-0/SaxonCHE/include/saxonc/*.h ./saxonc/
 ```
+  - Copy notices files (`.txt`) for licensing
 ```sh
-cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h ./include
-cp ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h ./include
-rm ./include/php8*
+cd ./kong-plugin-soap-xml-handling/kong/saxon/notices
+cp /tmp/SaxonCHE-linux-aarch64-12-8-0/notices/* .
 ```
-- Adapt the version of Kong image (example: `kong/kong-gateway:3.10.0.0`) in the following files:
+- Adapt the version of Kong image (example: `kong/kong-gateway:3.11.0.2`) in the following files:
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (example: `kong-saxon-local-lib:1.0.5-1.4.0-12.5`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong
 make
 ```
-- Build and Push on Docker Hub a `<your_docker_account>/kong-saxon` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
+- Build and Push on Docker Hub a `<your_docker_account>/kong-soap-xml` image. It's based on `kong/kong-gateway` and it includes the `saxon` libraries
 ```sh
 make kong_saxon_docker_hub
 ```
@@ -74,29 +77,26 @@ make kong_saxon_initcontainer_docker_hub
 ```
 
 ## Run `Kong` with `Saxon`
-### Run `Kong` with `Saxon` in Docker with the standard image: `kong/kong-gateway`
-- Include in your `docker run` command:
-  ```sh
-  docker run -d --name kong-gateway-soap-xml-handling \
-  ...
-  --mount type=bind,source="$(pwd)"/kong/saxon/conf,destination=/usr/local/lib/kongsaxon/conf \
-  --mount type=bind,source="$(pwd)"/kong/saxon/so/$ARCHITECTURE,destination=/usr/local/lib/kongsaxon \
-  -e "LD_LIBRARY_PATH=/usr/local/lib/kongsaxon" \
-  kong/kong-gateway:3.10.0.0
+### Run `Kong` with `Saxon` in Docker Compose and the standard image: `kong/kong-gateway`
+- Include in your `docker-compose` command:
+  ```yaml
+  image: 'kong/kong-gateway:3.11.0.2'
+  volumes:
+    - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
+  environment:
+    LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
   ```
 - Full example here: [start-kong.sh](start-kong.sh)
 
-### Run `Kong` with `Saxon` in Docker or Kubernetes with the customized image: `jeromeguillaume/kong-soap-xml`
+### Run `Kong` with `Saxon` in Docker Compose or Kubernetes with the customized image: `jeromeguillaume/kong-soap-xml`
 The image is based on `kong-gateway` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
-- Docker
-```sh
-docker run -d --name kong-gateway-soap-xml-handling \
-...
-jeromeguillaume/kong-soap-xml:3.10.0.0-1.4.0-12.5
+- Docker Compose
+```yaml
+  image: 'jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8'
 ```
 - Kubernetes:
   - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
-  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.10.0.0-1.4.0-12.5`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-soap-xml-initcontainer`
 The image is based on `Alpine` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries
@@ -124,7 +124,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.0-12.5
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.1-12.8
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
@@ -215,15 +215,15 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 
 The default SOAP 1.1 `Content-Type` is applied on the request: `text/xml; charset=utf-8`
 
-![Alt text](/images/Pipeline-Kong-JSON-to-XML-transformation.jpeg?raw=true "Kong - Execution pipeline: JSON to SOAP/XML transformation")
+![Alt text](https://raw.githubusercontent.com/jeromeguillaume/kong-plugin-soap-xml-handling/main/images/Pipeline-Kong-JSON-to-XML-transformation.jpeg?raw=true "Kong - Execution pipeline: JSON to SOAP/XML transformation")
 
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
 2) If the Kong Gateway Service called `calculator` exists, remove it
 
-3) Create a Kong Gateway Service named `calculator` with this URL: http://www.dneonline.com:80/calculator.asmx
+3) Create a Kong Gateway Service named `calculator` with this URL: https://calculator.apim.eu/ws
 
-4) Create a Route on the Service `calculator` with the `path` value `/calculator`
+4) Create a Route on the Service `calculator` with the `path` value `/JSON_2_XML`
 
 5) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
@@ -276,7 +276,7 @@ The default SOAP 1.1 `Content-Type` is applied on the request: `text/xml; charse
 
 7) Call the `calculator` through the Kong Gateway Route,  with a `JSON` request and by setting the operation to `Add`
 ```sh
-http -v POST http://localhost:8000/calculator operation=Add intA:=50 intB:=10
+http -v POST http://localhost:8000/JSON_2_XML operation=Add intA:=50 intB:=10
 ```
 ```
 Content-Type: application/json
@@ -309,12 +309,12 @@ You can change operation to the following values:
 Call the `httpbin` REST API by sending an `XML` request.
 The `soap-xml-request-handling` is in charge of transforming the XML request to a JSON request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the XML response to JSON.
 
-![Alt text](/images/Pipeline-Kong-XML-to-JSON-transformation.jpeg?raw=true "Kong - Execution pipeline: XML to JSON transformation")
+![Alt text](https://raw.githubusercontent.com/jeromeguillaume/kong-plugin-soap-xml-handling/main/images/Pipeline-Kong-XML-to-JSON-transformation.jpeg?raw=true "Kong - Execution pipeline: XML to JSON transformation")
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
 2) Create a Kong Gateway Service named `httpbin` with this URL: http://httpbin.apim.eu. A simple HTTP Request & Response REST API Service.
 
-3) Create a Route on the Service `httpbin` with the `path` value `/httpbin`
+3) Create a Route on the Service `httpbin` with the `path` value `/XML_2_JSON`
 
 4) Add `soap-xml-request-handling` plugin to `httpbin` and configure the plugin with:
 - `VerboseRequest` enabled
@@ -360,7 +360,7 @@ The `soap-xml-request-handling` is in charge of transforming the XML request to 
 
 5) Call the `httpbin` through the Kong Gateway Route,  with an `XML` request
 ```xml
-http POST http://localhost:8000/httpbin/anything \
+http POST http://localhost:8000/XML_2_JSON/anything \
 Content-Type:'text/xml; charset=utf-8' \
 --raw '<?xml version="1.0" encoding="utf-8"?>
 <root>
@@ -374,7 +374,7 @@ Content-Type:'text/xml; charset=utf-8' \
     <site>London</site>
     <site>Bangalore</site>
     <site>Singapore</site>
-    <site>Shangai</site>
+    <site>Shanghai</site>
     <site>Japan</site>
   </offices>
   <products>
@@ -423,7 +423,7 @@ Content-Type: application/json
         "London",
         "Bangalore",
         "Singapore",
-        "Shangai",
+        "Shanghai",
         "Japan"
       ]
     },
@@ -516,7 +516,7 @@ Content-Type: text/xml; charset=utf-8
     <site>London</site>
     <site>Bangalore</site>
     <site>Singapore</site>
-    <site>Shangai</site>
+    <site>Shanghai</site>
     <site>Japan</site>
   </offices>
   <products>
