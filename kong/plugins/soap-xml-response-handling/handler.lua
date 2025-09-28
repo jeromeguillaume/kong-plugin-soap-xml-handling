@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.0",
+    VERSION = "1.4.1",
   }
 
 local xmlgeneral = nil
@@ -284,7 +284,9 @@ function plugin:header_filter(plugin_conf)
 
     -- When the response was originated by successfully contacting the proxied Service
     if kong.response.get_source() == "service" then
-      -- Change the HTTP Status and Return a Fault code to Client
+      -- This code raises an unexpected error in Kong log, for instance: 
+      --    "[error] ... atempt to set status 400 via ngx.exit after sending out the response status 500
+      -- see: https://konghq.atlassian.net/browse/FTI-6970
       kong.response.set_status(xmlgeneral.HTTPServerCodeSOAPFault)
     else
       -- When another plugin (like Rate Limiting) or 
@@ -360,7 +362,6 @@ function plugin:header_filter(plugin_conf)
       soapEnvelope = soapEnvelopeTransformed
     }
   end
-  
 end
 
 ------------------------------------------------------------------------------------------------------------------

@@ -74,8 +74,10 @@ services:
       KONG_NGINX_WORKER_PROCESSES: 1
       KONG_PASSWORD: handyshake  # Required for logging in to Kong Manager (RBAC)
       SOAP_USERNAME: KongUser
-      SOAP_PASSWORD: KongP@sswOrd!
+      SOAP_PASSWORD: KongP@ssswOrd!
       KONG_LOG_LEVEL: notice
+      KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 8k
+      #KONG_NGINX_PROXY_PROXY_REQUEST_BUFFERING: off
     depends_on:
       kong-bootstrap:
         condition: service_completed_successfully  # Start only after bootstrap has succeeded

@@ -520,12 +520,18 @@ function libxml2ex.xmlReadMemory (xml_document, hasToRead, filePathPrefix, base_
   
   kong.ctx.shared.xmlSoapErrMessage = nil
 
-  -- In the event the XML is a file path, read the XML content on the file system
-  contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (hasToRead, filePathPrefix, xml_document)
-  if contentFile then
-    xml_document = contentFile
+  if xml_document then
+    -- In the event the XML is a file path, read the XML content on the file system
+    contentFile, kong.ctx.shared.xmlSoapErrMessage = libxml2ex.readFile (hasToRead, filePathPrefix, xml_document)
+    if contentFile then
+      xml_document = contentFile
+    end
   end
 
+  if not xml_document then
+    kong.ctx.shared.xmlSoapErrMessage = "xml_document is nil"
+  end
+  
   -- If there is no error
   if not kong.ctx.shared.xmlSoapErrMessage then
     

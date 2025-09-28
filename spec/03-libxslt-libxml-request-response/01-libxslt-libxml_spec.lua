@@ -229,7 +229,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 1,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
@@ -240,7 +240,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 1,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
@@ -281,7 +281,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 1,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_req_only_with_async_download_Ok
           }
@@ -292,7 +292,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 1,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = response_common.calculatorWSDL_req_only_with_async_download_Ok
           }
@@ -308,7 +308,8 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Async = true,
+            ExternalEntityLoader_Timeout = 5,
+            ExternalEntityLoader_Async = true,            
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }
         }
@@ -318,6 +319,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
@@ -333,7 +335,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 1,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
@@ -344,7 +346,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 1,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }

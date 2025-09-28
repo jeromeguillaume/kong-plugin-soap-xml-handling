@@ -30,6 +30,7 @@ xmlgeneral.invalidXSD                 = "Invalid XSD schema"
 xmlgeneral.invalidWSDL_XSD            = "Invalid WSDL/XSD schema"
 xmlgeneral.errorGettingPtrsCacheTable = "Error while getting Pointers Cache Table: "
 xmlgeneral.invalidPtrsCacheTable      = "Invalid Pointers Cache Table"
+xmlgeneral.unableToGetBody            = "Unable to get the body request. See logs for more details"
 
 xmlgeneral.soapFaultCodeNone    = 0   -- Fault Code type is 'None'
 xmlgeneral.soapFaultCodeServer  = 1   -- Fault Code type is 'Server' (The Kong GW and Upstream)
@@ -2209,7 +2210,7 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
     object = libxml2.xmlXPathEvalExpression(xpathReqRequired, context)    
 
     errXPathSoapAction = " | XPath expression='".. xpathReqRequired.. "'"
-    
+
     if object ~= ffi.NULL then
       -- If we found the XPath element
       if object.nodesetval ~= ffi.NULL and object.nodesetval.nodeNr ~= 0 then

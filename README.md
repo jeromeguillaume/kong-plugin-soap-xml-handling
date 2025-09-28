@@ -110,6 +110,9 @@ The External entities are processed in this order:
     2) Put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
     3) Use External Entities URL (and choose the type of download: Synchronous or Asynchronous)
 
+3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request. The default value is `8k`. The response body isn't concerned and it has no limit.
+    - In the event the request body size is reached, an error is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+
 ### Error management
 In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
@@ -1379,7 +1382,8 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Fixed a bug by replacing `plugin.__plugin_id` (that doesn't exist except for `configure` phase) by `kong.plugin.get_id()`
   - Removed useless `formatCerr` in `libsaxon-4-kong`
 - v1.4.1
+  - Detect the usage of a large body request greater than `KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE` and avoid a Lua `unexpected error occurred`
   - Bumped `saxon` Home Edition from v12.5 to v12.8
   - `saxon`: removed useless carriage returns in the event of error (corrupting JSON message)
-  - Moved from `docker run` sample to `docker-compose` sample
-  - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value, the `kong.log` detects it and retuns a "nil" string)
+  - Moved from `docker run` sample to `docker compose` sample
+  - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value the `kong.log` detects it and retuns a `nil` string)

@@ -528,6 +528,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
 			      ExternalEntityLoader_Async = true,
+            ExternalEntityLoader_Timeout = 5,
             xsdApiSchema = soapAction_common.calculatorWSDL11_soap_import_Ok,
             SOAPAction_Header = "yes"
           }

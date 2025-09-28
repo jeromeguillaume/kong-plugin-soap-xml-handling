@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.4.0",
+    VERSION = "1.4.1",
   }
 
 local xmlgeneral = nil
@@ -23,11 +23,20 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   local soapFaultCode       = xmlgeneral.soapFaultCodeServer
   local pluginId            = kong.plugin.get_id()
   
-  soapEnvelope_transformed = soapEnvelope
-
+  -- If soapEnvelope is nil, it's probably related to the body size that exceeded the Nginx configuration
+  if soapEnvelope == nil then
+    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                xmlgeneral.unableToGetBody,
+                                                contentType,
+                                                soapFaultCode)
+  else  
+    soapEnvelope_transformed = soapEnvelope
+  end
+  
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   -- => Apply XSL Transformation (XSLT) Before XSD
-  if plugin_conf.xsltTransformBefore then
+  if soapFaultBody == nil and plugin_conf.xsltTransformBefore then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
                                                                                   plugin_conf.ExternalEntityLoader_CacheTTL,

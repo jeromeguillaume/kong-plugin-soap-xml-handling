@@ -51,7 +51,7 @@ cp /tmp/SaxonCHE-linux-aarch64-12-8-0/notices/* .
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8-beta.2`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -92,11 +92,11 @@ make kong_saxon_initcontainer_docker_hub
 The image is based on `kong-gateway` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
 - Docker Compose
 ```yaml
-  image: 'jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8-beta.2'
+  image: 'jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8'
 ```
 - Kubernetes:
   - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
-  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8-beta.2`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.11.0.2-1.4.1-12.8`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-soap-xml-initcontainer`
 The image is based on `Alpine` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries
@@ -124,7 +124,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.1-12.8-beta.2
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.1-12.8
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
@@ -215,7 +215,7 @@ The `soap-xml-request-handling` is in charge of transforming the JSON request to
 
 The default SOAP 1.1 `Content-Type` is applied on the request: `text/xml; charset=utf-8`
 
-![Alt text](/images/Pipeline-Kong-JSON-to-XML-transformation.jpeg?raw=true "Kong - Execution pipeline: JSON to SOAP/XML transformation")
+![Alt text](https://raw.githubusercontent.com/jeromeguillaume/kong-plugin-soap-xml-handling/main/images/Pipeline-Kong-JSON-to-XML-transformation.jpeg?raw=true "Kong - Execution pipeline: JSON to SOAP/XML transformation")
 
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
@@ -309,7 +309,7 @@ You can change operation to the following values:
 Call the `httpbin` REST API by sending an `XML` request.
 The `soap-xml-request-handling` is in charge of transforming the XML request to a JSON request by applying an XSLT 3.0 transformation. The `soap-xml-response-handling` is in charge of doing the opposite that's to say transforming the XML response to JSON.
 
-![Alt text](/images/Pipeline-Kong-XML-to-JSON-transformation.jpeg?raw=true "Kong - Execution pipeline: XML to JSON transformation")
+![Alt text](https://raw.githubusercontent.com/jeromeguillaume/kong-plugin-soap-xml-handling/main/images/Pipeline-Kong-XML-to-JSON-transformation.jpeg?raw=true "Kong - Execution pipeline: XML to JSON transformation")
 1) **The `saxon` library is not included in the Kong Docker image**. So, if it’s not done yet, add `saxon` library to the Kong gateway. See the [Prerequisite](#prerequisite-download-the-saxonc-he-zip-package) section
 
 2) Create a Kong Gateway Service named `httpbin` with this URL: http://httpbin.apim.eu. A simple HTTP Request & Response REST API Service.
@@ -374,7 +374,7 @@ Content-Type:'text/xml; charset=utf-8' \
     <site>London</site>
     <site>Bangalore</site>
     <site>Singapore</site>
-    <site>Shangai</site>
+    <site>Shanghai</site>
     <site>Japan</site>
   </offices>
   <products>
@@ -423,7 +423,7 @@ Content-Type: application/json
         "London",
         "Bangalore",
         "Singapore",
-        "Shangai",
+        "Shanghai",
         "Japan"
       ]
     },
@@ -516,7 +516,7 @@ Content-Type: text/xml; charset=utf-8
     <site>London</site>
     <site>Bangalore</site>
     <site>Singapore</site>
-    <site>Shangai</site>
+    <site>Shanghai</site>
     <site>Japan</site>
   </offices>
   <products>
