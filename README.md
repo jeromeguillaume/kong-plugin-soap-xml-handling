@@ -1398,4 +1398,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value the `kong.log` detects it and retuns a `nil` string)
 - v1.4.2
   - Bumped to Kong Gateway v3.12.0.0
-  - Added retriction in this documentation related to `WSDL Validation`
+  - Added restriction in this documentation related to `WSDL Validation`
