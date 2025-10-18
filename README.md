@@ -76,7 +76,7 @@ Example for `config.xsdApiSchema`:
 The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
 ### Import and External entities
-WSDL and XSD definitions can import other definitions by using `<import>` tag:
+WSDL and XSD definitions can import other definitions by using `<import>` tag and `schemaLocation` attribute:
   - URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
   - File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
     - The file name must not include space or tabulation
@@ -110,8 +110,10 @@ The External entities are processed in this order:
     2) Put the content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
     3) Use External Entities URL (and choose the type of download: Synchronous or Asynchronous)
 
-3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request. The default value is `8k`. The response body isn't concerned and it has no limit.
-    - In the event the request body size is reached, an error is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
+In the event the request body size is reached, an error is raised by kong:
+    - Error in Kong Log, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+    - Message returned to the Client: `Unable to get the body request. See logs for more details`
 
 ### Error management
 In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
@@ -202,7 +204,7 @@ Repeat from step #6 and open the [schema.lua](kong/plugins/soap-xml-response-han
 git clone https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling.git
 ```
 2) Login to Konnect
-3) Create a Personal Access Token (starting by `kpat_`) or System Account Access Token (starting by `spat_`). [See documentation](https://docs.konghq.com/konnect/gateway-manager/declarative-config/#generate-a-personal-access-token)
+3) Create a Personal Access Token (starting by `kpat_`) or System Account Access Token (starting by `spat_`). [See documentation](https://developer.konghq.com/konnect-api/#konnect-api-authentication)
 4) From the `Overview` page of KIC-Gateway manager page, get the KIC `id`
 5) Upload the custom plugin schema of `soap-xml-request-handling` by using the Konnect API:
 ```sh
@@ -243,7 +245,7 @@ cd soap-xml-handling-lib
 kubectl -n kong create configmap libxml2ex --from-file=./libxml2ex
 kubectl -n kong create configmap libxslt --from-file=./libxslt
 ```
-3) [See Kong Gateway in Kubernetes documentation](https://docs.konghq.com/gateway/latest/install/kubernetes/proxy/) and add the following properties to the helm `values.yaml`:
+3) [See Kong Gateway in Kubernetes documentation](https://developer.konghq.com/gateway/install/kubernetes/konnect/) and add the following properties to the helm `values.yaml`:
 ```yaml
 image:
   repository: kong/kong-gateway
@@ -1222,14 +1224,15 @@ The expected result is:
 |XSLT 1.0|`XSLT TRANSFORMATION`|N/A|✅|✅|http://www.w3.org/1999/XSL/Transform|See `version=1.0` attribute in XSLT|
 |XSLT 2.0/3.0|`XSLT TRANSFORMATION`|N/A|❌|✅|http://www.w3.org/1999/XSL/Transform|See `version=2.0` or `version=3.0` attribute in XSLT|
 |Schema XML 1.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/2001/XMLSchema|
-|WSDL 1.1|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/|See `<definitions>` in WSDL 1.0|
-|WSDL 2.0|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://www.w3.org/ns/wsdl|See `<description>` in WSDL 2.0|
+|WSDL 1.1|`WSDL/XSD VALIDATION`|🟧|N/A|⬛|http://schemas.xmlsoap.org/wsdl/|See `<definitions>` in WSDL 1.0|
+|WSDL 2.0|`WSDL/XSD VALIDATION`|🟧|N/A|⬛|http://www.w3.org/ns/wsdl|See `<description>` in WSDL 2.0|
 |SOAPAction|`WSDL/XSD VALIDATION`|✅|N/A|⬛|http://schemas.xmlsoap.org/wsdl/ (WSDL 1.1) and http://www.w3.org/ns/wsdl (WSDL 2.0)|`SOAPAction` Http header for SOAP 1.1 and `action` in `Content-Type` Http header for SOAP 1.2|
 |XPath 1.0|`ROUTING BY XPATH`|✅|N/A|⬛|https://www.w3.org/TR/xpath-10/||
 1) Table legend
 - ✅: supported by the library
+- 🟧: partially supported by the library (see [Known Limitations](#known-limitations))
 - ❌: not supported by the library
-- ⬛: supported by the library but not available due to license restiction (it only concerns `saxon HE` that stands for Home Edition)
+- ⬛: supported by the library but not available due to license restriction (it only concerns `saxon HE` that stands for Home Edition)
 - N/A: not applicable
 
 2) Libraries availability
@@ -1254,12 +1257,18 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 
 ## Known Limitations
 1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2
-- It's due to the current Nginx limitation. See [Kong Gateway doc](https://docs.konghq.com/gateway/latest/plugin-development/custom-logic/#available-contexts)
-2) The `WSDL/XSD VALIDATION` has following limitations:
+- It's due to the current Nginx limitation. See [Kong Gateway doc](https://developer.konghq.com/gateway/entities/plugin/#plugin-contexts)
+2) The `WSDL VALIDATION` has following limitations:
+- The validation is provided by `libxml2` library that supports XML but doesn't natively support WSDL. So, some specific WSDL definitions are not supported by the plugin. For instance the [`schemaLocation`](https://www.w3.org/TR/2007/REC-wsdl20-20070626/#schemaLocation-attribute) WSDL2.0 atrribute (offering a way to give the Schema location) is not supported
+- The plugin validates the Request/Response against the WSDL by checking the XSDs (`<xsd:schema>` defined in the WSDL) one by one until one matches. If multiple XSDs are cross-referenced, the WSDL validation fails. For example:
+  - If the Schema #1 imports `StandardHeader` with <xs:import namespace="http://client.com/StandardHeader/"/> and the `StandardHeader` is defined Schema #2: the WSDL validation fails
+  - Workaround use `schemaLocation` like this: <xs:import namespace="http://client.com/StandardHeader/" schemaLocation="http://client.com/StandardHeader/"/>
+- The `XSD VALIDATION` is not concerned by this section
+3) The `WSDL/XSD VALIDATION` has following limitations:
 - If the WSDL/XSD schema imports an XSD from external entity, it uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`). As it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
-  - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or 
-  - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude`
-- If [`stream_listen`](https://docs.konghq.com/gateway/latest/reference/configuration/#stream_listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The recommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
+  - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude` or
+  - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
+- If [`stream_listen`](https://developer.konghq.com/gateway/configuration/#stream-listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The recommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
@@ -1387,3 +1396,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `saxon`: removed useless carriage returns in the event of error (corrupting JSON message)
   - Moved from `docker run` sample to `docker compose` sample
   - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value the `kong.log` detects it and retuns a `nil` string)
+- v1.4.2
+  - Bumped to Kong Gateway v3.12.0.0
+  - Added restriction in this documentation related to `WSDL Validation`
