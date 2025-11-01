@@ -15,6 +15,7 @@ return {
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
           { filePathPrefix = typedefs.path { required = false } },
           { VerboseResponse = { type = "boolean", required = false }, },
+          { wsdlApiSchemaForceSchemaLocation = { type = "boolean", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 
             keys = { type = "string", required = true },

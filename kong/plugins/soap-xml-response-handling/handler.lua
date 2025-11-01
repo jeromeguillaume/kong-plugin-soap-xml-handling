@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.1",
+    VERSION = "1.4.2",
   }
 
 local xmlgeneral = nil
@@ -87,7 +87,10 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                 plugin_conf.xsdApiSchema,
                                                                 plugin_conf.VerboseResponse,
                                                                 false,
-                                                                plugin_conf.ExternalEntityLoader_Async)
+                                                                plugin_conf.ExternalEntityLoader_Async,
+                                                                plugin_conf.xsdApiSchemaInclude,
+                                                                plugin_conf.wsdlApiSchemaForceSchemaLocation
+                                                              )
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,

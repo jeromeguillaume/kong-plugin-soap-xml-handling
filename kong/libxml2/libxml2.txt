@@ -1,0 +1,32 @@
+First
+-----
+docker run -it --name ubuntu ubuntu:latest
+
+Then
+----
+docker start ubuntu
+
+Prepare environment
+-------------------
+apt-get update
+apt-get install build-essential
+apt-get install cmake
+apt-get install wget
+apt-get install python3
+apt-get install pkg-config
+apt-get install python3-dev
+
+apt install liblzma5
+apt install liblzma-dev
+
+wget https://gitlab.gnome.org/GNOME/libxml2/-/archive/v2.14.6/libxml2-v2.14.6.tar.gz
+tar -xvf libxml2-v2.14.6.tar.gz 
+cd libxml2-v2.14.6
+ 
+cmake .
+cmake --build .  -- VERBOSE=1
+
+cd /Users/jerome.guillaume/Documents/Kong/Tips/kong-plugin-soap-xml-handling/kong/libxml2/2.15.1/arm64
+docker cp ubuntu:/tmp/libxml2-v2.15.1/libxml2.so ./
+docker cp ubuntu:/tmp/libxml2-v2.15.1/libxml2.so.16 ./
+docker cp ubuntu:/tmp/libxml2-v2.15.1/libxml2.so.16.1.1 ./
