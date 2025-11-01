@@ -145,6 +145,7 @@ If `Verbose` is enabled:
 |config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
+|config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
 |config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
@@ -1285,7 +1286,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.0.2:
   - Added the capacity to provide `wsdl` content to `xsdApiSchema`. The raw `<xs:schema>` is still valid
 - v1.0.3:
-  - When `VerboseRequest` or  `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
+  - When `VerboseRequest` or `VerboseResponse` are disabled, the plugins no longer send the detailed error to the logs
 - v1.0.4:
   - Improved the log error management by initializing it in the `init_worker` phase
 - v1.0.5:
@@ -1327,11 +1328,11 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.1.4:
   - `ExternalEntityLoader_Async`: replaced `nginx.timer.at` by `kong.tools.queue`
 - v1.1.5:
-  - Removed the `require("kong.plugins.soap-xml-handling-lib.xmlgeneral")` declared on each phase to a global definition
+  - Removed the `require("kong.plugins.soap-xml-handling-lib.xmlgeneral")` declared in each phase to a global definition
   - `ExternalEntityLoader_Async`: replace the `kong.xmlSoapAsync.entityLoader.urls` to a LRU cache
   - Replaced `plugin.PRIORITY` by `plugin.__plugin_id` regarding the Error management
 - v1.1.6:
-  - `ExternalEntityLoader_Async`: used a `kong.tools.queue` to execute a WSDL/XSD validation prefetch on the `configure` nginx phase (for downloading the `ìmport`ed XSD)
+  - `ExternalEntityLoader_Async`: used a `kong.tools.queue` to execute a WSDL/XSD validation prefetch in the `configure` nginx phase (for downloading the `ìmport`ed XSD)
 - v1.2.0:
   - Improved support for `SOAP` v1.1 and v1.2, which does an `ìmport` (that can be included in a new property: `xsdSoapSchemaInclude`)
   - Added the validation of the `SOAPAction` Http header
@@ -1398,4 +1399,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value the `kong.log` detects it and retuns a `nil` string)
 - v1.4.2
   - Bumped to Kong Gateway v3.12.0.0
-  - Added restriction in this documentation related to `WSDL Validation`
+  - Added restriction in this documentation related to the support of `WSDL Validation`
+  - Added `wsdlApiSchemaForceSchemaLocation`: forces the injection of `schemaLocation` attribute in `<import>` for WSDL definition

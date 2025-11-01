@@ -1238,13 +1238,13 @@ function xmlgeneral.XSLTransform(pluginType, pluginId, cacheTTL, filePathPrefix,
   return xml_transformed_dump, errMessage, soapFaultCode
 end
 
-------------------------------------------------------------------------
--- Add schemaLocation to <import> in the wSDL document and 
--- build a table of XSD definitions related to the <import>
+------------------------------------------------------------------------------------------------------------------------
+-- Add 'schemaLocation' attribute to <import> in the WSDL document and 
+-- Return a table of XSD definitions related to the <import>
 -- Example:
---  Input:  <xsd:import namespace="http://tempuri.org/paramCalcIntA/">
---  Output: <xsd:import namespace="http://tempuri.org/paramCalcIntA/" schemaLocation="http://tempuri.org/paramCalcIntA/"/>
-------------------------------------------------------------------------
+--  WSDL Input:  <xsd:import namespace="http://tempuri.org/paramIntA/">
+--  WSDL Output: <xsd:import namespace="http://tempuri.org/paramIntA/" schemaLocation="http://tempuri.org/paramIntA/"/>
+------------------------------------------------------------------------------------------------------------------------
 function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
   local schemaNode
   local nodeName
@@ -1328,10 +1328,11 @@ function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
         targetNS = ffi.string(ffi_targetNS)
         kong.log.notice ("addSchemaLocation, schema #", index, " targetNamespace='", targetNS, "'")
         
-        -- If the targetNamespace is in the list of schemaLocations (added during the first loop)
+        -- If the targetNamespace is in the list of 'schemaLocations' (added during the first loop)
         if schemaLocations[targetNS] == "" then 
           xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, schemaNode, 1, 1)
-          schemaLocations[targetNS] = xsdSchema        
+          -- Set the XSD definition related to the targetNamespace
+          schemaLocations[targetNS] = xsdSchema
         end
       end
     end
