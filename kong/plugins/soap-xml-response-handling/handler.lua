@@ -88,7 +88,6 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                 plugin_conf.VerboseResponse,
                                                                 false,
                                                                 plugin_conf.ExternalEntityLoader_Async,
-                                                                plugin_conf.xsdApiSchemaInclude,
                                                                 plugin_conf.wsdlApiSchemaForceSchemaLocation
                                                               )
     if errMessage ~= nil then

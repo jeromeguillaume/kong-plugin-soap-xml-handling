@@ -570,7 +570,7 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
 
       -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
       -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
-      errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.pluginType, nil, conf.cacheTTL, filePathPrefix, child, nil, WSDL, verbose, true, true, conf.xsdApiSchemaInclude, conf.wsdlApiSchemaForceSchemaLocation)
+      errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.pluginType, nil, conf.cacheTTL, filePathPrefix, child, nil, WSDL, verbose, true, true, conf.wsdlApiSchemaForceSchemaLocation)
 
       -- If the prefetch succeeded
       if not errMessage then
@@ -1259,9 +1259,9 @@ function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
   schemaNode = cuurentNode
 
   ------------------------------------------------------------------------------------------------
-  -- Firstly loop on all <schema> entries for adding 'schemaLocation=' to <import> if nnt defined
+  -- Firstly loop on all <schema> entries for adding 'schemaLocation=' to <import> if not defined
   ------------------------------------------------------------------------------------------------
-  kong.log.notice ("addSchemaLocation, get list of <import> without 'schemaLocation'")  
+  kong.log.debug ("addSchemaLocation, get list of <import> without 'schemaLocation'")  
   while schemaNode ~= ffi.NULL do
     
     -- If it's a <schema> node
@@ -1269,7 +1269,7 @@ function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
        schemaNode.name ~= ffi.NULL and ffi.string(schemaNode.name) == "schema" then
 
       index = index + 1
-      kong.log.notice ("addSchemaLocation, schema #", index)
+      kong.log.debug ("addSchemaLocation, schema #", index)
       
       -- Get the first Child of <schema>
       childNode = libxml2.xmlFirstElementChild(schemaNode)
@@ -1287,7 +1287,7 @@ function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
           if namespaceAttrPtr ~= ffi.NULL and schemaLocationAttrPtr == ffi.NULL then
             -- Add 'schemaLocation' attribute with the value of 'namespace' attribute
             libxml2.xmlNewProp(childNode, "schemaLocation", namespaceAttrPtr)
-            kong.log.notice ("addSchemaLocation, schema #", index, " add schemaLocation='", ffi.string(namespaceAttrPtr), "' to <import>")
+            kong.log.debug ("addSchemaLocation, schema #", index, " add schemaLocation='", ffi.string(namespaceAttrPtr), "' to <import>")
             
             if schemaLocations == nil then
               schemaLocations = {}
@@ -1314,8 +1314,8 @@ function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
   -- Second loop on all <schema> entries for putting in conf the XSD definition related to
   -- the import where 'schemaLocation' just added
   -----------------------------------------------------------------------------------------
-  kong.log.notice ("addSchemaLocation, get XSD definition of targetNamespace related to the list of <import> without 'schemaLocation'")
-  while schemaNode ~= ffi.NULL do
+  kong.log.debug ("addSchemaLocation, get XSD definition of targetNamespace related to the list of <import> without 'schemaLocation'")
+  while schemaNode ~= ffi.NULL and schemaLocations do
 
     -- If it's a <schema> node
     if tonumber(schemaNode.type) == ffi.C.XML_ELEMENT_NODE and 
@@ -1326,11 +1326,15 @@ function xmlgeneral.addSchemaLocation(xml_doc, cuurentNode)
       ffi_targetNS = libxml2.xmlGetProp(schemaNode, "targetNamespace")
       if ffi_targetNS ~= ffi.NULL then
         targetNS = ffi.string(ffi_targetNS)
-        kong.log.notice ("addSchemaLocation, schema #", index, " targetNamespace='", targetNS, "'")
+        kong.log.debug ("addSchemaLocation, schema #", index, " targetNamespace='", targetNS, "'")
         
         -- If the targetNamespace is in the list of 'schemaLocations' (added during the first loop)
         if schemaLocations[targetNS] == "" then 
           xsdSchema = libxml2ex.xmlNodeDump	(xml_doc, schemaNode, 1, 1)
+          
+          -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
+          xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, schemaNode)
+          
           -- Set the XSD definition related to the targetNamespace
           schemaLocations[targetNS] = xsdSchema
         end
@@ -1368,7 +1372,7 @@ function xmlgeneral.addNamespaces(xsdSchema, document, node)
     -- Else the prefix is NULL
     else
       xmlNsXsdPrefix = ''
-    end    
+    end
   end
   
   -- Search the begin and end of '<xsd:schema' ... '>'
@@ -1445,7 +1449,7 @@ end
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
-function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePathPrefix, child, XMLtoValidate, WSDL, verbose, prefetch, async, xsdApiSchemaInclude, forceSchemaLocation)
+function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePathPrefix, child, XMLtoValidate, WSDL, verbose, prefetch, async, forceSchemaLocation)
   local xml_doc          = nil
   local errMessage       = nil
   local firstErrMessage  = nil
@@ -1660,10 +1664,14 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
         -- If there is at least one entry in 'schemaLocations' table
         if schemaLocations and next(schemaLocations) then
           
+          if not kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude  then
+            kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude = {}          
+          end
+          local xsdApiSchemaInclude = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
           -- For each entry in 'schemaLocations' table
           for namespace, xsdDefinition in pairs(schemaLocations) do
             if namespace and xsdApiSchemaInclude[namespace] == nil then
-              kong.log.notice("Add in 'xsdApiSchemaInclude' config plugin the XSD of '" ..namespace.."' for supporting the injection of 'schemaLocation' in <import>")
+              kong.log.debug("Add in 'xsdApiSchemaInclude' config plugin the XSD of '", namespace, "' for supporting the injection of 'schemaLocation' in <import>")
               xsdApiSchemaInclude[namespace] = xsdDefinition
             end
           end
@@ -1693,7 +1701,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
           
           -- Add Global NameSpaces (defined at <wsdl:definition>) to <xsd:schema>
           xsdSchema = xmlgeneral.addNamespaces(xsdSchema, xml_doc, currentNode)
-          
+
           errMessage = nil
           -- Validate the XML with the <xs:schema>'
           errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, index, XMLtoValidate, xsdSchema, verbose, prefetch, async)

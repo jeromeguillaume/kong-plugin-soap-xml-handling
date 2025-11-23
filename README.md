@@ -1401,3 +1401,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped to Kong Gateway v3.12.0.0
   - Added restriction in this documentation related to the support of `WSDL Validation`
   - Added `wsdlApiSchemaForceSchemaLocation`: forces the injection of `schemaLocation` attribute in `<import>` for WSDL definition
+  - Fixed the detection of `ffi.NULL` pointer in `libxml2ex.formatErrMsg` related to `libxml2` v2.13+

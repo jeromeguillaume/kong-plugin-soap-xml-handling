@@ -408,6 +408,42 @@ response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbo
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculatorXSLT_add_ns_param_calc_parameters=[[
+<xsl:stylesheet version="1.0"
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+  xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+  xmlns:old="http://tempuri.org/"
+  xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/"
+  exclude-result-prefixes="old">
+
+  <!-- Identity transform -->
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <!-- Rebuild soap:Envelope with the extra namespace -->
+  <xsl:template match="soap:Envelope">
+    <soap:Envelope
+      xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/">
+      <xsl:apply-templates select="node()"/>
+    </soap:Envelope>
+  </xsl:template>
+
+  <!-- Move AddResult to the new namespace -->
+  <xsl:template match="old:AddResult">
+    <ns_param_calc_add_subtract_result:AddResult>
+      <xsl:apply-templates select="@*|node()"/>
+    </ns_param_calc_add_subtract_result:AddResult>
+  </xsl:template>
+
+</xsl:stylesheet>
+]]
+
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
 -------------------------------------------------------------------------------
@@ -938,7 +974,21 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
       }
 		}
 	}
-
+	local calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok,
+		config = {
+			VerboseResponse = true,
+			xsltLibrary = xsltLibrary,
+			wsdlApiSchemaForceSchemaLocation = true,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok,
+			xsltTransformBefore = response_common.calculatorXSLT_add_ns_param_calc_parameters
+		}
+	}
 
 end
 
@@ -1396,7 +1446,7 @@ function response_common._6_WSDL_Validation_Invalid_SOAP_response_without_soapBo
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right match
+	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -1412,11 +1462,27 @@ function response_common._6_WSDL_Validation_Invalid_API_response_without_operati
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request succeeded: response status 500, Content-Type and right match
+	-- validate that the request failed: response status 500, Content-Type and right match
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
+end
+
+function response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
 end
 
 return response_common

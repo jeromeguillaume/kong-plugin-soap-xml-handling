@@ -170,6 +170,11 @@ for _, strategy in helpers.all_strategies() do
 				response_common._6_WSDL_Validation_Invalid_API_response_without_operation_with_verbose_ko (assert, client)
 			end)
 
+			it("5+6|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Ok", function()
+				response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
+			end)
+
+
   	end)
 
 	end)
