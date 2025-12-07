@@ -899,7 +899,7 @@ HTTP/1.1 500 Internal Server Error
 <a id="Miscellaneous_example_E"></a>
 
 ### Example (E): Request | Use a WSDL definition, which imports XSDs schema without `schemaLocation`
-Call correctly `calculator`. Validate the request with a WSDL that import XSDs without `schemaLocation` attribute. As the WSDL expects `<ns_param_calc_c:intC>` and `<ns_param_calc_d:intD>` and `<ns_param_calc_e:intE>` that `calculator` doesn't know, an XSLT is used to remvove them. The `<ns_param_calc_*>` are imported without `schemaLocation`
+Call correctly `calculator`. Validate the request with a WSDL that imports XSDs without `schemaLocation` attribute. As the WSDL expects `<ns_param_calc_c:intC>` and `<ns_param_calc_d:intD>` and `<ns_param_calc_e:intE>` that `calculator` doesn't know, an XSLT is used to remvove them. The `<ns_param_calc_*>` are imported without `schemaLocation`
 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -1460,7 +1460,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Moved from `docker run` sample to `docker compose` sample
   - Improved the calls of `kong.log.debug` and `kong.log.err`: removed strings contanenation and replaced them by parameters (in the event of a `nil` paramater value the `kong.log` detects it and retuns a `nil` string)
 - v1.4.2
+  - Added `wsdlApiSchemaForceSchemaLocation`: forces the injection of `schemaLocation` attribute in `<import>` for WSDL definition
   - Bumped to Kong Gateway v3.12.0.1
   - Added restriction in this documentation related to the support of `WSDL Validation`
-  - Added `wsdlApiSchemaForceSchemaLocation`: forces the injection of `schemaLocation` attribute in `<import>` for WSDL definition
   - Fixed the detection of `ffi.NULL` pointer in `libxml2ex.formatErrMsg` related to `libxml2` v2.13+
