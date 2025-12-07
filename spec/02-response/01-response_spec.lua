@@ -174,6 +174,14 @@ for _, strategy in helpers.all_strategies() do
 				response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
 			end)
 
+			it("5+6|WSDL Validation for Subtract with ForceSchemaLocation - Import without schemaLocation - XSD included in config - Ok", function()
+				response_common._5_6_WSDL_Subtract_Validation_with_ForceSchemaLocation_for_Import_without_schemaLocation_and_XSD_in_config_with_verbose_ok (assert, client)
+			end)
+
+			it("5|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - All XSDs are not included in WSDL - Ko", function()
+				response_common._5_WSDL_Validation_Add_with_ForceSchemaLocation_and_All_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
+			end)
+
 
   	end)
 

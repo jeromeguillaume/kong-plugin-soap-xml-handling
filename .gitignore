@@ -34,3 +34,5 @@ loadtesting/_temp
 start-kong-konnect.sh
 temp/
 kong/libxml2/2.*
+# exclude LuaCov html report
+luacov.report.html

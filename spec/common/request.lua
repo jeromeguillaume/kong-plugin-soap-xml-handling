@@ -1009,7 +1009,7 @@ request_common.productsXSD = [[
 -- Schema #3 | intE XSD
 -- Schema #4 | Add     : there are 3 imports  without shemaLocation
 -- Schema #5 | Subtract: there are 3 imports => 1 import without shemaLocation and 2 imports with shemaLocation
--- Schema #6 | AddResult and SubtractResult XSDx
+-- Schema #6 | AddResult and SubtractResult XSD
 -- Schema #7 | AddResponse and SubtractResponse: there is 1 import
 request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok= [[
 <?xml version="1.0" encoding="utf-8"?>
@@ -1112,7 +1112,7 @@ request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok
 -- Schema #3 | intE XSD	=> ***NOT DEFINED***
 -- Schema #4 | Add     : there are 3 imports  without shemaLocation
 -- Schema #5 | Subtract: there are 3 imports => 1 import without shemaLocation and 2 imports with shemaLocation
--- Schema #6 | AddResult and SubtractResult XSDx => ***NOT DEFINED***
+-- Schema #6 | AddResult and SubtractResult XSD => ***NOT DEFINED***
 -- Schema #7 | AddResponse and SubtractResponse: there is 1 import
 request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_XSDs_not_included_in_WSDL_ko= [[
 <?xml version="1.0" encoding="utf-8"?>
@@ -2058,7 +2058,6 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			ExternalEntityLoader_CacheTTL = 3600,
 			wsdlApiSchemaForceSchemaLocation = true,
 			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok,
-			xsltTransformAfter = request_common.calculatorXSLT_remove_ns_param_calc_parameters,
 			xsdApiSchemaInclude = {
 				["http://tempuri.org/paramCalcIntD/"] = request_common.calculator_Request_XSD_API_VALIDATION_invalid
 			},
@@ -2076,8 +2075,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 3600,
 			wsdlApiSchemaForceSchemaLocation = true,
-			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_XSDs_not_included_in_WSDL_ko,
-			xsltTransformAfter = request_common.calculatorXSLT_remove_ns_param_calc_parameters,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_XSDs_not_included_in_WSDL_ko
 		}
 	}
 	
@@ -2965,7 +2963,7 @@ function request_common._2_3_WSDL_Subtract_Validation_with_ForceSchemaLocation_f
 	assert.matches('<SubtractResult>4</SubtractResult>', body)
 end
 
-function request_common._2_3_WSDL_Validation_Add_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
+function request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko", {
 		headers = {
@@ -2981,7 +2979,7 @@ function request_common._2_3_WSDL_Validation_Add_with_ForceSchemaLocation_for_Im
 	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntD/'.</errorMessage>", body)
 end
 
-function request_common._2_3_WSDL_Validation_Subtract_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
+function request_common._2_WSDL_Validation_Subtract_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko", {
 		headers = {
@@ -2997,7 +2995,7 @@ function request_common._2_3_WSDL_Validation_Subtract_with_ForceSchemaLocation_f
 	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntD/'.</errorMessage>", body)
 end
 
-function request_common._2_3_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
+function request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_some_XSDs_are_not_included_in_WSDL_with_verbose_ko", {
 		headers = {
