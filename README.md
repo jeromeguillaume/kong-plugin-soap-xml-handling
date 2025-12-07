@@ -54,7 +54,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
     3. [Example (C1): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration](#Miscellaneous_example_C1)
     4. [Example (C2): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration for KIC](#Miscellaneous_example_C2)
     5. [Example (D) : Request | Use a WSDL definition, which imports an XSD schema from an external entity URL](#Miscellaneous_example_D)
-    6. [Example (E) : Request | Use a WSDL definition, which imports XSDs schema without `schemaLocation` ](#Miscellaneous_example_E)
+    6. [Example (E) : Request | Use a WSDL definition, which imports XSDs schema without schemaLocation ](#Miscellaneous_example_E)
     7. [Example (F) : Request and Response | XSLT 3.0 with the saxon library](#Miscellaneous_example_F)
     8. [Example (G) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_G)
     9. [Example (H) : Request | validate the SOAPAction Http header](#Miscellaneous_example_H)
