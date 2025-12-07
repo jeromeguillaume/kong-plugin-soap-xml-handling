@@ -113,7 +113,7 @@ The External entities are processed in this order:
     1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
     2) Put the raw content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
     3) Really download the content (with http(s) protocol): Synchronous or Asynchronous
-    - If the WSDL use `<import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
+    - If the WSDL uses `<import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
 
 3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached, an error is raised by kong:
