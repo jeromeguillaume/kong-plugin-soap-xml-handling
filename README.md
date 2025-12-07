@@ -76,7 +76,7 @@ Example for `config.xsdApiSchema`:
 
 The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
-### Import and External entities
+### Import / External entities
 WSDL and XSD definitions can import other definitions by using `<import>` tag and `schemaLocation` attribute:
   - URL (`http(s)://`), example: `<import schemaLocation ="https://client.net/FaultMessage.xsd"/>`
   - File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
@@ -89,7 +89,7 @@ The plugins manage both types of import:
   - File: the plugins read the definition from the Kong Gateway file system
     - An absolute path can be used (like: `/usr/local/apiclient.wsdl`) and `config.filePathPrefix` is ignored
     - A relative path can be used (like: `../../apiclient.wsdl`) related to the `config.filePathPrefix`
-  - **Even for URL or File the content of External Entities can be stored in the plugin configuration**. See just below
+  - **Even for URL or File import, the content of External Entities can be stored in the plugin configuration**. See just below
 
 The External entities are processed in this order:
   1) Read the content from the file system (related to the `config.filePathPrefix`)
