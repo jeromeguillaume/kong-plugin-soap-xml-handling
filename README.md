@@ -1323,10 +1323,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - It's due to the current Nginx limitation. See [Kong Gateway doc](https://developer.konghq.com/gateway/entities/plugin/#plugin-contexts)
 2) The `WSDL VALIDATION` has following limitations:
 - The validation is provided by `libxml2` library that supports XML but doesn't natively support WSDL. So, some specific WSDL definitions are not supported by the plugin. For instance the [`location`](https://www.w3.org/TR/2007/REC-wsdl20-20070626/#include_location_attribute) WSDL2.0 atrribute (offering a way to give the Schema location) is not supported
-- The plugin validates the Request/Response against the WSDL by checking the XSDs (`<xsd:schema>` defined in the WSDL) one by one until one matches. If multiple XSDs are cross-referenced, the WSDL validation fails. For example:
-  - If the Schema #1 imports `StandardHeader` with <xs:import namespace="http://client.com/StandardHeader/"/> and the `StandardHeader` is defined Schema #2: the WSDL validation fails
-  - Workaround use `schemaLocation` like this: <xs:import namespace="http://client.com/StandardHeader/" schemaLocation="http://client.com/StandardHeader/"/>
-- The `XSD VALIDATION` is not concerned by this section
 3) The `WSDL/XSD VALIDATION` has following limitations:
 - If the WSDL/XSD schema imports an XSD from external entity, it uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`). As it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
   - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude` or
