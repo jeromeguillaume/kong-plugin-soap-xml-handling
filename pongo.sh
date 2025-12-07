@@ -3,7 +3,7 @@
 #   required if the 'KONG_IMAGE' has been rebuilt w/o changing its tag version
 #------------------------------------------------------------------------------
 # pongo clean
-# KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.8.0.0-12.5 pongo build --force
+# KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.12.0.1-1.4.2-12.8 pongo build --force
 
 #-------------------------------------------------------------------------------
 # Execute the tests with the Kong standard image
@@ -24,7 +24,7 @@
 pongo up
 
 # Run pongo tests by using the code of plugins stored locally
-#KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.12.0.0-1.4.2-12.8 pongo run --lpath=$PWD/spec/common
+#KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.12.0.1-1.4.2-12.8 pongo run --lpath=$PWD/spec/common --helper=./spec/busted-ci-helper.lua
 
 # Run pongo tests by using the code of plugins included in the Docker image
-KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.12.0.0-1.4.2-12.8 pongo run
+KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.12.0.1-1.4.2-12.8 pongo run --helper=./spec/busted-ci-helper.lua

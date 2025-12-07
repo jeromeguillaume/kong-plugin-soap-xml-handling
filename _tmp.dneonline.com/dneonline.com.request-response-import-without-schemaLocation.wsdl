@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Enable 'config.wsdlApiSchemaForceSchemaLocation=true' as there is no 'schemaLocation' on import -->
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                  targetNamespace="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:ns_param_calc_c="http://tempuri.org/paramCalcIntC/"
+                  xmlns:ns_param_calc_d="http://tempuri.org/paramCalcIntD/"
+                  xmlns:ns_param_calc_e="http://tempuri.org/paramCalcIntE/"
+                  xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/">
+  <wsdl:types>
+    
+    <!-- Schema #1 | intC -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntC/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intC" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntC/"/>
+    </xsd:schema>
+
+    <!-- Schema #2 | intD -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntD/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intD" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntD/"/>
+    </xsd:schema>
+    
+    <!-- Schema #3 | intE -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntE/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intE" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntE/"/>
+    </xsd:schema>
+
+    <!-- Schema #4 | Add -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcIntC/"/>
+      <xsd:import namespace="http://tempuri.org/paramCalcIntD/"/>  
+      <xsd:import namespace="http://tempuri.org/paramCalcIntE/"/>
+
+      <xsd:element name="Add">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+            <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />  
+            <xsd:element ref="ns_param_calc_c:intC"/>
+            <xsd:element ref="ns_param_calc_d:intD"/>
+            <xsd:element ref="ns_param_calc_e:intE"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+
+    <!-- Schema #5 | Subtract -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcIntC/"/>
+      <xsd:import namespace="http://tempuri.org/paramCalcIntD/" schemaLocation="http://tempuri.org/paramCalcIntD/"/>  
+      <xsd:import namespace="http://tempuri.org/paramCalcIntE/"/>
+
+      <xsd:element name="Subtract">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+            <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />  
+            <xsd:element ref="ns_param_calc_c:intC"/>
+            <xsd:element ref="ns_param_calc_d:intD"/>
+            <xsd:element ref="ns_param_calc_e:intE"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+
+    <!-- Schema #6 | AddResult and SubtractResult -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcAddSubtractResult/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="AddResult"      type="xsd:int" xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/"/>
+      <xsd:element name="SubtractResult" type="xsd:int" xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/"/>
+    </xsd:schema>
+
+    <!-- Schema #7 AddResponse and SubtractResponse -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcAddSubtractResult/"/>
+      <xsd:element name="AddResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" ref="ns_param_calc_add_subtract_result:AddResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+     <xsd:element name="SubtractResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" ref="ns_param_calc_add_subtract_result:SubtractResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>

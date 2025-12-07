@@ -38,6 +38,7 @@ return {
             },
           },},
           { VerboseRequest = { type = "boolean", required = false }, },
+          { wsdlApiSchemaForceSchemaLocation = { type = "boolean", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 
               keys = { type = "string", required = true },

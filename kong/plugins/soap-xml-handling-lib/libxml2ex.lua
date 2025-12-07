@@ -421,11 +421,11 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   return ret
 end
 
--- Function to set the custom XML entity loader as the external entity loader.
+-- Function to set the custom XML entity loader as the external entity loader
 function libxml2ex.initializeExternalEntityLoader()
   -- Get the current default external entity loader.
   defaultLoader = xml2.xmlGetExternalEntityLoader();
-  -- Set the custom XML entity loader as the new external entity loader.
+  -- Set the custom XML entity loader as the new external entity loader
   xml2.xmlSetExternalEntityLoader(libxml2ex.xmlMyExternalEntityLoader);
 end
 
@@ -482,7 +482,11 @@ end
 function libxml2ex.xmlSchemaParse (xsd_context, verbose)
     kong.ctx.shared.xmlSoapErrMessage = nil
 
-    xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)
+    -- v2.12 xml2.xmlSetStructuredErrorFunc(xsd_context, kong.xmlSoapLibxmlErrorHandler)
+    
+    -- v2.13
+    xml2.xmlSchemaSetParserStructuredErrors(xsd_context, kong.xmlSoapLibxmlErrorHandler, nil)    
+
     local xsd_schema_doc = xml2.xmlSchemaParse(xsd_context)
     if xsd_schema_doc == ffi.NULL then
       return nil, kong.ctx.shared.xmlSoapErrMessage
@@ -535,7 +539,12 @@ function libxml2ex.xmlReadMemory (xml_document, hasToRead, filePathPrefix, base_
   -- If there is no error
   if not kong.ctx.shared.xmlSoapErrMessage then
     
+    -- libxml2 - v2.12
     xml2.xmlSetStructuredErrorFunc(nil, kong.xmlSoapLibxmlErrorHandler)
+    
+    -- libxml2 - v2.13
+    -- xml2.xmlCtxtSetErrorHandler(nil, kong.xmlSoapLibxmlErrorHandler, nil)
+    
     local xml_doc = xml2.xmlReadMemory (xml_document, #xml_document, base_url_document, document_encoding, options)
     
     if xml_doc == ffi.NULL then
@@ -574,6 +583,7 @@ function libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)
   kong.ctx.shared.xmlSoapErrMessage = nil
 
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
+
   local is_valid = xml2.xmlSchemaValidateDoc (validation_context, xml_doc)
 
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
@@ -589,8 +599,17 @@ jit.off(libxml2ex.xmlSchemaValidateDoc)
 function libxml2ex.xmlSchemaValidateOneElement(validation_context, xmlNodePtr, verbose)  
   kong.ctx.shared.xmlSoapErrMessage = nil
 
+  -- libxml2 - v2.12
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
+  
+  -- libxml2 - v2.13
+  -- local xmlParserCtxt = xml2.xmlSchemaValidCtxtGetParserCtxt(validation_context)  
+  -- xml2.xmlCtxtSetErrorHandler(xmlParserCtxt, kong.xmlSoapLibxmlErrorHandler, nil)
+
+  xml2.xmlSchemaSetParserStructuredErrors (ctxt,kong.xmlSoapLibxmlErrorHandler, nil)
+  
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
+  
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage
 end
 -- Avoid 'nginx: lua atpanic: Lua VM crashed, reason: bad callback' => disable the JIT
@@ -600,9 +619,9 @@ jit.off(libxml2ex.xmlSchemaValidateOneElement)
 function libxml2ex.formatErrMsg(xmlError)
 
   local errMessage = ""
-  
-  if xmlError.ctxt == ffi.NULL then
-    kong.log.err("*** xmlError.ctxt is null***")
+
+  if xmlError == ffi.NULL then
+    kong.log.err("*** xmlError is null***")
     return errMessage
   end
 

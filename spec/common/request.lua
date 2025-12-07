@@ -31,6 +31,38 @@ request_common.calculator_Full_Request= [[
 </soap:Envelope>
 ]]
 
+request_common.calculator_Full_Request_with_ns_param_calc= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns_param_calc_c="http://tempuri.org/paramCalcIntC/" 				xmlns:ns_param_calc_d="http://tempuri.org/paramCalcIntD/" 
+xmlns:ns_param_calc_e="http://tempuri.org/paramCalcIntE/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Add xmlns="http://tempuri.org/">
+				<intA>5</intA>
+			  <intB>7</intB>
+			  <ns_param_calc_c:intC>1</ns_param_calc_c:intC>
+			  <ns_param_calc_d:intD>2</ns_param_calc_d:intD>
+				<ns_param_calc_e:intE>3</ns_param_calc_e:intE>
+    </Add>
+  </soap:Body>
+</soap:Envelope>
+]]
+
+request_common.calculator_Subtract_Request_with_ns_param_calc= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ns_param_calc_c="http://tempuri.org/paramCalcIntC/" 				xmlns:ns_param_calc_d="http://tempuri.org/paramCalcIntD/" 
+xmlns:ns_param_calc_e="http://tempuri.org/paramCalcIntE/" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Subtract xmlns="http://tempuri.org/">
+				<intA>5</intA>
+			  <intB>1</intB>
+			  <ns_param_calc_c:intC>1</ns_param_calc_c:intC>
+			  <ns_param_calc_d:intD>2</ns_param_calc_d:intD>
+				<ns_param_calc_e:intE>3</ns_param_calc_e:intE>
+    </Subtract>
+  </soap:Body>
+</soap:Envelope>
+]]
+
 request_common.calculator_Request_SOAP_No_soapBody_ko= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -972,6 +1004,226 @@ request_common.productsXSD = [[
 </xs:schema>
 ]]
 
+-- Schema #1 | intC XSD
+-- Schema #2 | intD XSD
+-- Schema #3 | intE XSD
+-- Schema #4 | Add     : there are 3 imports  without shemaLocation
+-- Schema #5 | Subtract: there are 3 imports => 1 import without shemaLocation and 2 imports with shemaLocation
+-- Schema #6 | AddResult and SubtractResult XSD
+-- Schema #7 | AddResponse and SubtractResponse: there is 1 import
+request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok= [[
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Enable 'config.wsdlApiSchemaForceSchemaLocation=true' as there is no 'schemaLocation' on import -->
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                  targetNamespace="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:ns_param_calc_c="http://tempuri.org/paramCalcIntC/"
+                  xmlns:ns_param_calc_d="http://tempuri.org/paramCalcIntD/"
+                  xmlns:ns_param_calc_e="http://tempuri.org/paramCalcIntE/"
+                  xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/">
+  <wsdl:types>
+    
+    <!-- Schema #1 | intC -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntC/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intC" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntC/"/>
+    </xsd:schema>
+
+    <!-- Schema #2 | intD -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntD/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intD" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntD/"/>
+    </xsd:schema>
+    
+    <!-- Schema #3 | intE -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntE/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intE" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntE/"/>
+    </xsd:schema>
+
+    <!-- Schema #4 | Add -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcIntC/"/>
+      <xsd:import namespace="http://tempuri.org/paramCalcIntD/"/>  
+      <xsd:import namespace="http://tempuri.org/paramCalcIntE/"/>
+
+      <xsd:element name="Add">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+            <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />  
+            <xsd:element ref="ns_param_calc_c:intC"/>
+            <xsd:element ref="ns_param_calc_d:intD"/>
+            <xsd:element ref="ns_param_calc_e:intE"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+
+    <!-- Schema #5 | Subtract -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcIntC/"/>
+      <xsd:import namespace="http://tempuri.org/paramCalcIntD/" schemaLocation="http://tempuri.org/paramCalcIntD/"/>  
+      <xsd:import namespace="http://tempuri.org/paramCalcIntE/" schemaLocation="http://tempuri.org/paramCalcIntE/"/>
+
+      <xsd:element name="Subtract">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+            <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />  
+            <xsd:element ref="ns_param_calc_c:intC"/>
+            <xsd:element ref="ns_param_calc_d:intD"/>
+            <xsd:element ref="ns_param_calc_e:intE"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+
+    <!-- Schema #6 | AddResult and SubtractResult -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcAddSubtractResult/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="AddResult"      type="xsd:int" xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/"/>
+      <xsd:element name="SubtractResult" type="xsd:int" xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/"/>
+    </xsd:schema>
+
+    <!-- Schema #7 AddResponse and SubtractResponse -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcAddSubtractResult/"/>
+      <xsd:element name="AddResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" ref="ns_param_calc_add_subtract_result:AddResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+     <xsd:element name="SubtractResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" ref="ns_param_calc_add_subtract_result:SubtractResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
+-- Schema #1 | intC XSD
+-- Schema #2 | intD XSD => ***NOT DEFINED***
+-- Schema #3 | intE XSD	=> ***NOT DEFINED***
+-- Schema #4 | Add     : there are 3 imports  without shemaLocation
+-- Schema #5 | Subtract: there are 3 imports => 1 import without shemaLocation and 2 imports with shemaLocation
+-- Schema #6 | AddResult and SubtractResult XSD => ***NOT DEFINED***
+-- Schema #7 | AddResponse and SubtractResponse: there is 1 import
+request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_XSDs_not_included_in_WSDL_ko= [[
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Enable 'config.wsdlApiSchemaForceSchemaLocation=true' as there is no 'schemaLocation' on import -->
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://tempuri.org/"
+                  xmlns:http="http://schemas.xmlsoap.org/wsdl/http/"
+                  targetNamespace="http://tempuri.org/"
+                  xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+                  xmlns:ns_param_calc_c="http://tempuri.org/paramCalcIntC/"
+                  xmlns:ns_param_calc_d="http://tempuri.org/paramCalcIntD/"
+                  xmlns:ns_param_calc_e="http://tempuri.org/paramCalcIntE/"
+                  xmlns:ns_param_calc_add_subtract_result="http://tempuri.org/paramCalcAddSubtractResult/">
+  <wsdl:types>
+    
+    <!-- Schema #1 | intC | ***NOT DEFINED*** -->
+    
+    <!-- Schema #2 | intD | ***NOT DEFINED*** -->
+
+		<!-- Schema #3 | intE -->
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntE/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intE" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntE/"/>
+    </xsd:schema>
+
+    <!-- Schema #4 | Add -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcIntC/"/>
+      <xsd:import namespace="http://tempuri.org/paramCalcIntD/"/>  
+      <xsd:import namespace="http://tempuri.org/paramCalcIntE/"/>
+
+      <xsd:element name="Add">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+            <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />  
+            <xsd:element ref="ns_param_calc_c:intC"/>
+            <xsd:element ref="ns_param_calc_d:intD"/>
+            <xsd:element ref="ns_param_calc_e:intE"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+
+    <!-- Schema #5 | Subtract -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcIntC/"/>
+      <xsd:import namespace="http://tempuri.org/paramCalcIntD/" schemaLocation="http://tempuri.org/paramCalcIntD/"/>  
+      <xsd:import namespace="http://tempuri.org/paramCalcIntE/" schemaLocation="http://tempuri.org/paramCalcIntE/"/>
+
+      <xsd:element name="Subtract">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" name="intA" type="xsd:int" />
+            <xsd:element minOccurs="1" maxOccurs="1" name="intB" type="xsd:int" />  
+            <xsd:element ref="ns_param_calc_c:intC"/>
+            <xsd:element ref="ns_param_calc_d:intD"/>
+            <xsd:element ref="ns_param_calc_e:intE"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+
+    <!-- Schema #6 | AddResult and SubtractResult | ***NOT DEFINED*** -->
+  
+    <!-- Schema #7 AddResponse and SubtractResponse -->
+    <xsd:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <xsd:import namespace="http://tempuri.org/paramCalcAddSubtractResult/"/>
+      <xsd:element name="AddResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" ref="ns_param_calc_add_subtract_result:AddResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+     <xsd:element name="SubtractResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element minOccurs="1" maxOccurs="1" ref="ns_param_calc_add_subtract_result:SubtractResult"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+</wsdl:definitions>
+]]
+
+request_common.calculatorXSLT_remove_ns_param_calc_parameters=[[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+  <xsl:strip-space elements="*"/>
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template> 
+
+  <!-- Remove paramCalc:IntC, intD, intE parameters -->
+  <xsl:template match="//*[local-name()='intC']"/>
+  <xsl:template match="//*[local-name()='intD']"/>
+  <xsl:template match="//*[local-name()='intE']"/>
+</xsl:stylesheet>
+]]
+
+
+request_common.calculatorXSD_paramCalcIntD= [[
+    <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntD/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:element name="intD" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntD/"/>
+    </xsd:schema>
+]]
+
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
 -------------------------------------------------------------------------------
@@ -1759,6 +2011,74 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	
+	local calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			wsdlApiSchemaForceSchemaLocation = true,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok,
+			xsltTransformAfter = request_common.calculatorXSLT_remove_ns_param_calc_parameters
+		}
+	}
+
+	local calculatorWSDL_with_ForceSchemaLocation_with_verbose_XSD_in_config_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_ForceSchemaLocation_with_verbose_XSD_in_config_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_ForceSchemaLocation_with_verbose_XSD_in_config_with_verbose_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			wsdlApiSchemaForceSchemaLocation = true,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok,
+			xsltTransformAfter = request_common.calculatorXSLT_remove_ns_param_calc_parameters,
+			xsdApiSchemaInclude = {
+				["http://tempuri.org/paramCalcIntD/"] = request_common.calculatorXSD_paramCalcIntD
+			},
+		}
+	}
+	local calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			wsdlApiSchemaForceSchemaLocation = true,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_ok,
+			xsdApiSchemaInclude = {
+				["http://tempuri.org/paramCalcIntD/"] = request_common.calculator_Request_XSD_API_VALIDATION_invalid
+			},
+		}
+	}
+
+	local calculatorWSDL_with_ForceSchemaLocation_some_XSDs_are_not_included_in_WSDL_with_verbose_ko = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_ForceSchemaLocation_some_XSDs_are_not_included_in_WSDL_with_verbose_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_ForceSchemaLocation_some_XSDs_are_not_included_in_WSDL_with_verbose_ko,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			wsdlApiSchemaForceSchemaLocation = true,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_XSDs_not_included_in_WSDL_ko
+		}
+	}
+	
 end
 
 ------------------------------------------
@@ -2424,7 +2744,7 @@ function request_common._2_WSDL_Validation_no_Import_multiple_XSD_Subtract_in_XS
 		body = request_common.calculator_Subtract_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2457,7 +2777,7 @@ function request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_downloa
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2473,7 +2793,7 @@ function request_common._2_WSDL_Validation_with_multiple_XSD_imported_no_downloa
 		body = request_common.calculator_Subtract_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2521,7 +2841,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl_defaultNS_xsd_schem
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2537,7 +2857,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_de
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2553,7 +2873,7 @@ function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_an
 		body = request_common.calculator_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2569,7 +2889,7 @@ function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_an
 		body = request_common.calculator_Subtract_Full_Request,
 	})
 
-	-- validate that the request failed: response status 200, Content-Type and right match
+	-- validate that the request succeeded: response status 200, Content-Type and right match
 	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
@@ -2595,4 +2915,99 @@ function request_common._2_XSD_Validation_large_body_16k_with_verbose_ko (assert
 	assert.matches('Unable to get the body request. See logs for more details', body)
 end
 
+function request_common._2_3_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request_with_ns_param_calc,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_3_WSDL_Subtract_Validation_with_ForceSchemaLocation_for_Imports_with_schemaLocation_and_others_without_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Request_with_ns_param_calc,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<SubtractResult>4</SubtractResult>', body)
+end
+
+function request_common._2_3_WSDL_Subtract_Validation_with_ForceSchemaLocation_for_Imports_with_schemaLocation_and_others_without_and_XSD_in_config_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_XSD_in_config_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Request_with_ns_param_calc,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<SubtractResult>4</SubtractResult>', body)
+end
+
+function request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request_with_ns_param_calc,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match	
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntD/'.</errorMessage>", body)
+end
+
+function request_common._2_WSDL_Validation_Subtract_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_Invalid_XSD_in_config_with_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Subtract_Request_with_ns_param_calc,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match	
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntD/'.</errorMessage>", body)
+end
+
+function request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_some_XSDs_are_not_included_in_WSDL_with_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request_with_ns_param_calc,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match	
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntC/'.</errorMessage>", body)
+end
 return request_common

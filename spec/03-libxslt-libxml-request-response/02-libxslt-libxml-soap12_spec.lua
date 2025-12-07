@@ -109,6 +109,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_soap12_XSD_with_async_download_ok_route,
           config = {
             VerboseRequest = false,
+            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
             xsdSoapSchema = soap12_common.soap12_XSD,
@@ -120,6 +121,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = false,
             ExternalEntityLoader_Async = true,
+            ExternalEntityLoader_Timeout = 5,
             xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
             xsdSoapSchema = soap12_common.soap12_XSD,
           }

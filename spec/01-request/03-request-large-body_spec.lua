@@ -8,10 +8,6 @@ local pluginRequest  = "soap-xml-request-handling"
 local PLUGIN_NAME    = pluginRequest
 local xsltLibrary = "libxslt"
 
--- Change the request body size for testing large body requests
-helpers.setenv("KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE", "16k")
-
-
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue
@@ -22,22 +18,28 @@ for _, strategy in helpers.all_strategies() do
     local client
 
     setup(function()
+
     end)
 
     -- before_each runs before each child describe
     before_each(function()
+
       client = helpers.proxy_client()
     end)
 
     -- after_each runs after each child describe
     after_each(function()
+
       if client then client:close() end
     end)
 
     -- a nested describe defines an actual test on the plugin behavior
     describe("libxml+libxslt |", function()
-			
-      lazy_setup(function()			
+
+      lazy_setup(function()
+        -- Change the request body size for testing large body requests
+        helpers.setenv("KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE", "16k")
+
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
         -- This function also truncates any existing data in an existing db.

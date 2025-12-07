@@ -35,7 +35,7 @@ services:
       retries: 10
 
   kong-bootstrap:
-    image: 'kong/kong-gateway:3.11.0.2'  # Kong Gateway image (default to latest version)
+    image: 'kong/kong-gateway:3.12.0.1'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
     container_name: kong-bootstrap
     networks:
@@ -50,7 +50,7 @@ services:
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
 
   kong-gateway-soap-xml-handling:
-    image: 'kong/kong-gateway:3.11.0.2'  # Main Kong Gateway Control Plane (default to latest version)
+    image: 'kong/kong-gateway:3.12.0.1'  # Main Kong Gateway Control Plane (default to latest version)
     platform: linux/${ARCHITECTURE}
     container_name: kong-gateway-soap-xml-handling
     restart: on-failure
@@ -63,6 +63,7 @@ services:
       - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
       - ${PROJECT_DIR}/kong/saxon/conf:/usr/local/lib/kongsaxon/conf
       - ${PROJECT_DIR}/spec/fixtures/:/kong-plugin/spec/fixtures
+      #- ${PROJECT_DIR}/kong/libxml2/2.14.6/arm64/:/usr/local/lib/kongsaxon
     environment:
       <<: *kong-env
       KONG_PROXY_LISTEN: 0.0.0.0:9000, 0.0.0.0:9443 ssl
@@ -75,7 +76,7 @@ services:
       KONG_PASSWORD: handyshake  # Required for logging in to Kong Manager (RBAC)
       SOAP_USERNAME: KongUser
       SOAP_PASSWORD: KongP@ssswOrd!
-      KONG_LOG_LEVEL: notice
+      KONG_LOG_LEVEL: debug
       KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 8k
       #KONG_NGINX_PROXY_PROXY_REQUEST_BUFFERING: off
     depends_on:

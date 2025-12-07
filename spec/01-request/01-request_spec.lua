@@ -1,12 +1,11 @@
 -- Helper functions provided by Kong Gateway, see https://github.com/Kong/kong/blob/master/spec/helpers.lua
 local helpers = require "spec.helpers"
 
--- Add a Worker Process for enabling the synchronous download of external entities
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
-
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
+
+helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 
 for _, strategy in helpers.all_strategies() do
 	--if strategy == "off" then
@@ -39,9 +38,9 @@ for _, strategy in helpers.all_strategies() do
         -- This function also truncates any existing data in an existing db.
         -- The custom plugin name is provided to this function so it mark as loaded
         local blue_print = helpers.get_db_utils(strategy, nil, { PLUGIN_NAME })
-				
+								
 				local request_context = request_common.lazy_setup(PLUGIN_NAME, blue_print, "libxslt")
-					
+								
 				-- start kong
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
@@ -54,7 +53,7 @@ for _, strategy in helpers.all_strategies() do
 			
 			lazy_teardown(function()
 				helpers.stop_kong(nil, true)
-			end)				
+			end)
 				
 			it ("1|XSLT (BEFORE XSD) - Valid transformation", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
@@ -259,7 +258,31 @@ for _, strategy in helpers.all_strategies() do
 			it("2|XSD Validation - large body 16K - Ko (due to low KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE)", function()
 				request_common._2_XSD_Validation_large_body_16k_with_verbose_ko (assert, client)
 			end)
-			
+
+			it("2+3|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Ok", function()
+				request_common._2_3_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
+			end)
+
+			it("2+3|WSDL Validation for Subtract with ForceSchemaLocation - Imports with schemaLocation and others without - Ok", function()
+				request_common._2_3_WSDL_Subtract_Validation_with_ForceSchemaLocation_for_Imports_with_schemaLocation_and_others_without_with_verbose_ok (assert, client)
+			end)
+
+			it("2+3|WSDL Validation for Subtract with ForceSchemaLocation - Import with schemaLocation and others without - XSD included in config that overwrites XSD in WSDL - Ok", function()
+				request_common._2_3_WSDL_Subtract_Validation_with_ForceSchemaLocation_for_Imports_with_schemaLocation_and_others_without_and_XSD_in_config_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL Validation for Add with ForceSchemaLocation - Invalid XSD included in config that overwrites valid XSD (without schemaLocation) in WSDL Ko", function()
+				request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation for Subtract with ForceSchemaLocation - Invalid XSD included in config that overwrites valid XSD (with schemaLocation) in WSDL - Ko", function()
+				request_common._2_WSDL_Validation_Subtract_with_ForceSchemaLocation_for_Imports_without_schemaLocation_and_Invalid_XSD_in_config_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Some XSDs are not included in WSDL - Ko", function()
+				request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
+			end)
+
 		end)
 		
 	end)

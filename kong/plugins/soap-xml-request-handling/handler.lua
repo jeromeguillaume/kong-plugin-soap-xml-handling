@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.4.1",
+    VERSION = "1.4.2",
   }
 
 local xmlgeneral = nil
@@ -110,7 +110,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                 plugin_conf.xsdApiSchema,
                                                                 plugin_conf.VerboseRequest,
                                                                 false,
-                                                                plugin_conf.ExternalEntityLoader_Async
+                                                                plugin_conf.ExternalEntityLoader_Async,
+                                                                plugin_conf.wsdlApiSchemaForceSchemaLocation
                                                               )
 
     if errMessage ~= nil then
