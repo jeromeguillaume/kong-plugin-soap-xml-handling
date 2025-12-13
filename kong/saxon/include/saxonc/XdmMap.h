@@ -237,6 +237,12 @@ public:
    */
   const char *toString(const char *encoding = nullptr);
 
+  /**
+  * Internal use only. Create an empty underlying XdmMap
+  * Returns: Emtpy Map
+  */
+  static int64_t createEmptyUnderlyingXdmMap(graal_isolatethread_t *thread);
+
 };
 
 #endif

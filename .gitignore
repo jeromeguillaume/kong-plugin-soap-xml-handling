@@ -4,7 +4,6 @@ tls.crt
 tls.key
 .DS_Store
 servroot/
-.busted
 .editorconfig
 .luacheckrc
 .luacov
@@ -21,11 +20,12 @@ luacov.stats.out
 luacov.report.out
 # exclude Pongo containerid file
 .containerid
-.busted
 kong/saxon/so/arm64/*
 kong/saxon/so/amd64/*
 kong/saxon/zip/*.zip
-kong/saxon/include/*.h
+kong/saxon/include/saxonc/
+kong/saxon/include/
+
 .VSCodeCounter/
 to_do.txt
 kong/saxon/kubernetes/tls.crt

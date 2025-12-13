@@ -54,7 +54,6 @@ public:
 
  virtual bool operator==(const XdmValue& other) const
  {
-  std::cerr<<"C++ XdmValue equals operator called !!!!"<<std::endl;
   return false;
   /*char result = j_xdmNodeEquals(SaxonProcessor::sxn_environ->thread, (void *)value, (void *)other.value);
   if((int)result == SXN_EXCEPTION) {
@@ -199,6 +198,7 @@ protected:
     toStringValue = nullptr;
     values_cap = 0;
     values = nullptr;
+    emptyValue = SXN_UNSET;
     relinquished_values = nullptr;
     // relinquished_values[0] = 0;
   }
@@ -212,6 +212,7 @@ protected:
   int refCount; /*!< The reference count of this XdmValue. If >1 this object
                    should not be deleted */
   int64_t value;            /*!< The Java XdmItem reference in Graalvm  */
+  int64_t emptyValue;            /*!< The Java XdmEmptySequence reference in Graalvm. This is -1 if value has been set  */
 
 private:
   char *toStringValue; /*!< Cached. String representation of the XdmValue, if

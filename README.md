@@ -1460,3 +1460,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped to Kong Gateway v3.12.0.1
   - Added restriction in this documentation related to the support of `WSDL Validation`
   - Fixed the detection of `ffi.NULL` pointer in `libxml2ex.formatErrMsg` related to `libxml2` v2.13+
+- v1.4.3
+  - Bumped to Kong Gateway v3.12.0.2
+  - Bumped `saxon` Home Edition from v12.8 to v12.9

@@ -134,7 +134,6 @@ public:
   bool isFunction() { return true; }
 
 protected:
-  XdmValue *getXdmValueSubClass(int64_t value); /*!< Creates the right type of result value */
 
   char *fname; /*!< The name of the function item */
 

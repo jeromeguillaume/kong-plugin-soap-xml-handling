@@ -548,8 +548,7 @@ public:
   * Deprecated. Checks for pending exceptions and creates a SaxonApiException object.
   * @deprecated From 12.1 this method is no longer used, since exceptions are now thrown.
   */
-  static SaxonApiException *checkForExceptionCPP(
-      /*JNIEnv *env, jclass callingClass, jobject callingObject*/);
+  static SaxonApiException *checkForExceptionCPP();
 
 
  /**
@@ -567,10 +566,25 @@ public:
    */
   static void attachCurrentThread();
 
+    /**
+     * Get or attaches a current graalvm isolate thread
+     */
+  static graal_isolatethread_t * getOrAttachCurrentThread(sxnc_environment * sxn);
+
   /**
    * Detach JVM from the current thread
    */
   static void detachCurrentThread();
+
+    /**
+ * Attaches a current thread to the Graalvm Isolate
+ */
+  static void attachCurrentThread(sxnc_environment * sxn);
+
+    /**
+     * Detach JVM from the current thread
+     */
+  static void detachCurrentThread(sxnc_environment * sxn);
 
   /**
    * Set the current working directory
@@ -672,14 +686,8 @@ public:
    */
   void createHeapDump(bool live);
 
-
-  /*static JavaVM *jvm;*/
-
 protected:
-  // jclass xdmAtomicClass; /*!< The XdmAtomicValue instance */
-  // jclass versionClass; /*!< The Version instance */
-  // jclass procClass; /*!< The Saxon Processor instance */
-  // jclass saxonCAPIClass; /*!< The SaxonCAPI instance */
+
   std::string cwdV; /*!< Current working directory */
   // std::string resources_dir; /*!< Saxon resources directory */
   std::string versionStr; /*!< The Saxon version string */
@@ -694,13 +702,9 @@ protected:
                     Processor is created  */
   int64_t procRef; /*!< ObjectHandle reference to the underlying processor */
 
-  // JNINativeMethod *nativeMethods; /*!< native methods variable used in
-  // extension methods */ std::vector<JNINativeMethod> nativeMethodVect; /*!<
-  // Vector of native methods defined by user */
   SaxonApiException
       *exception; /*!< SaxonApiException object to capture exceptions thrown
                      from the underlying Java code via JNI */
-
 private:
   // void createException(const char *message = nullptr);
 
@@ -710,7 +714,7 @@ private:
 
   // SaxonC method for internal use
   static int64_t
-  createParameterJArray(std::map<std::string, XdmValue *> parameters,
+    createParameterJArray(std::map<std::string, XdmValue *> parameters,
                         std::map<std::string, std::string> properties,
                         int additions = 0);
 

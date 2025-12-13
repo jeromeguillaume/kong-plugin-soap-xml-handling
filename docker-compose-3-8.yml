@@ -1,5 +1,5 @@
 volumes:
-  kong_db_data: {}  # Named volume to persist Postgres data across container restarts
+  kong_db_data_38: {}  # Named volume to persist Postgres data across container restarts
 
 networks:
   kong-soap-xml-net:      # Custom bridge network for isolated Kong and Postgres communication
@@ -8,7 +8,7 @@ networks:
 # Common environment variables used by Kong services (bootstrap and CP)
 x-kong-config: &kong-env
   KONG_DATABASE: postgres             # Use Postgres as the backing database
-  KONG_PG_HOST: kong-database-soap-xml-handling      # Hostname of the Postgres service
+  KONG_PG_HOST: kong-database-soap-xml-handling-3-8      # Hostname of the Postgres service
   KONG_PG_DATABASE: kong              # Name of the database to connect to
   KONG_PG_USER: kong                  # Database username
   KONG_PG_PASSWORD: kong              # Database password
@@ -16,12 +16,12 @@ x-kong-config: &kong-env
 
 services:
 
-  kong-database-soap-xml-handling:
-    container_name: kong-database-soap-xml-handling
+  kong-database-soap-xml-handling-3-8:
+    container_name: kong-database-soap-xml-handling-3-8
     image: postgres:latest           # Official Postgres image
     restart: on-failure              # Restart if the container fails
     volumes:
-      - kong_db_data:/var/lib/postgresql/data  # Mount the volume for persistent data
+      - kong_db_data_38:/var/lib/postgresql/data  # Mount the volume for persistent data
     networks:
       - kong-soap-xml-net                  # Connect to the shared Kong network
     environment:
@@ -34,14 +34,14 @@ services:
       timeout: 10s
       retries: 10
 
-  kong-bootstrap:
-    image: 'kong/kong-gateway:3.12.0.2'  # Kong Gateway image (default to latest version)
+  kong-bootstrap-3-8:
+    image: 'kong/kong-gateway:3.8.0.0'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
-    container_name: kong-bootstrap
+    container_name: kong-bootstrap-3-8
     networks:
       - kong-soap-xml-net
     depends_on:
-      kong-database-soap-xml-handling:
+      kong-database-soap-xml-handling-3-8:
         condition: service_healthy   # Wait until Postgres is up and healthy
     restart: on-failure
     environment:
@@ -49,20 +49,19 @@ services:
       KONG_PASSWORD: handyshake    # Admin GUI password (required for RBAC)
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
 
-  kong-gateway-soap-xml-handling:
-    #image: 'kong/kong-gateway:3.12.0.2'  # Main Kong Gateway Control Plane (default to latest version)
-    image: 'jeromeguillaume/kong-soap-xml:3.12.0.2-1.4.3-12.9'
+  kong-gateway-soap-xml-handling-3-8:
+    image: 'kong/kong-gateway:3.8.0.0'  # Main Kong Gateway Control Plane (default to latest version)
     platform: linux/${ARCHITECTURE}
-    container_name: kong-gateway-soap-xml-handling
+    container_name: kong-gateway-soap-xml-handling-3-8
     restart: on-failure
     networks:
       - kong-soap-xml-net
     volumes:
-      #- ${PROJECT_DIR}/kong/plugins/soap-xml-request-handling:/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
-      #- ${PROJECT_DIR}/kong/plugins/soap-xml-response-handling:/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling
-      #- ${PROJECT_DIR}/kong/plugins/soap-xml-handling-lib:/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib
-      #- ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
-      #- ${PROJECT_DIR}/kong/saxon/conf:/usr/local/lib/kongsaxon/conf
+      - ${PROJECT_DIR}/kong/plugins/soap-xml-request-handling:/usr/local/share/lua/5.1/kong/plugins/soap-xml-request-handling
+      - ${PROJECT_DIR}/kong/plugins/soap-xml-response-handling:/usr/local/share/lua/5.1/kong/plugins/soap-xml-response-handling
+      - ${PROJECT_DIR}/kong/plugins/soap-xml-handling-lib:/usr/local/share/lua/5.1/kong/plugins/soap-xml-handling-lib
+      - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
+      - ${PROJECT_DIR}/kong/saxon/conf:/usr/local/lib/kongsaxon/conf
       - ${PROJECT_DIR}/spec/fixtures/:/kong-plugin/spec/fixtures
       #- ${PROJECT_DIR}/kong/libxml2/2.14.6/arm64/:/usr/local/lib/kongsaxon
     environment:
@@ -77,11 +76,11 @@ services:
       KONG_PASSWORD: handyshake  # Required for logging in to Kong Manager (RBAC)
       SOAP_USERNAME: KongUser
       SOAP_PASSWORD: KongP@ssswOrd!
-      KONG_LOG_LEVEL: notice
+      KONG_LOG_LEVEL: debug
       KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 8k
       #KONG_NGINX_PROXY_PROXY_REQUEST_BUFFERING: off
     depends_on:
-      kong-bootstrap:
+      kong-bootstrap-3-8:
         condition: service_completed_successfully  # Start only after bootstrap has succeeded
     ports:
       - "9000:9000"

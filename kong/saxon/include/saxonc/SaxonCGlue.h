@@ -146,6 +146,11 @@ SAXONC_EXPORT int create_graalvm_isolate(sxnc_environment *env);
 SAXONC_EXPORT int attach_graalvm_thread(sxnc_environment *env);
 
 /**
+ * Get or attach to the current thread in the loaded GraalVM isolate
+ */
+SAXONC_EXPORT graal_isolatethread_t* get_or_attach_thread(sxnc_environment *env);
+
+/**
  * Closes down the GraalVM environment used by SaxonC
  */
 SAXONC_EXPORT int detach_graalvm_thread(sxnc_environment *env);

@@ -33,6 +33,12 @@ public:
    */
   XdmArray();
 
+ /**
+ * Constructor to create a null XdmArray that is not an empty array.
+ * Creates an XdmArray
+ */
+  //XdmArray(bool);
+
   /**
    * XdmArray copy constructor.
    * @param d - XdmArray
@@ -168,6 +174,7 @@ public:
    * The caller is responsible for memory deallocation using `operator delete`.
    */
   const char *toString(const char *encoding = nullptr);
+
 
 private:
   int arrayLen;

@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.2",
+    VERSION = "1.4.3",
   }
 
 local xmlgeneral = nil
@@ -177,18 +177,18 @@ function plugin:access(plugin_conf)
 
   -- If http version is 'HTTP/2' the enable_buffering doesn't work so the 'soap-xml-response-handling' 
   -- cannot work and we 'disable' it
-  if ngx.req.http_version() < 2 then
+--  if ngx.req.http_version() < 2 then
     kong.service.request.enable_buffering()
-  else
-    local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
-                    " please use http/1.x instead. The plugin is disabled"
-    kong.log.err(errMsg)
-    kong.ctx.shared.xmlSoapHandlingFault = {
-      error = true,
-      pluginId = -1,
-      soapEnvelope = errMsg
-    }
-  end
+--  else
+--    local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
+--                    " please use http/1.x instead. The plugin is disabled"
+--    kong.log.err(errMsg)
+--    kong.ctx.shared.xmlSoapHandlingFault = {
+--      error = true,
+--      pluginId = -1,
+--      soapEnvelope = errMsg
+--    }
+--  end
 end
 
 -----------------------------------------------------------------------------------------

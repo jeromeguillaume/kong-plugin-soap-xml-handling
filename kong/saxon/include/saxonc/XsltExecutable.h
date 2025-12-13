@@ -574,6 +574,7 @@ public:
    */
   SaxonProcessor* getSaxonProcessor() { return proc; }
 
+
 private:
   /**
    * Default constructor.
@@ -597,7 +598,6 @@ private:
 
 
   void setParameter(const char *name, XdmValue *value, bool withParam);
-
 
   SaxonProcessor *proc; /*! Pointer to the SaxonProcessor object which created this XsltExecutable */
                         // jclass  cppClass;
