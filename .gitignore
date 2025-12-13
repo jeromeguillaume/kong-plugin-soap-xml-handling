@@ -23,7 +23,6 @@ luacov.report.out
 kong/saxon/so/arm64/*
 kong/saxon/so/amd64/*
 kong/saxon/zip/*.zip
-kong/saxon/include/saxonc/
 kong/saxon/include/
 
 .VSCodeCounter/
