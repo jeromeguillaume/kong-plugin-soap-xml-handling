@@ -472,7 +472,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			name = PLUGIN_NAME,
 			route = calculatorXSLT_beforeXSD_route,
 			config = {
-				VerboseResponse = false,
+				VerboseResponse = true,
 				xsltLibrary = xsltLibrary,
 				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 			}
@@ -1567,4 +1567,30 @@ function response_common._5_WSDL_Validation_Add_with_ForceSchemaLocation_and_All
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntC/'.</errorMessage>", body)
 end
+
+function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, http2_client)
+  -- invoke a test request
+	local body, headers = assert(http2_client {
+		headers = {
+			[":method"] = "POST",
+			[":scheme"] = "https",
+			[":path"] = "/calculatorXSLT_beforeXSD_ok",
+			["content-type"] = "text/xml",
+		},
+		body = response_common.calculator_Request
+	})
+	
+	-- For Kong v3.9+ the Response plugin supports HTTP/2 protocol
+	if kong.version_num >= 3009000 then		
+		assert.equal(200, tonumber(headers:get(":status")))
+		assert.matches('<KongResult>13</KongResult>', body)
+
+	-- For Kong v3.8- the Response plugin doesn't support HTTP/2 protocol
+	else
+		assert.equal(200, tonumber(headers:get(":status")))
+		assert.not_matches('<KongResult>13</KongResult>', body)
+		assert.logfile().has.line("Try calling 'kong.service.request.enable_buffering' with http/2 please use http/1.x instead")
+	end	
+end
+
 return response_common

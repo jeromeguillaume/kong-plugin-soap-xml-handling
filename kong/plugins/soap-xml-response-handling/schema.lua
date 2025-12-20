@@ -67,6 +67,12 @@ return {
           return nil, "config.xsdApiSchema must be defined if config.xsdApiSchemaInclude is defined"
         end
 
+        -- Check that if 'wsdlApiSchemaForceSchemaLocation' is enabled, the 'xsdApiSchema' is defined
+        if (type(config.wsdlApiSchemaForceSchemaLocation) == 'boolean' and config.wsdlApiSchemaForceSchemaLocation) and 
+            type(config.xsdApiSchema) == 'userdata' then
+          return nil, "config.xsdApiSchema must be defined if config.wsdlApiSchemaForceSchemaLocation is enabled"
+        end
+
         return true
       end
     }},

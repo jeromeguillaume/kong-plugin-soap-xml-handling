@@ -146,7 +146,7 @@ If `Verbose` is enabled:
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
 |config.RouteXPathTargets.XPathCondition|N/A|XPath condition value to compare with the value extracted by `XPath` expression. If the condition is satisfied the route is changed to `URL`|
-|config.RouteXPathRegisterNs|Pre-defined|Array of NameSpaces to be registered for applying XPath expression. The syntax is `prefix,namespace`. If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a a fake prefix like `myprefix,http://...`|
+|config.RouteXPathRegisterNs|Pre-defined|Array of NameSpaces to be registered for applying XPath expression. The syntax is `prefix,namespace`. If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a fake prefix like `myprefix,http://...`|
 |config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
@@ -1319,8 +1319,9 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 <a id="Known_Limitations"></a>
 
 ## Known Limitations
-1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2
+1) Kong Gateway version v3.8 (or less): the `soap-xml-response-handling` plugin doesn't work for HTTP/2
 - It's due to the current Nginx limitation. See [Kong Gateway doc](https://developer.konghq.com/gateway/entities/plugin/#plugin-contexts)
+- No HTTP/2 restriction for Kong Gateway version v3.9 or higher
 2) The `WSDL VALIDATION` has following limitations:
 - The validation is provided by `libxml2` library that supports XML but doesn't natively support WSDL. So, some specific WSDL definitions are not supported by the plugin. For instance the [`location`](https://www.w3.org/TR/2007/REC-wsdl20-20070626/#include_location_attribute) WSDL2.0 atrribute (offering a way to give the Schema location) is not supported
 3) The `WSDL/XSD VALIDATION` has following limitations:
@@ -1328,10 +1329,16 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude` or
   - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
 - If [`stream_listen`](https://developer.konghq.com/gateway/configuration/#stream-listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The recommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
+  - The plugins add a Kong log:
+    ```shell
+    [error] The 'stream_listen' is enabled but it's partially incompatible for downloading External entities defined in WSDL/XSD"
+    ```
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
 4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
 - It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
-5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. Have at least one SOAP/XML plugin for freeing the memory at the 2nd `configure` phase. It is recommended not to change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
+5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. It is recommended to:
+    - Have at least one SOAP/XML plugin for freeing the memory at the 2nd `configure` phase
+    - Not change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
 
 <a id="Changelog"></a>
 
@@ -1463,3 +1470,8 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.4.3
   - Bumped to Kong Gateway v3.12.0.2
   - Bumped `saxon` Home Edition from v12.8 to v12.9
+  - `http/2`: removed the restriction for `soap-xml-response-handling` plugin and for Kong Gateway v3.9+
+  - `wsdlApiSchemaForceSchemaLocation`: fixed an issue in the event the XSD definition related to an `<import>` is not found in the WSDL
+  - If `stream_listen` is enabled the `kong.cache:get` isn't used anymore for external entities (because it leads to a [alert] 1#0: worker process ABCD exited on signal 11)
+  - Added schema control:
+    - Check that if `wsdlApiSchemaForceSchemaLocation` is defined the `xsdApiSchema` is defined too

@@ -174,21 +174,27 @@ function plugin:access(plugin_conf)
 
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
-
-  -- If http version is 'HTTP/2' the enable_buffering doesn't work so the 'soap-xml-response-handling' 
-  -- cannot work and we 'disable' it
---  if ngx.req.http_version() < 2 then
+  
+  -- Kong Gateway version >= 3.9.0
+  if  kong.version_num >= 3009000 then
     kong.service.request.enable_buffering()
---  else
---    local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
---                    " please use http/1.x instead. The plugin is disabled"
---    kong.log.err(errMsg)
---    kong.ctx.shared.xmlSoapHandlingFault = {
---      error = true,
---      pluginId = -1,
---      soapEnvelope = errMsg
---    }
---  end
+  -- Kong Gateway version < 3.9.0
+  else
+    -- If http version is 'HTTP/2' the enable_buffering doesn't work so the 'soap-xml-response-handling' 
+    -- cannot work and we 'disable' it
+    if ngx.req.http_version() < 2 then
+      kong.service.request.enable_buffering()
+    else
+      local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
+                      " please use http/1.x instead. The plugin is disabled"
+      kong.log.err(errMsg)
+      kong.ctx.shared.xmlSoapHandlingFault = {
+        error = true,
+        pluginId = -1,
+        soapEnvelope = errMsg
+      }
+    end
+  end
 end
 
 -----------------------------------------------------------------------------------------

@@ -110,6 +110,12 @@ return {
           return nil, "config.xsdApiSchema must be defined if config.SOAPAction_Header is enabled"
         end
 
+        -- Check that if 'wsdlApiSchemaForceSchemaLocation' is enabled, the 'xsdApiSchema' is defined
+        if (type(config.wsdlApiSchemaForceSchemaLocation) == 'boolean' and config.wsdlApiSchemaForceSchemaLocation) and 
+            type(config.xsdApiSchema) == 'userdata' then
+          return nil, "config.xsdApiSchema must be defined if config.wsdlApiSchemaForceSchemaLocation is enabled"
+        end
+
         return true
       end
     }},

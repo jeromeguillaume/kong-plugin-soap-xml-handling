@@ -4,6 +4,12 @@ local helpers = require "spec.helpers"
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-response-handling"
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+-- helpers.setenv("KONG_LOG_LEVEL", "debug")
+
+-- Debug HTTP/2 connection
+-- helpers.setenv("KONG_DEBUG_HTTP2", "1")
+
 local response_common = require "spec.common.response"
 
 for _, strategy in helpers.all_strategies() do
@@ -14,6 +20,7 @@ for _, strategy in helpers.all_strategies() do
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
     local client
+		local http2_client
 
     setup(function()
     end)
@@ -21,6 +28,7 @@ for _, strategy in helpers.all_strategies() do
     -- before_each runs before each child describe
     before_each(function()
       client = helpers.proxy_client()
+			http2_client = helpers.proxy_client_h2()
     end)
 
     -- after_each runs after each child describe
@@ -182,7 +190,10 @@ for _, strategy in helpers.all_strategies() do
 				response_common._5_WSDL_Validation_Add_with_ForceSchemaLocation_and_All_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
 			end)
 
-
+				it ("5|XSLT (BEFORE XSD) - Valid transformation - HTTP/2 - Ok (v3.9+) - Ko (v3.8-)", function()
+					response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, http2_client)
+				end)
+	
   	end)
 
 	end)

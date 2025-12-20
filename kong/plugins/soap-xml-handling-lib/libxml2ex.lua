@@ -156,7 +156,7 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   local fullFileName
 
   -- In the context of 'filePath' contains the XML sent by the consumer or by the server (i.e. <soap:Envelope>)
-  if hasToRead == false or not filePath then
+  if hasToRead == false or not filePath or (filePath and filePath == '') then
     -- Don't try to read a file as it's just an XML content or 'filePath' is nil
     return nil, nil
   end
@@ -224,7 +224,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local xsdApiSchemaInclude   = nil
   local xsdSoapSchemaInclude  = nil
   local filePathPrefix        = nil
-
+  
   if URL ~= ffi.NULL then
     entity_url = ffi.string(URL)
   end
@@ -233,10 +233,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
 
   -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
+  -- See https://konghq.atlassian.net/browse/FTI-7168
   if #kong.configuration.stream_listeners > 0 then
     err = libxml2ex.stream_listen_err ..
-          ". Therefore the synchronous download is forced with default values, CacheTTL=" ..libxml2ex.externalEntityCacheTTL..
-          ", timeout=" .. libxml2ex.externalEntityTimeout
+          ". Therefore the synchronous download is forced with default values: No Cache, Timeout=" .. libxml2ex.externalEntityTimeout .. "s"
     kong.log.err(err)
     streamListen = true
   end
@@ -315,9 +315,9 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
 
     local queue_conf  =
     {
-      name = libxml2ex.queueNamePrefix .. "-download-xsd", -- name of the queue (required)
+      name = libxml2ex.queueNamePrefix .. "-download-xsd",  -- name of the queue (required)
       log_tag = libxml2ex.queueNamePrefix,               -- tag string to identify plugin or application area in logs
-      max_batch_size = 1,                               -- maximum number of entries in one batch (default 1)
+      max_batch_size = 1,                                -- maximum number of entries in one batch (default 1)
       max_coalescing_delay = 0,                          -- maximum number of seconds after first entry before a batch is sent
       max_entries = 10000,                               -- maximum number of entries on the queue (default 10000)
       max_bytes = nil,                                   -- maximum number of bytes on the queue (default nil)
@@ -395,13 +395,23 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- Else we Synchronously download the External Entity
   else
     
-    -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
-    response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entity_url)
-    if err then
-      kong.log.err("Error while retrieving entities from cache, error: '", err, "'")
-      return nil
+    -- If 'stream_listen' is not enabled
+    if streamListen == false then
+      -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
+      response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entity_url)    
+      if err then
+        kong.log.err("Error while retrieving entities from cache, error: '", err, "'")
+        return nil
+      end
+    else
+      -- Retrieve the response_body using the 'syncDownloadEntities' function (http(s) call)
+      response_body, err = syncDownloadEntities(entity_url)
+      if err then
+        kong.log.err("Error while retrieving entities, error: '", err, "'")
+        return nil
+      end
     end
-
+    
   end
 
   -- Create a new XML string input stream using the retrieved response_body.
@@ -601,13 +611,7 @@ function libxml2ex.xmlSchemaValidateOneElement(validation_context, xmlNodePtr, v
 
   -- libxml2 - v2.12
   xml2.xmlSchemaSetValidStructuredErrors(validation_context, kong.xmlSoapLibxmlErrorHandler, nil)
-  
-  -- libxml2 - v2.13
-  -- local xmlParserCtxt = xml2.xmlSchemaValidCtxtGetParserCtxt(validation_context)  
-  -- xml2.xmlCtxtSetErrorHandler(xmlParserCtxt, kong.xmlSoapLibxmlErrorHandler, nil)
-
-  xml2.xmlSchemaSetParserStructuredErrors (ctxt,kong.xmlSoapLibxmlErrorHandler, nil)
-  
+    
   local is_valid = xml2.xmlSchemaValidateOneElement (validation_context, xmlNodePtr)
   
   return tonumber(is_valid), kong.ctx.shared.xmlSoapErrMessage

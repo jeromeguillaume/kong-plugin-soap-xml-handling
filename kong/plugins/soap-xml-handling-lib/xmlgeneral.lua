@@ -829,6 +829,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
       -- so the Schema included in the plugin conf or the Asynchronous download can't work
       if #kong.configuration.stream_listeners > 0 and 
         (xsdSoapSchemaInclude or xsdApiSchemaInclude or config.ExternalEntityLoader_Async) then
+        -- See https://konghq.atlassian.net/browse/FTI-7168
         kong.log.err(libxml2ex.stream_listen_err)
       -- If Asynchronous is enabled
       elseif config.ExternalEntityLoader_Async then
@@ -1670,7 +1671,8 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
           local xsdApiSchemaInclude = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
           -- For each entry in 'schemaLocations' table
           for namespace, xsdDefinition in pairs(schemaLocations) do
-            if namespace and xsdApiSchemaInclude[namespace] == nil then
+            if namespace and xsdApiSchemaInclude[namespace] == nil and
+              xsdDefinition and xsdDefinition ~= "" then
               kong.log.debug("Add in 'xsdApiSchemaInclude' config plugin the XSD of '", namespace, "' for supporting the injection of 'schemaLocation' in <import>")
               xsdApiSchemaInclude[namespace] = xsdDefinition
             end
@@ -1940,7 +1942,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
       --    </soap:Body>
       --  </soap:Envelope>
       -- Get Root Element, which is <soap:Envelope>
-      local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc);
+      local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc)
 
       currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
        -- Retrieve '<soap:Body>' Node in the XML
