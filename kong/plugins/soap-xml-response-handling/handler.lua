@@ -56,10 +56,11 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                               pluginId,
                                                                               plugin_conf.ExternalEntityLoader_CacheTTL,                                                                               
                                                                               plugin_conf.filePathPrefix,
-                                                                              xmlgeneral.schemaTypeSOAP, 
+                                                                              xmlgeneral.schemaTypeSOAP_All, 
                                                                               1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
                                                                               soapEnvelopeTransformed, 
-                                                                              plugin_conf.xsdSoapSchema, 
+                                                                              plugin_conf.xsdSoapSchema,
+                                                                              plugin_conf.xsdSoap12Schema, 
                                                                               plugin_conf.VerboseResponse, 
                                                                               false,
                                                                               plugin_conf.ExternalEntityLoader_Async)
@@ -166,8 +167,11 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- Do a sleep for waiting the end of Prefetch of SOAP Schema
+  -- Do a sleep for waiting the end of Prefetch of SOAP 1.1 Schema
   xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
+  
+  -- Do a sleep for waiting the end of Prefetch of SOAP 1.2 Schema
+  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoap12SchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
   
   -- Do a sleep for waiting the end of Prefetch of API Schema
   xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude , libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)

@@ -21,17 +21,22 @@ return {
             keys = { type = "string", required = true },
             values = {type = "string", required = true},
           }},
-          { xsdSoapSchema = { type = "string", required = false, default = XSD_SOAP }, },
-          { xsdSoapSchemaInclude = { type = "map", required = false, 
+          { xsdSoap12Schema = { type = "string", required = false, }, },
+          { xsdSoap12SchemaInclude = { type = "map", required = false, 
             keys = { type = "string", required = true },
             values = {type = "string", required = true},
-          }},
+            }},
           { xsltLibrary = {required = true, type = "string", default = "libxslt",
             one_of = {
               "libxslt",
               "saxon",
             },
           },},
+          { xsdSoapSchema = { type = "string", required = false, default = XSD_SOAP }, },
+          { xsdSoapSchemaInclude = { type = "map", required = false, 
+            keys = { type = "string", required = true },
+            values = {type = "string", required = true},
+          }},
           { xsltTransformAfter = { type = "string", required = false }, },
           { xsltTransformBefore = { type = "string", required = false }, },
           { xsltParams = { type = "map", required = false, default = {},
@@ -55,10 +60,16 @@ return {
           return nil, "config.xsdSoapSchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
         end
 
-        -- Check that if the SOAP Schema inclusion is defined, the 'xsdApiSchema' is defined too
+        -- Check that if the SOAP 1.1 Schema inclusion is defined, the 'xsdApiSchema' is defined too
         if (config.xsdSoapSchemaInclude and type(config.xsdSoapSchemaInclude) == 'table' and next(config.xsdSoapSchemaInclude)) and  
             type(config.xsdSoapSchema) == 'userdata' then
           return nil, "config.xsdSoapSchema must be defined if config.xsdSoapSchemaInclude is defined"
+        end
+
+        -- Check that if the SOAP 1.2 Schema inclusion is defined, the 'xsdApiSchema' is defined too
+        if (config.xsdSoap12SchemaInclude and type(config.xsdSoap12SchemaInclude) == 'table' and next(config.xsdSoap12SchemaInclude)) and  
+            type(config.xsdSoap12Schema) == 'userdata' then
+          return nil, "config.xsdSoap12Schema must be defined if config.xsdSoap12SchemaInclude is defined"
         end
 
         -- Check that if the API Schema inclusion is defined, the 'xsdSoapSchema' is defined too

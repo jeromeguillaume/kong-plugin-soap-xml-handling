@@ -61,11 +61,16 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   -- If there is no error and
   -- If the plugin is defined with XSD SOAP schema then:
   -- => Validate the SOAP envelope with its schema
-  if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
+  if soapFaultBody == nil and (plugin_conf.xsdSoapSchema or plugin_conf.xsdSoap12Schema) then
 
-    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd then
+    -- SOAP 1.1: Do a sleep for waiting the end of Prefetch (only if it's not already done)
+    if not sleepForPrefetchEnd and plugin_conf.xsdSoapSchema then
       sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
+    end
+
+    -- SOAP 1.2: Do a sleep for waiting the end of Prefetch (only if it's not already done)
+    if not sleepForPrefetchEnd and plugin_conf.xsdSoap12Schema then
+      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoap12SchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
     end
 
     -- Validate the SOAP envelope with its schema    
@@ -73,10 +78,11 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                                pluginId,
                                                                                plugin_conf.ExternalEntityLoader_CacheTTL,
                                                                                plugin_conf.filePathPrefix,
-                                                                               xmlgeneral.schemaTypeSOAP,
+                                                                               xmlgeneral.schemaTypeSOAP_All,
                                                                                1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (for 1st XSD entry)
                                                                                soapEnvelope_transformed,
                                                                                plugin_conf.xsdSoapSchema,
+                                                                               plugin_conf.xsdSoap12Schema,
                                                                                plugin_conf.VerboseRequest,
                                                                                false,
                                                                                plugin_conf.ExternalEntityLoader_Async)

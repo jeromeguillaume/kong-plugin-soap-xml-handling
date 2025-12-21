@@ -221,9 +221,10 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local async         = false
   local streamListen  = false
   local url_cache_key = nil
-  local xsdApiSchemaInclude   = nil
-  local xsdSoapSchemaInclude  = nil
-  local filePathPrefix        = nil
+  local filePathPrefix          = nil
+  local xsdApiSchemaInclude     = nil
+  local xsdSoapSchemaInclude    = nil
+  local xsdSoap12SchemaInclude  = nil
   
   if URL ~= ffi.NULL then
     entity_url = ffi.string(URL)
@@ -245,30 +246,42 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   --   AND
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
   if streamListen == false and kong.ctx.shared.xmlSoapExternalEntity then
-    cacheTTL              = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-    timeout               = kong.ctx.shared.xmlSoapExternalEntity.timeout
-    async                 = kong.ctx.shared.xmlSoapExternalEntity.async
-    xsdApiSchemaInclude   = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
-    xsdSoapSchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
-    filePathPrefix        = kong.ctx.shared.xmlSoapExternalEntity.filePathPrefix
+    cacheTTL                = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
+    timeout                 = kong.ctx.shared.xmlSoapExternalEntity.timeout
+    async                   = kong.ctx.shared.xmlSoapExternalEntity.async
+    xsdApiSchemaInclude     = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
+    xsdSoapSchemaInclude    = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
+    xsdSoap12SchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdSoap12SchemaInclude
+    filePathPrefix          = kong.ctx.shared.xmlSoapExternalEntity.filePathPrefix
   -- Else this function is called in the context of the nginx 'configure' phase, which is not related to an end-user Request
   --   so there is no 'kong.ctx.shared'
   else
-    cacheTTL              = libxml2ex.externalEntityCacheTTL
-    timeout               = libxml2ex.externalEntityTimeout
+    cacheTTL                = libxml2ex.externalEntityCacheTTL
+    timeout                 = libxml2ex.externalEntityTimeout
     if streamListen then
-      async               = false
+      async                 = false
     else
-      async               = true
+      async                 = true
     end
-    xsdApiSchemaInclude   = nil
-    xsdSoapSchemaInclude  = nil
-    filePathPrefix        = nil
+    xsdApiSchemaInclude     = nil
+    xsdSoapSchemaInclude    = nil
+    xsdSoap12SchemaInclude  = nil
+    filePathPrefix          = nil
   end
 
-  -- if the SOAP XSD content is included in the plugin configuration
+  -- if the SOAP 1.1 XSD content is included in the plugin configuration
   if xsdSoapSchemaInclude then
     for k,v in pairs(xsdSoapSchemaInclude) do
+      if k == entity_url then
+        response_body = v
+        break
+      end
+    end
+  end
+
+  -- if the SOAP 1.2 XSD content is included in the plugin configuration
+  if xsdSoap12SchemaInclude then
+    for k,v in pairs(xsdSoap12SchemaInclude) do
       if k == entity_url then
         response_body = v
         break

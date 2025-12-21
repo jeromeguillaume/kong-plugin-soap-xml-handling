@@ -7,7 +7,7 @@ servroot/
 .editorconfig
 .luacheckrc
 .luacov
-.vscode/# servroot typically is the Kong working directory for tests
+.vscode
 servroot
 settings.json
 # exclude generated packed rocks
