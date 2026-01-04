@@ -16,7 +16,10 @@ return {
           { filePathPrefix = typedefs.path { required = false } },
           { RouteXPathRegisterNs = { type = "array",  required = false, 
               elements = {type = "string"}, 
-                default = {"soap,http://schemas.xmlsoap.org/soap/envelope/"},
+                default = {
+                  "soap,http://schemas.xmlsoap.org/soap/envelope/",
+                  "soap12,http://www.w3.org/2003/05/soap-envelope"
+                },
             },
           },
           { RouteXPathTargets = { type = "array", required = false,

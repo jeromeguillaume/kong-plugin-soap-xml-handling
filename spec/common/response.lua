@@ -362,6 +362,30 @@ response_common.calculator_Response_No_Operation = [[
 <soap:Body/>
 </soap:Envelope>]]
 
+response_common.calculator_Response_Invalid_SOAP_NameSpace= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://INVALID.NAMESPACE.org/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<AddResponse xmlns="http://tempuri.org/">
+			<AddResult>13</AddResult>
+		</AddResponse>
+	</soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_XSD_SOAP_VALIDATION_REQUEST_Invalid_Namespace_Client_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Response %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://INVALID.NAMESPACE.org/}Envelope': No matching global declaration available for the validation root.</errorMessage>
+        <backendHttpCode>200</backendHttpCode>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
 
 response_common.calculator_Response_XSD_SOAP_VALIDATION_blank_soap_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>

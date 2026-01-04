@@ -856,7 +856,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
         -- If a SOAP 1.2 XSD Schema is defined and
         -- If the XSD content is NOT included in the plugin configuration
         if      config.xsdSoap12Schema and
-            not xsdSoapSchemaInclude then
+            not xsdSoap12SchemaInclude then
           kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdSoap12Schema, xmlgeneral.schemaTypeSOAP_All, queueName, queue_conf)
         end
@@ -1836,8 +1836,10 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
   -- Prepare the error Message
   if childInput == xmlgeneral.schemaTypeSOAP_All then
     schemaType = "SOAP"
-    -- The 'child' value is retrieved once the XML is loaded (to detect the SOAP version 1.1 or 1.2)
-    -- The 'XSDSchema' value is dynamically chosen between 'XSDSchemaInput' and 'XSDSchemaInput2' depending on the detected SOAP version
+    -- For Prefetch => the 'XSDSchema' is set to the 'XSDSchemaInput' 
+    -- For Direct call => the value is dynamically chosen between 'XSDSchemaInput' and 'XSDSchemaInput2' depending on the detected SOAP version
+    XSDSchema = XSDSchemaInput
+    -- The 'child' value is retrieved once the XML is loaded (to detect the SOAP version 1.1 or 1.2)    
   else
     schemaType = "API"
     child = childInput
@@ -1894,10 +1896,26 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
           end
           i = i + 1
         end
-        if not child then
-          errMessage = xmlgeneral.invalidXML .. ". Unable to detect the namespace SOAP version"
-        else
-          kong.log.notice("XSD Validation, detected SOAP version=", child)
+        if child then
+          kong.log.debug("XSD Validation, detected SOAP version=", child)
+        end
+        
+        if child == xmlgeneral.schemaTypeSOAP1_1 and not XSDSchema then
+          errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.1"
+          soapFaultCode = xmlgeneral.soapFaultCodeServer
+        elseif child == xmlgeneral.schemaTypeSOAP1_2 and not XSDSchema then
+          errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.2"
+          soapFaultCode = xmlgeneral.soapFaultCodeServer
+        -- If there is no SOAP namespace found we apply the default XSD Schema
+        -- It's required for XML <-> JSON transformation where the XML is not necessarily a SOAP message          
+        elseif not child then
+          child = xmlgeneral.schemaTypeSOAP1_1
+          XSDSchema = XSDSchemaInput
+          kong.log.debug("XSD Validation, apply default XSD schema for the root node")
+        end
+        
+        if errMessage then
+          is_valid = xmlgeneral.libxmlNoMatchGlobalDecl
         end
         
       else
@@ -1950,7 +1968,6 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
       
     end
   end
-
   if not errMessage then
     -- If the Parser Context is not in the cache 
     if not cacheXSD.xmlSchemaParserCtxtPtr then
@@ -1977,20 +1994,28 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
       if not cacheXSD.xmlSchemaPtr then
         -- Parse XSD schema
         xsd_schema_doc, errMessage = libxml2ex.xmlSchemaParse(xsd_context, verbose)
-        cacheXSD.xmlSchemaPtr = xsd_schema_doc      
+        cacheXSD.xmlSchemaPtr = xsd_schema_doc                
+        if errMessage then
+          -- If it's the Request Plugin
+          if pluginType == xmlgeneral.RequestTypePlugin then
+            -- The error is related to the 'Server'
+            soapFaultCode = xmlgeneral.soapFaultCodeServer
+          end
+          errMessage = xmlgeneral.invalidXSD .. ". " .. errMessage
+        end
+ 
       -- Get the Schema Parser from cache
       else
         xsd_schema_doc = cacheXSD.xmlSchemaPtr
       end
     end  
   end
-
   -- If it's a Prefetch we just have to parse the XSD, which downloads XSD in cascade 
   --   => there is no XML to validate with its schema
   if prefetch then
     return errMessage, XMLXSDMatching, soapFaultCode
   end
-  
+
   if not errMessage then
     -- If the Validation Context pointer is not in the cache
     if not cacheXSD.xmlSchemaValidCtxtPtr then
@@ -2062,16 +2087,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
     else
       -- Check validity of XML with its XSD schema
       is_valid, errMessage = libxml2ex.xmlSchemaValidateDoc (validation_context, xml_doc, verbose)              
-    end
-    
-    if errMessage then
-      -- If it's the Request Plugin
-      if pluginType == xmlgeneral.RequestTypePlugin then
-        -- The error is related to the 'Server'
-        soapFaultCode = xmlgeneral.soapFaultCodeServer
-      end
-      errMessage = xmlgeneral.invalidXSD .. ". " .. errMessage
-    end
+    end    
   end
   
   if not errMessage and is_valid == 0 then

@@ -5,9 +5,6 @@
 local helpers = require "spec.helpers"
 local request_common = {}
 
--- Number of times to loop the request for testing the caching
-request_common.max_loop_caching = 2
-
 request_common.calculator_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -86,6 +83,17 @@ request_common.calculator_Request_SOAP_ko= [[
     </Add>
   </soap:Body>
 </soap:Envelope2>
+]]
+
+request_common.calculator_Request_Invalid_SOAP_NameSpace= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://INVALID.NAMESPACE.org/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <soap:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>5</intA>
+    </Add>
+  </soap:Body>
+</soap:Envelope>
 ]]
 
 request_common.calculator_Request_API_ko= [[
@@ -425,6 +433,34 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_Client_verb
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope2, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope2': No matching global declaration available for the validation root.</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Invalid_Namespace_Client_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://INVALID.NAMESPACE.org/}Envelope': No matching global declaration available for the validation root.</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_with_no_11_schema_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Invalid XSD schema. Unable to find schema for SOAP 1.1</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1594,13 +1630,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 				},
 			}
 	}}
-	local culatorRoutingByXPath_hostname_route = blue_print.routes:insert{
+	local calculatorRoutingByXPath_hostname_route = blue_print.routes:insert{
 		service= calculator_service,
 		paths= { "/calculatorRoutingByXPath_hostname_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = culatorRoutingByXPath_hostname_route,
+		route = calculatorRoutingByXPath_hostname_route,
 		config = {
 			VerboseRequest = false,
 			xsltLibrary = xsltLibrary,

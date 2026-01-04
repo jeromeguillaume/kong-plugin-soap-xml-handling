@@ -573,8 +573,8 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
             SOAPAction_Header = "yes",
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
           }
@@ -591,8 +591,8 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsdApiSchema = soapAction_common.calculatorWSDL11_kong_wsdl_kong11_kong12,
             SOAPAction_Header = "yes",
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
           }
@@ -651,8 +651,8 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsdApiSchema = soapAction_common.calculatorWSDL20_wsdl2,
             SOAPAction_Header = "yes",
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
           }
@@ -683,8 +683,8 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             xsdApiSchema = soapAction_common.calculatorWSDL20_defaultNS_wsdl,
             SOAPAction_Header = "yes",
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
           }
