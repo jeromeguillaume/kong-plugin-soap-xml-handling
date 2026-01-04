@@ -82,8 +82,8 @@ In the event the request body size is reached, an error is raised by kong:
     - Error in Kong Log, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
     - Message returned to the Client: `Unable to get the body request. See logs for more details`
 
-4) For simultaneous access to SOAP v1.1 and v1.2 to the same route:
-    - `WSDL/XSD VALIDATION`: define `config.xsdApiSchema` and `config.xsdApiSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation
+4) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
+    - `WSDL/XSD VALIDATION`: define `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation. **Do not swap the SOAP 1.1 and 1.2 XSD definitions** (for instance: do not set the SOAP 1.2 definition in `xsdSoapSchema` and `xsdSoapSchemaInclude`)
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
@@ -1507,7 +1507,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.4.3
   - Bumped to Kong Gateway v3.12.0.2
   - Bumped `saxon` Home Edition from v12.8 to v12.9
-  - Added simultaneous support to SOAP v1.1 and v1.2 for `XSD VALIDATION`. Breaking change: 2 parameters have been added for SOAP v1.2 `xsdSoap12Schema` and `xsdSoap12SchemaInclude`
+  - Added simultaneous support to SOAP 1.1 and 1.2 for `XSD VALIDATION`. Breaking change: 2 parameters have been added for SOAP v1.2 `xsdSoap12Schema` and `xsdSoap12SchemaInclude`
   - `http/2`: removed the restriction for `soap-xml-response-handling` plugin and for Kong Gateway v3.9+
   - `wsdlApiSchemaForceSchemaLocation`: fixed an issue in the event the XSD definition related to an `<import>` is not found in the WSDL
   - If `stream_listen` is enabled the `kong.cache:get` isn't used anymore for external entities (because it leads to a [alert] 1#0: worker process ABCD exited on signal 11)
