@@ -449,14 +449,14 @@ In this example we **change the Tag name from `<Subtract>...</Subtract>`** (pres
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:'text/xml; charset=utf-8' \
---raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <Subtract xmlns=\"http://tempuri.org/\">
+    <Subtract xmlns="http://tempuri.org/">
       <intA>5</intA>
     </Subtract>
   </soap:Body>
-</soap:Envelope>"
+</soap:Envelope>'
 ```
 
 The expected result is `-3`
