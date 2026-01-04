@@ -164,8 +164,8 @@ If `Verbose` is enabled:
 |config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP v1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
 |config.xsdSoapSchemaInclude|N/A|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
-|config.xsdSoap12Schema|N/A|See `xsdSoapSchema` description for SOAP v1.2|
-|config.xsdSoap12SchemaInclude|N/A|See `xsdSoapSchemaInclude` description for SOAP v1.2|
+|config.xsdSoap12Schema|N/A|For SOAP v1.2. See `xsdSoapSchema` description|
+|config.xsdSoap12SchemaInclude|N/A|For SOAP v1.2. See `xsdSoapSchemaInclude` description|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`. It can be a raw definition or a file name containing the definition|
