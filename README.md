@@ -29,18 +29,19 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 
 ---
 
-1. [Information and Recommendation](#information_recommendation)
-2. [Configuration Reference](#configuration_reference)
-3. [How to deploy SOAP/XML Handling plugins](#deployment)
+1. [Recommendation](#recommendation)
+2. [Information](#information)
+3. [Configuration Reference](#configuration_reference)
+4. [How to deploy SOAP/XML Handling plugins](#deployment)
     1. [Docker Compose](#docker_compose)
     2. [Schema plugins in Konnect (Control Plane) for Kong Gateway](#Konnect_CP_for_Kong_Gateway)
     3. [Schema plugins in Konnect (Control Plane) for Kong Ingress Controller (KIC)](#Konnect_CP_for_KIC)
     4. [Kong Gateway (Data Plane) | Kubernetes](#Konnect_DP_for_K8S)
-4. [Quick Test: How to test an XML calculator Web Service without the plugins](#Quick_Test)
+5. [Quick Test: How to test an XML calculator Web Service without the plugins](#Quick_Test)
     1. [Kong Gateway - online calculator](#Quick_Test_Kong_Gateway_online)
     2. [Kong Gateway - local Docker calculator](#Quick_Test_Kong_Gateway_local_Docker)
     3. [Kong Ingress Controller (KIC) - online calculator](#Quick_Test_KIC_online)
-5. [Main Example: How to test XML Handling plugins with calculator](#Main_Example)
+6. [Main Example: How to test XML Handling plugins with calculator](#Main_Example)
     1. [Example #1: Request | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_1)
     2. [Example #2: Request | XSD VALIDATION](#Main_Example_2)
     3. [Example #3: Request | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_3)
@@ -48,7 +49,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
     5. [Example #5: Response | XSLT TRANSFORMATION - BEFORE XSD](#Main_Example_5)
     6. [Example #6: Response | XSD VALIDATION](#Main_Example_6)
     7. [Example #7: Response | XSLT TRANSFORMATION - AFTER XSD](#Main_Example_7)
-6. [Miscellaneous examples](#Miscellaneous_examples)
+7. [Miscellaneous examples](#Miscellaneous_examples)
     1. [Example (A) : Response | Use a SOAP/XML WebService with gzip](#Miscellaneous_example_A)
     2. [Example (B) : Request | Use a WSDL definition, which imports XSD schemas from external entity FILE](#Miscellaneous_example_B)
     3. [Example (C1): Request | Use a WSDL definition, which imports an XSD schema from the plugin configuration](#Miscellaneous_example_C1)
@@ -56,17 +57,39 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
     5. [Example (D) : Request | Use a WSDL definition, which imports an XSD schema from an external entity URL](#Miscellaneous_example_D)
     6. [Example (E) : Request | Use a WSDL definition, which imports XSDs schema without schemaLocation ](#Miscellaneous_example_E)
     7. [Example (F) : Request and Response | XSLT 3.0 with the saxon library](#Miscellaneous_example_F)
-    8. [Example (G) : Request and Response | use a SOAP 1.2 XSD definition and the calculator API XSD definition](#Miscellaneous_example_G)
+    8. [Example (G) : Request and Response | use a SOAP 1.2 (and SOAP 1.1) XSD definition and the calculator API XSD definition](#Miscellaneous_example_G)
     9. [Example (H) : Request | validate the SOAPAction Http header](#Miscellaneous_example_H)
     10. [Example (I): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_I)
-7. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
-8. [Plugins Testing](#Plugins_Testing)
-9. [Known Limitations](#Known_Limitations)
-10. [Changelog](#Changelog)
+8. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
+9. [Plugins Testing](#Plugins_Testing)
+10. [Known Limitations](#Known_Limitations)
+11. [Changelog](#Changelog)
 
-<a id="information_recommendation"></a>
 
-## Information and Recommendation
+<a id="recommendation"></a>
+
+## Recommendation
+1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
+
+2) When importing definitions in WSDL/XSD, it is recommended to configure the plugins preferably in this order:
+    1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude`, `xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
+    2) Put the raw content in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
+    3) Really download the content (with http(s) protocol): Synchronous or Asynchronous. For Synchronous (only), there is a prefetch WSDL/XSD validation for forcing the download of ìmported XSD ahead of the 1st request
+    - If the WSDL uses `<import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
+
+3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
+In the event the request body size is reached, an error is raised by kong:
+    - Error in Kong Log, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+    - Message returned to the Client: `Unable to get the body request. See logs for more details`
+
+4) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
+    - `WSDL/XSD VALIDATION`: define `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation. Do not swap the SOAP 1.1 and 1.2 XSD definitions (for instance: do not set the SOAP 1.2 definition in `xsdSoapSchema` and `xsdSoapSchemaInclude`)
+    - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
+    - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
+  
+<a id="information"></a>
+
+## Information
 ### XML Definitions in files
 The XML definitions (for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`) can be put on the Kong Gateway file system rather using a raw definition. 
 Example for `config.xsdApiSchema`:
@@ -93,7 +116,7 @@ The plugins manage both types of import:
 
 The External entities are processed in this order:
   1) Read the content from the file system (related to the `config.filePathPrefix`)
-  2) Get the content from the plugin configuration (defined in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`)
+  2) Get the raw content from the plugin configuration (defined in `config.xsdSoapSchemaInclude` or `config.xsdSoap12SchemaInclude` or `config.xsdApiSchemaInclude`)
   3) Download Synchronously or Asynchronously the external Entity URL (related to the `config.ExternalEntityLoader_Async`)
 
 ### Caching
@@ -105,20 +128,6 @@ The External entities are processed in this order:
   - `XSLT`/`SOAPAction`/`RouteByXPath`: the error message is kept in the cache
   - The difference in behavior (`WSDL`/`XSD` vs `XSLT`/`SOAPAction`/`RouteByXPath`) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by `WSDL`/`XSD`)
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
-
-### Recommendation
-1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane.
-
-2) When importing definitions in WSDL/XSD, it is recommended to configure the plugins preferably in this order:
-    1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
-    2) Put the raw content in `config.xsdSoapSchemaInclude` or `config.xsdApiSchemaInclude`
-    3) Really download the content (with http(s) protocol): Synchronous or Asynchronous
-    - If the WSDL uses `<import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
-
-3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
-In the event the request body size is reached, an error is raised by kong:
-    - Error in Kong Log, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
-    - Message returned to the Client: `Unable to get the body request. See logs for more details`
 
 ### Error management
 In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
@@ -146,15 +155,17 @@ If `Verbose` is enabled:
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
 |config.RouteXPathTargets.XPathCondition|N/A|XPath condition value to compare with the value extracted by `XPath` expression. If the condition is satisfied the route is changed to `URL`|
-|config.RouteXPathRegisterNs|Pre-defined|Array of NameSpaces to be registered for applying XPath expression. The syntax is `prefix,namespace`. If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a a fake prefix like `myprefix,http://...`|
+|config.RouteXPathRegisterNs|Pre-defined|Array of NameSpaces to be registered for applying XPath expression. The syntax is `prefix,namespace`. If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a fake prefix like `myprefix,http://...`|
 |config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
 |config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
-|config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
-|config.xsdSoapSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
+|config.xsdSoapSchema|Pre-defined with `SOAP` 1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP 1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
+|config.xsdSoapSchemaInclude|N/A|XSD content for SOAP 1.1 included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
+|config.xsdSoap12Schema|N/A|For SOAP 1.2. See `xsdSoapSchema` description|
+|config.xsdSoap12SchemaInclude|N/A|For SOAP 1.2. See `xsdSoapSchemaInclude` description|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`. It can be a raw definition or a file name containing the definition|
@@ -438,14 +449,14 @@ In this example we **change the Tag name from `<Subtract>...</Subtract>`** (pres
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:'text/xml; charset=utf-8' \
---raw "<?xml version=\"1.0\" encoding=\"utf-8\"?>
-<soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\">
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
-    <Subtract xmlns=\"http://tempuri.org/\">
+    <Subtract xmlns="http://tempuri.org/">
       <intA>5</intA>
     </Subtract>
   </soap:Body>
-</soap:Envelope>"
+</soap:Envelope>'
 ```
 
 The expected result is `-3`
@@ -499,10 +510,15 @@ Add a Kong `Upstream` named `calculator.apim.eu` and defines a `target` with `ca
 
 Open `soap-xml-request-handling` plugin and configure it with:
 - `RouteXPathRegisterNs` leave the default value and add `tempuri_kong,http://tempuri.org/`
-- `RouteXPathTargets` add a new (target) item with:
+- `RouteXPathTargets` add a new (target) item for SOAP 1.1 with:
   - `URL` property with the value `https://calculator.apim.eu:443/ws`
   - `XPath` property with the value `/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']` or `/soap:Envelope/soap:Body/tempuri_kong:Add/tempuri_kong:intA`
   - `XPathCondition` property with the value `5`
+- optional: `RouteXPathTargets` add a new (target) item for SOAP 1.2 with:
+  - `URL` property with the value `https://calculator.apim.eu:443/ws`
+  - `XPath` property with the value `/soap12:Envelope/soap12:Body/*[local-name() = 'Add']/*[local-name() = 'intA']` or `/soap12:Envelope/soap12:Body/tempuri_kong:Add/tempuri_kong:intA`
+  - `XPathCondition` property with the value `5`
+
 Use command defined at Example #3, the expected result is `13`. Pay attention to the `X-SOAP-Region` (http header in the response) added by `calculator.apim.eu`
 ```xml
 HTTP/1.1 200 
@@ -863,7 +879,7 @@ KONG_NGINX_WORKER_PROCESSES=2
 ```
 Note: 
   - The non-blocking `resty.http` library cannot be used because it raises a conflict issue with `libxml2`: `attempt to yield across C-call boundary` 
-  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude`
+  - To avoid this limitation please enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`) or use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude` and `config.xsdSoap12SchemaInclude`
 
 6) Call the `calculator` through the Kong Gateway Route
 ```
@@ -962,14 +978,14 @@ See [SAXON.md](SAXON.md)
 
 <a id="Miscellaneous_example_G"></a>
 
-### Example (G): Request and Response | `SOAP 1.2` `XSD VALIDATION`: use a `SOAP 1.2` `XSD` definition and the `calculator` API `XSD` definition
+### Example (G): Request and Response | `SOAP 1.2` (and `SOAP 1.1`) `XSD VALIDATION`: use a `SOAP 1.2` `XSD` definition and the `calculator` API `XSD` definition
 Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseRequest` enabled
-- `xsdSoapSchema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
-- `xsdSoapSchemaInclude` property with this value:
+- `xsdSoap12Schema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoap12SchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
   - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
 - `xsdApiSchema` property with this `XSD` value:
@@ -987,8 +1003,8 @@ Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD 
 ```
 3) Add `soap-xml-response-handling` plugin to `calculator` and configure the plugin with:
 - `VerboseResponse` enabled
-- `xsdSoapSchema` property:  replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
-- `xsdSoapSchemaInclude` property with this value:
+- `xsdSoap12Schema` property:  replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoap12SchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
   - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
 - `xsdApiSchema` property with this `XSD` value:
@@ -1004,7 +1020,7 @@ Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD 
 </xs:schema>
 ```
 
-4) Call the `calculator` through the Kong Gateway Route
+4) Call the `calculator` through the Kong Gateway Route by using a SOAP 1.2 envelope
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:'application/soap+xml; charset=utf-8' \
@@ -1026,6 +1042,27 @@ The expected result is:
 ...
 ```
 
+5) Try the configuration by using a SOAP 1.1 envelope. As `xsdSoapSchema` is predefined with SOAP 1.1 there is need to change the configuration
+```
+http POST http://localhost:8000/calculator \
+Content-Type:'text/xml; charset=utf-8' \
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>5</intA>
+      <intB>7</intB>
+    </Add>
+  </soap:Body>
+</soap:Envelope>'
+```
+
+The expected result is: 
+```xml
+...
+<AddResult>12</AddResult>
+...
+```
 <a id="Miscellaneous_example_H"></a>
 
 ### Example (H): Request | `WSDL VALIDATION`: validate the `SOAPAction` Http header
@@ -1119,8 +1156,8 @@ The expected result is:
 - `SOAPAction_Header` property with the value `yes`
 - `VerboseRequest` enabled
 - `xsdApiSchema` property with this `WSDL 1.1` value: [dneonline.com.wsdl (v1.1)](/_tmp.dneonline.com/dneonline.com.binding_soap1.1_soap1.2.wsdl)
-- `xsdSoapSchema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
-- `xsdSoapSchemaInclude` property with this value:
+- `xsdSoap12Schema` property: replace the default value by [www.w3.org/2003/05/soap-envelope.xsd](./_tmp.w3.org/www.w3.org|2003|05|soap-envelope.xsd)
+- `xsdSoap12SchemaInclude` property with this value:
   - key: `http://www.w3.org/2001/xml.xsd`
   - value: see value in [http://www.w3.org/2001/xml.xsd](_tmp.w3.org/www.w3.org|2001|xml.xsd)
 
@@ -1319,19 +1356,26 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 <a id="Known_Limitations"></a>
 
 ## Known Limitations
-1) The `soap-xml-response-handling` plugin doesn't work for HTTP/2
-- It's due to the current Nginx limitation. See [Kong Gateway doc](https://developer.konghq.com/gateway/entities/plugin/#plugin-contexts)
+1) Kong Gateway version v3.8 (or less): the `soap-xml-response-handling` plugin doesn't work for HTTP/2
+- It's due to a Nginx limitation. See [Kong Gateway doc](https://developer.konghq.com/gateway/entities/plugin/#plugin-contexts)
+- No HTTP/2 restriction for Kong Gateway version v3.9 or higher
 2) The `WSDL VALIDATION` has following limitations:
 - The validation is provided by `libxml2` library that supports XML but doesn't natively support WSDL. So, some specific WSDL definitions are not supported by the plugin. For instance the [`location`](https://www.w3.org/TR/2007/REC-wsdl20-20070626/#include_location_attribute) WSDL2.0 atrribute (offering a way to give the Schema location) is not supported
 3) The `WSDL/XSD VALIDATION` has following limitations:
 - If the WSDL/XSD schema imports an XSD from external entity, it uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`). As it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
-  - Use `config.xsdApiSchemaInclude` and `config.xsdSoapSchemaInclude` or
-  - Have at least 2 Nginx worker processes or enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
+  - Use `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.xsdSoap12SchemaInclude` **or**
+  - Have at least 2 Nginx worker processes **or**
+  - Enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
 - If [`stream_listen`](https://developer.konghq.com/gateway/configuration/#stream-listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The recommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
+  - The plugins add a Kong log:
+    ```shell
+    [error] The 'stream_listen' is enabled but it's partially incompatible for downloading External entities defined in WSDL/XSD"
+    ```
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
-4) `WSDL/XSD VALIDATION` applies for SOAP 1.1 or SOAP 1.2 but not both simultaneously
-- It's related to `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude`. To avoid this limitation please create one Kong route per SOAP version
-5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. Have at least one SOAP/XML plugin for freeing the memory at the 2nd `configure` phase. It is recommended not to change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
+4) `XSLT TRANSFORMATION` can be simultaneously applied for SOAP 1.1 or SOAP 1.2 if there is no specific reference to the `<soap:Envelope>` and `<soap:Body>` (or `<soap12:Envelope>` and `<soap12:Body>`). In the event those tags are used, please create one Kong route per SOAP version
+5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. It is recommended to:
+    - Have at least one SOAP/XML plugin for freeing the memory at the 2nd `configure` phase
+    - Not change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
 
 <a id="Changelog"></a>
 
@@ -1460,3 +1504,12 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped to Kong Gateway v3.12.0.1
   - Added restriction in this documentation related to the support of `WSDL Validation`
   - Fixed the detection of `ffi.NULL` pointer in `libxml2ex.formatErrMsg` related to `libxml2` v2.13+
+- v1.4.3
+  - Bumped to Kong Gateway v3.12.0.2
+  - Bumped `saxon` Home Edition from v12.8 to v12.9
+  - Added simultaneous support to SOAP 1.1 and 1.2 for `XSD VALIDATION`. Breaking change: 2 parameters have been added for SOAP v1.2 `xsdSoap12Schema` and `xsdSoap12SchemaInclude`
+  - `http/2`: removed the restriction for `soap-xml-response-handling` plugin and for Kong Gateway v3.9+
+  - `wsdlApiSchemaForceSchemaLocation`: fixed an issue in the event the XSD definition related to an `<import>` is not found in the WSDL
+  - If `stream_listen` is enabled the `kong.cache:get` isn't used anymore for external entities (because it leads to a [alert] 1#0: worker process ABCD exited on signal 11)
+  - Added schema control:
+    - Check that if `wsdlApiSchemaForceSchemaLocation` is defined the `xsdApiSchema` is defined too

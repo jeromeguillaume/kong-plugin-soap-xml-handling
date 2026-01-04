@@ -362,6 +362,30 @@ response_common.calculator_Response_No_Operation = [[
 <soap:Body/>
 </soap:Envelope>]]
 
+response_common.calculator_Response_Invalid_SOAP_NameSpace= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://INVALID.NAMESPACE.org/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+	<soap:Body>
+		<AddResponse xmlns="http://tempuri.org/">
+			<AddResult>13</AddResult>
+		</AddResponse>
+	</soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_XSD_SOAP_VALIDATION_REQUEST_Invalid_Namespace_Client_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Response %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://INVALID.NAMESPACE.org/}Envelope': No matching global declaration available for the validation root.</errorMessage>
+        <backendHttpCode>200</backendHttpCode>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
 
 response_common.calculator_Response_XSD_SOAP_VALIDATION_blank_soap_Failed_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
@@ -472,7 +496,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			name = PLUGIN_NAME,
 			route = calculatorXSLT_beforeXSD_route,
 			config = {
-				VerboseResponse = false,
+				VerboseResponse = true,
 				xsltLibrary = xsltLibrary,
 				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 			}
@@ -1567,4 +1591,30 @@ function response_common._5_WSDL_Validation_Add_with_ForceSchemaLocation_and_All
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntC/'.</errorMessage>", body)
 end
+
+function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, http2_client)
+  -- invoke a test request
+	local body, headers = assert(http2_client {
+		headers = {
+			[":method"] = "POST",
+			[":scheme"] = "https",
+			[":path"] = "/calculatorXSLT_beforeXSD_ok",
+			["content-type"] = "text/xml",
+		},
+		body = response_common.calculator_Request
+	})
+	
+	-- For Kong v3.9+ the Response plugin supports HTTP/2 protocol
+	if kong.version_num >= 3009000 then		
+		assert.equal(200, tonumber(headers:get(":status")))
+		assert.matches('<KongResult>13</KongResult>', body)
+
+	-- For Kong v3.8- the Response plugin doesn't support HTTP/2 protocol
+	else
+		assert.equal(200, tonumber(headers:get(":status")))
+		assert.not_matches('<KongResult>13</KongResult>', body)
+		assert.logfile().has.line("Try calling 'kong.service.request.enable_buffering' with http/2 please use http/1.x instead")
+	end	
+end
+
 return response_common

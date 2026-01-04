@@ -1,4 +1,4 @@
 # Copy the header files (.h) required for Visual Studio syntax checking
-SOURCE     : ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/*.h
-             ./libsaxon-HEC-linux-aarch64-v12.5.0/Saxon.C.API/graalvm/*.h
+SOURCE     : ./SaxonCHE-linux-arm64-12-9-0/SaxonCHE/include/saxonc
+             ./SaxonCHE-linux-arm64-12-9-0/SaxonCHE/include/*.h
 DESTINATION: ./kong-plugin-soap-xml-handling/kong/saxon/include

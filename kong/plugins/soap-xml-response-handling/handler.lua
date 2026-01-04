@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.2",
+    VERSION = "1.4.3",
   }
 
 local xmlgeneral = nil
@@ -56,10 +56,11 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
                                                                               pluginId,
                                                                               plugin_conf.ExternalEntityLoader_CacheTTL,                                                                               
                                                                               plugin_conf.filePathPrefix,
-                                                                              xmlgeneral.schemaTypeSOAP, 
+                                                                              xmlgeneral.schemaTypeSOAP_All, 
                                                                               1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
                                                                               soapEnvelopeTransformed, 
-                                                                              plugin_conf.xsdSoapSchema, 
+                                                                              plugin_conf.xsdSoapSchema,
+                                                                              plugin_conf.xsdSoap12Schema, 
                                                                               plugin_conf.VerboseResponse, 
                                                                               false,
                                                                               plugin_conf.ExternalEntityLoader_Async)
@@ -166,28 +167,37 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- Do a sleep for waiting the end of Prefetch of SOAP Schema
+  -- Do a sleep for waiting the end of Prefetch of SOAP 1.1 Schema
   xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
+  
+  -- Do a sleep for waiting the end of Prefetch of SOAP 1.2 Schema
+  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoap12SchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
   
   -- Do a sleep for waiting the end of Prefetch of API Schema
   xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude , libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
 
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
-
-  -- If http version is 'HTTP/2' the enable_buffering doesn't work so the 'soap-xml-response-handling' 
-  -- cannot work and we 'disable' it
-  if ngx.req.http_version() < 2 then
+  
+  -- Kong Gateway version >= 3.9.0
+  if  kong.version_num >= 3009000 then
     kong.service.request.enable_buffering()
+  -- Kong Gateway version < 3.9.0
   else
-    local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
-                    " please use http/1.x instead. The plugin is disabled"
-    kong.log.err(errMsg)
-    kong.ctx.shared.xmlSoapHandlingFault = {
-      error = true,
-      pluginId = -1,
-      soapEnvelope = errMsg
-    }
+    -- If http version is 'HTTP/2' the enable_buffering doesn't work so the 'soap-xml-response-handling' 
+    -- cannot work and we 'disable' it
+    if ngx.req.http_version() < 2 then
+      kong.service.request.enable_buffering()
+    else
+      local errMsg =  "Try calling 'kong.service.request.enable_buffering' with http/" .. ngx.req.http_version() .. 
+                      " please use http/1.x instead. The plugin is disabled"
+      kong.log.err(errMsg)
+      kong.ctx.shared.xmlSoapHandlingFault = {
+        error = true,
+        pluginId = -1,
+        soapEnvelope = errMsg
+      }
+    end
   end
 end
 

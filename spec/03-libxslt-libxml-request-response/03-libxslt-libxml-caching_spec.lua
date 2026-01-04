@@ -234,8 +234,8 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
           }
@@ -246,8 +246,8 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
           }
@@ -264,7 +264,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             ExternalEntityLoader_Async = true,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,            
-            xsdSoapSchema = soap12_common.soap12_XSD
+            xsdSoap12Schema = soap12_common.soap12_XSD
           }
         }
         blue_print.plugins:insert {
@@ -274,7 +274,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = false,
             ExternalEntityLoader_Async = true,            
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsdSoapSchema = soap12_common.soap12_XSD
+            xsdSoap12Schema = soap12_common.soap12_XSD
           }
         }
 
@@ -288,6 +288,37 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             xsdSoapSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid
+          }
+        }
+
+        local calculator_multiple_soap_xsd_with_included_import_no_download_route_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_multiple_soap_xsd_with_included_import_no_download_route_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,            
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_multiple_soap_xsd_with_included_import_no_download_route_ok,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_Async = false,            
+            ExternalEntityLoader_CacheTTL = caching_common.TTL,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
           }
         }
 
@@ -983,6 +1014,148 @@ for _, strategy in helpers.all_strategies() do
         -- Plugin Request: Check in the log that the XSD definition was recompiled (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
       end)
+
+      it("2+6|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.1 req/res - Ok", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)        
+        
+        -- Plugin Request/Response: Check in the log that the XSD definition was compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)        
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)        
+      end)
+
+      it("2+6|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - Ok", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        
+        -- Plugin Request/Response: Check in the log that the XSD definition was compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)        
+      end)
+
+      it("2+6|** Execute the same SOAP 1.1 req/res test (before TTL is exceeded): check that the definitions are still cached **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)        
+        
+        -- Plugin Request/Response: Check in the log that the XSD definition used the cache
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+      end)
+
+      it("2+6|** Execute the same SOAP 1.2 req/res test (before TTL is exceeded): check that the definitions are still cached **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        
+                -- Plugin Request/Response: Check in the log that the XSD definition used the cache
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xsd)
+      end)
+
+      it("2+6|** Execute the same SOAP 1.1 req/res test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+        
+        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
+        ngx.sleep(caching_common.TTL)
+
+        -- invoke a test request
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)        
+        
+        -- Plugin Request/Response: Check in the log that the XSD definition was compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)        
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)        
+      end)
+
+      it("2+6|** Execute the same SOAP 1.2 req/res test (after  TTL is exceeded): check that the definitions are compiled again (due to TTL exceeded) **", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        
+        -- Plugin Request/Response: Check in the log that the XSD definition was compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)        
+      end)
+
 
 		end)
 

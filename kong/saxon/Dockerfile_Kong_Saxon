@@ -1,4 +1,4 @@
-FROM kong/kong-gateway:3.12.0.1 AS base
+FROM kong/kong-gateway:3.12.0.2 AS base
 
 ARG TARGETARCH
 

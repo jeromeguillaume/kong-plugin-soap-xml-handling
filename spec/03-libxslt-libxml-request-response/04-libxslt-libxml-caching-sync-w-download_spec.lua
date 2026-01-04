@@ -143,7 +143,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,            
-            xsdSoapSchema = soap12_common.soap12_XSD
+            xsdSoap12Schema = soap12_common.soap12_XSD
           }
         }
         blue_print.plugins:insert {
@@ -153,7 +153,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = true,
             ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsdSoapSchema = soap12_common.soap12_XSD
+            xsdSoap12Schema = soap12_common.soap12_XSD
           }
         }
 
@@ -167,8 +167,8 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsdSoapSchema = soap12_common.soap12_XSD,
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = "<**INVALID XSD**>"
             }
           }

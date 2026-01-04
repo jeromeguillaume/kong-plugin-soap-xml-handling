@@ -177,7 +177,7 @@ function libsaxon4kong.getErrorMessage(context)
         if err2 then
           err = err2
         end      
-      -- Else the 'splitn' function is not defined (for fomer Kong releases)
+      -- Else the 'splitn' function is not defined (for former Kong releases)
       else
         err = string.gsub(err, ".\n", ". ")
         err = string.gsub(err, "\n", ". ")

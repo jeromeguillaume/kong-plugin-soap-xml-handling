@@ -409,8 +409,8 @@ for _, strategy in helpers.all_strategies() do
             VerboseRequest = true,
             ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = "/kong-plugin/spec/fixtures/calculator/2_6_soap12_2001_xml.xsd"
             },
             xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_http_import.wsdl",
@@ -427,8 +427,8 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = true,
             ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = "/kong-plugin/spec/fixtures/calculator/2_6_soap12_2001_xml.xsd"
             },
             xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_http_import.wsdl",
@@ -449,7 +449,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 3600,
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12_file_import.xsd",
+            xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12_file_import.xsd",
             xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl"
           }
         }
@@ -459,7 +459,7 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 3600,
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12_file_import.xsd",
+            xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12_file_import.xsd",
             xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_file_import.wsdl"
           }
         }
@@ -503,8 +503,8 @@ for _, strategy in helpers.all_strategies() do
           -- it lacks the '<' beginning tag
           config = {
             VerboseRequest = true,
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = "/kong-plugin/spec/fixtures/calculator/invalidXML/2_6_invalid_soap12_2001_xml.xsd"
             }
           }
@@ -661,8 +661,8 @@ for _, strategy in helpers.all_strategies() do
           config = {
             xsltLibrary = xsltLibrary,
             VerboseRequest = true,
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
-            xsdSoapSchemaInclude = {
+            xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
+            xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = "/kong-plugin/spec/fixtures/calculator/___DOES_NOT_EXIST___.xml"
             }
           }
