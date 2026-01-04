@@ -83,7 +83,7 @@ In the event the request body size is reached, an error is raised by kong:
     - Message returned to the Client: `Unable to get the body request. See logs for more details`
 
 4) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
-    - `WSDL/XSD VALIDATION`: define `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation. **Do not swap the SOAP 1.1 and 1.2 XSD definitions** (for instance: do not set the SOAP 1.2 definition in `xsdSoapSchema` and `xsdSoapSchemaInclude`)
+    - `WSDL/XSD VALIDATION`: define `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation. Do not swap the SOAP 1.1 and 1.2 XSD definitions (for instance: do not set the SOAP 1.2 definition in `xsdSoapSchema` and `xsdSoapSchemaInclude`)
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
