@@ -1042,7 +1042,7 @@ The expected result is:
 ...
 ```
 
-5) Try the configuration by using a SOAP v1.1 envelope. As `xsdSoapSchema` is predefined with SOAP v1.1 there is need to change the configuration
+5) Try the configuration by using a SOAP 1.1 envelope. As `xsdSoapSchema` is predefined with SOAP 1.1 there is need to change the configuration
 ```
 http POST http://localhost:8000/calculator \
 Content-Type:'text/xml; charset=utf-8' \
