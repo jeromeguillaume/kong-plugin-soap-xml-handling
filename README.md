@@ -518,6 +518,7 @@ Open `soap-xml-request-handling` plugin and configure it with:
   - `URL` property with the value `https://calculator.apim.eu:443/ws`
   - `XPath` property with the value `/soap12:Envelope/soap12:Body/*[local-name() = 'Add']/*[local-name() = 'intA']` or `/soap12:Envelope/soap12:Body/tempuri_kong:Add/tempuri_kong:intA`
   - `XPathCondition` property with the value `5`
+
 Use command defined at Example #3, the expected result is `13`. Pay attention to the `X-SOAP-Region` (http header in the response) added by `calculator.apim.eu`
 ```xml
 HTTP/1.1 200 
