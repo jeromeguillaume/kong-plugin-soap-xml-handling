@@ -83,7 +83,7 @@ In the event the request body size is reached, an error is raised by kong:
     - Message returned to the Client: `Unable to get the body request. See logs for more details`
 
 4) For simultaneous access to SOAP v1.1 and v1.2 to the same route:
-    - `WSDL/XSD VALIDATION`: define `config.xsdApiSchema` and `config.xsdApiSchemaInclude` for SOAP v1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP v1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation
+    - `WSDL/XSD VALIDATION`: define `config.xsdApiSchema` and `config.xsdApiSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
@@ -162,10 +162,10 @@ If `Verbose` is enabled:
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
 |config.xsdApiSchema|`false`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
 |config.xsdApiSchemaInclude|`false`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
-|config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the `<soap>` v1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
+|config.xsdSoapSchema|Pre-defined with `SOAP` v1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP v1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
 |config.xsdSoapSchemaInclude|N/A|XSD content included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoap12Schema|N/A|See `xsdSoapSchema` description for SOAP v1.2|
-|config.xsdSoap12SchemaInclude|N/A||See `xsdSoapSchemaInclude` description for SOAP v1.2|
+|config.xsdSoap12SchemaInclude|N/A|See `xsdSoapSchemaInclude` description for SOAP v1.2|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`. It can be a raw definition or a file name containing the definition|
