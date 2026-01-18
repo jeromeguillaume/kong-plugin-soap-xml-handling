@@ -121,13 +121,13 @@ return {
         end
 
         -- Check that if 'SOAPAction_Header' is enabled, the 'xsdApiSchema' is defined
-        if config.SOAPAction_Header ~= "no" and type(config.xsdApiSchema) == 'userdata' then
+        if config.SOAPAction_Header ~= "no" and (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
           return nil, "config.xsdApiSchema must be defined if config.SOAPAction_Header is enabled"
         end
 
         -- Check that if 'wsdlApiSchemaForceSchemaLocation' is enabled, the 'xsdApiSchema' is defined
         if (type(config.wsdlApiSchemaForceSchemaLocation) == 'boolean' and config.wsdlApiSchemaForceSchemaLocation) and 
-            type(config.xsdApiSchema) == 'userdata' then
+            (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
           return nil, "config.xsdApiSchema must be defined if config.wsdlApiSchemaForceSchemaLocation is enabled"
         end
 
