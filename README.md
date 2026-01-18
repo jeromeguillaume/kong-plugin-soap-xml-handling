@@ -90,7 +90,7 @@ In the event the request body size is reached, an error is raised by kong:
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
-5) For completly disable the `WSDL/XSD VALIDATION` for SOAP 1.1, set `config.xsdSoapSchema` to `<!-- -->`
+5) For completly disable the `WSDL/XSD VALIDATION` for SOAP 1.1, change the default value of `config.xsdSoapSchema` to `<!-- -->`
 
 <a id="information"></a>
 
@@ -167,7 +167,7 @@ If `Verbose` is enabled:
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
 |config.xsdApiSchema|`N/A`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
 |config.xsdApiSchemaInclude|`N/A`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
-|config.xsdSoapSchema|Pre-defined with `SOAP` 1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP 1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition|
+|config.xsdSoapSchema|Pre-defined with `SOAP` 1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP 1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition. Use `<!-- -->` value (an XML comment) for disabling the validation|
 |config.xsdSoapSchemaInclude|N/A|XSD content for SOAP 1.1 included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoap12Schema|N/A|For SOAP 1.2. See `xsdSoapSchema` description|
 |config.xsdSoap12SchemaInclude|N/A|For SOAP 1.2. See `xsdSoapSchemaInclude` description|
