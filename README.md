@@ -90,7 +90,7 @@ In the event the request body size is reached, an error is raised by kong:
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
-5) For completly disable the `WSDL/XSD VALIDATION` for SOAP 1.1, change the default value of `config.xsdSoapSchema` to `<!-- -->`
+5) For completly disable the SOAP 1.1 `WSDL/XSD VALIDATION`, change the default value of `config.xsdSoapSchema` to `<!-- -->`
 
 <a id="information"></a>
 
@@ -1525,4 +1525,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `ExternalEntityLoader_Async`: impoved the mechanism:
     - Called `sleepForPrefetchEnd` one time per plugin call
     - Added the detection of `Failed to locate a schema at location` error message
-  - `WSDL/XSD Validation`: enabled an XML comment in definition that stands for no definition and no validation. Used for completly disable the SOAP 1.1 XSD Validation that is enabled by default
+  - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Used for completly disable the SOAP 1.1 XSD Validation that is enabled by default
