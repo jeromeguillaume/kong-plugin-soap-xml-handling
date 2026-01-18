@@ -29,7 +29,6 @@ libxml2ex.externalEntityCacheTTL  = 3600  -- default TTL     value for the conte
 libxml2ex.externalEntityTimeout   = 1     -- default Timeout value for the context of the XSD Validation Prefetch
 libxml2ex.sizeOfLRUCache          = 2000  -- Size of size of LRU Cache (1 entry per XSD URL/External Entity)
 libxml2ex.queueNamePrefix         = "soap-xml-handling"
-libxml2ex.stream_listen_err       = "The 'stream_listen' is enabled but it's partially incompatible for downloading External entities defined in WSDL/XSD. Recommendation => disable 'stream_listen'"
 
 -- Initialize the defaultLoader to nil.
 local defaultLoader = nil
@@ -54,14 +53,8 @@ local function syncDownloadEntities(url)
 
   local response_body, response_code, response_headers
 
-  -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
-  if #kong.configuration.stream_listeners > 0 then
-    http.TIMEOUT  = libxml2ex.externalEntityTimeout
-    https.TIMEOUT = libxml2ex.externalEntityTimeout
-  else
-    http.TIMEOUT  = kong.ctx.shared.xmlSoapExternalEntity.timeout
-    https.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
-  end
+  http.TIMEOUT  = kong.ctx.shared.xmlSoapExternalEntity.timeout
+  https.TIMEOUT = kong.ctx.shared.xmlSoapExternalEntity.timeout
   
   local i, _ = string.find(url, "https://")
   kong.log.debug("syncDownloadEntities url: ", url, " timeout (sec): ", http.TIMEOUT)
@@ -88,7 +81,7 @@ local function syncDownloadEntities(url)
 
 end
 
--- Callback function called by 'kong.tools.queue' to download Asynchronously entities from URLs
+-- Callback function called by 'kong.tools.queue' to Asynchronously download entities from URLs
 local asyncDownloadEntities_callback = function(_, url_entries)
   
   local http = require "resty.http"
@@ -114,7 +107,7 @@ local asyncDownloadEntities_callback = function(_, url_entries)
       -- If there is no response (bad hostname for instance)
       if not res then
         rc = false
-        errRc = "url '".. url .. "' err: " .. err
+        errRc = "url '".. url .. "' err: " .. (err or 'nil')
         cache_entity.body           = nil
         cache_entity.httpStatus     = 0
         cache_entity.timeDownloaded = ngx.time ()
@@ -173,7 +166,7 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
     else
       debugMsg = 'http URL'
     end
-    kong.log.debug("readFile - Ok: filePath='", debugMsg, "' is not a file, so don't read the content")
+    kong.log.debug("readFile - Ok: filePath='", debugMsg, "' is not a file, so don't read the content from the filesystem")
 
   -- Else it's a File Path (it could be /kong/file1.xsd or file1.xsd)
   else
@@ -194,7 +187,7 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
     file, errMsg = io.open(fullFileName, "r")
     if not file then
       if errMsg then
-        errMsg = "'" .. errMsg .. "'"
+        errMsg = "'" .. (errMsg or 'nil') .. "'"
       end
       kong.log.err("readFile - Ko: Error opening file '" .. fullFileName .. "': " .. (errMsg or 'nil'))
     else
@@ -219,7 +212,6 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   local cacheTTL      = nil
   local timeout       = nil
   local async         = false
-  local streamListen  = false
   local url_cache_key = nil
   local filePathPrefix          = nil
   local xsdApiSchemaInclude     = nil
@@ -232,20 +224,9 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   kong.log.debug("xmlMyExternalEntityLoader, BEGIN url=", (entity_url or "nil"))
 
   url_cache_key = libxml2ex.hash_key(entity_url)  -- Calculate a cache key based on the URL using the hash_key function
-
-  -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
-  -- See https://konghq.atlassian.net/browse/FTI-7168
-  if #kong.configuration.stream_listeners > 0 then
-    err = libxml2ex.stream_listen_err ..
-          ". Therefore the synchronous download is forced with default values: No Cache, Timeout=" .. libxml2ex.externalEntityTimeout .. "s"
-    kong.log.err(err)
-    streamListen = true
-  end
   
-  -- If 'stream_listen' is not enabled
-  --   AND
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
-  if streamListen == false and kong.ctx.shared.xmlSoapExternalEntity then
+  if kong.ctx.shared.xmlSoapExternalEntity then
     cacheTTL                = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
     timeout                 = kong.ctx.shared.xmlSoapExternalEntity.timeout
     async                   = kong.ctx.shared.xmlSoapExternalEntity.async
@@ -258,11 +239,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   else
     cacheTTL                = libxml2ex.externalEntityCacheTTL
     timeout                 = libxml2ex.externalEntityTimeout
-    if streamListen then
-      async                 = false
-    else
-      async                 = true
-    end
+    async                   = true
     xsdApiSchemaInclude     = nil
     xsdSoapSchemaInclude    = nil
     xsdSoap12SchemaInclude  = nil
@@ -313,8 +290,8 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
     response_body = contentFile
   end
 
-  -- If stream is disabled and there is an error retrieving the content file
-  if streamListen == false and err then
+  -- If there is an error retrieving the content file
+  if err then
     kong.log.debug("xmlMyExternalEntityLoader: the XSD content is not successfully retrieved on the file system")
   -- Else If the XSD content is found in the plugin configuration or on the file system
   elseif response_body then
@@ -408,22 +385,12 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- Else we Synchronously download the External Entity
   else
     
-    -- If 'stream_listen' is not enabled
-    if streamListen == false then
-      -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
-      response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entity_url)    
-      if err then
-        kong.log.err("Error while retrieving entities from cache, error: '", err, "'")
-        return nil
-      end
-    else
-      -- Retrieve the response_body using the 'syncDownloadEntities' function (http(s) call)
-      response_body, err = syncDownloadEntities(entity_url)
-      if err then
-        kong.log.err("Error while retrieving entities, error: '", err, "'")
-        return nil
-      end
-    end
+    -- Retrieve the response_body from cache, with a TTL (in seconds), using the 'syncDownloadEntities' function.
+    response_body, err = kong.cache:get(url_cache_key, { ttl = cacheTTL }, syncDownloadEntities, entity_url)    
+    if err then
+      kong.log.err("Error while retrieving entities from cache, error: '", err, "'")
+      return nil
+    end    
     
   end
 

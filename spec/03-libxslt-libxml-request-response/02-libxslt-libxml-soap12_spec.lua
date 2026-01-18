@@ -16,9 +16,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -253,6 +253,107 @@ for _, strategy in helpers.all_strategies() do
             }
           }
         }
+        
+        local calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_12_and_API_with_verbose_ok = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_12_and_API_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_12_and_API_with_verbose_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdApiSchema = request_common.commentForEmptyXSD,
+            xsdSoapSchema = request_common.commentForEmptyXSD,
+            xsdSoap12Schema = request_common.commentForEmptyXSD
+          }
+        }
+
+        local calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdApiSchema = request_common.commentForEmptyXSD,
+            xsdSoapSchema = request_common.commentForEmptyXSD,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+        
+        local calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdApiSchema = request_common.commentForEmptyXSD,
+            xsdSoap12Schema = request_common.commentForEmptyXSD
+          }
+        }
+
+        local calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_11_12_and_API_with_verbose_ok = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_11_12_and_API_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_11_12_and_API_with_verbose_ok,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdApiSchema = request_common.commentForEmptyXSD,
+            xsdSoapSchema = request_common.commentForEmptyXSD,
+            xsdSoap12Schema = request_common.commentForEmptyXSD
+          }
+        }
+
+        local calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdApiSchema = request_common.commentForEmptyXSD,
+            xsdSoapSchema = request_common.commentForEmptyXSD,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+
+        local calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdApiSchema = request_common.commentForEmptyXSD,
+            xsdSoap12Schema = request_common.commentForEmptyXSD
+          }
+        }
+
 
         -- start kong
         assert(helpers.start_kong({
@@ -493,6 +594,175 @@ for _, strategy in helpers.all_strategies() do
         assert.equal("soap2", x_soap_region)
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)      
+      end)
+
+      it("2|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1/1.2 and API with commented XSD schema (<!-- -->) - Ok", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)      
+      end)
+
+      it("2|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1/1.2 and API with commented XSD schema (<!-- -->) - Invalid SOAP body - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_No_soapBody_ko,
+        })
+        -- validate that the request failed: response status 500, Content-Type and right match
+        -- here the error comes from the upstream SOAP service
+        local body = assert.response(r).has.status(500)
+	      local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+	      assert.matches('<env:Text xml:lang="en">SAAJ SOAP message has no body</env:Text>', body)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1/1.2 and API with commented XSD schema (<!-- -->) - Invalid API Operation - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request_API_ko,
+        })
+        -- validate that the request failed: response status 500, Content-Type and right match
+        -- here the error comes from the upstream SOAP service
+        local body = assert.response(r).has.status(500)
+	      local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+	      assert.matches('<Text xml:lang="en">Cannot invoke "java%.lang%.Integer%.intValue%(%)" because the return value of "org%.tempuri%.Add%.getIntA%(%)" is null</Text>', body)
+      end)
+
+      it("2|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ok", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)      
+      end)
+
+      it("2|WSDL/XSD Validation for SOAP 1.1 - SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<errorMessage>Invalid XSD schema%. Unable to find schema for SOAP 1%.1</errorMessage>', body)
+      end)
+
+      it("2|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.2 and API with commented XSD schema (<!-- -->) - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches('<f:errorMessage>Invalid XSD schema%. Unable to find schema for SOAP 1%.2</f:errorMessage>', body)
+      end)
+
+      it("6|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1/1.2 and API with commented XSD schema (<!-- -->) - Ok", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_11_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)      
+      end)
+
+      it("6|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1/1.2 and API with commented XSD schema (<!-- -->) - Invalid SOAP body - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_11_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_No_soapBody_ko,
+        })
+        -- validate that the request failed: response status 500, Content-Type and right match
+        -- here the error comes from the upstream SOAP service
+        local body = assert.response(r).has.status(500)
+	      local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+	      assert.matches('<env:Text xml:lang="en">SAAJ SOAP message has no body</env:Text>', body)
+			end)
+
+      it("6|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.1/1.2 and API with commented XSD schema (<!-- -->) - Invalid API Operation - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_SOAP_11_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request_API_ko,
+        })
+        -- validate that the request failed: response status 500, Content-Type and right match
+        -- here the error comes from the upstream SOAP service
+        local body = assert.response(r).has.status(500)
+	      local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+	      assert.matches('<Text xml:lang="en">Cannot invoke "java%.lang%.Integer%.intValue%(%)" because the return value of "org%.tempuri%.Add%.getIntA%(%)" is null</Text>', body)
+      end)
+
+      it("6|WSDL/XSD Validation for SOAP 1.1 - SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Response_with_Commented_Schema_for_SOAP_11_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<errorMessage>Invalid XSD schema%. Unable to find schema for SOAP 1%.1</errorMessage>', body)
+      end)
+
+      it("6|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.2 and API with commented XSD schema (<!-- -->) - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches('<f:errorMessage>Invalid XSD schema%. Unable to find schema for SOAP 1%.2</f:errorMessage>', body)
       end)
 
 		end)    

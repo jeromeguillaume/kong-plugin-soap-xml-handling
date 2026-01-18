@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.4.3",
+    VERSION = "1.4.4",
   }
 
 local xmlgeneral = nil
@@ -19,7 +19,6 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   local errMessage
   local XMLXSDMatching
   local soapFaultBody
-  local sleepForPrefetchEnd = false
   local soapFaultCode       = xmlgeneral.soapFaultCodeServer
   local pluginId            = kong.plugin.get_id()
   
@@ -35,7 +34,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   end
   
   -- If there is 'XSLT Transformation Before XSD' configuration then:
-  -- => Apply XSL Transformation (XSLT) Before XSD
+  --    => Apply XSL Transformation (XSLT) Before XSD
   if soapFaultBody == nil and plugin_conf.xsltTransformBefore then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
@@ -59,19 +58,19 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   end
 
   -- If there is no error and
-  -- If the plugin is defined with XSD SOAP schema then:
-  -- => Validate the SOAP envelope with its schema
-  if soapFaultBody == nil and (plugin_conf.xsdSoapSchema or plugin_conf.xsdSoap12Schema) then
-
-    -- SOAP 1.1: Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd and plugin_conf.xsdSoapSchema then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
-    end
-
-    -- SOAP 1.2: Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd and plugin_conf.xsdSoap12Schema then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoap12SchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
-    end
+  -- If Asynchronous External Entity Loader is enabled then
+  if soapFaultBody == nil and plugin_conf.ExternalEntityLoader_Async then
+    -- Do a sleep for waiting the end of Prefetch
+    xmlgeneral.sleepForPrefetchEnd (libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)    
+  end
+  
+  -- If there is no error and
+  -- If the plugin is defined with XSD SOAP schema and
+  -- If the XSD SOAP schema is different from a comment definition then:
+  --    => Validate the SOAP envelope with its schema
+  if  soapFaultBody == nil and 
+      (plugin_conf.xsdSoapSchema or plugin_conf.xsdSoap12Schema) and 
+      not (plugin_conf.xsdSoapSchema == xmlgeneral.commentForEmptyXSD and plugin_conf.xsdSoap12Schema == xmlgeneral.commentForEmptyXSD) then
 
     -- Validate the SOAP envelope with its schema    
     errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.RequestTypePlugin,
@@ -97,14 +96,10 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   end
 
   -- If there is no error and
-  -- If the plugin is defined with XSD or WSDL API schema then:
-  -- => Validate the API XML (included in the <soap:envelope>) with its schema
-  if soapFaultBody == nil and plugin_conf.xsdApiSchema then
-    
-    -- Do a sleep for waiting the end of Prefetch (only if it's not already done)
-    if not sleepForPrefetchEnd then
-      sleepForPrefetchEnd = xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)
-    end
+  -- If the plugin is defined with XSD or WSDL API schema
+  -- If the XSD API schema is different from a comment definition then:
+  --    => Validate the API XML (included in the <soap:envelope>) with its schema
+  if soapFaultBody == nil and plugin_conf.xsdApiSchema and plugin_conf.xsdApiSchema ~= xmlgeneral.commentForEmptyXSD then
     
     -- Validate the API XML with its schema
     errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.RequestTypePlugin,
@@ -131,7 +126,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
   end
 
   -- If there is no error and
-  -- => Validate the 'SOAPAction' header
+  --    => Validate the 'SOAPAction' header
   if soapFaultBody == nil then
     
     -- Validate the API XML with its schema
@@ -156,7 +151,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
 
   -- If there is no error and
   -- If there is 'XSLT Transformation After XSD' configuration then:
-  -- => Apply XSL Transformation (XSLT) After XSD
+  --    => Apply XSL Transformation (XSLT) After XSD
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then
     soapEnvelope_transformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.RequestTypePlugin,
                                                                                   pluginId,
@@ -180,8 +175,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
 
   -- If there is no error and
   -- If the plugin is defined with Routing XPath Targets then:
-  -- => we change the Route By XPath if the condition is satisfied
-    if soapFaultBody == nil and plugin_conf.RouteXPathTargets then
+  --    => Change the Route By XPath if the condition is satisfied  
+  if soapFaultBody == nil and plugin_conf.RouteXPathTargets and next(plugin_conf.RouteXPathTargets) then
     -- Get Route By XPath and check if the condition is satisfied
     local rcXpath = xmlgeneral.RouteByXPath ( pluginId,
                                               plugin_conf.ExternalEntityLoader_CacheTTL,

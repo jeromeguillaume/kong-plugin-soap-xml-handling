@@ -8,9 +8,9 @@ local request_common = require "spec.common.request"
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -281,6 +281,18 @@ for _, strategy in helpers.all_strategies() do
 
 			it("2|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Some XSDs are not included in WSDL - Ko", function()
 				request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ok", function()
+				request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Invalid SOAP body - Ko", function()
+				request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_Invalid_SOAP_body_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Invalid API Operation - Ko", function()
+				request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_Invalid_API_Operation_with_verbose_ko (assert, client)
 			end)
 
 		end)

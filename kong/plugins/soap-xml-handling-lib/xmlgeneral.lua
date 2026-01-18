@@ -87,8 +87,10 @@ xmlgeneral.prefetchReqQueueName       = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName       = "-prefetch-response-schema"
 
 xmlgeneral.libxmlNoMatchGlobalDecl    = 1845  -- libxml Error code for 'No matching global declaration available for the validation root'.
-                                              -- It means that the operation Name (example: Add/Subtract/Divide, etc.)
-                                              -- that is 1st child of '<soap:Body>' can't be found in the XSD
+                                              -- It means that the operation Name (example: Add/Subtract/Divide, etc.), which is
+                                              -- the 1st child of '<soap:Body>', can't be found in the XML by matching it against the XSD
+
+xmlgeneral.commentForEmptyXSD         = "<!-- -->"
 
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
@@ -464,6 +466,10 @@ end
 ---------------------------------------------------------------------------------
 function xmlgeneral.initializeXmlSoapPlugin ()
   
+  if ngx.config.subsystem ~= "http" then   -- skip subsystem other than 'http' (like 'stream' related to 'KONG_STREAM_LISTEN')
+    return
+  end
+
   -- Performance capability for 'Saxon': Initialize the cache of Pointers for Loading and Parsing the WSDL/XSD and XSLT schemas
   -- Note: Performance capability for 'libxml2' and 'libxslt': there is another mechanism based on 'kong.cache'
   if not kong.xmlSoapSaxonPtrCache then
@@ -575,7 +581,6 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
       -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
       -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
       errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.pluginType, nil, conf.cacheTTL, filePathPrefix, child, nil, WSDL, verbose, true, true, conf.wsdlApiSchemaForceSchemaLocation)
-
       -- If the prefetch succeeded
       if not errMessage then
         xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
@@ -585,8 +590,9 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
         kong.log.debug("asyncPrefetch_Schema_Validation_callback: PluginType:", conf.pluginType, " err: ", errMessage)
         local j, _ = string.find(errMessage, "failed.to.load.external.entity")
         local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+        local l, _ = string.find(errMessage, "Failed.to.locate.a.schema.at.location")
         -- If there is an error not related to a failure to 'load external entity' (for instance: a WSDL/XSD syntax eror)
-        if j == nil and k == nil then
+        if j == nil and k == nil and l == nil then
           xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusKo
         end
       end
@@ -816,58 +822,28 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
         -- As the plugin_id is sent by the CP for keeping in memory the Pointers cache table => set the flag to 'false'
         kong.xmlSoapSaxonPtrCache.plugins[plugin_id].toBeDeleted = false
       end
-      
-      -- Check if there is 'xsdSoapSchemaInclude' for SOAP 1.1 Envelope
-      local xsdSoapSchemaInclude = false
-      if config.xsdSoapSchemaInclude and next(config.xsdSoapSchemaInclude) then
-        xsdSoapSchemaInclude = true
-      end
-
-      -- Check if there is 'xsdSoap12SchemaInclude' for SOAP 1.2 Envelope
-      local xsdSoap12SchemaInclude = false
-      if config.xsdSoap12SchemaInclude and next(config.xsdSoap12SchemaInclude) then
-        xsdSoap12SchemaInclude = true
-      end
-
-      -- Check if there is 'xsdApiSchemaInclude' for API Envelope
-      local xsdApiSchemaInclude = false
-      if config.xsdApiSchemaInclude and next(config.xsdApiSchemaInclude) then
-        xsdApiSchemaInclude = true
-      end
-      
-      -- If Kong 'stream_listen' is enabled the 'kong.ctx.shared' is not properly set
-      -- so the Schema included in the plugin conf or the Asynchronous download can't work
-      if #kong.configuration.stream_listeners > 0 and 
-        (xsdSoapSchemaInclude or xsdApiSchemaInclude or config.ExternalEntityLoader_Async) then
-        -- See https://konghq.atlassian.net/browse/FTI-7168
-        kong.log.err(libxml2ex.stream_listen_err)
+            
       -- If Asynchronous is enabled
-      elseif config.ExternalEntityLoader_Async then
+      if config.ExternalEntityLoader_Async then
         kong.log.debug("pluginConfigure, Async")
 
-        -- If a SOAP 1.1 XSD Schema is defined and
-        -- If the XSD content is NOT included in the plugin configuration
-        if      config.xsdSoapSchema and
-            not xsdSoapSchemaInclude then
+        -- If a SOAP 1.1 XSD Schema is defined
+        if      config.xsdSoapSchema and config.xsdSoapSchema ~= xmlgeneral.commentForEmptyXSD then
           kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP_All, queueName, queue_conf)
         end
 
-        -- If a SOAP 1.2 XSD Schema is defined and
-        -- If the XSD content is NOT included in the plugin configuration
-        if      config.xsdSoap12Schema and
-            not xsdSoap12SchemaInclude then
+        -- If a SOAP 1.2 XSD Schema is defined
+        if      config.xsdSoap12Schema and config.xsdSoap12Schema ~= xmlgeneral.commentForEmptyXSD then
           kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdSoap12Schema, xmlgeneral.schemaTypeSOAP_All, queueName, queue_conf)
         end
 
-        -- If an API XSD Schema is defined and
-        -- If the XSD content is NOT included in the plugin configuration
-        if      config.xsdApiSchema  and
-            not xsdApiSchemaInclude then
+        -- If an API XSD Schema is defined
+        if      config.xsdApiSchema and config.xsdApiSchema ~= xmlgeneral.commentForEmptyXSD then
           kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
-        end          
+        end
       end
     end
 
@@ -919,39 +895,20 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
   end
 end
 
-----------------------------------------------
--- Do a sleep for waiting the end of Prefetch
-----------------------------------------------
-function xmlgeneral.sleepForPrefetchEnd (ExternalEntityLoader_Async, xsdSchemaInclude, queuename)
-  local rc = false
-  local xsdSchemaIncluded = false
-
-  -- If Asynchronous is enabled
-  if ExternalEntityLoader_Async then
+---------------------------------------------------------------------------
+-- Do a sleep for waiting the end of Prefetch when Asynchronous is enabled
+---------------------------------------------------------------------------
+function xmlgeneral.sleepForPrefetchEnd (queuename)
+  local nowTime = ngx.now()
     
-    -- Check if there is XSD content in the plugin configuration
-    if xsdSchemaInclude and next(xsdSchemaInclude) then
-      xsdSchemaIncluded = true
-    end
-    
-    -- If there is NO XSD content included in the plugin configuration
-    if not xsdSchemaIncluded then
-      local nowTime = ngx.now()
-      -- Wait for:
-      --     The end of Prefetch Validation of the XSD schema and
-      --     The timeout Prefetch (avoiding infinite loop)
-      while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
-            (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
-        -- This 'sleep' happens only one time per Plugin configuration update
-        ngx.sleep(libxml2ex.xmlSoapSleepAsync)
-        rc = true
-      end
-    else
-      -- As the XSD content is included in the plugin, don't wait the asynchronous download of XSD content
-    end
+  -- Wait for:
+  --     The end of Prefetch Validation of the XSD schema and
+  --     The timeout Prefetch (avoiding infinite loop)
+  while kong.xmlSoapAsync.entityLoader.prefetchQueue.exists(queuename) and
+        (nowTime + xmlgeneral.prefetchQueueTimeout > ngx.now()) do
+    ngx.sleep(libxml2ex.xmlSoapSleepAsync)
   end
   
-  return rc
 end
 
 ----------------------------------------------------------------------------------------
@@ -1744,10 +1701,11 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
             validSchemaFound = true
           -- Else if there is an Error and it's a synchronous download and the First Message is not caught yet
           elseif errMessage and not async and not firstErrMessage then
-            local j, _ = string.find(errMessage, "failed.to.load.external.entity")
+            local j, _ = string.find(errMessage, "failed.to.load.external.entity")            
             local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
+            local l, _ = string.find(errMessage, "Failed.to.locate.a schema.at.location")            
             -- If there is an error related to a failure to 'load external entity'
-            if j or k then
+            if j or k or l then
               firstErrMessage = errMessage
             end
           end
@@ -1900,10 +1858,10 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
           kong.log.debug("XSD Validation, detected SOAP version=", child)
         end
         
-        if child == xmlgeneral.schemaTypeSOAP1_1 and not XSDSchema then
+        if child == xmlgeneral.schemaTypeSOAP1_1 and (XSDSchema == nil or XSDSchema == xmlgeneral.commentForEmptyXSD) then
           errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.1"
           soapFaultCode = xmlgeneral.soapFaultCodeServer
-        elseif child == xmlgeneral.schemaTypeSOAP1_2 and not XSDSchema then
+        elseif child == xmlgeneral.schemaTypeSOAP1_2 and (XSDSchema == nil or XSDSchema == xmlgeneral.commentForEmptyXSD) then
           errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.2"
           soapFaultCode = xmlgeneral.soapFaultCodeServer
         -- If there is no SOAP namespace found we apply the default XSD Schema

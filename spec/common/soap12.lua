@@ -24,6 +24,23 @@ soap12_common.calculator_soap12_Subtract_Request = [[
 </soap12:Envelope>
 ]]
 
+soap12_common.calculator_soap12_No_soapBody_ko = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+</soap12:Envelope>
+]]
+
+soap12_common.calculator_soap12_Request_API_ko= [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap12:Envelope xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
+  <soap12:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intC>5</intC>
+    </Add>
+  </soap12:Body>
+</soap12:Envelope>
+]]
+
 soap12_common.soap12_XSD = [[
 <!-- Schema defined in the SOAP Version 1.2 Part 1 specification
      Recommendation:

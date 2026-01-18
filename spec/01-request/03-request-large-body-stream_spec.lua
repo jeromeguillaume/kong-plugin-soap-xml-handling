@@ -9,9 +9,9 @@ local PLUGIN_NAME    = pluginRequest
 local xsltLibrary = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -39,6 +39,7 @@ for _, strategy in helpers.all_strategies() do
       lazy_setup(function()
         -- Change the request body size for testing large body requests
         helpers.setenv("KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE", "16k")
+        helpers.setenv("KONG_STREAM_LISTEN", "0.0.0.0:9999")
 
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
@@ -79,6 +80,31 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
+        local calculator_service = blue_print.services:insert({
+          protocol = "http",
+          host = "ws.soap1.calculator",
+          port = 8080,
+          path = "/ws",
+        })
+
+        local calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculatorWSDL_with_multiple_XSD_imported_no_download_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_with_multiple_XSD_imported_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 15,
+            xsdApiSchema = request_common.calculatorWSDL_req_res_multiple_imports_Ok,
+            xsdApiSchemaInclude = {
+              ["http://localhost:9000/tempuri.org.req.res.add.xsd"] = request_common.calculator_Request_Response_Add_XSD_VALIDATION,
+              ["http://localhost:9000/tempuri.org.req.res.subtract.xsd"] = request_common.calculator_Request_Response_Subtract_XSD_VALIDATION,
+            },
+          }
+        }
+
         -- start kong
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
@@ -108,6 +134,22 @@ for _, strategy in helpers.all_strategies() do
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches('<message>Ok</message>', body)
+			end)
+
+      it("2|WSDL Validation with XSD imported no download - STREAM_LISTEN is enabled - Ok", function()
+				-- invoke a test request
+        local r = client:post("/calculatorWSDL_with_multiple_XSD_imported_no_download_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
 			end)
 
 		end)

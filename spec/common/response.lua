@@ -1065,6 +1065,22 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok,
+		config = {
+			VerboseResponse = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			xsdApiSchema = request_common.commentForEmptyXSD,
+			xsdSoapSchema = request_common.commentForEmptyXSD,
+			xsdSoap12Schema = request_common.commentForEmptyXSD
+		}
+	}
+
 end
 
 -------------------------------------------
@@ -1608,13 +1624,29 @@ function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, 
 	if kong.version_num >= 3009000 then		
 		assert.equal(200, tonumber(headers:get(":status")))
 		assert.matches('<KongResult>13</KongResult>', body)
-
+		
 	-- For Kong v3.8- the Response plugin doesn't support HTTP/2 protocol
 	else
 		assert.equal(200, tonumber(headers:get(":status")))
 		assert.not_matches('<KongResult>13</KongResult>', body)
 		assert.logfile().has.line("Try calling 'kong.service.request.enable_buffering' with http/2 please use http/1.x instead")
 	end	
+end
+
+function response_common._6_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match	
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
 end
 
 return response_common

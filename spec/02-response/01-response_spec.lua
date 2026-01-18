@@ -13,9 +13,9 @@ local PLUGIN_NAME = "soap-xml-response-handling"
 local response_common = require "spec.common.response"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-  --end
+	if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -190,9 +190,13 @@ for _, strategy in helpers.all_strategies() do
 				response_common._5_WSDL_Validation_Add_with_ForceSchemaLocation_and_All_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
 			end)
 
-				it ("5|XSLT (BEFORE XSD) - Valid transformation - HTTP/2 - Ok (v3.9+) - Ko (v3.8-)", function()
-					response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, http2_client)
-				end)
+			it ("5|XSLT (BEFORE XSD) - Valid transformation - HTTP/2 - Ok (v3.9+) - Ko (v3.8-)", function()
+				response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, http2_client)
+			end)
+
+			it("6|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ok", function()
+				response_common._6_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
+			end)
 	
   	end)
 

@@ -516,7 +516,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_empty_SOAP_Failed_
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Invalid XML input. Unable to find the 'soap:Envelope'</errorMessage>
+        <errorMessage>Invalid XML input. Error code: 4, Line: 1, Message: Document is empty</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1259,6 +1259,8 @@ request_common.calculatorXSD_paramCalcIntD= [[
       <xsd:element name="intD" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntD/"/>
     </xsd:schema>
 ]]
+
+request_common.commentForEmptyXSD = "<!-- -->"
 
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
@@ -2047,7 +2049,6 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	
 	local calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok" }
@@ -2112,6 +2113,22 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			ExternalEntityLoader_CacheTTL = 3600,
 			wsdlApiSchemaForceSchemaLocation = true,
 			xsdApiSchema = request_common.calculatorWSDL_Request_Response_imports_without_schemaLocation_XSDs_not_included_in_WSDL_ko
+		}
+	}	
+
+	local calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok,
+		config = {
+			VerboseRequest = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			xsdApiSchema = request_common.commentForEmptyXSD,
+			xsdSoapSchema = request_common.commentForEmptyXSD,
+			xsdSoap12Schema = request_common.commentForEmptyXSD
 		}
 	}
 	
@@ -3046,4 +3063,55 @@ function request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntC/'.</errorMessage>", body)
 end
+
+function request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match	
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_Invalid_SOAP_body_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Request_SOAP_No_soapBody_ko,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match	
+	-- here the error comes from the upstream SOAP service
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<faultstring xml:lang="en">SAAJ SOAP message has no body</faultstring>', body)
+end
+
+function request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_Invalid_API_Operation_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Request_API_ko,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match	
+	-- here the error comes from the upstream SOAP service
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<faultstring xml:lang="en" xmlns="">Cannot invoke "java%.lang%.Integer%.intValue%(%)" because the return value of "org%.tempuri%.Add%.getIntA%(%)" is null</faultstring>', body)
+end
+
 return request_common
