@@ -74,7 +74,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
 2) When importing definitions in WSDL/XSD, it is recommended to configure the plugins preferably in this order:
     1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
     2) Put the raw content in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
-    3) Really download the content (with http(s) protocol): Synchronous or Asynchronous. For Synchronous (only), there is a prefetch WSDL/XSD validation for forcing the download of ìmported XSD ahead of the 1st request
+    3) Really download the content (with http(s) protocol): Synchronous or Asynchronous. For Asynchronous (only), there is a prefetch WSDL/XSD validation for forcing the download of ìmported XSD ahead of the 1st request
     - If the WSDL uses `<import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
 
 3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
@@ -85,12 +85,14 @@ In the event the request body size is reached, an error is raised by kong:
 4) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
     - `WSDL/XSD VALIDATION`:
       - Define `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation. Do not swap the SOAP 1.1 and 1.2 XSD definitions (for instance: do not set the SOAP 1.2 definition in `xsdSoapSchema` and `xsdSoapSchemaInclude`)
-      - For allowing SOAP 1.1 request and rejecting SOAP 1.2, set `config.xsdSoap12Schema` to `<!-- -->`
-      - For rejecting SOAP 1.1 request and allowing SOAP 1.2, set `config.xsdSoapSchema` to `<!-- -->` and define `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude`
+      - To only allow SOAP 1.1 request and reject SOAP 1.2, set `config.xsdSoap12Schema` to `<!-- -->`
+      - To reject SOAP 1.1 request and only allow SOAP 1.2, set `config.xsdSoapSchema` to `<!-- -->` and define `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude`
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
-5) For completly disable the SOAP 1.1 `WSDL/XSD VALIDATION`, change the default value of `config.xsdSoapSchema` to `<!-- -->`
+5) For completly disable the `WSDL/XSD VALIDATION`:
+    - Change the SOAP 1.1 default value of `config.xsdSoapSchema` to `<!-- -->`
+    - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`)
 
 <a id="information"></a>
 
