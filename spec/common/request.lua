@@ -63,8 +63,7 @@ xmlns:ns_param_calc_e="http://tempuri.org/paramCalcIntE/" xmlns:soap="http://sch
 request_common.calculator_Request_SOAP_No_soapBody_ko= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-</soap:Envelope>
-]]
+</soap:Envelope>]]
 
 request_common.calculator_Request_SOAP_No_Operation_ko= [[
 <?xml version="1.0" encoding="utf-8"?>
@@ -530,7 +529,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed
       <faultcode>soap:Client</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Error Node: Envelope, Error code: 1871, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': Missing child element%(s%). Expected is one of %( {http://schemas.xmlsoap.org/soap/envelope/}Header, {http://schemas.xmlsoap.org/soap/envelope/}Body %).</errorMessage>
+        <errorMessage>Error Node: Envelope, Error code: 1871, Line: ., Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': Missing child element%(s%). Expected is one of %( {http://schemas.xmlsoap.org/soap/envelope/}Header, {http://schemas.xmlsoap.org/soap/envelope/}Body %).</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -2427,6 +2426,7 @@ function request_common._1_2_XSD_Validation_Invalid_API_request_with_verbose (as
 end
 
 function request_common._1_2_XSD_Validation_Invalid_SOAP_request_without_soapBody_with_verbose_ko (assert, client)
+	print("Request body:", request_common.calculator_Request_SOAP_No_soapBody_ko)
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_ok_verbose", {
 		headers = {

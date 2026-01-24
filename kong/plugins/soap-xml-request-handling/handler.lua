@@ -14,7 +14,7 @@ local libxml2ex  = nil
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML request with XSLT (XSLTransformation) after XSD Validation
 -- ROUTING BY XPATH                : change the Route of the request to a different hostname and path depending of XPath condition
 ------------------------------------------------------------------------------------------------------------------------------------
-function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
+function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   local soapEnvelope_transformed
   local errMessage
   local XMLXSDMatching
@@ -27,7 +27,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
     soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                 xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                 xmlgeneral.unableToGetBody,
-                                                contentType,
+                                                kong.ctx.shared.contentType.request,
                                                 soapFaultCode)
   else  
     soapEnvelope_transformed = soapEnvelope
@@ -52,7 +52,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
@@ -90,7 +90,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage,
-                                                    contentType,
+                                                    kong.ctx.shared.contentType.request,
                                                     soapFaultCode)
     end
   end
@@ -120,7 +120,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage,
-                                                    contentType,
+                                                    kong.ctx.shared.contentType.request,
                                                     soapFaultCode)
     end
   end
@@ -144,7 +144,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
@@ -168,7 +168,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
@@ -288,7 +288,7 @@ function plugin:access(plugin_conf)
   local soapEnvelope = kong.request.get_raw_body()
 
   -- Handle all SOAP/XML topics of the Request: XSLT before, XSD validation, XSLT After and Routing by XPath
-  local soapEnvelope_transformed, soapFaultBody, soapFaultCode = plugin:requestSOAPXMLhandling (plugin_conf, soapEnvelope, kong.ctx.shared.contentType.request)
+  local soapEnvelope_transformed, soapFaultBody, soapFaultCode = plugin:requestSOAPXMLhandling (plugin_conf, soapEnvelope)
 
   -- If there is an error during SOAP/XML we change the HTTP staus code and
   -- the Body content (with the detailed error message) will be changed by 'body_filter' phase

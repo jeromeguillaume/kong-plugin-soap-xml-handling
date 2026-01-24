@@ -74,7 +74,7 @@ services:
       KONG_ADMIN_GUI_URL: http://localhost:9002
       KONG_PLUGINS: bundled,soap-xml-request-handling,soap-xml-response-handling
       LD_LIBRARY_PATH: /usr/local/lib/kongsaxon
-      KONG_NGINX_WORKER_PROCESSES: 1
+      KONG_NGINX_WORKER_PROCESSES: 2
       KONG_PASSWORD: handyshake  # Required for logging in to Kong Manager (RBAC)
       SOAP_USERNAME: KongUser
       SOAP_PASSWORD: KongP@ssswOrd!

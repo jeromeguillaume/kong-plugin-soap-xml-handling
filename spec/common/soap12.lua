@@ -294,6 +294,25 @@ soap12_common.calculator_soap12_Request_XSD_VALIDATION_Failed_with_no_12_schema=
   </env:Body>
 </env:Envelope>]]
 
+soap12_common.calculator_soap12_Request_XSD_VALIDATION_Failed_with_no_Body= [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Sender</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Error Node: Envelope, Error code: 1871, Line: 2, Message: Element '{http://www.w3.org/2003/05/soap%-envelope}Envelope': Missing child element%(s%). Expected is one of %( {http://www.w3.org/2003/05/soap%-envelope}Header, {http://www.w3.org/2003/05/soap%-envelope}Body %).</f:errorMessage>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
 
 soap12_common.calculator_soap12_Response_XSD_VALIDATION_Failed_Invalid_NameSpace = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
@@ -315,6 +334,28 @@ soap12_common.calculator_soap12_Response_XSD_VALIDATION_Failed_Invalid_NameSpace
     </env:Fault>
   </env:Body>
 </env:Envelope>]]
+
+soap12_common.calculator_soap12_Response_XSD_VALIDATION_Failed_with_no_Body = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap%-envelope" xmlns:f="http://www.example.org/faults" xmlns:xml="http://www.w3.org/XML/1998/namespace">
+  <env:Body>
+    <env:Fault>
+      <env:Code>
+        <env:Value>env:Receiver</env:Value>
+      </env:Code>
+      <env:Reason>
+        <env:Text xml:lang="en">Response %- XSD validation failed</env:Text>
+      </env:Reason>
+      <env:Detail>
+        <f:errorDetails>
+          <f:errorMessage>Error Node: Envelope, Error code: 1871, Line: 2, Message: Element '{http://www.w3.org/2003/05/soap%-envelope}Envelope': Missing child element%(s%). Expected is one of %( {http://www.w3.org/2003/05/soap%-envelope}Header, {http://www.w3.org/2003/05/soap%-envelope}Body %).</f:errorMessage>
+          <f:backendHttpCode>200</f:backendHttpCode>
+        </f:errorDetails>
+      </env:Detail>
+    </env:Fault>
+  </env:Body>
+</env:Envelope>]]
+
 
 soap12_common.ROUTING_BY_XPATH_soap12_ns_default = "soap12,http://www.w3.org/2003/05/soap-envelope"
 

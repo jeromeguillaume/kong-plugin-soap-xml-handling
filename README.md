@@ -163,7 +163,7 @@ If `Verbose` is enabled:
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
 |config.RouteXPathTargets.XPathCondition|N/A|XPath condition value to compare with the value extracted by `XPath` expression. If the condition is satisfied the route is changed to `URL`|
 |config.RouteXPathRegisterNs|Pre-defined|Array of NameSpaces to be registered for applying XPath expression. The syntax is `prefix,namespace`. If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a fake prefix like `myprefix,http://...`|
-|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
+|config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and on top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
@@ -1523,8 +1523,9 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.4.4
   - Bumped to Kong Gateway v3.13.0.0
   - Removed the `stream_listen` limitation: it can be enabled without impacting the plugins' behavior
-  - `Routing By XPath`: checked correctly if `RouteXPathTargets` is empty avoiding useless execution code
-  - `ExternalEntityLoader_Async`: impoved the mechanism:
+  - `Routing By XPath`: checked correctly if `RouteXPathTargets` is empty; it avoids useless execution code
+  - `ExternalEntityLoader_Async`: improved the mechanism:
     - Called `sleepForPrefetchEnd` one time per plugin call
     - Added the detection of `Failed to locate a schema at location` error message
   - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Used for completly disable the SOAP 1.1 XSD Validation that is enabled by default
+  - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the SOAP verion dynamically detected by Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a SOAP 1.1 envelope even if the request `Content-Type` header is SOAP 1.2

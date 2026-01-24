@@ -13,7 +13,7 @@ local KongGzip   = nil
 -- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
-function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
+function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   local soapEnvelopeTransformed
   local soapFaultBody
   local errMessage
@@ -39,7 +39,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   else
@@ -72,7 +72,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
@@ -100,7 +100,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
@@ -124,7 +124,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
@@ -258,7 +258,7 @@ function plugin:header_filter(plugin_conf)
   if soapFaultBody == nil then
     -- If the Body is deflated/zipped, we inflate/unzip it
     if kong.response.get_header("Content-Encoding") == "gzip" then
-      local soapDeflated, err = KongGzip.inflate_gzip(soapEnvelope)
+      local soapInflated, err = KongGzip.inflate_gzip(soapEnvelope)
       if err then
         err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -267,7 +267,7 @@ function plugin:header_filter(plugin_conf)
                                                     kong.ctx.shared.contentType.request,
                                                     xmlgeneral.soapFaultCodeServer)
       else
-        soapEnvelope = soapDeflated
+        soapEnvelope = soapInflated
       end
     -- If there is a 'Content-Encoding' type that is not supported (by 'KongGzip')
     elseif kong.response.get_header("Content-Encoding") then
@@ -283,7 +283,7 @@ function plugin:header_filter(plugin_conf)
   -- If there is no error
   if soapFaultBody == nil then
     -- Handle all SOAP/XML topics of the Response: XSLT before, XSD validation and XSLT After
-    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope, kong.ctx.shared.contentType.request)
+    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope)
   end
   
   -- If there is an error during SOAP/XML process we change the HTTP staus code and
@@ -328,7 +328,7 @@ function plugin:header_filter(plugin_conf)
   elseif soapEnvelopeTransformed then
     -- If the Backend API Body is deflated/zipped, we deflate/zip the new transformed SOAP/XML Body
     if kong.response.get_header("Content-Encoding") == "gzip" then
-      local soapInflated, err = KongGzip.deflate_gzip(soapEnvelopeTransformed)
+      local soapDeflated, err = KongGzip.deflate_gzip(soapEnvelopeTransformed)
       
       if err then
         kong.log.err("Failed to deflate the gzipped SOAP/XML Body: ", err)
@@ -336,7 +336,7 @@ function plugin:header_filter(plugin_conf)
         -- and we return the non deflated/zipped content
         kong.response.clear_header("Content-Encoding")
       else
-        soapEnvelopeTransformed = soapInflated
+        soapEnvelopeTransformed = soapDeflated
       end
     end
     -- We cannot call 'kong.response.set_raw_body()' at this stage to change the body content

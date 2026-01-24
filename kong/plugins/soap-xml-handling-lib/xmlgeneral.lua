@@ -82,7 +82,7 @@ xmlgeneral.prefetchStatusInit         = 0
 xmlgeneral.prefetchStatusOk           = 1
 xmlgeneral.prefetchStatusRunning      = 2
 xmlgeneral.prefetchStatusKo           = 3
-xmlgeneral.prefetchQueueTimeout       = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
+xmlgeneral.prefetchQueueTimeout       = libxml2ex.externalEntityTimeout + 5  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
 xmlgeneral.prefetchReqQueueName       = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName       = "-prefetch-response-schema"
 
@@ -828,19 +828,19 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
         kong.log.debug("pluginConfigure, Async")
 
         -- If a SOAP 1.1 XSD Schema is defined
-        if      config.xsdSoapSchema and config.xsdSoapSchema ~= xmlgeneral.commentForEmptyXSD then
+        if config.xsdSoapSchema and config.xsdSoapSchema ~= xmlgeneral.commentForEmptyXSD then
           kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdSoapSchema, xmlgeneral.schemaTypeSOAP_All, queueName, queue_conf)
         end
 
         -- If a SOAP 1.2 XSD Schema is defined
-        if      config.xsdSoap12Schema and config.xsdSoap12Schema ~= xmlgeneral.commentForEmptyXSD then
+        if config.xsdSoap12Schema and config.xsdSoap12Schema ~= xmlgeneral.commentForEmptyXSD then
           kong.log.debug("pluginConfigure, Validation Prefetch of SOAP Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdSoap12Schema, xmlgeneral.schemaTypeSOAP_All, queueName, queue_conf)
         end
 
         -- If an API XSD Schema is defined
-        if      config.xsdApiSchema and config.xsdApiSchema ~= xmlgeneral.commentForEmptyXSD then
+        if config.xsdApiSchema and config.xsdApiSchema ~= xmlgeneral.commentForEmptyXSD then
           kong.log.debug("pluginConfigure, Validation Prefetch of API Schema")
           xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, config.xsdApiSchema, xmlgeneral.schemaTypeAPI, queueName, queue_conf)
         end
@@ -1858,12 +1858,31 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
           kong.log.debug("XSD Validation, detected SOAP version=", child)
         end
         
-        if child == xmlgeneral.schemaTypeSOAP1_1 and (XSDSchema == nil or XSDSchema == xmlgeneral.commentForEmptyXSD) then
-          errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.1"
-          soapFaultCode = xmlgeneral.soapFaultCodeServer
-        elseif child == xmlgeneral.schemaTypeSOAP1_2 and (XSDSchema == nil or XSDSchema == xmlgeneral.commentForEmptyXSD) then
-          errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.2"
-          soapFaultCode = xmlgeneral.soapFaultCodeServer
+        if child == xmlgeneral.schemaTypeSOAP1_1 then
+            -- if no XSD schema is provided for SOAP 1.1
+            if XSDSchema == nil or XSDSchema == xmlgeneral.commentForEmptyXSD then
+              errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.1"
+              soapFaultCode = xmlgeneral.soapFaultCodeServer
+            -- Else If it's the Request Plugin and
+            --      If there is a mismatch between SOP version of Content-Type and XML
+            elseif pluginType == xmlgeneral.RequestTypePlugin and  
+                   kong.ctx and kong.ctx.shared and kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_2 then
+              kong.ctx.shared.contentType.request = xmlgeneral.schemaTypeSOAP1_1
+              kong.log.debug("XSD Validation, Changed the default Content-Type from SOAP 1.2 to SOAP 1.1 (in the event the plugins sends an error)")
+            end
+        
+        elseif child == xmlgeneral.schemaTypeSOAP1_2 then
+          -- if no XSD schema is provided for SOAP 1.2
+          if XSDSchema == nil or XSDSchema == xmlgeneral.commentForEmptyXSD then
+            errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.2"
+            soapFaultCode = xmlgeneral.soapFaultCodeServer
+          -- Else If it's the Request Plugin and
+          --      If there is a mismatch between SOP version of Content-Type and XML
+          elseif pluginType == xmlgeneral.RequestTypePlugin and  
+                 kong.ctx and kong.ctx.shared and kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_1 then
+            kong.ctx.shared.contentType.request = xmlgeneral.schemaTypeSOAP1_2
+            kong.log.debug("XSD Validation, Changed the default Content-Type from SOAP 1.1 to SOAP 1.2 (in the event the plugins sends an error)")
+          end
         -- If there is no SOAP namespace found we apply the default XSD Schema
         -- It's required for XML <-> JSON transformation where the XML is not necessarily a SOAP message          
         elseif not child then

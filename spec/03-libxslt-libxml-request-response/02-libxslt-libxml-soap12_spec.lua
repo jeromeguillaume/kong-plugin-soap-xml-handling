@@ -7,7 +7,7 @@ local soap12_common   = require "spec.common.soap12"
 -- Add a Worker Process for enabling the synchronous download of external entities
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 
-helpers.setenv("KONG_LOG_LEVEL", "debug")
+--helpers.setenv("KONG_LOG_LEVEL", "debug")
 
 -- matches our plugin name defined in the plugins's schema.lua
 local pluginRequest  = "soap-xml-request-handling"
@@ -353,8 +353,136 @@ for _, strategy in helpers.all_strategies() do
             xsdSoap12Schema = request_common.commentForEmptyXSD
           }
         }
+        
+        local calculatorXSD_Validation_for_Request_SOAP11_envelope_SOAP12_Content_Type_No_SOAP_Body_with_verbose_ok_route = blue_print.routes:insert{
+            service = calculator_service,
+            paths = { "/calculatorXSD_Validation_for_Request_SOAP11_envelope_SOAP12_Content_Type_No_SOAP_Body_with_verbose_ok" }
+            }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorXSD_Validation_for_Request_SOAP11_envelope_SOAP12_Content_Type_No_SOAP_Body_with_verbose_ok_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_CacheTTL = 3600,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
 
+        local calculator_soap11_soap12_ok_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_soap11_soap12_ok_route" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_soap11_soap12_ok_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_Async = false,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
 
+        local local_req_invalid_soap11_no_soap_body_route = blue_print.routes:insert{
+          paths = { "/local_calculator_invalid_soap11_no_soap_body" }
+        }
+        blue_print.plugins:insert {
+          name = "request-termination",
+          route = local_req_invalid_soap11_no_soap_body_route,
+          config = {
+            status_code = 200,
+            content_type = "text/xml; charset=utf-8",
+            body = request_common.calculator_Request_SOAP_No_soapBody_ko
+          }	
+        }
+        local local_req_invalid_soap12_no_soap_body_route = blue_print.routes:insert{
+          paths = { "/local_calculator_invalid_soap12_no_soap_body" }
+        }
+        blue_print.plugins:insert {
+          name = "request-termination",
+          route = local_req_invalid_soap12_no_soap_body_route,
+          config = {
+            status_code = 200,
+            content_type = "application/soap+xml; charset=utf-8",
+            body = soap12_common.calculator_soap12_No_soapBody_ko
+          }	
+        }
+        local calculator_local_invalid_soap11_no_soap_body_service = blue_print.services:insert({
+          protocol = "http",
+          host = "localhost",
+          port = 9000,
+          path = "/local_calculator_invalid_soap11_no_soap_body",
+        })
+        local calculator_no_soap11_body_ko_route = blue_print.routes:insert{
+          service = calculator_local_invalid_soap11_no_soap_body_service,
+          paths = { "/calculator_no_soap11_body_ko_route" }
+        }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_no_soap11_body_ko_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_Async = false,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_no_soap11_body_ko_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_Async = false,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }          
+        }
+
+        local calculator_local_invalid_soap12_no_soap_body_service = blue_print.services:insert({
+          protocol = "http",
+          host = "localhost",
+          port = 9000,
+          path = "/local_calculator_invalid_soap12_no_soap_body",
+        })
+        local calculator_no_soap12_body_ko_route = blue_print.routes:insert{
+          service = calculator_local_invalid_soap12_no_soap_body_service,
+          paths = { "/calculator_no_soap12_body_ko_route" }
+        }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_no_soap12_body_ko_route,
+          config = {
+            VerboseRequest = true,
+            ExternalEntityLoader_Async = false,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }          
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_no_soap12_body_ko_route,
+          config = {
+            VerboseResponse = true,
+            ExternalEntityLoader_Async = false,
+            xsdSoap12Schema = soap12_common.soap12_XSD,
+            xsdSoap12SchemaInclude = {
+              ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }          
+        }
+        
         -- start kong
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
@@ -546,7 +674,7 @@ for _, strategy in helpers.all_strategies() do
 	      assert.matches(response_common.calculator_Response_XSD_SOAP_VALIDATION_REQUEST_Invalid_Namespace_Client_verbose, body)
       end)
     
-    it("6|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - Invalid SOAP namespace - Ko", function()
+      it("6|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - Invalid SOAP namespace - Ko", function()
         -- invoke a test request
         local r = client:post("/calculator_invalid_soap_ns_ko", {
           headers = {
@@ -749,7 +877,7 @@ for _, strategy in helpers.all_strategies() do
 	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches('<errorMessage>Invalid XSD schema%. Unable to find schema for SOAP 1%.1</errorMessage>', body)
       end)
-
+      
       it("6|WSDL/XSD Validation for SOAP 1.2 - SOAP 1.2 and API with commented XSD schema (<!-- -->) - Ko", function()        
         -- invoke a test request
         local r = client:post("/calculatorWSDL_XSD_Validation_for_Request_with_Commented_Schema_SOAP_12_and_API_with_verbose_ok", {
@@ -765,6 +893,71 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<f:errorMessage>Invalid XSD schema%. Unable to find schema for SOAP 1%.2</f:errorMessage>', body)
       end)
 
+      it("2|XSD Validation - SOAP 1.1/1.2 - SOAP 1.1 Envelope and SOAP 1.2 Content-Type - No SOAP Body in Request - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculator_soap11_soap12_ok_route", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = request_common.calculator_Request_SOAP_No_soapBody_ko,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed_Client_verbose, body)
+      end)
+
+      it("2|XSD Validation - SOAP 1.1/1.2 - SOAP 1.2 Envelope and SOAP 1.1 Content-Type - No SOAP Body in Request - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculator_soap11_soap12_ok_route", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_No_soapBody_ko,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches(soap12_common.calculator_soap12_Request_XSD_VALIDATION_Failed_with_no_Body, body)
+      end)
+
+      it("2+6|XSD Validation - SOAP 1.1/1.2 - SOAP 1.1 Envelope and SOAP 1.2 Content-Type - No SOAP Body in Response - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculator_no_soap11_body_ko_route", {
+          headers = {
+            ["Content-Type"] = "application/soap+xml; charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(response_common.calculator_Response_XSD_SOAP_VALIDATION_no_soapBody_Failed_verbose, body)
+      end)
+
+      it("2+6|XSD Validation - SOAP 1.1/1.2 - SOAP 1.2 Envelope and SOAP 1.1 Content-Type - No SOAP Body in Response - Ko", function()        
+        -- invoke a test request
+        local r = client:post("/calculator_no_soap12_body_ko_route", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = soap12_common.calculator_soap12_Request,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
+        assert.matches(soap12_common.calculator_soap12_Response_XSD_VALIDATION_Failed_with_no_Body, body)
+      end)
+      
+      
 		end)    
 
 	end)
