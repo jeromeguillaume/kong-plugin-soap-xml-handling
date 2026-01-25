@@ -1530,6 +1530,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `ExternalEntityLoader_Async`: improved the mechanism:
     - Called `sleepForPrefetchEnd` one time per plugin call
     - Added the detection of `Failed to locate a schema at location` error message
-  - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Used for completly disable the SOAP 1.1 XSD Validation that is enabled by default
+  - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Useful for completly disable the SOAP 1.1 XSD Validation that is enabled by default
   - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the SOAP verion dynamically detected by Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a SOAP 1.1 envelope, even if the request `Content-Type` header is SOAP 1.2
-  - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200)
+  - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) and returns a generic SOAP Fault message
