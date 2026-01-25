@@ -90,8 +90,8 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
     - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`)
 
 5) `XSLT TRANSFORMATION`:
-    - Use [libxslt] for XSLT 1.0
-    - Use [saxon] for XSLT 2.0 and 3.0, especially to apply JSON <-> XML transformation
+    - Use `libxslt` for XSLT 1.0 (default XSLT library)
+    - Use `saxon` for XSLT 2.0 and 3.0, especially to apply JSON <-> XML transformation
 
 6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached:
