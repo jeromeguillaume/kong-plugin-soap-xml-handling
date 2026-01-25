@@ -31,6 +31,7 @@ xmlgeneral.invalidWSDL_XSD            = "Invalid WSDL/XSD schema"
 xmlgeneral.errorGettingPtrsCacheTable = "Error while getting Pointers Cache Table: "
 xmlgeneral.invalidPtrsCacheTable      = "Invalid Pointers Cache Table"
 xmlgeneral.unableToGetBody            = "Unable to get the body request. See logs for more details"
+xmlgeneral.ignoreIfServiceHttpError   = "Service Backend returned an HTTP error. The SOAP/XML process is ignored"
 
 xmlgeneral.soapFaultCodeNone    = 0   -- Fault Code type is 'None'
 xmlgeneral.soapFaultCodeServer  = 1   -- Fault Code type is 'Server' (The Kong GW and Upstream)
@@ -82,7 +83,7 @@ xmlgeneral.prefetchStatusInit         = 0
 xmlgeneral.prefetchStatusOk           = 1
 xmlgeneral.prefetchStatusRunning      = 2
 xmlgeneral.prefetchStatusKo           = 3
-xmlgeneral.prefetchQueueTimeout       = libxml2ex.externalEntityTimeout + 5  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
+xmlgeneral.prefetchQueueTimeout       = libxml2ex.externalEntityTimeout + 1  -- Queue Timeout to Asynchronously do an XSD Validation Prefetch
 xmlgeneral.prefetchReqQueueName       = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName       = "-prefetch-response-schema"
 
@@ -166,7 +167,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
   errorMessage = string.gsub(errorMessage, "\"", "'")
 
   -- If it's a SOAP 1.1 or SOAP 1.2 request
-  if contentType == xmlgeneral.schemaTypeSOAP1_1 or contentType == xmlgeneral.schemaTypeSOAP1_2 then
+  if contentType == nil or contentType == xmlgeneral.schemaTypeSOAP1_1 or contentType == xmlgeneral.schemaTypeSOAP1_2 then
     -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
     errorMessage = string.gsub(errorMessage, "<", "Less Than")
     errorMessage = string.gsub(errorMessage, ">", "Greater Than")
@@ -174,7 +175,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
   end
 
   -- If it's a SOAP 1.1 request, send a SOAP 1.1 fault message
-  if contentType == xmlgeneral.schemaTypeSOAP1_1 then
+  if contentType == xmlgeneral.schemaTypeSOAP1_1 or contentType == nil then
     -- If verbose is enable, send all the details
     if VerboseResponse then
       errorMessage = ""..
@@ -343,9 +344,11 @@ function xmlgeneral.detectContentType (contentType)
   local rc = xmlgeneral.schemaTypeSOAP1_1
   local lowerContentType
 
-  lowerContentType = string.lower(contentType)
-
   -- Ignore space and tabulation characters by using: %s
+  
+  if contentType then
+    lowerContentType = string.lower(contentType)
+  end
   
   -- If there is no 'Content-Type' header
   if not lowerContentType then
@@ -1866,7 +1869,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
             -- Else If it's the Request Plugin and
             --      If there is a mismatch between SOP version of Content-Type and XML
             elseif pluginType == xmlgeneral.RequestTypePlugin and  
-                   kong.ctx and kong.ctx.shared and kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_2 then
+                   kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_2 then
               kong.ctx.shared.contentType.request = xmlgeneral.schemaTypeSOAP1_1
               kong.log.debug("XSD Validation, Changed the default Content-Type from SOAP 1.2 to SOAP 1.1 (in the event the plugins sends an error)")
             end
@@ -1879,7 +1882,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
           -- Else If it's the Request Plugin and
           --      If there is a mismatch between SOP version of Content-Type and XML
           elseif pluginType == xmlgeneral.RequestTypePlugin and  
-                 kong.ctx and kong.ctx.shared and kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_1 then
+                 kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_1 then
             kong.ctx.shared.contentType.request = xmlgeneral.schemaTypeSOAP1_2
             kong.log.debug("XSD Validation, Changed the default Content-Type from SOAP 1.1 to SOAP 1.2 (in the event the plugins sends an error)")
           end

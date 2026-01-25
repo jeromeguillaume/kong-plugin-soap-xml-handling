@@ -197,6 +197,10 @@ for _, strategy in helpers.all_strategies() do
 			it("6|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ok", function()
 				response_common._6_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
 			end)
+
+			it("5+6+7|Ignore Plugin process in case of Backend HTTP Error - Ko", function()
+				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
+			end)
 	
   	end)
 

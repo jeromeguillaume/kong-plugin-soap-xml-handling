@@ -158,6 +158,7 @@ If `Verbose` is enabled:
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download. Plus, keep in `kong_db_cache` memory cache the compilation and parsing of `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions during the time specified|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.filePathPrefix|N/A|File Path Prefix of external entity files and XML definition files. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
+|config.ignoreProcessIfServiceHttpError|`false`|`soap-xml-response-handling` only: ignore the plugin process if the Backend Service returns an HTTP Error (i.e: an HTTP code other than 200)|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
@@ -1529,3 +1530,4 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Added the detection of `Failed to locate a schema at location` error message
   - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Used for completly disable the SOAP 1.1 XSD Validation that is enabled by default
   - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the SOAP verion dynamically detected by Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a SOAP 1.1 envelope even if the request `Content-Type` header is SOAP 1.2
+  - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200)

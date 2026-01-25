@@ -18,12 +18,26 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   local soapFaultBody
   local errMessage
   local XMLXSDMatching
-  local soapFaultCode = xmlgeneral.soapFaultCodeServer
-  local pluginId      = kong.plugin.get_id()
+  local soapFaultCode   = xmlgeneral.soapFaultCodeServer
+  local pluginId        = kong.plugin.get_id()
+  local responseStatus  = kong.response.get_status()
 
+  -- If the response status of the Service is different from 200 and
+  -- If the plugin is configured to ignore process case of error then
+  if responseStatus ~= 200 and plugin_conf.ignoreProcessIfServiceHttpError then
+    -- Format a Fault code to Client
+    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                xmlgeneral.ignoreIfServiceHttpError,
+                                                kong.ctx.shared.contentType.request,
+                                                soapFaultCode)
+  end
+
+  -- If there is no error and
   -- If there is 'XSLT Transformation Before XSD' configuration then:
   --    => Apply XSL Transformation (XSLT) Before
-  if plugin_conf.xsltTransformBefore then
+  if  soapFaultBody == nil and 
+      plugin_conf.xsltTransformBefore then
     soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
                                                                                  pluginId,
                                                                                  plugin_conf.ExternalEntityLoader_CacheTTL,
@@ -46,7 +60,7 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelopeTransformed = soapEnvelope
   end
   
--- If there is no error and
+  -- If there is no error and
   -- If the plugin is defined with XSD SOAP schema and
   -- If the XSD SOAP schema is different from a comment definition then:
   --    => Validate the SOAP envelope with its schema
