@@ -24,11 +24,38 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
   
   -- If soapEnvelope is nil, it's probably related to the body size that exceeded the Nginx configuration
   if soapEnvelope == nil then
-    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
-                                                xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
-                                                xmlgeneral.unableToGetBody,
-                                                kong.ctx.shared.contentType.request,
-                                                soapFaultCode)
+    -- Get the client request body that has been buffered to a temporary file
+    local body_filepath = ngx.req.get_body_file()
+    if body_filepath then
+      local file_size = lfs.attributes(body_filepath, "size")
+      local file
+      kong.log.warn("The client request body is buffered to a temporary file size: ", file_size, " bytes")
+      -- Read the file from the filesystem
+      file, errMessage = io.open(body_filepath, "r")
+      if not file then
+        kong.log.err("readFile - Ko: Error opening file '" .. body_filepath .. "': " .. (errMessage or "nil"))
+        errMessage = xmlgeneral.unableToGetBody        
+      else
+        soapEnvelope_transformed = file:read("*a")  -- Read the entire file content
+        file:close()  -- Close the file handle        
+        if soapEnvelope_transformed == nil then
+          kong.log.err("readFile - Ko: Error reading file '" .. body_filepath .. "'")
+          errMessage = xmlgeneral.unableToGetBody          
+        else
+          kong.log.debug("readFile - Ok: Read content file '", body_filepath, "'")
+        end
+      end
+    else 
+      errMessage = xmlgeneral.unableToGetBody
+    end
+
+    if errMessage then
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+                                                  xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                  errMessage,
+                                                  kong.ctx.shared.contentType.request,
+                                                  soapFaultCode)
+    end
   else  
     soapEnvelope_transformed = soapEnvelope
   end
@@ -43,7 +70,7 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
                                                                                   xmlgeneral.xsltBeforeXSD,
                                                                                   plugin_conf.xsltLibrary,
                                                                                   plugin_conf.xsltParams,
-                                                                                  soapEnvelope,
+                                                                                  soapEnvelope_transformed,
                                                                                   plugin_conf.xsltTransformBefore,
                                                                                   plugin_conf.VerboseRequest)
     

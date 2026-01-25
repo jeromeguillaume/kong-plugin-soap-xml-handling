@@ -2,6 +2,7 @@ local xmlgeneral = {}
 
 local ffi               = require("ffi")
 local libxml2           = require("xmlua.libxml2")
+local lfs               = require("lfs")
 local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
 local libsaxon4kong     = require("kong.plugins.soap-xml-handling-lib.libsaxon4kong")

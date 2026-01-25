@@ -255,8 +255,8 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
 			end)
 
-			it("2|XSD Validation - large body 16K - Ko (due to low KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE)", function()
-				request_common._2_XSD_Validation_large_body_16k_with_verbose_ko (assert, client)
+			it("2|XSD Validation - large body 16K (due to low KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE) - Ok", function()
+				request_common._2_XSD_Validation_large_body_16k_with_verbose_ok (assert, client)
 			end)
 
 			it("2+3|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Ok", function()

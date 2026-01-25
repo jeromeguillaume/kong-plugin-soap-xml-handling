@@ -2034,13 +2034,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		path = "/local_products_req_termination",
 	})
 	
-	local productsXSD_large_body_16k_with_verbose_ko = blue_print.routes:insert{
+	local productsXSD_large_body_16k_with_verbose_ok_route = blue_print.routes:insert{
 		service = products_local_service,
-		paths = { "/productsXSD_large_body_16k_with_verbose_ko" }
+		paths = { "/productsXSD_large_body_16k_with_verbose_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = productsXSD_large_body_16k_with_verbose_ko,
+		route = productsXSD_large_body_16k_with_verbose_ok_route,
 		config = {
 			VerboseRequest = true,
 			ExternalEntityLoader_CacheTTL = 3600,
@@ -2949,23 +2949,23 @@ function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_an
 	assert.matches('<SubtractResult>4</SubtractResult>', body)
 end
 
-function request_common._2_XSD_Validation_large_body_16k_with_verbose_ko (assert, client)
+function request_common._2_XSD_Validation_large_body_16k_with_verbose_ok (assert, client)
 	
 	local products_soapEnv_16k = helpers.file.read("/kong-plugin/spec/fixtures/products/2-products-soapEnv-16k.xml")
 
 	-- invoke a test request
-	local r = client:post("/productsXSD_large_body_16k_with_verbose_ko", {
+	local r = client:post("/productsXSD_large_body_16k_with_verbose_ok", {
 		headers = {
 			["Content-Type"] = "text/xml;charset=utf-8",
 		},
 		body = products_soapEnv_16k,
 	})
 
-	-- validate that the request failed: response status 500, Content-Type and right match
-	local body = assert.response(r).has.status(500)
+	-- validate that the request failed: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches('Unable to get the body request. See logs for more details', body)
+	assert.matches('<message>Ok</message>', body)
 end
 
 function request_common._2_3_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)

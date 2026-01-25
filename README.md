@@ -77,12 +77,7 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
     3) Really download the content (with http(s) protocol): Synchronous or Asynchronous. For Asynchronous (only), there is a prefetch WSDL/XSD validation for forcing the download of ìmported XSD ahead of the 1st request
     - If the WSDL uses `<import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
 
-3) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
-In the event the request body size is reached, an error is raised by kong:
-    - Error in Kong Log, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
-    - Message returned to the Client: `Unable to get the body request. See logs for more details`
-
-4) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
+3) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
     - `WSDL/XSD VALIDATION`:
       - Define `config.xsdSoapSchema` and `config.xsdSoapSchemaInclude` for SOAP 1.1 XSD schema and `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude` for SOAP 1.2 XSD schema. The plugin automatically detects the SOAP version and uses the right XSD schema for validation. Do not swap the SOAP 1.1 and 1.2 XSD definitions (for instance: do not set the SOAP 1.2 definition in `xsdSoapSchema` and `xsdSoapSchemaInclude`)
       - To only allow SOAP 1.1 request and reject SOAP 1.2, set `config.xsdSoap12Schema` to `<!-- -->`
@@ -90,9 +85,20 @@ In the event the request body size is reached, an error is raised by kong:
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
-5) For completly disable the `WSDL/XSD VALIDATION`:
+4) For completly disable the `WSDL/XSD VALIDATION`:
     - Change the SOAP 1.1 default value of `config.xsdSoapSchema` to `<!-- -->`
     - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`)
+
+5) `XSLT TRANSFORMATION`:
+    - Use [libxslt] for XSLT 1.0
+    - Use [saxon] for XSLT 2.0 and 3.0, especially to apply JSON <-> XML transformation
+
+6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
+In the event the request body size is reached:
+    - A warning is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+    - Despite this warning the Request plugin reads the file content and the regular process is achieved. The kong latency is increased due to I/O disk
+
+7) It's recommended to enable `ignoreProcessIfServiceHttpError`: in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) the Response plugin ignores the SOAP/XML process and returns a generic SOAP Fault message
 
 <a id="information"></a>
 
@@ -137,17 +143,17 @@ The External entities are processed in this order:
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Error management
-In case of misconfiguration the Plugins send to the consumer a SOAP Fault (HTTP 500 Internal Server Error) following the W3C specification:
+In case of misconfiguration or error from the Backend Service, the Plugins send to the Consumer a SOAP Fault (HTTP 500 Internal Server Error). The SOAP Version is first detected by analyzing the Content-Type request header, then parsed from the SOAP envelope. The SOAP Fault follows the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
   - `<faultstring>`: name of the handling process of the plugin
-  - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Web Service)
+  - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Backend Service)
 - [SOAP Fault 1.2](https://www.w3.org/TR/soap12-part1/#soapfault):
   - `<Reason><Text>`: name of the handling process of the plugin
-  - `<Code><Value>`: the values are `Sender` (for a Consumer error) and `Receiver` (for a Server error: Kong or Web Service)
+  - `<Code><Value>`: the values are `Sender` (for a Consumer error) and `Receiver` (for a Server error: Kong or Backend Service)
 
 If `Verbose` is enabled:
 - the `<errorMessage>` contains the detail of the error
-- the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Web Service
+- the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Backend Service
 
 <a id="configuration_reference"></a>
 
@@ -158,14 +164,14 @@ If `Verbose` is enabled:
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download. Plus, keep in `kong_db_cache` memory cache the compilation and parsing of `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions during the time specified|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
 |config.filePathPrefix|N/A|File Path Prefix of external entity files and XML definition files. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
-|config.ignoreProcessIfServiceHttpError|`false`|`soap-xml-response-handling` only: ignore the plugin process if the Backend Service returns an HTTP Error (i.e: an HTTP code other than 200)|
+|config.ignoreProcessIfServiceHttpError|`false`|`soap-xml-response-handling` only: ignore the plugin process if the Backend Service returns an HTTP Error (i.e: an HTTP code other than 200) and returns a generic SOAP Fault|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
 |config.RouteXPathTargets.XPath|N/A|XPath expression to extract a value from the request body and to compare it with `XPathCondition`|
 |config.RouteXPathTargets.XPathCondition|N/A|XPath condition value to compare with the value extracted by `XPath` expression. If the condition is satisfied the route is changed to `URL`|
 |config.RouteXPathRegisterNs|Pre-defined|Array of NameSpaces to be registered for applying XPath expression. The syntax is `prefix,namespace`. If this is the defauft Namespace without a prefix (like `xmlns=http://...` instead of `xmlns:xsd=http://...`) set a fake prefix like `myprefix,http://...`|
 |config.SOAPAction_Header|`no`|`soap-xml-request-handling` only: validate the value of the `SOAPAction` Http header in conjonction with `WSDL/XSD VALIDATION`. If `yes` is set, the `xsdSoapSchema` must be defined with a WSDL 1.1 (including `<wsdl:binding>` and `soapAction` attributes) or with a WSDL 2.0 (including `<wsdl2:interface>` and `Action` attribute). For WSDL 1.1 the optional `soapActionRequired` attribute is considered and for WSDL 2.0 the default action pattern is used if no `Action` is set (as defined by the [W3C](https://www.w3.org/TR/2007/REC-ws-addr-metadata-20070904/#defactionwsdl20)). If `yes_null_allowed` is set, the plugin works as defined with `yes` configuration and on top of that it allows the request even if the `SOAPAction` is not present. The `SOAPAction` = `''` is not considered a valid value|
-|config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
+|config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the Consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
 |config.xsdApiSchema|`N/A`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
@@ -1368,17 +1374,12 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - It's due to a Nginx limitation. See [Kong Gateway doc](https://developer.konghq.com/gateway/entities/plugin/#plugin-contexts)
 - No HTTP/2 restriction for Kong Gateway version v3.9 or higher
 2) The `WSDL VALIDATION` has following limitations:
-- The validation is provided by `libxml2` library that supports XML but doesn't natively support WSDL. So, some specific WSDL definitions are not supported by the plugin. For instance the [`location`](https://www.w3.org/TR/2007/REC-wsdl20-20070626/#include_location_attribute) WSDL2.0 atrribute (offering a way to give the Schema location) is not supported
+- The validation is provided by `libxml2` library that supports XML and XSD but doesn't natively support WSDL. So, some specific WSDL definitions are not supported by the plugin. For instance the [`location`](https://www.w3.org/TR/2007/REC-wsdl20-20070626/#include_location_attribute) WSDL2.0 atrribute (offering a way to give the Schema location) is not supported
 3) The `WSDL/XSD VALIDATION` has following limitations:
 - If the WSDL/XSD schema imports an XSD from external entity, it uses a callback function (i.e. `libxml2ex.xmlMyExternalEntityLoader` called by `libxml2`). As it's a non-yield function it must use the `socket.http` (blocking library). To avoid this limitation please:
   - Use `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.xsdSoap12SchemaInclude` **or**
   - Have at least 2 Nginx worker processes **or**
   - Enable the experimental `ExternalEntityLoader_Async` property (which uses `resty.http`)
-- If [`stream_listen`](https://developer.konghq.com/gateway/configuration/#stream-listen) is enabled, the `kong.ctx.shared` is not set correctly in `libxml2ex.xmlMyExternalEntityLoader`. It impacts the WSDL/XSD validation which can perform imports: the `config.xsdApiSchemaInclude`, `config.xsdSoapSchemaInclude` and `config.ExternalEntityLoader_Async` are ignored; and the `import` is only done through `socket.http` (blocking library). The recommendation is to disable `stream_listen` with the SOAP/XML plugins and have a dedicated Kong GW that enables `stream_listen`
-  - The plugins add a Kong log:
-    ```shell
-    [error] The 'stream_listen' is enabled but it's partially incompatible for downloading External entities defined in WSDL/XSD"
-    ```
 - The Asynchronous download of the XSD schemas (with `config.ExternalEntityLoader_Async`) uses a LRU cache (Least Recently Used) for storing the content of XSD schema. The default size is `2000` entries. When the limit has been reached there is a warning message in the Kong log
 4) `XSLT TRANSFORMATION` can be simultaneously applied for SOAP 1.1 or SOAP 1.2 if there is no specific reference to the `<soap:Envelope>` and `<soap:Body>` (or `<soap12:Envelope>` and `<soap12:Body>`). In the event those tags are used, please create one Kong route per SOAP version
 5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. It is recommended to:
@@ -1524,10 +1525,11 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.4.4
   - Bumped to Kong Gateway v3.13.0.0
   - Removed the `stream_listen` limitation: it can be enabled without impacting the plugins' behavior
+  - Improved the Request plugin in the event of large request body size: if the request body size is greater than `nginx_http_client_body_buffer_size`, the plugin reads the request body from a buffered file and applies the regular process (without sending an error to the Consumer)
   - `Routing By XPath`: checked correctly if `RouteXPathTargets` is empty; it avoids useless execution code
   - `ExternalEntityLoader_Async`: improved the mechanism:
     - Called `sleepForPrefetchEnd` one time per plugin call
     - Added the detection of `Failed to locate a schema at location` error message
   - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Used for completly disable the SOAP 1.1 XSD Validation that is enabled by default
-  - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the SOAP verion dynamically detected by Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a SOAP 1.1 envelope even if the request `Content-Type` header is SOAP 1.2
+  - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the SOAP verion dynamically detected by Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a SOAP 1.1 envelope, even if the request `Content-Type` header is SOAP 1.2
   - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200)
