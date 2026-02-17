@@ -69,6 +69,7 @@ return {
             keys = { type = "string", required = true },
             values = {type = "string", required = true, referenceable = true },
           }},
+          { xsltRemoveEmptyNameSpace = { type = "boolean", required = false, default = true }, },
         },
     }, },
   },
@@ -94,39 +95,40 @@ return {
           end
         end
 
-        -- Check that Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
-        if ((config.xsdSoapSchemaInclude and type(config.xsdSoapSchemaInclude) == 'table' and next(config.xsdSoapSchemaInclude)) or 
-            (config.xsdApiSchemaInclude  and type(config.xsdApiSchemaInclude ) == 'table' and next(config.xsdApiSchemaInclude))) and
-            config.ExternalEntityLoader_Async then
-          return nil, "config.xsdSoapSchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
-        end
-
-        -- Check that if the SOAP 1.1 Schema inclusion is defined, the 'xsdApiSchema' is defined too
+        -- Check that if the SOAP 1.1 Schema inclusion is defined, the 'xsdSoapSchema' is defined too
         if (config.xsdSoapSchemaInclude and type(config.xsdSoapSchemaInclude) == 'table' and next(config.xsdSoapSchemaInclude)) and  
-            type(config.xsdSoapSchema) == 'userdata' then
+            (type(config.xsdSoapSchema) == 'userdata' or (config.xsdSoapSchema and config.xsdSoapSchema == '<!-- -->')) then
           return nil, "config.xsdSoapSchema must be defined if config.xsdSoapSchemaInclude is defined"
         end
 
-        -- Check that if the SOAP 1.2 Schema inclusion is defined, the 'xsdApiSchema' is defined too
+        -- Check that if the SOAP 1.2 Schema inclusion is defined, the 'xsdSoap12Schema' is defined too
         if (config.xsdSoap12SchemaInclude and type(config.xsdSoap12SchemaInclude) == 'table' and next(config.xsdSoap12SchemaInclude)) and  
-            type(config.xsdSoap12Schema) == 'userdata' then
+            (type(config.xsdSoap12Schema) == 'userdata' or (config.xsdSoap12Schema and config.xsdSoap12Schema == '<!-- -->')) then
           return nil, "config.xsdSoap12Schema must be defined if config.xsdSoap12SchemaInclude is defined"
         end
 
-        -- Check that if the API Schema inclusion is defined, the 'xsdSoapSchema' is defined too
+        -- Check that if the API Schema inclusion is defined, the 'xsdApiSchema' is defined too
         if (config.xsdApiSchemaInclude and type(config.xsdApiSchemaInclude) == 'table' and next(config.xsdApiSchemaInclude)) and  
-            type(config.xsdApiSchema) == 'userdata' then
+            (type(config.xsdApiSchema) == 'userdata' or (config.xsdApiSchema and config.xsdApiSchema == '<!-- -->')) then
           return nil, "config.xsdApiSchema must be defined if config.xsdApiSchemaInclude is defined"
         end
 
+        -- Check that Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
+        if ((config.xsdSoapSchemaInclude    and type(config.xsdSoapSchemaInclude  ) == 'table' and next(config.xsdSoapSchemaInclude))   or 
+            (config.xsdSoap12SchemaInclude  and type(config.xsdSoap12SchemaInclude) == 'table' and next(config.xsdSoap12SchemaInclude)) or
+            (config.xsdApiSchemaInclude     and type(config.xsdApiSchemaInclude   ) == 'table' and next(config.xsdApiSchemaInclude)))   and
+            config.ExternalEntityLoader_Async then
+          return nil, "config.xsdSoapSchemaInclude or config.xsdSoap12SchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
+        end
+
         -- Check that if 'SOAPAction_Header' is enabled, the 'xsdApiSchema' is defined
-        if config.SOAPAction_Header ~= "no" and type(config.xsdApiSchema) == 'userdata' then
+        if config.SOAPAction_Header ~= "no" and (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
           return nil, "config.xsdApiSchema must be defined if config.SOAPAction_Header is enabled"
         end
 
         -- Check that if 'wsdlApiSchemaForceSchemaLocation' is enabled, the 'xsdApiSchema' is defined
         if (type(config.wsdlApiSchemaForceSchemaLocation) == 'boolean' and config.wsdlApiSchemaForceSchemaLocation) and 
-            type(config.xsdApiSchema) == 'userdata' then
+            (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
           return nil, "config.xsdApiSchema must be defined if config.wsdlApiSchemaForceSchemaLocation is enabled"
         end
 

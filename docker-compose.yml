@@ -16,6 +16,26 @@ x-kong-config: &kong-env
 
 services:
 
+  calculator1:
+    container_name: calculator1
+    image: jeromeguillaume/ws-soap-calculator:1.0.4
+    networks:
+      - kong-soap-xml-net                  # Connect to the shared Kong network
+    environment:
+      X_SOAP_REGION: 	soap1.apim.eu
+    ports:
+      - "8080:8080"
+  
+  calculator2:
+    container_name: calculator2
+    image: jeromeguillaume/ws-soap-calculator:1.0.4
+    networks:
+      - kong-soap-xml-net                  # Connect to the shared Kong network
+    environment:
+      X_SOAP_REGION: 	soap2.apim.eu
+    ports:
+      - "8081:8080"
+
   kong-database-soap-xml-handling:
     container_name: kong-database-soap-xml-handling
     image: postgres:latest           # Official Postgres image
@@ -35,7 +55,7 @@ services:
       retries: 10
 
   kong-bootstrap:
-    image: 'kong/kong-gateway:3.12.0.2'  # Kong Gateway image (default to latest version)
+    image: 'kong/kong-gateway:3.13.0.0'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
     container_name: kong-bootstrap
     networks:
@@ -50,8 +70,8 @@ services:
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
 
   kong-gateway-soap-xml-handling:
-    image: 'kong/kong-gateway:3.12.0.2'  # Main Kong Gateway Control Plane (default to latest version)
-    #image: 'jeromeguillaume/kong-soap-xml:3.12.0.2-1.4.3-12.9'
+    image: 'kong/kong-gateway:3.13.0.0'  # Main Kong Gateway Control Plane (default to latest version)
+    #image: 'jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9'
     platform: linux/${ARCHITECTURE}
     container_name: kong-gateway-soap-xml-handling
     restart: on-failure

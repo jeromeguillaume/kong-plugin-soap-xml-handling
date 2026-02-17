@@ -6,12 +6,13 @@ local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
 local xmlgeneral 			= require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 local KongGzip				= nil
--- Compare version strings
-if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
-	KongGzip = require "kong.tools.utils"
-else
+-- Kong Gateway version >= 3.6.0
+if  kong.version_num >= 3006000 then  
 	KongGzip = require "kong.tools.gzip"
+else
+	KongGzip = require "kong.tools.utils"
 end
+
 local response_common = {}
 
 response_common.calculator_Request = [[
@@ -40,7 +41,7 @@ response_common.calculator_Response_General_Failed = [[
   </soap:Body>
 </soap:Envelope>]]
 
-response_common.calculator_Response_General_Failed_verbose = [[
+response_common.calculator_Response_General_Failed_Content_Type_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -55,6 +56,22 @@ response_common.calculator_Response_General_Failed_verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculator_Response_General_Failed_Backend_Http_Error_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Response %- General process failed</faultstring>
+      <detail>
+        <errorMessage>Service Backend returned an HTTP error. The SOAP/XML process is ignored</errorMessage>
+        <backendHttpCode>400</backendHttpCode>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+
 response_common.calculator_Response_XSLT_BEFORE = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -65,6 +82,37 @@ response_common.calculator_Response_XSLT_BEFORE = [[
   </xsl:template>
   <xsl:template match="//*[local-name()='AddResult']">
     <KongResult><xsl:apply-templates select="@*|node()" /></KongResult>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+response_common.calculator_Response_XSLT_BEFORE_Omit_XML_Declaration = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResult']">
+    <KongResult><xsl:apply-templates select="@*|node()" /></KongResult>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+response_common.calculator_Response_XSLT_BEFORE_No_Default_NS_KongResult = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ns="http://tempuri.org/">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResponse']">
+  	<AddResponse xmlns="http://tempuri.org/" xmlns:ns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></AddResponse>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResult']">
+    <ns:KongResult><xsl:apply-templates select="@*|node()" /></ns:KongResult>
   </xsl:template>
 </xsl:stylesheet>
 ]]
@@ -318,6 +366,10 @@ response_common.calculator_Response_XML = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <AddResponse><KongResult>13</KongResult></AddResponse>]]
 
+response_common.calculator_Response_XML_12 = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<AddResponse><KongResult>12</KongResult></AddResponse>]]
+
 response_common.calculator_Response_XML_18 = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <AddResponse><KongResult>18</KongResult></AddResponse>]]
@@ -501,7 +553,22 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 			}
 	}
-  
+
+  local calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_ok" }
+		}
+
+	blue_print.plugins:insert {
+			name = PLUGIN_NAME,
+			route = calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_route,
+			config = {
+				VerboseResponse = true,
+				xsltLibrary = xsltLibrary,
+				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_Omit_XML_Declaration
+			}
+	}
+
 	local calculatorXSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_with_xslt_Params_ok" }
@@ -1065,6 +1132,57 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok,
+		config = {
+			VerboseResponse = true,
+			ExternalEntityLoader_CacheTTL = 3600,
+			xsdApiSchema = request_common.commentForEmptyXSD,
+			xsdSoapSchema = request_common.commentForEmptyXSD,
+			xsdSoap12Schema = request_common.commentForEmptyXSD
+		}
+	}
+
+	local calculator_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko_route,
+		config = {
+			VerboseResponse = true,
+			ignoreProcessIfServiceHttpError = true,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
+			xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
+			xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER
+		}
+	}
+
+	local calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok_route,
+		config = {
+			VerboseResponse = true,
+			ignoreProcessIfServiceHttpError = true,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_No_Default_NS_KongResult,
+			xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_KongResult.wsdl",
+			xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER,
+			xsltRemoveEmptyNameSpace = false
+		}
+	}
+
 end
 
 -------------------------------------------
@@ -1084,6 +1202,23 @@ function response_common._5_XSLT_BEFORE_XSD_Valid_transformation (assert, client
     local content_type = assert.response(r).has.header("Content-Type")
     assert.matches("text/xml%;%s-charset=utf%-8", content_type)
     assert.matches('<KongResult>13</KongResult>', body)	  
+end
+
+function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_omit_XML_Declaration_in_Response_Body (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = response_common.calculator_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<KongResult>13</KongResult>', body)
+	assert.not_matches('<?xml version="1.0" encoding="UTF%-8"%?>', body)
 end
 
 function response_common._5_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
@@ -1220,7 +1355,7 @@ function response_common._5_XSLT_BEFORE_XSD_Content_Encoding_Unknown_Encoding_wi
   local content_type = assert.response(r).has.header("Content-Type")
   assert.matches("text/xml%;%s-charset=utf%-8", content_type)
   local content_encoding = assert.response(r).has.no_header("Content-Encoding")
-  assert.matches(response_common.calculator_Response_General_Failed_verbose, body)
+  assert.matches(response_common.calculator_Response_General_Failed_Content_Type_verbose, body)
 end
 
 function response_common._5_6_XSD_Validation_Ok (assert, client)
@@ -1608,13 +1743,72 @@ function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, 
 	if kong.version_num >= 3009000 then		
 		assert.equal(200, tonumber(headers:get(":status")))
 		assert.matches('<KongResult>13</KongResult>', body)
-
+		
 	-- For Kong v3.8- the Response plugin doesn't support HTTP/2 protocol
 	else
 		assert.equal(200, tonumber(headers:get(":status")))
 		assert.not_matches('<KongResult>13</KongResult>', body)
 		assert.logfile().has.line("Try calling 'kong.service.request.enable_buffering' with http/2 please use http/1.x instead")
 	end	
+end
+
+function response_common._6_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 200, Content-Type and right match	
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
+end
+
+function response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculator_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Request_SOAP_ko,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match	
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_Error_verbose, body)
+end
+
+function response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
+	-- clean the log file
+  helpers.clean_logfile()
+
+	-- invoke a test request
+	local r = client:post("/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+	
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_XML_12, body)
+	
+	-- This log happens for XSLT Transformation (After)
+	assert.logfile().has.line(request_common.xslt_xml_in_memory)
+	-- This log happens for XSD SOAP Validation
+	assert.logfile().has.line(request_common.xsd_xml_in_memory)
+
+	-- This log doesn't happen for XSD API Validation
+	assert.logfile().has.no.line (request_common.xsd_xml_not_in_memory)
 end
 
 return response_common

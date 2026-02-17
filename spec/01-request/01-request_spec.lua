@@ -7,6 +7,9 @@ local request_common = require "spec.common.request"
 
 helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+helpers.setenv("KONG_LOG_LEVEL", "debug")
+
 for _, strategy in helpers.all_strategies() do
 	--if strategy == "off" then
   --  goto continue
@@ -255,8 +258,8 @@ for _, strategy in helpers.all_strategies() do
 				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
 			end)
 
-			it("2|XSD Validation - large body 16K - Ko (due to low KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE)", function()
-				request_common._2_XSD_Validation_large_body_16k_with_verbose_ko (assert, client)
+			it("2|XSD Validation - large body 16K (due to low KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE) - Ok", function()
+				request_common._2_XSD_Validation_large_body_16k_with_verbose_ok (assert, client)
 			end)
 
 			it("2+3|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Ok", function()
@@ -281,6 +284,22 @@ for _, strategy in helpers.all_strategies() do
 
 			it("2|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Some XSDs are not included in WSDL - Ko", function()
 				request_common._2_WSDL_Validation_Add_with_ForceSchemaLocation_and_Some_XSDs_are_not_included_in_WSDL_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Ok", function()
+				request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_with_verbose_ok (assert, client)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Invalid SOAP body - Ko", function()
+				request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_Invalid_SOAP_body_with_verbose_ko (assert, client)
+			end)
+
+			it("2|WSDL/XSD Validation for SOAP 1.1 and API with commented XSD schema (<!-- -->) - Invalid API Operation - Ko", function()
+				request_common._2_WSDL_XSD_Validation_for_SOAP_11_and_API_with_Commented_Schema_Invalid_API_Operation_with_verbose_ko (assert, client)
+			end)
+			
+			it("1+2+3+4|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
+				request_common._1_2_3_4_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
 			end)
 
 		end)

@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.3",
+    VERSION = "1.4.4",
   }
 
 local xmlgeneral = nil
@@ -13,118 +13,171 @@ local KongGzip   = nil
 -- WSDL/XSD VALIDATION             : Validate XML request with its WSDL or XSD schema
 -- XSLT TRANSFORMATION - AFTER XSD : Transform the XML response After (XSD VALIDATION)
 -----------------------------------------------------------------------------------------
-function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope, contentType)
+function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   local soapEnvelopeTransformed
   local soapFaultBody
   local errMessage
   local XMLXSDMatching
-  local soapFaultCode = xmlgeneral.soapFaultCodeServer
-  local pluginId      = kong.plugin.get_id()
+  local xmlDeclaration
+  local xmlPtrDoc
+  local soapFaultCode   = xmlgeneral.soapFaultCodeServer
+  local pluginId        = kong.plugin.get_id()
+  local responseStatus  = kong.response.get_status()
 
+  -- If the response status of the Service is different from 200 and
+  -- If the plugin is configured to ignore process in case of error then
+  if responseStatus ~= 200 and plugin_conf.ignoreProcessIfServiceHttpError then
+    -- Format a Fault code to Client
+    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                xmlgeneral.ignoreIfServiceHttpError,
+                                                kong.ctx.shared.contentType.request,
+                                                soapFaultCode)
+  else
+    soapEnvelopeTransformed = soapEnvelope
+  end
+
+  -- If there is no error and
   -- If there is 'XSLT Transformation Before XSD' configuration then:
-  -- => Apply XSL Transformation (XSLT) Before
-  if plugin_conf.xsltTransformBefore then
-    soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
-                                                                                 pluginId,
-                                                                                 plugin_conf.ExternalEntityLoader_CacheTTL,
-                                                                                 plugin_conf.filePathPrefix,
-                                                                                 xmlgeneral.xsltBeforeXSD,
-                                                                                 plugin_conf.xsltLibrary,
-                                                                                 plugin_conf.xsltParams,
-                                                                                 soapEnvelope,
-                                                                                 plugin_conf.xsltTransformBefore,
-                                                                                 plugin_conf.VerboseResponse)
+  --    => Apply XSL Transformation (XSLT) Before
+  if  soapFaultBody == nil and plugin_conf.xsltTransformBefore then
+    xmlPtrDoc, soapEnvelopeTransformed, xmlDeclaration, errMessage, soapFaultCode = 
+      xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
+                              pluginId,
+                              plugin_conf.ExternalEntityLoader_CacheTTL,
+                              plugin_conf.filePathPrefix,
+                              xmlgeneral.xsltBeforeXSD,
+                              plugin_conf.xsltLibrary,
+                              plugin_conf.xsltParams,
+                              xmlPtrDoc,                                                                                  
+                              soapEnvelopeTransformed,
+                              plugin_conf.xsltTransformBefore,
+                              plugin_conf.VerboseResponse,
+                              plugin_conf.xsltRemoveEmptyNameSpace)
+
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
-  else
-    soapEnvelopeTransformed = soapEnvelope
   end
   
   -- If there is no error and
-  -- If there is a configuration for XSD SOAP schema validation then:
-  --  => Validate the SOAP XML with its schema
-  if soapFaultBody == nil and plugin_conf.xsdSoapSchema then
-    
+  -- If the plugin is defined with XSD SOAP schema and
+  -- If the XSD SOAP schema is different from a comment definition then:
+  --    => Validate the SOAP envelope with its schema
+  if  soapFaultBody == nil and 
+      ( (plugin_conf.xsdSoapSchema    and plugin_conf.xsdSoapSchema   ~= xmlgeneral.commentForEmptyXSD) or
+        (plugin_conf.xsdSoap12Schema  and plugin_conf.xsdSoap12Schema ~= xmlgeneral.commentForEmptyXSD)) then
+
     -- Validate the SOAP envelope with its schema
-    errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (xmlgeneral.ResponseTypePlugin, 
-                                                                              pluginId,
-                                                                              plugin_conf.ExternalEntityLoader_CacheTTL,                                                                               
-                                                                              plugin_conf.filePathPrefix,
-                                                                              xmlgeneral.schemaTypeSOAP_All, 
-                                                                              1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
-                                                                              soapEnvelopeTransformed, 
-                                                                              plugin_conf.xsdSoapSchema,
-                                                                              plugin_conf.xsdSoap12Schema, 
-                                                                              plugin_conf.VerboseResponse, 
-                                                                              false,
-                                                                              plugin_conf.ExternalEntityLoader_Async)
+    xmlPtrDoc, errMessage, XMLXSDMatching, soapFaultCode = 
+      xmlgeneral.XMLValidateWithXSD ( xmlgeneral.ResponseTypePlugin, 
+                                      pluginId,
+                                      plugin_conf.ExternalEntityLoader_CacheTTL,                                                                               
+                                      plugin_conf.filePathPrefix,
+                                      xmlgeneral.schemaTypeSOAP_All, 
+                                      1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
+                                      xmlPtrDoc,
+                                      soapEnvelopeTransformed, 
+                                      plugin_conf.xsdSoapSchema,
+                                      plugin_conf.xsdSoap12Schema, 
+                                      plugin_conf.VerboseResponse, 
+                                      false,
+                                      plugin_conf.ExternalEntityLoader_Async)
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
   
   -- If there is no error and
-  -- If there is a configuration for XSD or WSDL API schema validation then:
-  -- => Validate the API XML (included in the <soap:envelope>) with its schema
-  if soapFaultBody == nil and plugin_conf.xsdApiSchema then
+  -- If the plugin is defined with XSD or WSDL API schema
+  -- If the XSD API schema is different from a comment definition then:
+  --    => Validate the API XML (included in the <soap:envelope>) with its schema
+  if soapFaultBody == nil and plugin_conf.xsdApiSchema and plugin_conf.xsdApiSchema ~= xmlgeneral.commentForEmptyXSD then
   
-    errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin,
-                                                                pluginId,
-                                                                plugin_conf.ExternalEntityLoader_CacheTTL,
-                                                                plugin_conf.filePathPrefix,
-                                                                xmlgeneral.schemaTypeAPI,
-                                                                soapEnvelopeTransformed,
-                                                                plugin_conf.xsdApiSchema,
-                                                                plugin_conf.VerboseResponse,
-                                                                false,
-                                                                plugin_conf.ExternalEntityLoader_Async,
-                                                                plugin_conf.wsdlApiSchemaForceSchemaLocation
-                                                              )
+    xmlPtrDoc, errMessage, soapFaultCode = 
+      xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin,
+                                      pluginId,
+                                      plugin_conf.ExternalEntityLoader_CacheTTL,
+                                      plugin_conf.filePathPrefix,
+                                      xmlgeneral.schemaTypeAPI,
+                                      xmlPtrDoc,
+                                      soapEnvelopeTransformed,
+                                      plugin_conf.xsdApiSchema,
+                                      plugin_conf.VerboseResponse,
+                                      false,
+                                      plugin_conf.ExternalEntityLoader_Async,
+                                      plugin_conf.wsdlApiSchemaForceSchemaLocation
+                                    )
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
 
   -- If there is no error and
   -- If there is 'XSLT Transformation After XSD' configuration then
-  -- => Apply XSL Transformation (XSLT) After
+  --    => Apply XSL Transformation (XSLT) After
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
-    soapEnvelopeTransformed, errMessage, soapFaultCode = xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
-                                                                                 pluginId,
-                                                                                 plugin_conf.ExternalEntityLoader_CacheTTL,
-                                                                                 plugin_conf.filePathPrefix,
-                                                                                 xmlgeneral.xsltAfterXSD,
-                                                                                 plugin_conf.xsltLibrary,
-                                                                                 plugin_conf.xsltParams,
-                                                                                 soapEnvelopeTransformed,
-                                                                                 plugin_conf.xsltTransformAfter,
-                                                                                 plugin_conf.VerboseResponse)
+    xmlPtrDoc, soapEnvelopeTransformed, xmlDeclaration, errMessage, soapFaultCode =
+      xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
+                              pluginId,
+                              plugin_conf.ExternalEntityLoader_CacheTTL,
+                              plugin_conf.filePathPrefix,
+                              xmlgeneral.xsltAfterXSD,
+                              plugin_conf.xsltLibrary,
+                              plugin_conf.xsltParams,
+                              xmlPtrDoc,
+                              soapEnvelopeTransformed,
+                              plugin_conf.xsltTransformAfter,
+                              plugin_conf.VerboseResponse,
+                              plugin_conf.xsltRemoveEmptyNameSpace)
+    
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage,
-                                                  contentType,
+                                                  kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
   end
-  
+
+  -- If there is no error
+  --    AND
+  -- If an XSLT Transformation has been applied 
+  --    AND 
+  -- If there is no need to Remove Empty NameSpace (that has been previously lead to an 'xmlDump')
+  --    => Dump the transformed SOAP envelope
+  if soapFaultBody == nil and 
+      (plugin_conf.xsltTransformBefore or plugin_conf.xsltTransformAfter) and
+      not plugin_conf.xsltRemoveEmptyNameSpace then
+    -- Dump the transformed SOAP envelope
+    soapEnvelopeTransformed, errMessage = xmlgeneral.xmlDump (xmlPtrDoc, nil, xmlDeclaration, plugin_conf.xsltRemoveEmptyNameSpace)
+    if errMessage then
+      -- Format a Fault code to Client
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                  errMessage,
+                                                  kong.ctx.shared.contentType.request,
+                                                  soapFaultCode)
+    end
+
+  end
+
   return soapEnvelopeTransformed, soapFaultBody
 
 end
@@ -139,11 +192,11 @@ function plugin:init_worker ()
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
 
-  -- Compare version strings
-  if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
-    KongGzip = require "kong.tools.utils"
-  else
+  -- Kong Gateway version >= 3.6.0
+  if  kong.version_num >= 3006000 then  
     KongGzip = require "kong.tools.gzip"
+  else
+    KongGzip = require "kong.tools.utils"
   end
 
 end
@@ -167,14 +220,11 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- Do a sleep for waiting the end of Prefetch of SOAP 1.1 Schema
-  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoapSchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
-  
-  -- Do a sleep for waiting the end of Prefetch of SOAP 1.2 Schema
-  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdSoap12SchemaInclude, libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
-  
-  -- Do a sleep for waiting the end of Prefetch of API Schema
-  xmlgeneral.sleepForPrefetchEnd (plugin_conf.ExternalEntityLoader_Async, plugin_conf.xsdApiSchemaInclude , libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)
+  -- If Asynchronous External Entity Loader is enabled then
+  if plugin_conf.ExternalEntityLoader_Async then
+    -- Do a sleep for waiting the end of Prefetch for (SOAP 1.1/SOAP 1.2/API Schemas)
+    xmlgeneral.sleepForPrefetchEnd (libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)  
+  end
 
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
@@ -236,7 +286,7 @@ function plugin:header_filter(plugin_conf)
       kong.log.debug("A pending error has been set by other plugin or by the Service itself")
       kong.response.set_header("Content-Type", xmlgeneral.JSONContentType)
       return
-    -- Else the Request Content-Type is XML: we reformat the the error messsage in SOAP/XML Fault
+    -- Else the Request Content-Type is XML: we reformat the error messsage in SOAP/XML Fault
     else
       kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
       soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(plugin_conf.VerboseResponse, kong.ctx.shared.contentType.request)
@@ -257,7 +307,7 @@ function plugin:header_filter(plugin_conf)
   if soapFaultBody == nil then
     -- If the Body is deflated/zipped, we inflate/unzip it
     if kong.response.get_header("Content-Encoding") == "gzip" then
-      local soapDeflated, err = KongGzip.inflate_gzip(soapEnvelope)
+      local soapInflated, err = KongGzip.inflate_gzip(soapEnvelope)
       if err then
         err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
         soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -266,7 +316,7 @@ function plugin:header_filter(plugin_conf)
                                                     kong.ctx.shared.contentType.request,
                                                     xmlgeneral.soapFaultCodeServer)
       else
-        soapEnvelope = soapDeflated
+        soapEnvelope = soapInflated
       end
     -- If there is a 'Content-Encoding' type that is not supported (by 'KongGzip')
     elseif kong.response.get_header("Content-Encoding") then
@@ -282,7 +332,7 @@ function plugin:header_filter(plugin_conf)
   -- If there is no error
   if soapFaultBody == nil then
     -- Handle all SOAP/XML topics of the Response: XSLT before, XSD validation and XSLT After
-    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope, kong.ctx.shared.contentType.request)
+    soapEnvelopeTransformed, soapFaultBody = plugin:responseSOAPXMLhandling (plugin_conf, soapEnvelope)
   end
   
   -- If there is an error during SOAP/XML process we change the HTTP staus code and
@@ -327,7 +377,7 @@ function plugin:header_filter(plugin_conf)
   elseif soapEnvelopeTransformed then
     -- If the Backend API Body is deflated/zipped, we deflate/zip the new transformed SOAP/XML Body
     if kong.response.get_header("Content-Encoding") == "gzip" then
-      local soapInflated, err = KongGzip.deflate_gzip(soapEnvelopeTransformed)
+      local soapDeflated, err = KongGzip.deflate_gzip(soapEnvelopeTransformed)
       
       if err then
         kong.log.err("Failed to deflate the gzipped SOAP/XML Body: ", err)
@@ -335,7 +385,7 @@ function plugin:header_filter(plugin_conf)
         -- and we return the non deflated/zipped content
         kong.response.clear_header("Content-Encoding")
       else
-        soapEnvelopeTransformed = soapInflated
+        soapEnvelopeTransformed = soapDeflated
       end
     end
     -- We cannot call 'kong.response.set_raw_body()' at this stage to change the body content

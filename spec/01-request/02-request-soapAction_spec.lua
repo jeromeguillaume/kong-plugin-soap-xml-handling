@@ -12,6 +12,9 @@ local soapAction_common = require "spec.common.soapAction"
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+helpers.setenv("KONG_LOG_LEVEL", "debug")
+
 local calculator_soap11_Subtract_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -686,6 +689,30 @@ for _, strategy in helpers.all_strategies() do
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+
+        local calculator_Disable_xsltRemoveEmptyNameSpace_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_Disable_xsltRemoveEmptyNameSpace_route,
+          config = {
+            VerboseRequest = true,
+            xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_No_Default_NS_intB,
+            xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+            SOAPAction_Header = "yes",
+            xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_No_Default_NS_intA,
+            xsltRemoveEmptyNameSpace = false,
+            RouteXPathTargets = {
+              {
+                  URL= "http://ws.soap2.calculator:8080/ws",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+                  XPathCondition= "10"
+              },
             }
           }
         }
@@ -1523,7 +1550,38 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
-    
+
+      it("1+2+3+4|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = request_common.calculator_Subtract_Request
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.equal("soap2", x_soap_region)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>18</AddResult>', body)
+
+        -- This log happens for XSLT Transformation (After)
+        assert.logfile().has.line(request_common.xslt_xml_in_memory)
+        -- This log happens for XSD SOAP Validation
+        assert.logfile().has.line(request_common.xsd_xml_in_memory)
+        -- This log happens for SOAPAction Validation
+        assert.logfile().has.line(request_common.soapaction_xml_in_memory)
+        -- This log happens for XPath Routing
+        assert.logfile().has.line(request_common.routebyxpath_xml_in_memory)
+      end)
+
     end)
 
   end)  

@@ -1,5 +1,5 @@
 volumes:
-  kong_db_data_310: {}  # Named volume to persist Postgres data across container restarts
+  kong_db_data_36: {}  # Named volume to persist Postgres data across container restarts
 
 networks:
   kong-soap-xml-net:      # Custom bridge network for isolated Kong and Postgres communication
@@ -8,7 +8,7 @@ networks:
 # Common environment variables used by Kong services (bootstrap and CP)
 x-kong-config: &kong-env
   KONG_DATABASE: postgres             # Use Postgres as the backing database
-  KONG_PG_HOST: kong-database-soap-xml-handling-3-10      # Hostname of the Postgres service
+  KONG_PG_HOST: kong-database-soap-xml-handling-3-6      # Hostname of the Postgres service
   KONG_PG_DATABASE: kong              # Name of the database to connect to
   KONG_PG_USER: kong                  # Database username
   KONG_PG_PASSWORD: kong              # Database password
@@ -16,12 +16,12 @@ x-kong-config: &kong-env
 
 services:
 
-  kong-database-soap-xml-handling-3-10:
-    container_name: kong-database-soap-xml-handling-3-10
+  kong-database-soap-xml-handling-3-6:
+    container_name: kong-database-soap-xml-handling-3-6
     image: postgres:latest           # Official Postgres image
     restart: on-failure              # Restart if the container fails
     volumes:
-      - kong_db_data_310:/var/lib/postgresql/data  # Mount the volume for persistent data
+      - kong_db_data_36:/var/lib/postgresql/data  # Mount the volume for persistent data
     networks:
       - kong-soap-xml-net                  # Connect to the shared Kong network
     environment:
@@ -34,25 +34,26 @@ services:
       timeout: 10s
       retries: 10
 
-  kong-bootstrap-3-10:
-    image: 'kong/kong-gateway:3.10.0.0'  # Kong Gateway image (default to latest version)
+  kong-bootstrap-3-6:
+    image: 'kong/kong-gateway:3.6.1.8'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
-    container_name: kong-bootstrap-3-10
+    container_name: kong-bootstrap-3-6
     networks:
       - kong-soap-xml-net
     depends_on:
-      kong-database-soap-xml-handling-3-10:
+      kong-database-soap-xml-handling-3-6:
         condition: service_healthy   # Wait until Postgres is up and healthy
     restart: on-failure
     environment:
       <<: *kong-env                 # Reuse environment config from x-kong-config
       KONG_PASSWORD: handyshake    # Admin GUI password (required for RBAC)
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
+    #command: kong migrations up
 
-  kong-gateway-soap-xml-handling-3-10:
-    image: 'kong/kong-gateway:3.10.0.0'  # Main Kong Gateway Control Plane (default to latest version)
+  kong-gateway-soap-xml-handling-3-6:
+    image: 'kong/kong-gateway:3.6.1.8'  # Main Kong Gateway Control Plane (default to latest version)
     platform: linux/${ARCHITECTURE}
-    container_name: kong-gateway-soap-xml-handling-3-10
+    container_name: kong-gateway-soap-xml-handling-3-6
     restart: on-failure
     networks:
       - kong-soap-xml-net
@@ -80,7 +81,7 @@ services:
       KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 8k
       #KONG_NGINX_PROXY_PROXY_REQUEST_BUFFERING: off
     depends_on:
-      kong-bootstrap-3-10:
+      kong-bootstrap-3-6:
         condition: service_completed_successfully  # Start only after bootstrap has succeeded
     ports:
       - "9000:9000"
