@@ -29,7 +29,13 @@ ffi.cdef [[
 ]]
 
 local saxon4KongLib = nil
-local splitn = require("kong.tools.string").splitn
+
+local splitn
+if  kong.version_num >= 3006000 then  
+  splitn = require("kong.tools.string").splitn
+else
+  splitn = require("pl.stringx").split
+end
 
 libsaxon4kong.libName = "libsaxon-4-kong.so"
 libsaxon4kong.symbolNotFound = "Internal error. A symbol is not found in the Shared Object library"

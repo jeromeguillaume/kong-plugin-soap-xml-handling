@@ -948,7 +948,7 @@ function xmlgeneral.xmlDump (xml_ptr, xml_src, xml_declaration, remove_empty_nam
 end
 
 ----------------------------------------------------------------------------------------
--- Prepare a XML declaration (which starts by '<?')
+-- Prepare an XML declaration (which starts by '<?')
 -- The XLST removes it; so if the user defines its xslt file with 
 -- omit-xml-declaration="no" we format it and append it to SOAP/XML content (after XSLT)
 --
@@ -2957,38 +2957,6 @@ function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLptrToSearch, XMLtoSearc
     kong.log.debug ("RouteByXPath: END: not having the proper XPath expression or the right condition")
   end
   return document_ptr, rcXpath, errMessage, xmlgeneral.soapFaultCodeServer
-end
-
-----------------------------------------------------
--- Function to split version string into components
-----------------------------------------------------
-local function split_version(version)
-  local t = {}
-  for part in version:gmatch("([^.]+)") do
-      table.insert(t, tonumber(part))
-  end
-  return t
-end
-
-----------------------------------------------------
--- Function to compare two version strings
--- If   version_B  <= version_A => it returns false
--- Else version_B  >  version_A => it returns true
-----------------------------------------------------
-function xmlgeneral.compare_versions(vA, vB)
-  local vA_parts = split_version(vA)
-  local vB_parts = split_version(vB)
-  
-  for i = 1, math.max(#vA_parts, #vB_parts) do
-      local vA_part = vA_parts[i] or 0
-      local vB_part = vB_parts[i] or 0
-      if vA_part < vB_part then
-          return true
-      elseif vA_part > vB_part then
-          return false
-      end
-  end
-  return false
 end
 
 return xmlgeneral

@@ -6,12 +6,13 @@ local helpers         = require "spec.helpers"
 local request_common  = require "spec.common.request"
 local xmlgeneral 			= require("kong.plugins.soap-xml-handling-lib.xmlgeneral")
 local KongGzip				= nil
--- Compare version strings
-if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
-	KongGzip = require "kong.tools.utils"
-else
+-- Kong Gateway version >= 3.6.0
+if  kong.version_num >= 3006000 then  
 	KongGzip = require "kong.tools.gzip"
+else
+	KongGzip = require "kong.tools.utils"
 end
+
 local response_common = {}
 
 response_common.calculator_Request = [[

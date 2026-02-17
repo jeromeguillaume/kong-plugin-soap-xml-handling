@@ -192,11 +192,11 @@ function plugin:init_worker ()
   -- Initialize the SOAP/XML plugin
   xmlgeneral.initializeXmlSoapPlugin ()
 
-  -- Compare version strings
-  if xmlgeneral.compare_versions(kong.version, "3.6.0.0") then
-    KongGzip = require "kong.tools.utils"
-  else
+  -- Kong Gateway version >= 3.6.0
+  if  kong.version_num >= 3006000 then  
     KongGzip = require "kong.tools.gzip"
+  else
+    KongGzip = require "kong.tools.utils"
   end
 
 end

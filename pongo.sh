@@ -24,7 +24,7 @@
 pongo up
 
 # Run pongo tests by using the code of plugins stored locally
-KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9 pongo run --lpath=$PWD/spec/common --helper=./spec/busted-ci-helper.lua
+#KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9 pongo run --lpath=$PWD/spec/common --helper=./spec/busted-ci-helper.lua
 
 # Run pongo tests by using the code of plugins included in the Docker image
-# KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9 pongo run --helper=./spec/busted-ci-helper.lua
+KONG_IMAGE=jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9 pongo run --helper=./spec/busted-ci-helper.lua
