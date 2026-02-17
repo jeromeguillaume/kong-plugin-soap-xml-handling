@@ -1297,11 +1297,14 @@ request_common.commentForEmptyXSD = "<!-- -->"
 
 request_common.xslt_xml_in_memory					= "XSLT transformation, the XML to transform is already parsed in memory"
 request_common.xsd_xml_in_memory					= "XSD validation, the XML to validate is already parsed in memory"
+request_common.soapaction_xml_in_memory		= "Validate 'SOAPAction' Header - the XML to validate is already parsed in memory"
 request_common.routebyxpath_xml_in_memory	= "RouteByXPath, the route XML is already parsed in memory"
 
 request_common.xslt_xml_not_in_memory 				= "XSLT transformation, the XML to transform is not already parsed in memory"
 request_common.xsd_xml_not_in_memory					= "XSD validation, the XML to validate is not already parsed in memory"
+request_common.soapaction_xml_not_in_memory		= "Validate 'SOAPAction' Header - the XML to validate is not already parsed in memory"
 request_common.routebyxpath_xml_not_in_memory	= "RouteByXPath, the route XML is not already parsed in memory"
+
 
 -------------------------------------------------------------------------------
 -- SOAP/XML REQUEST plugin: configure the Kong entities (Service/Route/Plugin)
@@ -3213,9 +3216,9 @@ function request_common._1_2_3_4_Disable_Xslt_Remove_Empty_NameSpace_with_verbos
 	assert.logfile().has.line(request_common.xslt_xml_in_memory)
 	-- This log happens for XSD SOAP Validation
 	assert.logfile().has.line(request_common.xsd_xml_in_memory)
+	-- This log happens for XPath Routing
+  assert.logfile().has.line(request_common.routebyxpath_xml_in_memory)
 
-	-- This log doesn't happen for XSD API Validation
-	assert.logfile().has.no.line (request_common.xsd_xml_not_in_memory)
 end
 
 return request_common

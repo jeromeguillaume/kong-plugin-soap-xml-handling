@@ -1550,7 +1550,38 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
       end)
-    
+
+      it("1+2+3+4|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
+        -- clean the log file
+        helpers.clean_logfile()
+
+        -- invoke a test request
+        local r = client:post("/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Add"
+          },
+          body = request_common.calculator_Subtract_Request
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.equal("soap2", x_soap_region)
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>18</AddResult>', body)
+
+        -- This log happens for XSLT Transformation (After)
+        assert.logfile().has.line(request_common.xslt_xml_in_memory)
+        -- This log happens for XSD SOAP Validation
+        assert.logfile().has.line(request_common.xsd_xml_in_memory)
+        -- This log happens for SOAPAction Validation
+        assert.logfile().has.line(request_common.soapaction_xml_in_memory)
+        -- This log happens for XPath Routing
+        assert.logfile().has.line(request_common.routebyxpath_xml_in_memory)
+      end)
+
     end)
 
   end)  
