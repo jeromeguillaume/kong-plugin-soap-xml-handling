@@ -22,9 +22,9 @@ helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 helpers.setenv("KONG_LOG_LEVEL", "debug")
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     
@@ -233,14 +233,13 @@ for _, strategy in helpers.all_strategies() do
         assert.equal("soap2", x_soap_region)
         assert.matches(response_common.calculator_Response_XML_18, body)
         
-        -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions were compiled for the 1st time (and not found in the cache)
+        -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction definitions were compiled for the 1st time (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_SOAPAction_ctx_doc)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_routeByXPath)
-
+        
         -- Plugin Response: Check in the log that the XSLT / WSDL /XSDs definition were compiled for the 1st time (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
@@ -286,15 +285,14 @@ for _, strategy in helpers.all_strategies() do
             -- Plugin Request: Check in the log that the WSDL definition was not re-compiled
             assert.logfile().has.no.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
 
-            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions used the cache
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction definitions used the cache
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_wsdl)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xsd)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_wsdlDef)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction_ctx_ptr)
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_routeByXPath)
-
+            
             -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs definitions were not re-compiled
             assert.logfile().has.no.line(caching_common.pluginRes_log..caching_common.compile_wsdl)
 
@@ -344,7 +342,7 @@ for _, strategy in helpers.all_strategies() do
             assert.equal("soap2", x_soap_region)
             assert.matches(response_common.calculator_Response_XML_18, body)        
             
-            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction / XPathRouting definitions were compiled for the 1st time (and not found in the cache)
+            -- Plugin Request: Check in the log that the XSLT / WSDL / XSDs / SOAPAction definitions were compiled for the 1st time (and not found in the cache)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_TTL)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
@@ -352,8 +350,7 @@ for _, strategy in helpers.all_strategies() do
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_SOAPAction)
             assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_SOAPAction_ctx_doc)
-            assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_routeByXPath)
-
+            
             -- Plugin Response: Check in the log that the XSLT / WSDL /XSDs definition were compiled for the 1st time (and not found in the cache)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_wsdl_TTL)
             assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd_TTL)

@@ -16,6 +16,26 @@ x-kong-config: &kong-env
 
 services:
 
+  calculator1:
+    container_name: calculator1
+    image: jeromeguillaume/ws-soap-calculator:1.0.4
+    networks:
+      - kong-soap-xml-net                  # Connect to the shared Kong network
+    environment:
+      X_SOAP_REGION: 	soap1.apim.eu
+    ports:
+      - "8080:8080"
+  
+  calculator2:
+    container_name: calculator2
+    image: jeromeguillaume/ws-soap-calculator:1.0.4
+    networks:
+      - kong-soap-xml-net                  # Connect to the shared Kong network
+    environment:
+      X_SOAP_REGION: 	soap2.apim.eu
+    ports:
+      - "8081:8080"
+
   kong-database-soap-xml-handling:
     container_name: kong-database-soap-xml-handling
     image: postgres:latest           # Official Postgres image

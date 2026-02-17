@@ -69,6 +69,7 @@ return {
             keys = { type = "string", required = true },
             values = {type = "string", required = true, referenceable = true },
           }},
+          { xsltRemoveEmptyNameSpace = { type = "boolean", required = false, default = true }, },
         },
     }, },
   },

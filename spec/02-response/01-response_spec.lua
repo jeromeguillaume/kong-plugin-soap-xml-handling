@@ -5,7 +5,7 @@ local helpers = require "spec.helpers"
 local PLUGIN_NAME = "soap-xml-response-handling"
 
 -- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
--- helpers.setenv("KONG_LOG_LEVEL", "debug")
+helpers.setenv("KONG_LOG_LEVEL", "debug")
 
 -- Debug HTTP/2 connection
 -- helpers.setenv("KONG_DEBUG_HTTP2", "1")
@@ -13,9 +13,9 @@ local PLUGIN_NAME = "soap-xml-response-handling"
 local response_common = require "spec.common.response"
 
 for _, strategy in helpers.all_strategies() do
-	if strategy == "off" then
-    goto continue
-  end
+	--if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -64,6 +64,10 @@ for _, strategy in helpers.all_strategies() do
 
 			it ("5|XSLT (BEFORE XSD) - Valid transformation", function()
 				response_common._5_XSLT_BEFORE_XSD_Valid_transformation (assert, client)
+			end)
+
+			it ("5|XSLT (BEFORE XSD) - Valid transformation - Omit XML declaration in the Body response", function()
+				response_common._5_XSLT_BEFORE_XSD_Valid_transformation_omit_XML_Declaration_in_Response_Body (assert, client)
 			end)
 
 			it ("5|XSLT (BEFORE XSD) - With xslt Params - Ok", function()
@@ -201,6 +205,11 @@ for _, strategy in helpers.all_strategies() do
 			it("5+6+7|Ignore Plugin process in case of Backend HTTP Error - Ko", function()
 				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
 			end)
+			
+			it("5+6+7|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
+				response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
+			end)
+
 	
   	end)
 

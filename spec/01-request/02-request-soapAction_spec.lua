@@ -12,6 +12,9 @@ local soapAction_common = require "spec.common.soapAction"
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
 
+-- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+helpers.setenv("KONG_LOG_LEVEL", "debug")
+
 local calculator_soap11_Subtract_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -452,9 +455,9 @@ local calculator_soap11_Multiply_XSD_VALIDATION_WSDL20_Failed_Invalid_Pattern= [
 </soap:Envelope>]]
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -686,6 +689,30 @@ for _, strategy in helpers.all_strategies() do
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
+            }
+          }
+        }
+
+        local calculator_Disable_xsltRemoveEmptyNameSpace_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = PLUGIN_NAME,
+          route = calculator_Disable_xsltRemoveEmptyNameSpace_route,
+          config = {
+            VerboseRequest = true,
+            xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE_No_Default_NS_intB,
+            xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+            SOAPAction_Header = "yes",
+            xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_No_Default_NS_intA,
+            xsltRemoveEmptyNameSpace = false,
+            RouteXPathTargets = {
+              {
+                  URL= "http://ws.soap2.calculator:8080/ws",
+                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
+                  XPathCondition= "10"
+              },
             }
           }
         }

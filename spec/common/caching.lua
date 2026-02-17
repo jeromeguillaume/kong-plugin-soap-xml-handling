@@ -20,7 +20,6 @@ caching_common.compile_xsd_TTL            = "XSD Validation, 'configure' phase h
 caching_common.compile_xsd_Error          = "XSD Validation, caching: All the pointers need to be recreated for consistency"
 caching_common.compile_SOAPAction         = nil -- It doesn't exist because SOAPAction leverages WSDL caching (that is already compiled)
 caching_common.compile_SOAPAction_ctx_doc = "getSOAPActionFromWSDL: caching: Compile 'contextPtr' and 'document' and Put them in the cache"
-caching_common.compile_routeByXPath       = "RouteByXPath, caching: Create the Parser Context and Put it in the cache"
 caching_common.wsdl_prefetch              = "XMLValidateWithWSDL, prefetch: so get all XSDs and raise the download of External Entities"
 caching_common.xsd_prefetch               = "XSD Validation, prefetch: Compile XSD and Raise the download of External Entities"
 caching_common.wsdl_async                 = "WSDL Validation, no WSDL caching due to Asynchronous external entities"
@@ -32,7 +31,6 @@ caching_common.get_xsd                    = "XSD Validation, caching: Get the co
 caching_common.get_SOAPAction             = "getSOAPActionFromWSDL: caching: Get the compiled WSDL from cache"
 caching_common.get_SOAPAction_wsdlDef     = "getSOAPActionFromWSDL: caching: Get 'wsdlDefinitions_type' from the cache"
 caching_common.get_SOAPAction_ctx_ptr     = "getSOAPActionFromWSDL: caching: Get 'contextPtr' and 'document' from the cache"
-caching_common.get_routeByXPath           = "RouteByXPath, caching: Get the Parser Context from cache"
 
 caching_common.calculator_Request_XSLT_change_intB = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">

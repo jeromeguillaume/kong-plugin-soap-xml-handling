@@ -21,7 +21,7 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 6) `WSDL/XSD VALIDATION`: Validate the XML response with its WSDL/XSD schema
 7) `XSLT TRANSFORMATION - AFTER XSD`:  Transform the XML response after step #6
 
-Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due to the default value of the schema config)
+Each handling is optional
 
 ![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
 
@@ -87,11 +87,12 @@ Each handling is optional (except for `WSDL/XSD VALIDATION` for SOAP schema, due
   
 4) For completly disable the `WSDL/XSD VALIDATION`:
     - Change the SOAP 1.1 default value of `config.xsdSoapSchema` to `<!-- -->`
-    - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`)
+    - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`) or set `config.xsdSoap12Schema` to `<!-- -->`
 
 5) `XSLT TRANSFORMATION`:
     - Use `libxslt` for XSLT 1.0 (default XSLT library)
     - Use `saxon` for XSLT 2.0 and 3.0, especially to apply JSON <-> XML transformation
+    - Prefer disable `xsltRemoveEmptyNameSpace` for increasing performance. When the option is enabled it removes the `xmlns=""` in the XML trasformed by `XSLT`; it happens when an element, defined in the style sheet, has no namespace. But it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance
 
 6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached:
@@ -133,13 +134,13 @@ The External entities are processed in this order:
   3) Download Synchronously or Asynchronously the external Entity URL (related to the `config.ExternalEntityLoader_Async`)
 
 ### Caching
-- The plugins compile/parse the `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions and keep them in a `kong_db_cache` memory cache for improving performance:
+- The plugins compile/parse the `WSDL`/`SOAPAction`/`XSD`/`XSLT` definitions and keep them in a `kong_db_cache` memory cache for improving performance:
   - When the TTL is reached, the plugins compile/parse the definitions once more
   - When the plugin configuration is changed, all the caches are invalidated and the plugins compile/parse the definitions once more (even if there is a change in only one plugin)
 - What's the behavior of plugins in the event of a compilation error (for instance due to an incorrect definition, e.g. missing a leading "<"):
   - `WSDL`/`XSD`: in case of error  the plugins compile/parse the definition again on each call
   - `XSLT`/`SOAPAction`/`RouteByXPath`: the error message is kept in the cache
-  - The difference in behavior (`WSDL`/`XSD` vs `XSLT`/`SOAPAction`/`RouteByXPath`) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by `WSDL`/`XSD`)
+  - The difference in behavior (`WSDL`/`XSD` vs `XSLT`/`SOAPAction`) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by `WSDL`/`XSD`)
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Error management
@@ -174,14 +175,15 @@ If `Verbose` is enabled:
 |config.VerboseRequest|`false`|`soap-xml-request-handling` only: enable a detailed error message sent to the Consumer. The syntax is `<detail>...</detail>` in the `<soap:Fault>` message|
 |config.VerboseResponse|`false`|`soap-xml-response-handling` only: see above|
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
-|config.xsdApiSchema|`N/A`|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition|
-|config.xsdApiSchemaInclude|`N/A`|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
+|config.xsdApiSchema|N/A|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition. Use `<!-- -->` value (an XML comment) or no value for disabling the validation|
+|config.xsdApiSchemaInclude|N/A|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoapSchema|Pre-defined with `SOAP` 1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP 1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition. Use `<!-- -->` value (an XML comment) for disabling the validation|
 |config.xsdSoapSchemaInclude|N/A|XSD content for SOAP 1.1 included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoap12Schema|N/A|For SOAP 1.2. See `xsdSoapSchema` description|
 |config.xsdSoap12SchemaInclude|N/A|For SOAP 1.2. See `xsdSoapSchemaInclude` description|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`|
+|config.xsltRemoveEmptyNameSpace|`true`|Remove the `xmlns=""` in the XML trasformed by `XSLT`. It happens when an element, defined in the style sheet, has no namespace. Therefore it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`. It can be a raw definition or a file name containing the definition|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`. It can be a raw definition or a file name containing the definition|
 
@@ -375,10 +377,11 @@ The plugin applies an XSLT Transformation on XML request **before** the XSD Vali
 In this example the XSLT **adds the value ```<intB>8</intB>```** which will not be present in the request.
 
 Add `soap-xml-request-handling` plugin and configure the plugin with:
+- `xsltRemoveEmptyNameSpace` disabled (for improving performance)
 - `xsltTransformBefore` property with this XSLT definition:
 ```xml
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ns="http://tempuri.org/">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
@@ -387,7 +390,7 @@ Add `soap-xml-request-handling` plugin and configure the plugin with:
   </xsl:template>   
   <xsl:template match="//*[local-name()='intA']">
     <xsl:copy-of select="."/>
-      <intB>8</intB>
+      <ns:intB>8</ns:intB>
   </xsl:template>
 </xsl:stylesheet>
 ```
@@ -558,29 +561,36 @@ In this example the XSLT **changes the Tag names**:
 
 Add `soap-xml-response-handling` plugin and configure the plugin with:
 - `VerboseResponse` enabled
+- `xsltRemoveEmptyNameSpace` disabled (for improving performance)
 - `xsltTransformBefore` property with this XSLT definition:
 ```xml
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ns="http://tempuri.org/">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <xsl:template match="@*|node()">
     <xsl:copy>
       <xsl:apply-templates select="@*|node()" />
     </xsl:copy>
   </xsl:template>
+  <xsl:template match="//*[local-name()='AddResponse']">
+  	<AddResponse xmlns="http://tempuri.org/" xmlns:ns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></AddResponse>
+  </xsl:template>
   <xsl:template match="//*[local-name()='AddResult']">
-    <KongResult><xsl:apply-templates select="@*|node()" /></KongResult>
+    <ns:KongResult><xsl:apply-templates select="@*|node()" /></ns:KongResult>
   </xsl:template>
 </xsl:stylesheet>
 ```
 Use command defined at Example #3, the expected result is `<KongResult>13</KongResult>`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <soap:Body>
-    <AddResponse xmlns="http://tempuri.org/">
-      <KongResult>13</KongResult>
-    </AddResponse>
-  </soap:Body>
+<soap:Envelope
+	xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<soap:Body>
+		<AddResponse xmlns="http://tempuri.org/" xmlns:ns="http://tempuri.org/">
+			<ns:KongResult>13</ns:KongResult>
+		</AddResponse>
+	</soap:Body>
 </soap:Envelope>
 ```
 
@@ -1525,11 +1535,17 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 - v1.4.4
   - Bumped to Kong Gateway v3.13.0.0
   - Removed the `stream_listen` limitation: it can be enabled without impacting the plugins' behavior
-  - Improved the Request plugin in the event of large request body size: if the request body size is greater than `nginx_http_client_body_buffer_size`, the plugin reads the request body from a buffered file and applies the regular process (without sending an error to the Consumer)
-  - `Routing By XPath`: checked correctly if `RouteXPathTargets` is empty; it avoids useless execution code
+  - Improved the performance by drastically reduce the number of `xmlReadMemory`. In previous versions, the `xmlReadMemory` was made for each plugin action (`XSLT TRANSFORMATION`, `XSD VALIDATION`, `ROUTING BY XPATH`). Currently there is only one `xmlReadMemory` call per plugin instance
+  - `XSLT TRANSFORMATION`: added `xsltRemoveEmptyNameSpace` to enable/disable the deletion of `xmlns=""` automatically added in the transformed  XML; it concerns elements in the style sheet without namespace. In previous versions, this mechanism was provided by default without a way to disable it
+  - `ROUTING BY XPATH`:
+    - Checked correctly if `RouteXPathTargets` is empty; it avoids useless execution code
+    - Added an error detection: return an error message to the client (`Failure to register NS` or `Context issue with xmlXPathNewContext`)
+    - Changed the `xmlCtxtReadMemory` to `xmlReadMemory` for improving performance (see above)
   - `ExternalEntityLoader_Async`: improved the mechanism:
     - Called `sleepForPrefetchEnd` one time per plugin call
     - Added the detection of `Failed to locate a schema at location` error message
   - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Useful for completly disable the SOAP 1.1 XSD Validation that is enabled by default
   - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the SOAP verion dynamically detected by Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a SOAP 1.1 envelope, even if the request `Content-Type` header is SOAP 1.2
   - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) and returns a generic SOAP Fault message
+  - Improved the Request plugin in the event of large request body size: if the request body size is greater than `nginx_http_client_body_buffer_size`, the plugin reads the request body from a buffered file and applies the regular process (without sending an error to the Consumer)
+  

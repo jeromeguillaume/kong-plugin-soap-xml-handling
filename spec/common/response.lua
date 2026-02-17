@@ -85,6 +85,37 @@ response_common.calculator_Response_XSLT_BEFORE = [[
 </xsl:stylesheet>
 ]]
 
+response_common.calculator_Response_XSLT_BEFORE_Omit_XML_Declaration = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="yes" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResult']">
+    <KongResult><xsl:apply-templates select="@*|node()" /></KongResult>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
+response_common.calculator_Response_XSLT_BEFORE_No_Default_NS_KongResult = [[
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ns="http://tempuri.org/">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResponse']">
+  	<AddResponse xmlns="http://tempuri.org/" xmlns:ns="http://tempuri.org/"><xsl:apply-templates select="@*|node()" /></AddResponse>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='AddResult']">
+    <ns:KongResult><xsl:apply-templates select="@*|node()" /></ns:KongResult>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
 response_common.calculator_Response_XSLT_BEFORE_with_params = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:param name="result_tag" select="MyResult"/>
@@ -334,6 +365,10 @@ response_common.calculator_Response_XML = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <AddResponse><KongResult>13</KongResult></AddResponse>]]
 
+response_common.calculator_Response_XML_12 = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<AddResponse><KongResult>12</KongResult></AddResponse>]]
+
 response_common.calculator_Response_XML_18 = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <AddResponse><KongResult>18</KongResult></AddResponse>]]
@@ -517,7 +552,22 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE
 			}
 	}
-  
+
+  local calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_ok" }
+		}
+
+	blue_print.plugins:insert {
+			name = PLUGIN_NAME,
+			route = calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_route,
+			config = {
+				VerboseResponse = true,
+				xsltLibrary = xsltLibrary,
+				xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_Omit_XML_Declaration
+			}
+	}
+
 	local calculatorXSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_with_xslt_Params_ok" }
@@ -1114,6 +1164,24 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok_route,
+		config = {
+			VerboseResponse = true,
+			ignoreProcessIfServiceHttpError = true,
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_No_Default_NS_KongResult,
+			xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_KongResult.wsdl",
+			xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER,
+			xsltRemoveEmptyNameSpace = false
+		}
+	}
+
 end
 
 -------------------------------------------
@@ -1133,6 +1201,23 @@ function response_common._5_XSLT_BEFORE_XSD_Valid_transformation (assert, client
     local content_type = assert.response(r).has.header("Content-Type")
     assert.matches("text/xml%;%s-charset=utf%-8", content_type)
     assert.matches('<KongResult>13</KongResult>', body)	  
+end
+
+function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_omit_XML_Declaration_in_Response_Body (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSLT_beforeXSD_omit_xml_declaration_in_response_body_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = response_common.calculator_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<KongResult>13</KongResult>', body)
+	assert.not_matches('<?xml version="1.0" encoding="UTF%-8"%?>', body)
 end
 
 function response_common._5_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
@@ -1698,5 +1783,31 @@ function response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_ver
 	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_Error_verbose, body)
 end
 
+function response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
+	-- clean the log file
+  helpers.clean_logfile()
+
+	-- invoke a test request
+	local r = client:post("/calculator_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+	
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_XML_12, body)
+	
+	-- This log happens for XSLT Transformation (After)
+	assert.logfile().has.line(request_common.xslt_xml_in_memory)
+	-- This log happens for XSD SOAP Validation
+	assert.logfile().has.line(request_common.xsd_xml_in_memory)
+
+	-- This log doesn't happen for XSD API Validation
+	assert.logfile().has.no.line (request_common.xsd_xml_not_in_memory)
+end
 
 return response_common
