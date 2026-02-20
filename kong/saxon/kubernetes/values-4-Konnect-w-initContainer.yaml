@@ -1,6 +1,6 @@
 image:
   repository: kong/kong-gateway
-  tag: "3.13.0.0"
+  tag: "3.13.0.1"
 
 secretVolumes:
 - kong-cluster-cert
@@ -34,7 +34,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.4-12.9
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.5-12.9
     imagePullPolicy: Always
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:

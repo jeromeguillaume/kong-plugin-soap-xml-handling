@@ -1549,4 +1549,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Removed `split_version` and `compare_versions` functions and used the regular `kong.version_num`
   - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) and returns a generic SOAP Fault message
   - Improved the Request plugin in the event of large request body size: if the request body size is greater than `nginx_http_client_body_buffer_size`, the plugin reads the request body from a buffered file and applies the regular process (without sending an error to the Consumer)
-  
+  - v1.4.5:
+    - Bumped to Kong Gateway v3.13.0.1
+    - `WSDL/XSD Validation`: provided a support of `<wsdl:import>` tag to recursively import the wsdl dependencies

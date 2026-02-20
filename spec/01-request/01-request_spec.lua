@@ -302,6 +302,11 @@ for _, strategy in helpers.all_strategies() do
 				request_common._1_2_3_4_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
 			end)
 
+			it("2|WSDL Validation - Import and merge WSDL dependencies - Ok", function()
+				request_common._2_WSDL_Validation_import_and_merge_WSDL_dependencies_with_verbose_ok (assert, client)
+			end)
+
+
 		end)
 		
 	end)

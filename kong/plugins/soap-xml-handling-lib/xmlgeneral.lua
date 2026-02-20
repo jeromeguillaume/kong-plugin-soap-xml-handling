@@ -917,6 +917,27 @@ function xmlgeneral.sleepForPrefetchEnd (queuename)
   
 end
 
+-----------------------------------
+-- Dump into a file the XML string
+-----------------------------------
+function xmlgeneral.xmlDumpToFile (fileName, xml_ptr, xml_src, xml_declaration, remove_empty_namespace)
+  local xml_dump, errMessage = xmlgeneral.xmlDump (xml_ptr, xml_src, xml_declaration, remove_empty_namespace)
+  
+  if errMessage then
+    xml_dump = errMessage
+  end
+
+  local file, errFile = io.open(fileName, "w")
+  if file then
+    file:write(xml_dump)
+    file:close()
+    kong.log.debug("XML dump is saved in the file: ", fileName)
+  else
+    errMessage = "Unable to save the XML dump into a file. Error: " .. (errFile or "nil")
+    kong.log.err(errMessage)
+  end
+end
+
 ---------------------------------------------------------------------------
 -- Dump into a String the XML transformed by the XSL Transformation
 ---------------------------------------------------------------------------
@@ -1474,6 +1495,150 @@ function xmlgeneral.initPointersCacheTable(pluginType)
   return pointersCacheTable
 end
 
+------------------------------------------------------------------------------------------------------------
+-- Load the WSDL definition and recursively import the other definitions (WSDL) referenced by <wsdl:import>
+------------------------------------------------------------------------------------------------------------
+function xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, importPtr, verbose)
+  local xml_doc           = nil
+  local errMessage        = nil
+  local nodeName          = nil
+  local unlinkNode        = false
+  local wsdlNodeFound     = false
+  local contentFile       = nil
+  local currentNode       = ffi.NULL
+  
+  kong.log.debug("loadWSDLwithRecursiveImport, BEGIN")
+  
+  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
+                                        ffi.C.XML_PARSE_NOWARNING)
+
+  -- check if there are space and tabulation (%s) characters, which stands for an XML Content Type
+  local i, _ = string.find(WSDL, "%s")
+  -- If the WSDL doesn't contain a raw XML definition, consider the WSDL as a file or an http URL
+  if not i then
+    -- Read from plugin conf
+    local xsdApiSchemaInclude
+    if  kong.ctx and
+        kong.ctx.shared and 
+        kong.ctx.shared.xmlSoapExternalEntity and
+        kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude then
+        xsdApiSchemaInclude = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
+    end
+    if xsdApiSchemaInclude then
+      for k,v in pairs(xsdApiSchemaInclude) do
+        if k == WSDL then
+          -- Replace the WSDL value (example: /kong/file1.wsdl or http://kong.com/file1.wsdl) by its raw WSDL definition
+          kong.log.debug ("Found WSDL with location='", WSDL, "' in the plugin configuration and replace it by its raw WSDL definition")
+          WSDL = v
+          break
+        end
+      end
+    end    
+  end
+  
+  if not errMessage then
+    xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+  end
+    
+  if errMessage then
+    kong.log.debug("loadWSDLwithRecursiveImport, END with error: ", errMessage)
+    return nil, errMessage
+  end
+
+  -- Retrieve the <wsdl:definitions> (WSDL 1.1) or <wsdl:description> (WSDL 2.0)
+  local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc)
+  if  xmlNodePtrRoot ~= ffi.NULL and 
+      tonumber(xmlNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE and
+      xmlNodePtrRoot.name ~= ffi.NULL then
+    nodeName = ffi.string(xmlNodePtrRoot.name)
+    -- WSDL 1.1
+    if     nodeName == "definitions" then
+      wsdlNodeFound = true
+    -- WSDL 2.0
+    elseif nodeName == "description" then
+      wsdlNodeFound = true
+    end
+  end
+  
+  -- If it's not a WSDL definition (it could be an XSD schema)
+  if not wsdlNodeFound then
+    -- Do nothing and ignore the content
+    kong.log.debug("loadWSDLwithRecursiveImport, END: not a WSDL definition (it could be an XSD schema), return the XML")
+    return xml_doc, nil
+  end
+
+  currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
+
+  ----------------------------------------------------------------------------
+  -- Parse all the child nodes under <wsdl:definitions> or <wsdl:description>
+  -- Look for <wsdl:import>
+  ----------------------------------------------------------------------------
+  while currentNode ~= ffi.NULL and not errMessage do
+    unlinkNode = false
+    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
+      kong.log.debug ("currentNode.name: '", ffi.string(currentNode.name), "'")
+      nodeName = ffi.string(currentNode.name)
+      if nodeName == "import" then
+        local locationPtr = libxml2.xmlGetProp(currentNode, "location")
+        -- If a location is defined
+        if locationPtr ~= ffi.NULL then
+          local location = ffi.string(locationPtr)
+          kong.log.debug ("Found <wsdl:import> with location='", location, "'")
+          local xml_imported_doc
+          xml_imported_doc, errMessage = xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, location, currentNode, verbose)
+          if not errMessage and xml_imported_doc ~= ffi.NULL then
+            --unlinkNode = true            
+            local xmlNodePtrRootImported = libxml2.xmlDocGetRootElement(xml_imported_doc)
+            if xmlNodePtrRootImported ~= ffi.NULL and 
+                tonumber(xmlNodePtrRootImported.type) == ffi.C.XML_ELEMENT_NODE and
+                xmlNodePtrRootImported.name ~= ffi.NULL then
+              local nodeNameImported = ffi.string(xmlNodePtrRootImported.name)
+              if nodeNameImported == "definitions" or nodeNameImported == "description" then
+                kong.log.debug ("The root node of the imported WSDL definition is: '", nodeNameImported, "'")
+              else
+                errMessage = "The root node of the imported WSDL definition is not <wsdl:definitions> nor <wsdl:description>"
+              end
+            else
+              errMessage = "Unable to retrieve the root node of the imported WSDL definition"
+            end
+            if not errMessage then
+              local xmlNodePtrChildImported  = libxml2.xmlFirstElementChild(xmlNodePtrRootImported)
+              if xmlNodePtrChildImported ~= ffi.NULL then
+                -- Add the root node of the imported WSDL definition as a child of the main WSDL document
+                local copied_list = libxml2ex.xmlDocCopyNodeList (xml_doc, xmlNodePtrChildImported)
+                if copied_list ~= ffi.NULL then
+                  -- If the Child list is successfully added to the main WSDL document
+                  if libxml2ex.xmlAddChildList(xmlNodePtrRoot, copied_list) ~= ffi.NULL then
+                    -- Remove the <wsdl:import> node from the main WSDL document as the WSDL definition is now imported with all its content
+                    libxml2.xmlUnlinkNode(currentNode)
+                  else
+                    errMessage = "Unable to add the imported WSDL definition to the main WSDL document"
+                  end
+                else
+                  errMessage = "Unable to copy the imported WSDL definition"
+                end
+              end
+            end
+          else
+            kong.log.notice("**jerome loadWSDLwithRecursiveImport | errMessage: ", errMessage)
+          end          
+        else
+          kong.log.debug ("Found <wsdl:import> without location attribute. Ignore this import.")
+        end
+      end
+    end
+    currentNode = ffi.cast("xmlNode *", currentNode.next)
+  end
+
+  if not errMessage then
+    kong.log.debug("loadWSDLwithRecursiveImport, END with success")
+  else
+    kong.log.debug("loadWSDLwithRecursiveImport, END with error: ", errMessage)
+  end
+  
+  return xml_doc, errMessage
+end
+
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
@@ -1598,10 +1763,24 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
     end    
 
     if not errMessage then
-      -- Parse an XML in-memory document of the WSDL and build a tree
-      xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+      xml_doc, errMessage = xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, nil, verbose)
       cacheWSDL.xmlWsdlPtr = xml_doc
-      kong.log.debug("WSDL Validation, the WSDL is successfully parsed and compiled in memory")      
+      if not errMessage then
+        kong.log.debug("WSDL Validation, the WSDL has successfully imported WSDL dependencies and is parsed and compiled in memory")
+        xmlgeneral.xmlDumpToFile("/kong-plugin/temp/jeromeDumpRecsursiveImport.wsdl", xml_doc, nil, nil, false)
+      else
+        kong.log.debug("WSDL Validation, fail to import WSDL dependencies and parse and compile it in memory, ", errMessage) 
+      end
+      --if not errMessage then
+      --  -- Parse an XML in-memory document of the WSDL and build a tree
+      --  xml_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)
+      --  cacheWSDL.xmlWsdlPtr = xml_doc
+      --  if not errMessage then
+      --    kong.log.debug("WSDL Validation, the WSDL is successfully parsed and compiled in memory")      
+      --  else
+      --    kong.log.debug("WSDL Validation, fail to parse and compile the WSDL in memory, ", errMessage) 
+      --  end
+      --end
     end
   -- Get from cache the XML Tree document of WSDL
   else
@@ -1634,7 +1813,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
       kong.log.debug("XMLValidateWithWSDL, caching: it's the first call for this WSDL: so get all XSDs and compile/parse them for caching") 
     end
 
-    -- Retrieve the <wsdl:definitions>
+    -- Retrieve the <wsdl:definitions> (WSDL 1.1) or <wsdl:description> (WSDL 2.0)
     local xmlNodePtrRoot   = libxml2.xmlDocGetRootElement(xml_doc)
     if xmlNodePtrRoot then
       if tonumber(xmlNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE and 
@@ -2179,14 +2358,13 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
   local wsdlRequired_Value    = false
   local wsdl2_0_ActionFound   = false
   local rc                    = false
-  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                        ffi.C.XML_PARSE_NOWARNING)
-    
+  
   -- If asnchronous download is enabled (the WSDL is not cached)
   if async then
     -- Parse an XML in-memory document of the WSDL and build a tree
     kong.log.debug ("getSOAPActionFromWSDL: no WSDL caching due to Asynchronous external entities")
-    xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)  
+    xmlWSDL_doc, errMessage = xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, nil, verbose)
+
     cacheSoapAction = {}
   else 
     -- Get the WSDL Cache table
@@ -2211,9 +2389,9 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
   -- If the XML Tree document of WSDL is not in the cache
   if xmlWSDL_doc == nil or xmlWSDL_doc == ffi.NULL or errMessage then
     -- This code should never happen because if the pointer is null it will be raised before by 'xmlgeneral.XMLValidateWithWSDL'
-    return wsdlSoapAction_Value, wsdlRequired_Value, (errMessage or "Unable to get the XML Tree document of WSDL is not in the cache")
+    return wsdlSoapAction_Value, wsdlRequired_Value, (errMessage or "Unable to get the XML Tree document. The WSDL is not in the cache")
   end
-
+  
   -- If wsdlDefinitions_type is not in the cache and If there is no Error from Cache
   if (not cacheSoapAction.wsdlDefinitions_type and not cacheSoapAction.wsdlDefinitions_typeError) then
     -- Retrieve:

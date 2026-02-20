@@ -331,6 +331,22 @@ request_common.calculator_Request_XSD_VALIDATION = [[
       </s:sequence>
     </s:complexType>
   </s:element>
+	<s:element name="Multiply">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
+	<s:element name="Divide">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
 </s:schema>
 ]]
 
@@ -1293,6 +1309,133 @@ request_common.calculatorXSD_paramCalcIntD= [[
     </xsd:schema>
 ]]
 
+request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:bind="http://tempuri.org/bind"                  
+                  name="calculator"
+                  targetNamespace="http://tempuri.org/">
+   <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
+
+   <wsdl:service name="Calculator">
+		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">
+			<soap:address location="http://tempuri.org/" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+                  xmlns:def="http://tempuri.org/definition" 
+                  name="calculator_BIND" 
+                  targetNamespace="http://tempuri.org/bind">
+                  
+	<wsdl:import namespace="http://tempuri.org/definition" location="calculator_DEFINITION.wsdl" />    
+  <wsdl:binding name="CalculatorBinding" type="def:CalculatorPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Add">
+      <soap:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Subtract">
+      <soap:operation soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Multiply">
+      <soap:operation soapAction="http://tempuri.org/Multiply" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Divide">
+      <soap:operation soapAction="http://tempuri.org/Divide" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:tns="http://tempuri.org/definition"
+                  xmlns:req="http://tempuri.org/" 
+                  xmlns:res="http://tempuri.org/"
+                  name="calculator_DEFINITION"
+                  targetNamespace="http://tempuri.org/definition">
+  <wsdl:types>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="AddSoapIn">
+    <wsdl:part name="parameters" element="req:Add" />
+  </wsdl:message>
+  <wsdl:message name="AddSoapOut">
+    <wsdl:part name="parameters" element="res:AddResponse" />
+  </wsdl:message>
+  <wsdl:message name="SubtractSoapIn">
+    <wsdl:part name="parameters" element="req:Subtract" />
+  </wsdl:message>
+  <wsdl:message name="SubtractSoapOut">
+    <wsdl:part name="parameters" element="res:SubtractResponse" />
+  </wsdl:message>
+  <wsdl:message name="MultiplySoapIn">
+    <wsdl:part name="parameters" element="req:Multiply" />
+  </wsdl:message>
+  <wsdl:message name="MultiplySoapOut">
+    <wsdl:part name="parameters" element="res:MultiplyResponse" />
+  </wsdl:message>
+  <wsdl:message name="DivideSoapIn">
+    <wsdl:part name="parameters" element="req:Divide" />
+  </wsdl:message>
+  <wsdl:message name="DivideSoapOut">
+    <wsdl:part name="parameters" element="res:DivideResponse" />
+  </wsdl:message>
+  <wsdl:portType name="CalculatorPortType"> 
+    <wsdl:operation name="Add">
+      <wsdl:input message="tns:AddSoapIn" />
+      <wsdl:output message="tns:AddSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Subtract">
+      <wsdl:input message="tns:SubtractSoapIn" />
+      <wsdl:output message="tns:SubtractSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Multiply">
+      <wsdl:input message="tns:MultiplySoapIn" />
+      <wsdl:output message="tns:MultiplySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Divide">
+      <wsdl:input message="tns:DivideSoapIn" />
+      <wsdl:output message="tns:DivideSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>
+]]
+
 request_common.commentForEmptyXSD = "<!-- -->"
 
 request_common.xslt_xml_in_memory					= "XSLT transformation, the XML to transform is already parsed in memory"
@@ -2209,6 +2352,24 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 	
+	local calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok_route = blue_print.routes:insert{
+		service= calculator_service,
+		paths= { "/calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok_route,
+		config = {
+			VerboseRequest = true,
+			xsltLibrary = xsltLibrary,
+			xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_ok,
+			xsdApiSchemaInclude = {
+				["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+				["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok,
+				["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION
+			},
+		}
+	}
 	
 end
 
@@ -3219,6 +3380,22 @@ function request_common._1_2_3_4_Disable_Xslt_Remove_Empty_NameSpace_with_verbos
 	-- This log happens for XPath Routing
   assert.logfile().has.line(request_common.routebyxpath_xml_in_memory)
 
+end
+
+function request_common._2_WSDL_Validation_import_and_merge_WSDL_dependencies_with_verbose_ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
 end
 
 return request_common

@@ -16,4 +16,7 @@ ffi.cdef[[
     xmlChar *	xmlGetNoNsProp	(const xmlNode * node, 
                                 const xmlChar * name);  
     xmlChar *	xmlGetNodePath	(const xmlNode * node);
+    xmlNode *   xmlDocCopyNodeList(xmlDoc *doc, xmlNode *node);
+    xmlNode * 	xmlAddChildList (xmlNode *parent, xmlNode *cur);
+
 ]]

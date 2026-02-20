@@ -148,7 +148,7 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   local errMsg
   local fullFileName
 
-  -- In the context of 'filePath' contains the XML sent by the consumer or by the server (i.e. <soap:Envelope>)
+  -- In the context of 'filePath' that contains the XML sent by the consumer or by the server (i.e. <soap:Envelope>)
   if hasToRead == false or not filePath or (filePath and filePath == '') then
     -- Don't try to read a file as it's just an XML content or 'filePath' is nil
     return nil, nil
@@ -736,6 +736,25 @@ function libxml2ex.xmlGetNoNsProp	(node, name)
   local attribute = xml2.xmlGetNoNsProp (node, name)
 
   return attribute
+end
+
+
+-- Copy a node list and all children into a new document.
+-- doc:	the target document
+-- node:	the first node in the list.
+-- Returns: the head of the copied list or NULL if a memory allocation failed
+function libxml2ex.xmlDocCopyNodeList	(doc, node)
+  local head = xml2.xmlDocCopyNodeList	(doc, node);
+  return head
+end
+
+-- Append a node list to another node
+-- parent:	the parent node
+-- cur:	the first node in the list
+-- Returns: the last child or NULL in case of error
+function libxml2ex.xmlAddChildList (parent, cur)
+  local child = xml2.xmlAddChildList (parent, cur);
+  return child
 end
 
 return libxml2ex
