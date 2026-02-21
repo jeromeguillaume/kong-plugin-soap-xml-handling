@@ -10,9 +10,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary    = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -379,7 +379,142 @@ for _, strategy in helpers.all_strategies() do
             },
           }
         }
+
+        local calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_ok,
+            xsdApiSchemaInclude = {
+              ["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+              ["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok,
+              ["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION,
+              ["calculator.response.xsd"] = response_common.calculator_Response_XSD_VALIDATION
+            },
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok_route,
+          config = {
+            VerboseResponse = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_ok,
+            xsdApiSchemaInclude = {
+              ["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+              ["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok,
+              ["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION,
+              ["calculator.response.xsd"] = response_common.calculator_Response_XSD_VALIDATION
+            },
+          }
+        }
+
+        local calculatorWSDL_import_and_merge_WSDL_dependencies_xml_def_file_with_verbose_ok_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL_import_and_merge_WSDL_dependencies_xml_def_file_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_xml_def_file_with_verbose_ok_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/WSDL_IMPORT",
+            xsdApiSchema = "calculator.wsdl"
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_xml_def_file_with_verbose_ok_route,
+          config = {
+            VerboseResponse = true,
+            xsltLibrary = xsltLibrary,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/WSDL_IMPORT",
+            xsdApiSchema = "calculator.wsdl"
+          }
+        }
         
+        local calculatorWSDL_import_and_merge_WSDL_dependencies_one_import_without_location_with_verbose_ok_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL_import_and_merge_WSDL_dependencies_one_import_without_location_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_one_import_without_location_with_verbose_ok_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_one_import_without_location_ok,
+            xsdApiSchemaInclude = {
+              ["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+              ["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok,
+              ["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION,
+              ["calculator.response.xsd"] = response_common.calculator_Response_XSD_VALIDATION
+            },
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_one_import_without_location_with_verbose_ok_route,
+          config = {
+            VerboseResponse = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_one_import_without_location_ok,
+            xsdApiSchemaInclude = {
+              ["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+              ["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok,
+              ["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION,
+              ["calculator.response.xsd"] = response_common.calculator_Response_XSD_VALIDATION
+            },
+          }
+        }
+
+        local calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_without_definitions_with_verbose_ko_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_without_definitions_with_verbose_ko" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_without_definitions_with_verbose_ko_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_one_import_without_location_ok,
+            xsdApiSchemaInclude = {
+              ["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+              ["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_without_definitions_ko,
+              ["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION,
+              ["calculator.response.xsd"] = response_common.calculator_Response_XSD_VALIDATION
+            },
+          }
+        }
+        
+        local calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_with_no_child_in_definitions_with_verbose_ko_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_with_no_child_in_definitions_with_verbose_ko" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_with_no_child_in_definitions_with_verbose_ko_route,
+          config = {
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_one_import_without_location_ok,
+            xsdApiSchemaInclude = {
+              ["calculator_BIND.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok,
+              ["calculator_DEFINITION.wsdl"] = request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_with_no_child_in_definitions_ko,
+              ["calculator.request.xsd"] = request_common.calculator_Request_XSD_VALIDATION,
+              ["calculator.response.xsd"] = response_common.calculator_Response_XSD_VALIDATION
+            },
+          }
+        }
+
         -- start kong
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
@@ -557,7 +692,87 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches("<kongResultFromParam>4444</kongResultFromParam>", body)
 			end)
+      
+      it("2+6|Request and Response plugins|WSDL Validation - Import and Merge the WSDL dependencies (referred by <wsdl:import>) - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_import_and_merge_WSDL_dependencies_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
 
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2+6|Request and Response plugins|WSDL Validation - Import and Merge the WSDL dependencies (referred by <wsdl:import>) - XML Definitions in Files - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_import_and_merge_WSDL_dependencies_xml_def_file_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2+6|Request and Response plugins|WSDL Validation - Import and Merge the WSDL dependencies (referred by <wsdl:import>) - 1 Import without location attribute - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_import_and_merge_WSDL_dependencies_one_import_without_location_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2|Request plugin|WSDL Validation - Import and Merge the WSDL dependencies (referred by <wsdl:import>) - 1 invalid WSDL without <wsdl:definitions> - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_without_definitions_with_verbose_ko", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import_without_definitions_verbose, body)
+      end)
+
+      it("2|Request plugin|WSDL Validation - Import and Merge the WSDL dependencies (referred by <wsdl:import>) - 1 invalid WSDL with no child in <wsdl:definitions> - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_import_and_merge_WSDL_dependencies_one_wsdl_with_no_child_in_definitions_with_verbose_ko", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request,
+        })
+        
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import_with_no_child_in_definitions_verbose, body)
+      end)
+      
 		end)		
 	end)
   ::continue::

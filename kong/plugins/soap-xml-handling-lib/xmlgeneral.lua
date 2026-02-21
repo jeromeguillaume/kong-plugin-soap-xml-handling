@@ -1502,7 +1502,6 @@ function xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, importPtr,
   local xml_doc           = nil
   local errMessage        = nil
   local nodeName          = nil
-  local unlinkNode        = false
   local wsdlNodeFound     = false
   local contentFile       = nil
   local currentNode       = ffi.NULL
@@ -1516,7 +1515,7 @@ function xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, importPtr,
   local i, _ = string.find(WSDL, "%s")
   -- If the WSDL doesn't contain a raw XML definition, consider the WSDL as a file or an http URL
   if not i then
-    -- Read from plugin conf
+    -- Get the XML dependencies import from the plugin configuration
     local xsdApiSchemaInclude
     if  kong.ctx and
         kong.ctx.shared and 
@@ -1528,7 +1527,7 @@ function xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, importPtr,
       for k,v in pairs(xsdApiSchemaInclude) do
         if k == WSDL then
           -- Replace the WSDL value (example: /kong/file1.wsdl or http://kong.com/file1.wsdl) by its raw WSDL definition
-          kong.log.debug ("Found WSDL with location='", WSDL, "' in the plugin configuration and replace it by its raw WSDL definition")
+          kong.log.debug ("loadWSDLwithRecursiveImport, Found WSDL with location='", WSDL, "' in the plugin configuration and replace it by its raw WSDL definition")
           WSDL = v
           break
         end
@@ -1574,29 +1573,26 @@ function xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, importPtr,
   -- Look for <wsdl:import>
   ----------------------------------------------------------------------------
   while currentNode ~= ffi.NULL and not errMessage do
-    unlinkNode = false
-    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then
-      kong.log.debug ("currentNode.name: '", ffi.string(currentNode.name), "'")
+    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then      
       nodeName = ffi.string(currentNode.name)
       if nodeName == "import" then
         local locationPtr = libxml2.xmlGetProp(currentNode, "location")
         -- If a location is defined
         if locationPtr ~= ffi.NULL then
           local location = ffi.string(locationPtr)
-          kong.log.debug ("Found <wsdl:import> with location='", location, "'")
+          kong.log.debug ("loadWSDLwithRecursiveImport, Found <wsdl:import> with location='", location, "'")
           local xml_imported_doc
           xml_imported_doc, errMessage = xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, location, currentNode, verbose)
-          if not errMessage and xml_imported_doc ~= ffi.NULL then
-            --unlinkNode = true            
+          if not errMessage and xml_imported_doc ~= ffi.NULL then            
             local xmlNodePtrRootImported = libxml2.xmlDocGetRootElement(xml_imported_doc)
             if xmlNodePtrRootImported ~= ffi.NULL and 
                 tonumber(xmlNodePtrRootImported.type) == ffi.C.XML_ELEMENT_NODE and
                 xmlNodePtrRootImported.name ~= ffi.NULL then
               local nodeNameImported = ffi.string(xmlNodePtrRootImported.name)
               if nodeNameImported == "definitions" or nodeNameImported == "description" then
-                kong.log.debug ("The root node of the imported WSDL definition is: '", nodeNameImported, "'")
+                kong.log.debug ("loadWSDLwithRecursiveImport, The root node of the imported WSDL definition is: '", nodeNameImported, "'")
               else
-                errMessage = "The root node of the imported WSDL definition is not <wsdl:definitions> nor <wsdl:description>"
+                errMessage = "The root node of the imported WSDL definition is not < wsdl:definitions > nor < wsdl:description >"
               end
             else
               errMessage = "Unable to retrieve the root node of the imported WSDL definition"
@@ -1620,10 +1616,10 @@ function xmlgeneral.loadWSDLwithRecursiveImport(filePathPrefix, WSDL, importPtr,
               end
             end
           else
-            kong.log.notice("**jerome loadWSDLwithRecursiveImport | errMessage: ", errMessage)
+            -- Here there is an error. But there is no need to add the error message as it is already logged in the recursive call
           end          
         else
-          kong.log.debug ("Found <wsdl:import> without location attribute. Ignore this import.")
+          kong.log.debug ("loadWSDLwithRecursiveImport, Found <wsdl:import> without location attribute. Ignore this import.")
         end
       end
     end

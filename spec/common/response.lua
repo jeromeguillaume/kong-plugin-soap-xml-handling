@@ -201,14 +201,32 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = 
 </soap:Envelope>]]
 
 response_common.calculator_Response_XSD_VALIDATION = [[
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
-  <xs:complexType name="AddResponseType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="AddResult"/>
-    </xs:sequence>
-  </xs:complexType>
-</xs:schema>]]
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="AddResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="AddResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SubtractResponse" type="tem:SubtractResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="SubtractResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="SubtractResult"/>      
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MultiplyResponse" type="tem:MultiplyResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="MultiplyResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="MultiplyResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DivideResponse" type="tem:DivideResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="DivideResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="DivideResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>]]
 
 response_common.calculator_Response_XSD_VALIDATION_Kong = [[
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1810,5 +1828,7 @@ function response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose
 	-- This log doesn't happen for XSD API Validation
 	assert.logfile().has.no.line (request_common.xsd_xml_not_in_memory)
 end
+
+
 
 return response_common

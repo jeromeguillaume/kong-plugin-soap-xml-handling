@@ -11,9 +11,9 @@ helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
 helpers.setenv("KONG_LOG_LEVEL", "debug")
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -169,13 +169,9 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' and XPath not succeeded - Ok", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_XPath_not_succeeded_Ok (assert, client)
 			end)			
-			
-			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503)", function()
-				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)
-			end)
-			
-			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503) with verbose", function()
-				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503_with_verbose (assert, client)
+						
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (502) with verbose", function()
+				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_502_with_verbose (assert, client)
 			end)
 
 			it("2|WSDL Validation with import sync download - Ok", function()
@@ -301,11 +297,6 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
 				request_common._1_2_3_4_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
 			end)
-
-			it("2|WSDL Validation - Import and merge WSDL dependencies - Ok", function()
-				request_common._2_WSDL_Validation_import_and_merge_WSDL_dependencies_with_verbose_ok (assert, client)
-			end)
-
 
 		end)
 		

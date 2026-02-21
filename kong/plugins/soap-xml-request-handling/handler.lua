@@ -402,7 +402,7 @@ function plugin:header_filter(plugin_conf)
 
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
-
+  
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --    we don't consider as an error the 'request-termination' plugin (get_source()="exit" and get_status()=200)
   -- we reformat the JSON message to SOAP/XML Fault

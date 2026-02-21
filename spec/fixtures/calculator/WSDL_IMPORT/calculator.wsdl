@@ -5,7 +5,7 @@
                   name="calculator"
                   targetNamespace="http://tempuri.org/">
    <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
-   
+
    <wsdl:service name="Calculator">
 		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">
 			<soap:address location="http://tempuri.org/" />
