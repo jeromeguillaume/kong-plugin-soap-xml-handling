@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wsdl2:description
+    xmlns:wsdl2     ="http://www.w3.org/ns/wsdl"
+    name            ="calculator_BIND" 
+    targetNamespace ="http://tempuri.org/bind"
+    xmlns:tns       ="http://tempuri.org/bind"
+    xmlns:wsoap     ="http://www.w3.org/ns/wsdl/soap"
+    xmlns:wsdlx     ="http://www.w3.org/ns/wsdl-extensions">
+ 
+
+  <wsdl2:import namespace="http://tempuri.org/description" location="calculator_2.0_DESCRIPTION.wsdl" />
+
+  <wsdl2:binding name="AddSOAPBinding"
+          interface="tns:AddInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+    <wsdl2:fault ref="tns:invalidAddFault" wsoap:code="soap:Sender"/>
+    <wsdl2:operation ref="tns:Add"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+  </wsdl2:binding>
+
+  <wsdl2:binding name="SubtractSOAPBinding"
+          interface="tns:SubtractInterface"
+          type="http://www.w3.org/ns/wsdl/soap"
+          wsoap:protocol="http://www.w3.org/2003/05/soap/bindings/HTTP/">
+    <wsdl2:fault ref="tns:invalidSubtractFault" wsoap:code="soap:Sender"/>
+    <wsdl2:operation ref="tns:Subtract"
+      wsoap:mep="http://www.w3.org/2003/05/soap/mep/soap-response"/>
+  </wsdl2:binding>
+
+</wsdl2:description>

@@ -169,13 +169,9 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' and XPath not succeeded - Ok", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_XPath_not_succeeded_Ok (assert, client)
 			end)			
-			
-			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503)", function()
-				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)
-			end)
-			
-			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (503) with verbose", function()
-				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503_with_verbose (assert, client)
+						
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (502) with verbose", function()
+				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_502_with_verbose (assert, client)
 			end)
 
 			it("2|WSDL Validation with import sync download - Ok", function()

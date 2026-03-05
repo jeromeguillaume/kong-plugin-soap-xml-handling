@@ -47,11 +47,11 @@ cp /tmp/SaxonCHE-linux-arm64-12-9-0/SaxonCHE/include/saxonc/*.h ./saxonc/
 cd ./kong-plugin-soap-xml-handling/kong/saxon/notices
 cp /tmp/SaxonCHE-linux-arm64-12-9-0/notices/* .
 ```
-- Adapt the version of Kong image (example: `kong/kong-gateway:3.13.0.0`) in the following files:
+- Adapt the version of Kong image (example: `kong/kong-gateway:3.13.0.1`) in the following files:
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -80,7 +80,7 @@ make kong_saxon_initcontainer_docker_hub
 ### Run `Kong` with `Saxon` in Docker Compose and the standard image: `kong/kong-gateway`
 - Include in your `docker-compose` command:
   ```yaml
-  image: 'kong/kong-gateway:3.13.0.0'
+  image: 'kong/kong-gateway:3.13.0.1'
   volumes:
     - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
   environment:
@@ -92,11 +92,11 @@ make kong_saxon_initcontainer_docker_hub
 The image is based on `kong-gateway` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
 - Docker Compose
 ```yaml
-  image: 'jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9'
+  image: 'jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9'
 ```
 - Kubernetes:
   - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
-  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.13.0.0-1.4.4-12.9`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-soap-xml-initcontainer`
 The image is based on `Alpine` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries
@@ -124,7 +124,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.4-12.9
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.5-12.9
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol

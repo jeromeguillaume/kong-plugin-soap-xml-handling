@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.4.4",
+    VERSION = "1.4.5",
   }
 
 local xmlgeneral = nil
@@ -149,7 +149,8 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
                                       plugin_conf.VerboseRequest,
                                       false,
                                       plugin_conf.ExternalEntityLoader_Async,
-                                      plugin_conf.wsdlApiSchemaForceSchemaLocation
+                                      plugin_conf.wsdlApiSchemaForceSchemaLocation,
+                                      plugin_conf.wsdlApiRecursiveWsdlImport
                                     )
     
     if errMessage ~= nil then
@@ -402,7 +403,7 @@ function plugin:header_filter(plugin_conf)
 
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
-
+  
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --    we don't consider as an error the 'request-termination' plugin (get_source()="exit" and get_status()=200)
   -- we reformat the JSON message to SOAP/XML Fault

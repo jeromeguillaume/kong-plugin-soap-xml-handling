@@ -1,0 +1,30 @@
+<xsd:schema attributeFormDefault="unqualified" 
+            elementFormDefault="qualified" 
+            targetNamespace="http://tempuri.org/" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            
+  <xsd:element name="AddResponse" type="tem:AddResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="AddResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="AddResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="SubtractResponse" type="tem:SubtractResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="SubtractResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="SubtractResult"/>      
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="MultiplyResponse" type="tem:MultiplyResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="MultiplyResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="MultiplyResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:element name="DivideResponse" type="tem:DivideResponseType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="DivideResponseType">
+    <xsd:sequence>
+      <xsd:element type="xsd:string" name="DivideResult"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

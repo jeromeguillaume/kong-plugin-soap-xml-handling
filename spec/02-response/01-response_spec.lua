@@ -209,8 +209,7 @@ for _, strategy in helpers.all_strategies() do
 			it("5+6+7|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
 				response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
 			end)
-
-	
+			
   	end)
 
 	end)

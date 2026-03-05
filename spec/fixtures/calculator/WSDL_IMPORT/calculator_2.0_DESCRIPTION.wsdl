@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<wsdl2:description
+    xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/description"
+    xmlns:tns=       "http://tempuri.org/description"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns:wsam=      "http://www.w3.org/2007/05/addressing/metadata">
+
+  <wsdl2:types>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.xsd"/>
+    </xsd:schema>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.response.xsd"/>
+    </xsd:schema>
+  </wsdl2:types>
+  
+  <wsdl2:interface  name = "AddInterface" >
+    <wsdl2:fault name = "invalidAddFault"  element = "tns:invalidAddError"/>
+    <wsdl2:operation name="Add"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <wsdl2:input    messageLabel="In"  element="tns:AddSoapIn"  wsam:Action="http://tempuri.org/Add" />
+      <wsdl2:output   messageLabel="Out" element="tns:AddSoapOut" wsam:Action="http://tempuri.org/AddResponse"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidAddFault" />    
+    </wsdl2:operation>
+  </wsdl2:interface>
+  
+  <wsdl2:interface  name = "SubtractInterface" >
+    <wsdl2:fault name = "invalidSubtractFault"  element = "tns:invalidSubtractError"/>
+    <wsdl2:operation name="Subtract"
+            pattern="http://www.w3.org/ns/wsdl/in-out"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <wsdl2:input    messageLabel="In"  element="tns:SubtractSoapIn"/>
+      <wsdl2:output   messageLabel="Out" element="tns:SubtractSoapOut"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidSubtractFault" />    
+    </wsdl2:operation>
+  </wsdl2:interface>
+
+  <wsdl2:interface  name = "MultiplytInterface" >
+    <wsdl2:fault name = "invalidMultiplyFault"  element = "tns:invalidMultiplyError"/>
+    <wsdl2:operation name="Multiply"
+            pattern="http://www.w3.org/ns/wsdl/in-out-INVALID-URL-FOR-TEST-ONLY"
+            style="http://www.w3.org/ns/wsdl/style/iri"
+            wsdlx:safe = "true">
+      <wsdl2:input    messageLabel="In"  element="tns:MultiplySoapIn"/>
+      <wsdl2:output   messageLabel="Out" element="tns:MultiplySoapOut"/>
+      <wsdl2:outfault messageLabel="Out" ref    ="tns:invalidMultiplyFault" />    
+    </wsdl2:operation>
+  </wsdl2:interface>
+
+</wsdl2:description>

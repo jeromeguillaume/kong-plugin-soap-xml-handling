@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:bind="http://tempuri.org/bind"                  
+                  name="calculator"
+                  targetNamespace="http://tempuri.org/">
+   <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
+
+   <wsdl:service name="Calculator">
+		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">
+			<soap:address location="http://tempuri.org/" />
+		</wsdl:port>
+	</wsdl:service>
+
+</wsdl:definitions>

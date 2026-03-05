@@ -331,6 +331,22 @@ request_common.calculator_Request_XSD_VALIDATION = [[
       </s:sequence>
     </s:complexType>
   </s:element>
+	<s:element name="Multiply">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
+	<s:element name="Divide">
+    <s:complexType>
+      <s:sequence>
+        <s:element minOccurs="1" maxOccurs="1" name="intA" type="s:int" />
+        <s:element minOccurs="1" maxOccurs="1" name="intB" type="s:int" />
+      </s:sequence>
+    </s:complexType>
+  </s:element>
 </s:schema>
 ]]
 
@@ -592,6 +608,34 @@ request_common.calculator_Request_XSD_API_VALIDATION_Power_Failed_Client_verbose
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Power, Error code: 1845, Line: 4, Message: Element '{http://tempuri.org/}Power': No matching global declaration available for the validation root.</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import_without_definitions_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Invalid WSDL/XSD schema. The root node of the imported WSDL definition is not Less Than wsdl:definitions Greater Than nor Less Than wsdl:description Greater Than</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import_with_no_child_in_definitions_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'Less Than wsdl:types Greater Than'</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1286,11 +1330,170 @@ request_common.calculatorXSLT_remove_ns_param_calc_parameters=[[
 </xsl:stylesheet>
 ]]
 
-
 request_common.calculatorXSD_paramCalcIntD= [[
     <xsd:schema elementFormDefault="qualified" attributeFormDefault="unqualified" targetNamespace="http://tempuri.org/paramCalcIntD/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
       <xsd:element name="intD" type="xsd:int" xmlns:ns_param_calc="http://tempuri.org/paramCalcIntD/"/>
     </xsd:schema>
+]]
+
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_import_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:bind="http://tempuri.org/bind"                  
+                  name="calculator"
+                  targetNamespace="http://tempuri.org/">
+   <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
+
+   <wsdl:service name="Calculator">
+		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">
+			<soap:address location="http://tempuri.org/" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_import_one_import_without_location_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:bind="http://tempuri.org/bind"                  
+                  name="calculator"
+                  targetNamespace="http://tempuri.org/">
+   <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
+	 <wsdl:import  namespace="http://tempuri.org/NO.LOCATION.ATTIBUTE"/>
+
+   <wsdl:service name="Calculator">
+		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">
+			<soap:address location="http://tempuri.org/" />
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_BIND_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+                  xmlns:def="http://tempuri.org/definition" 
+                  name="calculator_BIND" 
+                  targetNamespace="http://tempuri.org/bind">
+                  
+	<wsdl:import namespace="http://tempuri.org/definition" location="calculator_DEFINITION.wsdl" />
+  <wsdl:binding name="CalculatorBinding" type="defreq:CalculatorPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Add">
+      <soap:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Subtract">
+      <soap:operation soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Multiply">
+      <soap:operation soapAction="http://tempuri.org/Multiply" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Divide">
+      <soap:operation soapAction="http://tempuri.org/Divide" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_DEFINITION_ok= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:tns="http://tempuri.org"
+                  name="calculator_DEFINITION_request"
+                  targetNamespace="http://tempuri.org/definition">
+  <wsdl:types>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.xsd"/>
+    </xsd:schema>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.response.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+  <wsdl:message name="AddSoapIn">
+    <wsdl:part name="parameters" element="tns:Add" />
+  </wsdl:message>
+  <wsdl:message name="AddSoapOut">
+    <wsdl:part name="parameters" element="tns:AddResponse" />
+  </wsdl:message>
+  <wsdl:message name="SubtractSoapIn">
+    <wsdl:part name="parameters" element="tns:Subtract" />
+  </wsdl:message>
+  <wsdl:message name="SubtractSoapOut">
+    <wsdl:part name="parameters" element="tns:SubtractResponse" />
+  </wsdl:message>
+  <wsdl:message name="MultiplySoapIn">
+    <wsdl:part name="parameters" element="tns:Multiply" />
+  </wsdl:message>
+  <wsdl:message name="MultiplySoapOut">
+    <wsdl:part name="parameters" element="tns:MultiplyResponse" />
+  </wsdl:message>
+  <wsdl:message name="DivideSoapIn">
+    <wsdl:part name="parameters" element="tns:Divide" />
+  </wsdl:message>
+  <wsdl:message name="DivideSoapOut">
+    <wsdl:part name="parameters" element="tns:DivideResponse" />
+  </wsdl:message>
+  <wsdl:portType name="CalculatorPortType"> 
+    <wsdl:operation name="Add">
+      <wsdl:input message="tns:AddSoapIn" />
+      <wsdl:output message="tns:AddSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Subtract">
+      <wsdl:input message="tns:SubtractSoapIn" />
+      <wsdl:output message="tns:SubtractSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Multiply">
+      <wsdl:input message="tns:MultiplySoapIn" />
+      <wsdl:output message="tns:MultiplySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Divide">
+      <wsdl:input message="tns:DivideSoapIn" />
+      <wsdl:output message="tns:DivideSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+</wsdl:definitions>
+]]
+
+request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_without_definitions_ko= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:types xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+</wsdl:types>
+]]
+
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_DEFINITION_with_no_child_in_definitions_ko= [[
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:tns="http://tempuri.org"
+                  name="calculator_DEFINITION_request"
+                  targetNamespace="http://tempuri.org/definition">
+</wsdl:definitions>
 ]]
 
 request_common.commentForEmptyXSD = "<!-- -->"
@@ -1759,29 +1962,6 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	local calculatorRoutingByXPath_hostname_invalid_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorRoutingByXPath_hostname_invalid" }
-		}
-	blue_print.plugins:insert {
-		name = PLUGIN_NAME,
-		route = calculatorRoutingByXPath_hostname_invalid_route,
-		config = {
-			VerboseRequest = false,
-			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
-			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
-			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
-			RouteXPathTargets = {
-				{
-						URL= "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
-						XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-						XPathCondition= "10"
-				},
-			}
-		}
-	}
-
 	local calculatorRoutingByXPath_hostname_invalid_verbose_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorRoutingByXPath_hostname_invalid_verbose" }
@@ -1797,7 +1977,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH,
 			RouteXPathTargets = {
 				{
-						URL= "https://ecs.syr.edu.ABCDEFGHIJKLMNOPQRSTU:443/faculty/fawcett/Handouts/cse775/code/calcWebService/Calc.asmx",
+						URL= "https://ws.soap2.calculator:9999/ws",
 						XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
 						XPathCondition= "10"
 				},
@@ -2208,8 +2388,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			}
 		}
 	}
-	
-	
+		
 end
 
 ------------------------------------------
@@ -2672,23 +2851,7 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_XPath_not_succee
 	assert.matches('<AddResult>18</AddResult>', body)
 end
 
-function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503 (assert, client)
-	-- invoke a test request
-	local r = client:post("/calculatorRoutingByXPath_hostname_invalid", {
-		headers = {
-			["Content-Type"] = "text/xml;charset=utf-8",
-		},
-		body = request_common.calculator_Subtract_Request,
-	})
-
-	-- validate that the request failed: response status 503, Content-Type and right match
-	local body = assert.response(r).has.status(503)
-	local content_type = assert.response(r).has.header("Content-Type")
-	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503, body)
-end
-
-function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_503_with_verbose (assert, client)	
+function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_502_with_verbose (assert, client)	
 	-- invoke a test request
 	local r = client:post("/calculatorRoutingByXPath_hostname_invalid_verbose", {
 		headers = {
@@ -2697,11 +2860,11 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 		body = request_common.calculator_Subtract_Request,
 	})
 
-	-- validate that the request failed: response status 503, Content-Type and right match
-	local body = assert.response(r).has.status(503)
+	-- validate that the request failed: response status 502, Content-Type and right match
+	local body = assert.response(r).has.status(502)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose, body)
+	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose, body)
 end
 
 function request_common._2_WSDL_Validation_with_import_sync_download_Ok (assert, client)
