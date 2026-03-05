@@ -72,11 +72,13 @@ Each handling is optional
 ## Recommendation
 1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane
 
-2) When importing XSD definitions in WSDL/XSD (by using `<xsd:import>` tag), it is recommended to configure the plugins preferably in this order:
-    1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
-    2) Put the raw content in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
-    3) Really download the content (with http(s) protocol): Synchronous or Asynchronous. For Asynchronous (only), there is a prefetch WSDL/XSD validation for forcing the download of ìmported XSD ahead of the 1st request
-    - If the WSDL uses `<xsd:import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
+2) Importing WSDL descriptions or XSD schemas:
+    - When importing WSDL descriptions, enable `wsdlApiRecursiveWsdlImport`
+    - When importing XSD schemas in WSDL/XSD (by using `<xsd:import>` tag), it is recommended to configure the plugins preferably in this order:
+      1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
+      2) Put the raw content in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
+      3) Really download the content (with http(s) protocol): Synchronous or Asynchronous. For Asynchronous (only), there is a prefetch WSDL/XSD validation for forcing the download of ìmported XSD ahead of the 1st request
+      - If the WSDL uses `<xsd:import>` tag without `schemaLocation` atrribute, enable `wsdlApiSchemaForceSchemaLocation`
 
 3) For simultaneous access to SOAP 1.1 and 1.2 to the same route:
     - `WSDL/XSD VALIDATION`:
