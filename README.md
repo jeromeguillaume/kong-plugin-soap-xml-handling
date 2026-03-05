@@ -1623,5 +1623,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Improved the Request plugin in the event of large request body size: if the request body size is greater than `nginx_http_client_body_buffer_size`, the plugin reads the request body from a buffered file and applies the regular process (without sending an error to the Consumer)
   - v1.4.5:
     - Bumped to Kong Gateway v3.13.0.1
-    - `WSDL/XSD Validation`: provided a support of `<wsdl:import>` tag to recursively import the wsdl dependencies
+    - `WSDL Validation`: provided a support of `<wsdl:import>` tag to recursively import the wsdl dependencies
     - Validation of `SOAPAction` Http header: Changed the `xmlCtxtReadMemory` to `xmlReadMemory` for improving performance
