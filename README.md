@@ -152,8 +152,8 @@ The WSDL import is processed in this order:
   - When the plugin configuration is changed, all the caches are invalidated and the plugins compile/parse the definitions once more (even if there is a change in only one plugin)
 - What's the behavior of plugins in the event of a compilation error (for instance due to an incorrect definition, e.g. missing a leading "<"):
   - `WSDL`/`XSD`: in case of error  the plugins compile/parse the definition again on each call
-  - `XSLT`/`SOAPAction`/`RouteByXPath`: the error message is kept in the cache
-  - The difference in behavior (`WSDL`/`XSD` vs `XSLT`/`SOAPAction`) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided by `WSDL`/`XSD`)
+  - `XSLT`: the error message is kept in the cache
+  - The difference in behavior (`WSDL`/`XSD` vs `XSLT`) comes from the external entities URL that can be downloaded without any guarantee of the result (and the download of external entities URL is only provided for `WSDL`/`XSD`)
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Error management
@@ -190,7 +190,7 @@ If `Verbose` is enabled:
 |config.wsdlApiRecursiveWsdlImport|`false`|Recursively import the WSDL dependencies in relation with `<wsdl:import>` tag|
 |config.wsdlApiSchemaForceSchemaLocation|`false`|Force the injection of `schemaLocation` attribute in `<import>` tag defined in WSDL definition. And automatically put the related XSD definition in `xsdApiSchemaInclude` if it's not already included. This is required by `libxml2` because it only supports `schemaLocation` to get the imported XSD|
 |config.xsdApiSchema|N/A|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the Web Service tags. It can be a raw definition or a file name containing the definition. Use `<!-- -->` value (an XML comment) or no value for disabling the validation|
-|config.xsdApiSchemaInclude|N/A|XSD content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
+|config.xsdApiSchemaInclude|N/A|XSD or WSDL content included in the plugin configuration. It's related to `xsdApiSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The XSD include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoapSchema|Pre-defined with `SOAP` 1.1|WSDL/XSD schema used by `WSDL/XSD VALIDATION` for the SOAP 1.1 tags: `<soap:Envelope>`, `<soap:Header>`, `<soap:Body>`. It can be a raw definition or a file name containing the definition. Use `<!-- -->` value (an XML comment) for disabling the validation|
 |config.xsdSoapSchemaInclude|N/A|XSD content for SOAP 1.1 included in the plugin configuration. It's related to `xsdSoapSchema`. It avoids downloading content from external entity (i.e.: http(s)://). The include has priority over the download from external entity. It can be a raw definition or a file name containing the definition|
 |config.xsdSoap12Schema|N/A|For SOAP 1.2. See `xsdSoapSchema` description|
