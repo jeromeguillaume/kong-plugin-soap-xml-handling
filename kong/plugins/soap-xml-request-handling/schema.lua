@@ -42,6 +42,7 @@ return {
           },},
           { VerboseRequest = { type = "boolean", required = false }, },
           { wsdlApiSchemaForceSchemaLocation = { type = "boolean", required = false }, },
+          { wsdlApiRecursiveWsdlImport = { type = "boolean", required = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 
               keys = { type = "string", required = true },
@@ -130,6 +131,12 @@ return {
         if (type(config.wsdlApiSchemaForceSchemaLocation) == 'boolean' and config.wsdlApiSchemaForceSchemaLocation) and 
             (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
           return nil, "config.xsdApiSchema must be defined if config.wsdlApiSchemaForceSchemaLocation is enabled"
+        end
+
+        -- Check that if 'wsdlApiRecursiveWsdlImport' is enabled, the 'xsdApiSchema' is defined
+        if (type(config.wsdlApiRecursiveWsdlImport) == 'boolean' and config.wsdlApiRecursiveWsdlImport) and 
+            (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
+          return nil, "config.xsdApiSchema must be defined if config.wsdlApiRecursiveWsdlImport is enabled"
         end
 
         return true

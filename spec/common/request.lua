@@ -635,7 +635,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
       <faultcode>soap:Server</faultcode>
       <faultstring>Request %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Unable to find the 'Less Thanwsdl:typesGreater Than'</errorMessage>
+        <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'Less Than wsdl:types Greater Than'</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1336,7 +1336,7 @@ request_common.calculatorXSD_paramCalcIntD= [[
     </xsd:schema>
 ]]
 
-request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_ok= [[
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_import_ok= [[
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -1353,7 +1353,7 @@ request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_ok= [[
 </wsdl:definitions>
 ]]
 
-request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_one_import_without_location_ok= [[
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_import_one_import_without_location_ok= [[
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
@@ -1371,7 +1371,7 @@ request_common.calculatorWSDL_Request_Response_WSDL_dependencies_import_one_impo
 </wsdl:definitions>
 ]]
 
-request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok= [[
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_BIND_ok= [[
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
@@ -1422,7 +1422,7 @@ request_common.calculatorWSDL_Request_Response_WSDL_dependencies_BIND_ok= [[
 </wsdl:definitions>
 ]]
 
-request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_ok= [[
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_DEFINITION_ok= [[
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:tns="http://tempuri.org"
@@ -1487,7 +1487,7 @@ request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_with
 </wsdl:types>
 ]]
 
-request_common.calculatorWSDL_Request_Response_WSDL_dependencies_DEFINITION_with_no_child_in_definitions_ko= [[
+request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_DEFINITION_with_no_child_in_definitions_ko= [[
 <?xml version="1.0" encoding="UTF-8"?>
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:tns="http://tempuri.org"

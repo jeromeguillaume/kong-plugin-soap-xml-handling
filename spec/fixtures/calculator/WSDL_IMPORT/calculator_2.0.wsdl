@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- WSDL v2 with <description> tag -->
+<!-- 'wsdl' Namespace Namespace has a prefix (wsdl2)                  => xmlns:wsdl2="http://www.w3.org/ns/wsdl          -->
+<!-- Add      has    'wsam:Action="http://tempuri.org/Add"' -->
+<!-- Subtract has no 'wsam:Action'                          -->
+<!-- Multiply has no 'wsam:Action' and invalid pattern URL  -->
+<wsdl2:description
+    xmlns:wsdl2=     "http://www.w3.org/ns/wsdl"
+    targetNamespace= "http://tempuri.org/"
+    xmlns:tns=       "http://tempuri.org/"
+    xmlns:wsoap=     "http://www.w3.org/ns/wsdl/soap"
+    xmlns:soap=      "http://www.w3.org/2003/05/soap-envelope"
+    xmlns:wsdlx=     "http://www.w3.org/ns/wsdl-extensions"
+    xmlns=           "http://www.w3.org/2001/XMLSchema"
+    xmlns:wsam=      "http://www.w3.org/2007/05/addressing/metadata">
+
+  <wsdl2:import location="calculator_2.0_BIND.wsdl" namespace="http://tempuri.org/bind"/>
+
+  <wsdl2:documentation>This is the web service documentation</wsdl2:documentation>
+
+  <wsdl2:service
+       name     ="AddCalculatorService"
+       interface="tns:AddInterface">
+     <wsdl2:endpoint name ="AddCalculatorEndpoint"
+            binding ="bind:AddSOAPBinding"
+            address ="http://localhost:8080/ws"/>
+  </wsdl2:service>
+
+  <wsdl2:service
+       name     ="SubtractCalculatorService"
+       interface="tns:SubtractInterface">
+     <wsdl2:endpoint name ="SubtractCalculatorEndpoint"
+            binding ="bind:SubtractSOAPBinding"
+            address ="http://localhost:8080/ws"/>
+  </wsdl2:service>
+
+</wsdl2:description>

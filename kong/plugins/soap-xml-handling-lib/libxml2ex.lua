@@ -280,7 +280,7 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   if response_body then
     contentFile, err = libxml2ex.readFile (true, filePathPrefix, response_body)
   else
-    -- Check that the entity_url is a file path and read the content of the file
+    -- Check that the entity_url is a file path and read the content from the file system
     contentFile, err = libxml2ex.readFile (true, filePathPrefix, entity_url)
   end
 
