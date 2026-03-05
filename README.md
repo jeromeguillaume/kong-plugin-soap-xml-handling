@@ -73,7 +73,7 @@ Each handling is optional
 1) When defining a large number of `soap-xml-handling` plugins (let's say +100), prefer using WSDL/XSD/XSLT definition in files rather than raw definitions. It drastically decreases the memory size of the Kong Gateway configuration sent by the Control Plane
 
 2) Importing WSDL descriptions or XSD schemas:
-    - When importing WSDL descriptions, enable `wsdlApiRecursiveWsdlImport`
+    - When importing WSDL descriptions (by using `<wsdl:import>` tag), enable `wsdlApiRecursiveWsdlImport`
     - When importing XSD schemas in WSDL/XSD (by using `<xsd:import>` tag), it is recommended to configure the plugins preferably in this order:
       1) Put the content in a file (in case of high number of `soap-xml-handling` plugins) in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
       2) Put the raw content in `config.xsdSoapSchemaInclude`, `config.xsdSoap12SchemaInclude` and `config.xsdApiSchemaInclude`
