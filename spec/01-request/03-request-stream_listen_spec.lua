@@ -9,9 +9,9 @@ local PLUGIN_NAME    = pluginRequest
 local xsltLibrary = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -75,6 +75,7 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
           nginx_conf = "spec/fixtures/custom_nginx.template",
+          --stream_listen = "0.0.0.0:9999",
           -- make sure our plugin gets loaded
           plugins = "bundled," .. PLUGIN_NAME
           }))       

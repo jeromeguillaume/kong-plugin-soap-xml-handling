@@ -15,7 +15,25 @@ x-kong-config: &kong-env
   KONG_LICENSE_DATA: "${KONG_LICENSE_DATA}"  # Kong Enterprise license passed via environment variable
 
 services:
-
+  squid:
+    container_name: squid
+    image: ubuntu/squid:5.2-22.04_beta
+    platform: linux/arm64/v8
+    volumes:
+      - ${PROJECT_DIR}/spec/fixtures/squidcustom/squid.conf:/etc/squid/squid.conf
+      - ${PROJECT_DIR}/spec/fixtures/squidcustom/passwords:/etc/squid/passwords
+    healthcheck:
+      interval: 5s
+      retries: 10
+      test: ["CMD", "kill", "-0", "1"]
+      timeout: 10s
+    restart: on-failure
+    ports:
+      #- 127.0.0.1::3128
+      - "3128:3128"
+    networks:
+      - kong-soap-xml-net                  # Connect to the shared Kong network
+  
   calculator1:
     container_name: calculator1
     image: jeromeguillaume/ws-soap-calculator:1.0.4
@@ -23,7 +41,7 @@ services:
       - kong-soap-xml-net                  # Connect to the shared Kong network
     environment:
       X_SOAP_REGION: 	soap1.apim.eu
-  
+    
   calculator2:
     container_name: calculator2
     image: jeromeguillaume/ws-soap-calculator:1.0.4
