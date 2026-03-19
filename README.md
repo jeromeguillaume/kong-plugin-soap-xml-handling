@@ -1466,7 +1466,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
 5) `XSLT TRANSFORMATION` only for `saxon` library: when two (or more) `configure` phases are triggered (due to a plugin configuration change), an error message could be sent to the Client (`Invalid Pointers Cache Table`) for pending request(s). **It only concerns plugins, configured with XSLT saxon, that have been deleted**. It's related to the XSLT definitions (that are compiled/parsed and kept in memory) that are freed at the 2nd `configure` phase. It is recommended to:
     - Have at least one SOAP/XML plugin for freeing the memory at the 2nd `configure` phase
     - Not change the plugin configuration too frequently. In other words, and to avoid error, the 2nd `configure` phase should occur after the end of the maximum timeout of the GW service using the removed `soap-xml-handling` plugin
-6) The `soap-xml-response-handling` and `Forward Proxy Advanced` plugins cannot be used simultaneously on the same service or route. It's related to the nature of `Forward Proxy Advanced` plugin that overwrites the normal behavior to send the upstream response (headers and body). To avoid this limitation please:
+6) The `soap-xml-response-handling` and `Forward Proxy Advanced` plugins cannot be used simultaneously on the same service or route. It's related to the nature of `Forward Proxy Advanced` plugin that overwrites the normal behavior to send the upstream response (headers and body). It's a Kong PDK limitation. To avoid this limitation please:
     - Declare 2 Gateway services: 
       - 1 x GW svc with `soap-xml-response-handling`
       - 1 x GW svc with `forward-proxy`
