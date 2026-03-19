@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.5",
+    VERSION = "1.4.6",
   }
 
 local xmlgeneral = nil

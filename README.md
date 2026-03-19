@@ -23,9 +23,8 @@ The plugins handle the SOAP/XML **Request** and/or the SOAP/XML **Response** in 
 
 Each handling is optional
 
-![Alt text](/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
-
-![Alt text](/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
+![Alt text](https://raw.githubusercontent.com/jeromeguillaume/kong-plugin-soap-xml-handling/main/images/Pipeline-Kong-soap-xml-handling.jpeg?raw=true "Kong - SOAP/XML execution pipeline")
+![Alt text](https://raw.githubusercontent.com/jeromeguillaume/kong-plugin-soap-xml-handling/main/images/Kong-Manager.jpeg?raw=true "Kong - Manager")
 
 ---
 
