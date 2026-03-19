@@ -295,12 +295,25 @@ function plugin:header_filter(plugin_conf)
       kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
     end
   else
-    -- Get SOAP Envelope from the Body
-    soapEnvelope = kong.service.response.get_raw_body()
-    -- There is no SOAP envelope (or Body content) so we don't do anything
-    if not soapEnvelope then
-      kong.log.debug("The Body is 'nil': nothing to do")
-      return
+    -- Get SOAP Envelope from the Body response
+    -- If the service body with buffered proxying is available, we get the SOAP envelope
+    local ctx = ngx.ctx
+    if ctx.buffered_proxying then
+      soapEnvelope = kong.service.response.get_raw_body ()
+      -- There is no SOAP envelope (or Body content) or unable to get it correctly, so we don't do anything
+      if not soapEnvelope then
+        kong.log.debug("The Body is 'nil': nothing to do")
+        return
+      end
+    -- Else there is a problem to get the response body: for instance there is a conflict with the 'Forward Proxy Advanced' plugin
+    else
+      -- see: https://konghq.atlassian.net/browse/FTI-7359
+      kong.log.warn("The service body with buffered proxying is not available. Possible conflict with other plugins like 'Forward Proxy Advanced'")
+      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+                                                  xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
+                                                  xmlgeneral.unableToGetBodyResponse,
+                                                  kong.ctx.shared.contentType.request,
+                                                  xmlgeneral.soapFaultCodeServer)
     end
   end
   

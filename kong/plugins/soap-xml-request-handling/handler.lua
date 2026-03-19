@@ -37,20 +37,20 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
       file, errMessage = io.open(body_filepath, "r")
       if not file then
         kong.log.err("readFile - Ko: Error opening file '" .. body_filepath .. "': " .. (errMessage or "nil"))
-        errMessage = xmlgeneral.unableToGetBody        
+        errMessage = xmlgeneral.unableToGetBodyRequest        
       else
         soapEnvelopeTransformed = file:read("*a")  -- Read the entire file content
         file:close()  -- Close the file handle        
         if soapEnvelopeTransformed == nil then
           kong.log.err("readFile - Ko: Error reading file '" .. body_filepath .. "'")
-          errMessage = xmlgeneral.unableToGetBody          
+          errMessage = xmlgeneral.unableToGetBodyRequest          
         else
           kong.log.debug("readFile - Ok: Read content file '", body_filepath, "'")
         end
       end
     else
       kong.log.err("Unable to get the client request body from temporary file")
-      errMessage = xmlgeneral.unableToGetBody
+      errMessage = xmlgeneral.unableToGetBodyRequest
     end
 
     if errMessage then

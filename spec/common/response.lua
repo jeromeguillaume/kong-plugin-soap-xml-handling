@@ -502,6 +502,21 @@ response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbo
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculator_Response_Unable_to_get_body_Failed_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Response %- General process failed</faultstring>
+      <detail>
+        <errorMessage>Unable to get the body response. See logs for more details</errorMessage>
+        <backendHttpCode>200</backendHttpCode>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
 response_common.calculatorXSLT_add_ns_param_calc_parameters=[[
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -555,6 +570,37 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		host = "ws.soap1.calculator",
 		port = 8080,
 		path = "/ws",
+	})
+
+	local calculator_with_squid_service = blue_print.services:insert({
+		protocol = "http",
+		host = "ws.soap1.calculator",
+		port = 8080,
+		path = "/ws",
+	})
+	local calculator_with_squid_route = blue_print.routes:insert{
+		service = calculator_with_squid_service,
+		paths = { "/local/calculator/squid" }
+		}
+	blue_print.plugins:insert {
+		name = "forward-proxy",
+		route = calculator_with_squid_route,
+		config = {
+			http_proxy_host = "squid",
+			http_proxy_port = 3128,
+			proxy_scheme = "http",
+			https_verify = false,
+			x_headers = "append",
+			auth_username = "kong",
+			auth_password = "king"
+		}
+	}
+
+	local calculator_local_service = blue_print.services:insert({
+		protocol = "http",
+		host = "localhost",
+		port = 9000,
+		path = "/local/calculator/squid",
 	})
 
 	local calculatorXSLT_beforeXSD_route = blue_print.routes:insert{
@@ -1201,6 +1247,44 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local calculatorWSDL_with_Forward_Proxy_plugin_with_verbose_ko_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_with_Forward_Proxy_plugin_with_verbose_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_Forward_Proxy_plugin_with_verbose_ko_route,
+		config = {
+			VerboseResponse = true
+		}
+	}
+	blue_print.plugins:insert {
+		name = "forward-proxy",
+		route = calculatorWSDL_with_Forward_Proxy_plugin_with_verbose_ko_route,
+		config = {
+			http_proxy_host = "squid",
+			http_proxy_port = 3128,
+			proxy_scheme = "http",
+			https_verify = false,
+			x_headers = "append",
+			auth_username = "kong",
+			auth_password = "king"
+		}
+	}
+	
+	local calculatorWSDL_with_Forward_Proxy_plugin_on_loopback_service_with_verbose_ok_route = blue_print.routes:insert{
+		service = calculator_local_service,
+		paths = { "/calculatorWSDL_with_Forward_Proxy_plugin_on_loopback_service_with_verbose_ok" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorWSDL_with_Forward_Proxy_plugin_on_loopback_service_with_verbose_ok_route,
+		config = {
+			VerboseResponse = true,
+			ignoreProcessIfServiceHttpError = true
+		}
+	}
+	
 end
 
 -------------------------------------------
@@ -1827,6 +1911,38 @@ function response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose
 
 	-- This log doesn't happen for XSD API Validation
 	assert.logfile().has.no.line (request_common.xsd_xml_not_in_memory)
+end
+
+function response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_Ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_Forward_Proxy_plugin_with_verbose_ko", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_Unable_to_get_body_Failed_verbose, body)
+end
+
+function response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_on_loopback_service_Ok (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorWSDL_with_Forward_Proxy_plugin_on_loopback_service_with_verbose_ok", {
+		headers = {
+			["Content-Type"] = "text/xml;charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+		-- validate that the request succeeded: response status 200, Content-Type and right match
+	local body = assert.response(r).has.status(200)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches('<AddResult>12</AddResult>', body)
 end
 
 

@@ -32,7 +32,8 @@ xmlgeneral.invalidXSD                 = "Invalid XSD schema"
 xmlgeneral.invalidWSDL_XSD            = "Invalid WSDL/XSD schema"
 xmlgeneral.errorGettingPtrsCacheTable = "Error while getting Pointers Cache Table: "
 xmlgeneral.invalidPtrsCacheTable      = "Invalid Pointers Cache Table"
-xmlgeneral.unableToGetBody            = "Unable to get the body request. See logs for more details"
+xmlgeneral.unableToGetBodyRequest     = "Unable to get the body request. See logs for more details"
+xmlgeneral.unableToGetBodyResponse    = "Unable to get the body response. See logs for more details"
 xmlgeneral.ignoreIfServiceHttpError   = "Service Backend returned an HTTP error. The SOAP/XML process is ignored"
 
 xmlgeneral.soapFaultCodeNone    = 0   -- Fault Code type is 'None'
@@ -159,9 +160,10 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
   local ngx_get_phase = ngx.get_phase
   if  ngx_get_phase() == "response"      or 
       ngx_get_phase() == "header_filter" or 
-      ngx_get_phase() == "body_filter"   then
-    local status = kong.service.response.get_status()
-    if status ~= nil then      
+      ngx_get_phase() == "body_filter"   then        
+    local status = kong.response.get_status()
+    
+    if status ~= nil then
       backendHttpCode = status
     end
   end

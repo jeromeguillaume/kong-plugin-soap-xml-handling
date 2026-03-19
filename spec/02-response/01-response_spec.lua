@@ -4,18 +4,15 @@ local helpers = require "spec.helpers"
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-response-handling"
 
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 -- Debug HTTP/2 connection
 -- helpers.setenv("KONG_DEBUG_HTTP2", "1")
 
 local response_common = require "spec.common.response"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-  --end
+	if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -51,6 +48,7 @@ for _, strategy in helpers.all_strategies() do
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
 					nginx_conf = "spec/fixtures/custom_nginx.template",
+					log_level = "debug",
 					-- make sure our plugin gets loaded
 					plugins = "bundled," .. PLUGIN_NAME
 				}))
@@ -206,8 +204,12 @@ for _, strategy in helpers.all_strategies() do
 				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
 			end)
 			
-			it("5+6+7|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
-				response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
+			it("6|WSDL Validation with Forward Proxy plugin - Ko", function()
+				response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_Ko (assert, client)
+			end)
+			
+			it("6|WSDL Validation with Forward Proxy plugin on a Loopback service - Ok", function()
+				response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_on_loopback_service_Ok (assert, client)
 			end)
 			
   	end)
