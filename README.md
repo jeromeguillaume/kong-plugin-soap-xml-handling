@@ -1625,3 +1625,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped to Kong Gateway v3.13.0.1
   - `WSDL Validation`: provided a support of `<wsdl:import>` tag to recursively import the wsdl dependencies
   - Validation of `SOAPAction` Http header: Changed the `xmlCtxtReadMemory` to `xmlReadMemory` for improving performance
+- v1.4.6:
+  - Bumped to Kong Gateway v3.13.0.2
