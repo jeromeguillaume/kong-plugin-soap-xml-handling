@@ -56,7 +56,7 @@ response_common.calculator_Response_General_Failed_Content_Type_verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
-response_common.calculator_Response_General_Failed_Backend_Http_Error_verbose = [[
+response_common.calculator_Response_General_Failed_Backend_Http_400_Error_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
@@ -71,6 +71,20 @@ response_common.calculator_Response_General_Failed_Backend_Http_Error_verbose = 
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculator_Response_General_Failed_Backend_Http_404_Error_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Response %- General process failed</faultstring>
+      <detail>
+        <errorMessage>Service Backend returned an HTTP error. The SOAP/XML process is ignored</errorMessage>
+        <backendHttpCode>404</backendHttpCode>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
 
 response_common.calculator_Response_XSLT_BEFORE = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -1077,6 +1091,26 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local calculator_invalid_path_service = blue_print.services:insert({
+		protocol = "http",
+		host = "ws.soap1.calculator",
+		port = 8080,
+		path = "/INVALID_PATH",
+	})			
+	local calculatorXSD_upstream_returns_404_route = blue_print.routes:insert{
+		service = calculator_invalid_path_service,
+		paths = { "/calculatorXSD_upstream_returns_404_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSD_upstream_returns_404_route,
+		config = {
+			VerboseResponse = true,
+			ignoreProcessIfServiceHttpError = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
 	local calculator_XSLT_beforeXSD_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/localCalculatorXSLT_beforeXSD_ok" }
@@ -1781,6 +1815,22 @@ function response_common._6_WSDL_Validation_Invalid_API_response_without_operati
 	assert.matches(response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
 end
 
+function response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_Verbose (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_upstream_returns_404_ko", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_404_Error_verbose, body)
+end
+
 function response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_ForceSchemaLocation_with_verbose_ok", {
@@ -1883,7 +1933,7 @@ function response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_ver
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_Error_verbose, body)
+	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_400_Error_verbose, body)
 end
 
 function response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)

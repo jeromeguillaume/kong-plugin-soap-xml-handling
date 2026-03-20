@@ -356,6 +356,8 @@ end
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
   
+  kong.log.notice("**jerome: access")
+  
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
@@ -387,7 +389,7 @@ function plugin:access(plugin_conf)
                                         )
   end
 
-  -- If the SOAP Body request has been changed (WSDL/XSD Validation and XPath Routing doesn't change it)
+  -- If the SOAP Body request has been changed (WSDL/XSD Validation and XPath Routing don't change it)
   if soapEnvelopeTransformed then
     -- We did a successful SOAP/XML handling, so we change the SOAP body request
     kong.service.request.set_raw_body(soapEnvelopeTransformed)
@@ -395,18 +397,30 @@ function plugin:access(plugin_conf)
 
 end
 
------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 -- Executed when all response headers bytes have been received from the upstream service
------------------------------------------------------------------------------------------
+-- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
+--
+-- Examples of error:
+--  source=exit    status=200 => The request termination plugin returns a 200
+--  source=exit    status=401 => The apikey plugin (or another auth plugins) returns an error
+--  source=exit    status=503 => Kong can't reach the upstream hostname
+--  source=error   status=502 => upstream invalid port
+--  source=error   status=504 => The upstream response time exceeds the timeout configured in Kong
+--  source=service status=XXX => Managed by the Response plugin
+------------------------------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local soapFaultBody
-
+kong.log.notice("**jerome: header_filter")
+kong.log.notice("**jerome get_source: " , kong.response.get_source(), " status: ", kong.response.get_status()) 
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
   
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --    we don't consider as an error the 'request-termination' plugin (get_source()="exit" and get_status()=200)
   -- we reformat the JSON message to SOAP/XML Fault
+  -- The Request plugin doesn't take into account get_source() == "service" and get_status() ~= 200 
+  --   because it's the responsibility of the Response plugin to handle the error in this case
   if kong.ctx.shared.xmlSoapHandlingFault == nil and
     ( (kong.response.get_source() == "exit" and kong.response.get_status() ~= 200) 
         or 
@@ -420,8 +434,12 @@ function plugin:header_filter(plugin_conf)
       -- At this stage we cannot call 'kong.response.set_raw_body()' to change the body content
       -- but it will be done by 'body_filter' phase
       kong.response.set_header("Content-Length", #soapFaultBody)
-
       kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
+      -- This code raises an unexpected error in Kong log, for instance: 
+      --    "[error] ... atempt to set status 500 via ngx.exit after sending out the response status 504
+      -- see: https://konghq.atlassian.net/browse/FTI-6970
+      kong.response.set_status(xmlgeneral.HTTPServerCodeSOAPFault)
+
     end
 
     -- Set the Global Fault Code to the "Request and Response SOAP/XML handling" plugins 
@@ -434,16 +452,17 @@ function plugin:header_filter(plugin_conf)
     }
     
   end
-
+  
 end
 
 ------------------------------------------------------------------------------------------------------------------
 -- Executed for each chunk of the response body received from the upstream service.
 -- Since the response is streamed back to the client, it can exceed the buffer size and be streamed chunk by chunk.
+-- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
 -- This function can be called multiple times
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)
-  
+  kong.log.notice("**jerome: body_filter")
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --  => reformat the JSON message to SOAP/XML Fault (only if the Content-Type of the request is not a JSON)
   if  kong.ctx.shared.xmlSoapHandlingFault and 

@@ -179,7 +179,7 @@ for _, strategy in helpers.all_strategies() do
 			it("6|WSDL Validation - Invalid API response (no Operation) with verbose - Ko", function()
 				response_common._6_WSDL_Validation_Invalid_API_response_without_operation_with_verbose_ko (assert, client)
 			end)
-
+			
 			it("5+6|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Ok", function()
 				response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
 			end)
@@ -202,6 +202,10 @@ for _, strategy in helpers.all_strategies() do
 
 			it("5+6+7|Ignore Plugin process in case of Backend HTTP Error - Ko", function()
 				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
+			end)
+
+			it("6|XSD Validation - Upstream returns Not found (404) with Verbose", function()
+				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_Verbose (assert, client)
 			end)
 			
 			it("6|WSDL Validation with Forward Proxy plugin - Ko", function()

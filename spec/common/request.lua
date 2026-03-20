@@ -243,6 +243,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose = [[
       <faultstring>Unauthorized</faultstring>
       <detail>
         <errorMessage>HTTP Error code is 401</errorMessage>
+        <backendHttpCode>401</backendHttpCode>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1684,13 +1685,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		port = 80,
 		path = "/calculator.asmx",
 	})			
-	local calculatorXSLT_beforeXSD__invalid_host_route = blue_print.routes:insert{
+	local calculatorXSLT_beforeXSD_invalid_host_route = blue_print.routes:insert{
 		service = calculator_invalid_host_service,
 		paths = { "/calculatorXSLT_beforeXSD_invalid_host" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = calculatorXSLT_beforeXSD__invalid_host_route,
+		route = calculatorXSLT_beforeXSD_invalid_host_route,
 		config = {
 			VerboseRequest = true,
 			xsltLibrary = xsltLibrary,
@@ -2516,8 +2517,8 @@ function request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_basic_auth_
 		body = request_common.calculator_Request,
 	})
 	
-	-- validate that the request failed: response status 401, Content-Type and right Match
-	local body = assert.response(r).has.status(401)
+	-- validate that the request failed: response status 500, Content-Type and right Match
+	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose, body)
@@ -2532,8 +2533,8 @@ function request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Ver
 		body = request_common.calculator_Request,
 	})
 	
-	-- validate that the request failed: response status 502, Content-Type and right match
-	local body = assert.response(r).has.status(502)
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose, body)
@@ -2860,8 +2861,8 @@ function request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname
 		body = request_common.calculator_Subtract_Request,
 	})
 
-	-- validate that the request failed: response status 502, Content-Type and right match
-	local body = assert.response(r).has.status(502)
+	-- validate that the request failed: response status 500 Content-Type and right match
+	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose, body)

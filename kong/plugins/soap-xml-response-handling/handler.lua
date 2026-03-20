@@ -252,9 +252,18 @@ function plugin:access(plugin_conf)
   end
 end
 
------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 -- Executed when all response headers bytes have been received from the upstream service
------------------------------------------------------------------------------------------
+-- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
+-- Examples of error:
+--  source=exit    status=200 => The request termination plugin returns a 200
+--  source=exit    status=401 => The apikey plugin (or another auth plugins) returns an error
+--  source=exit    status=503 => Kong can't reach the upstream hostname
+--  source=error   status=502 => Upstream invalid port
+--  source=error   status=504 => The upstream response time exceeds the timeout configured in Kong
+--  source=service status=404 => The service is reached but the resource is not found
+--  source=service status=200 => No error (The service is successfully reached)
+------------------------------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local soapEnvelopeTransformed
   local soapFaultBody
@@ -262,6 +271,10 @@ function plugin:header_filter(plugin_conf)
   local soapDeflated
   local err
   
+  kong.log.notice("**jerome: header_filter")
+  kong.log.notice("**jerome get_source: " , kong.response.get_source(), " status: ", kong.response.get_status()) 
+
+
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
 
@@ -442,7 +455,8 @@ end
 
 ------------------------------------------------------------------------------------------------------------------
 -- Executed for each chunk of the response body received from the upstream service.
--- Since the response is streamed back to the client, it can exceed the buffer size and be streamed chunk by chunk.
+-- Since the response is streamed back to the client, it can exceed the buffer size and be streamed chunk by chunk
+-- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
 -- This function can be called multiple times
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)

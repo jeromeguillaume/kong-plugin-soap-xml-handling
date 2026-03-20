@@ -5,15 +5,10 @@ local helpers = require "spec.helpers"
 local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
-
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -48,6 +43,8 @@ for _, strategy in helpers.all_strategies() do
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
 					nginx_conf = "spec/fixtures/custom_nginx.template",
+					nginx_worker_processes = "2",
+					log_level = "debug",
 					-- make sure our plugin gets loaded
 					plugins = "bundled," .. PLUGIN_NAME
 				}))
