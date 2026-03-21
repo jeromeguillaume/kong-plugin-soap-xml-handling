@@ -11,12 +11,6 @@ local pluginRequest  = caching_common.pluginRequest
 local pluginResponse = caching_common.pluginResponse
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
--- Force the number of Worker Process (for checking the cache behavior on the same worker)
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "1")
-
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue
@@ -380,7 +374,11 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
             -- use the custom test template to create a local mock server
             nginx_conf = "spec/fixtures/custom_nginx.template",
-            proxy_listen = "0.0.0.0:9000 reuseport, 0.0.0.0:9443 ssl",         
+            proxy_listen = "0.0.0.0:9000 reuseport, 0.0.0.0:9443 ssl",
+            -- Force the number of Worker Process (for checking the cache behavior on the same worker)
+            nginx_worker_processes = "1",
+            -- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+            log_level = "debug",
             -- make sure our plugin gets loaded
             plugins = "bundled," .. PLUGIN_NAME
           }))

@@ -26,7 +26,7 @@ soapAction_common.calculator_soap11_XSD_VALIDATION_Failed_XSD_Instead_of_WSDL= [
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: Unable to find the 'wsdl:definitions' for WSDL 1.1 or 'wsdl2:description' for WSDL 2.0 in the WSDL definition</errorMessage>
       </detail>

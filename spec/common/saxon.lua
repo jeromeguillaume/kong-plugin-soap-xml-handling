@@ -60,41 +60,41 @@ saxon_common.calculator_JSON_2_XML_Transformation_ok = {
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_val = {
-  message = 'Request - XSLT transformation failed (before XSD validation)'
+  message = 'Request processing - XSLT transformation failed (before XSD validation)'
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_val_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = 'Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.'
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Template_val_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = 'Template XXmainXX does not exist'
 }
 
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val = {
-  message = 'Response - XSLT transformation failed (after XSD validation)'
+  message = 'Response processing - XSLT transformation failed (after XSD validation)'
 }
 
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
-  message = 'Response - XSLT transformation failed (after XSD validation)',
+  message = 'Response processing - XSLT transformation failed (after XSD validation)',
   message_verbose = 'Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.',
   backend_http_code = 200
 }
 
 saxon_common.error_message_Saxon_Library_not_Found_val_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = "Unable to load the XSLT library shared object or its dependency. Please check 'LD_LIBRARY_PATH' env variable and the presence of libraries"
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Invalid_JSON_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = 'Invalid JSON input on line 1: Unescaped control character (xa)'
 }
 
 saxon_common.error_message_Response_XSD_validation_400_No_Content_Type_error_from_Upstream_verbose = {
-  message = 'Response - XSD validation failed',
+  message = 'Response processing - XSD validation failed',
   message_verbose = "Invalid XML input. Error code: 4, Line: 1, Message: Start tag expected, '<' not found",
   backend_http_code = 400
 }
@@ -105,7 +105,7 @@ saxon_common.error_XML_message_Request_XSLT_transfo_before_XSD_val_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.</errorMessage>
       </detail>
@@ -119,7 +119,7 @@ saxon_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
       </detail>

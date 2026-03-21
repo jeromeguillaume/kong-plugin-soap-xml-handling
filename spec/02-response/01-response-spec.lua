@@ -204,8 +204,12 @@ for _, strategy in helpers.all_strategies() do
 				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
 			end)
 
-			it("6|XSD Validation - Upstream returns Not found (404) with Verbose", function()
-				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_Verbose (assert, client)
+			it("6|XSD Validation - 'basic_auth' plugin (401 | source=exit) with Verbose", function()
+				response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_Ko (assert, client)
+			end)			
+
+			it("6|XSD Validation - Upstream returns Not found (404 | source=service) with Verbose", function()
+				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_Ko (assert, client)
 			end)
 			
 			it("6|WSDL Validation with Forward Proxy plugin - Ko", function()

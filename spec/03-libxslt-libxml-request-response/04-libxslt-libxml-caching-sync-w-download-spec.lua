@@ -15,12 +15,6 @@ local client = nil
 local firstWorkerId = nil
 local maxRetries = 10
 
--- Add a Worker Process for enabling the synchronous download of external entities
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
-
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue
@@ -180,7 +174,11 @@ for _, strategy in helpers.all_strategies() do
             nginx_conf = "spec/fixtures/custom_nginx.template",
             proxy_listen = "0.0.0.0:9000 reuseport, 0.0.0.0:9443 ssl",         
             -- make sure our plugin gets loaded
-            plugins = "bundled," .. PLUGIN_NAME
+            plugins = "bundled," .. PLUGIN_NAME,
+            -- Add a Worker Process for enabling the synchronous download of external entities
+            nginx_worker_processes = "2",
+            -- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+            log_level = "debug"
           }))
       end)
 

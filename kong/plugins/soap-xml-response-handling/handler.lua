@@ -256,13 +256,15 @@ end
 -- Executed when all response headers bytes have been received from the upstream service
 -- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
 -- Examples of error:
---  source=exit    status=200 => The request termination plugin returns a 200
---  source=exit    status=401 => The apikey plugin (or another auth plugins) returns an error
---  source=exit    status=503 => Kong can't reach the upstream hostname
---  source=error   status=502 => Upstream invalid port
---  source=error   status=504 => The upstream response time exceeds the timeout configured in Kong
---  source=service status=404 => The service is reached but the resource is not found
---  source=service status=200 => No error (The service is successfully reached)
+-- Examples of error:
+--    source=exit     status=200 => The request termination plugin returns a 200
+--    source=exit     status=401 => The apikey plugin (or another auth plugins) returns an error
+--    source=exit     status=503 => Kong can't reach the upstream hostname
+--    source=exit     status=502 => Upstream invalid port (seen as source=error by Request plugin)
+--    source=exit     status=504 => The upstream response time exceeds the timeout configured in Kong
+--                                  (seen as source=error by Request plugin)
+--    source=service  status=404 => The service is reached but the resource is not found
+--    source=service  status=200 => No error (The service is successfully reached)
 ------------------------------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local soapEnvelopeTransformed
@@ -303,9 +305,13 @@ function plugin:header_filter(plugin_conf)
     -- Else the Request Content-Type is XML: we reformat the error messsage in SOAP/XML Fault
     else
       kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
-      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(plugin_conf.VerboseResponse, kong.ctx.shared.contentType.request)
+      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(xmlgeneral.ResponseTypePlugin, plugin_conf.VerboseResponse, kong.ctx.shared.contentType.request)
       kong.response.clear_header("Content-Length")
       kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
+      -- This code raises an unexpected error in Kong log, for instance: 
+      --    "[error] ... atempt to set status 400 via ngx.exit after sending out the response status 500
+      -- see: https://konghq.atlassian.net/browse/FTI-6970
+      kong.response.set_status(xmlgeneral.HTTPServerCodeSOAPFault)
     end
   else
     -- Get SOAP Envelope from the Body response

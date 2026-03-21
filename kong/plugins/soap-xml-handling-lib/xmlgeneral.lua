@@ -16,8 +16,8 @@ xmlgeneral.HTTPServerCodeSOAPFault    = 500
 xmlgeneral.RequestTypePlugin          = 1
 xmlgeneral.ResponseTypePlugin         = 2
 
-xmlgeneral.RequestTextError           = "Request"
-xmlgeneral.ResponseTextError          = "Response"
+xmlgeneral.RequestTextError           = "Request processing"
+xmlgeneral.ResponseTextError          = "Response processing"
 xmlgeneral.GeneralError               = "General process failed"
 xmlgeneral.GenericError               = "SOAP/XML process failure"
 xmlgeneral.SepTextError               = " - "
@@ -278,7 +278,7 @@ end
 -----------------------------------------------------
 -- Add the HTTP Error code to the SOAP Fault message
 -----------------------------------------------------
-function xmlgeneral.addHttpErorCodeToSoapFault(VerboseResponse, contentType)
+function xmlgeneral.addHttpErorCodeToSoapFault(TypePlugin, VerboseResponse, contentType)
   local soapFaultBody
   local status = kong.response.get_status()
   local msg = HTTP_ERROR_MESSAGES[status]
@@ -287,12 +287,18 @@ function xmlgeneral.addHttpErorCodeToSoapFault(VerboseResponse, contentType)
   if not msg then
     msg = "Error"
   end
+  if TypePlugin == xmlgeneral.RequestTypePlugin then
+    msg = xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. msg
+  else
+    msg = xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. msg
+  end
+
   if status < 500 then
     soapFaultCode = xmlgeneral.soapFaultCodeClient
   else
     soapFaultCode = xmlgeneral.soapFaultCodeServer
   end
-  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code is " .. status, contentType, soapFaultCode)
+  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code backend is " .. status, contentType, soapFaultCode)
   
   return soapFaultBody
 end

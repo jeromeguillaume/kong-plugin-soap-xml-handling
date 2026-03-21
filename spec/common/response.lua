@@ -33,7 +33,7 @@ response_common.calculator_Response_General_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Response %- General process failed</faultstring>
+      <faultstring>Response processing %- General process failed</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -47,7 +47,7 @@ response_common.calculator_Response_General_Failed_Content_Type_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Response %- General process failed</faultstring>
+      <faultstring>Response processing %- General process failed</faultstring>
       <detail>
         <errorMessage>Content%-encoding of type 'deflate' is not supported</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -62,7 +62,7 @@ response_common.calculator_Response_General_Failed_Backend_Http_400_Error_verbos
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- General process failed</faultstring>
+      <faultstring>Response processing %- General process failed</faultstring>
       <detail>
         <errorMessage>Service Backend returned an HTTP error. The SOAP/XML process is ignored</errorMessage>
         <backendHttpCode>400</backendHttpCode>
@@ -71,13 +71,28 @@ response_common.calculator_Response_General_Failed_Backend_Http_400_Error_verbos
   </soap:Body>
 </soap:Envelope>]]
 
-response_common.calculator_Response_General_Failed_Backend_Http_404_Error_verbose = [[
+response_common.calculator_Response_Http_source_exit_401_Error_verbose  = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>Response processing %- Unauthorized</faultstring>
+      <detail>
+        <errorMessage>HTTP Error code backend is 401</errorMessage>
+        <backendHttpCode>401</backendHttpCode>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_General_Failed_Backend_Http_source_service_404_Error_verbose = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- General process failed</faultstring>
+      <faultstring>Response processing %- General process failed</faultstring>
       <detail>
         <errorMessage>Service Backend returned an HTTP error. The SOAP/XML process is ignored</errorMessage>
         <backendHttpCode>404</backendHttpCode>
@@ -176,7 +191,7 @@ response_common.calculator_Response_XSLT_BEFORE_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Response processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -190,7 +205,7 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Response processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -205,7 +220,7 @@ response_common.calculator_Response_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = 
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Response processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. compilation error. xsl:version: only 1.1 features are supported</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -279,7 +294,7 @@ response_common.calculatorWSDL_req_only_with_async_download_Ok = [[
 
 
 response_common.calculator_Response_XSD_VALIDATION_Failed_shortened = [[
-<faultstring>Response %- XSD validation failed</faultstring>
+<faultstring>Response processing %- XSD validation failed</faultstring>
 ]]
 
 response_common.calculator_Response_XSD_VALIDATION_Failed = [[
@@ -288,7 +303,7 @@ response_common.calculator_Response_XSD_VALIDATION_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -302,7 +317,7 @@ response_common.calculator_Response_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -317,7 +332,7 @@ response_common.calculator_Response_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -334,7 +349,7 @@ response_common.calculator_Response_XSD_SOAP_invalid_definition_Failed_verbose =
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': No matching global declaration available for the validation root.</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -361,7 +376,7 @@ response_common.calculator_Response_XSD_API_invalid_definition_Failed_verbose = 
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: AddResponse, Error code: 1845, Line: 2, Message: Element '{http://tempuri.org/}AddResponse': No matching global declaration available for the validation root.</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -412,7 +427,7 @@ response_common.calculator_Response_XSLT_AFTER_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSLT transformation failed %(after XSD validation%)</faultstring>
+      <faultstring>Response processing %- XSLT transformation failed %(after XSD validation%)</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -426,7 +441,7 @@ response_common.calculator_Response_XSLT_AFTER_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSLT transformation failed %(after XSD validation%)</faultstring>
+      <faultstring>Response processing %- XSLT transformation failed %(after XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -462,7 +477,7 @@ response_common.calculator_Response_XSD_SOAP_VALIDATION_REQUEST_Invalid_Namespac
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://INVALID.NAMESPACE.org/}Envelope': No matching global declaration available for the validation root.</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -477,7 +492,7 @@ response_common.calculator_Response_XSD_SOAP_VALIDATION_blank_soap_Failed_verbos
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XML input. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -492,7 +507,7 @@ response_common.calculator_Response_XSD_SOAP_VALIDATION_no_soapBody_Failed_verbo
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope, Error code: 1871, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': Missing child element%(s%). Expected is one of %( {http://schemas.xmlsoap.org/soap/envelope/}Header, {http://schemas.xmlsoap.org/soap/envelope/%}Body %).</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -507,7 +522,7 @@ response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbo
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- XSD validation failed</faultstring>
+      <faultstring>Response processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XML input. Unable to find the Operation tag in the 'soap:Body'</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -522,7 +537,7 @@ response_common.calculator_Response_Unable_to_get_body_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Response %- General process failed</faultstring>
+      <faultstring>Response processing %- General process failed</faultstring>
       <detail>
         <errorMessage>Unable to get the body response. See logs for more details</errorMessage>
         <backendHttpCode>200</backendHttpCode>
@@ -1089,6 +1104,24 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = true,
 			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
 		}
+	}
+
+	local calculatorXSD_with_basic_auth_plugin_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSD_with_basic_auth_plugin" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSD_with_basic_auth_plugin_route,
+		config = {
+			VerboseResponse = true,
+		}
+	}
+	blue_print.plugins:insert {
+		name = "basic-auth",
+		route = calculatorXSD_with_basic_auth_plugin_route,
+		config = {
+		}	
 	}
 
 	local calculator_invalid_path_service = blue_print.services:insert({
@@ -1815,7 +1848,23 @@ function response_common._6_WSDL_Validation_Invalid_API_response_without_operati
 	assert.matches(response_common.calculator_Response_XSD_API_VALIDATION_no_operation_Failed_verbose, body)
 end
 
-function response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_Verbose (assert, client)
+function response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_Ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_with_basic_auth_plugin", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status 500, Content-Type and right match
+	local body = assert.response(r).has.status(500)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_Http_source_exit_401_Error_verbose, body)
+end
+
+function response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_Ko (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorXSD_upstream_returns_404_ko", {
 		headers = {
@@ -1828,7 +1877,7 @@ function response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_V
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_404_Error_verbose, body)
+	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_source_service_404_Error_verbose, body)
 end
 
 function response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)

@@ -4,9 +4,6 @@ local request_common  = require "spec.common.request"
 local response_common = require "spec.common.response"
 local soap12_common   = require "spec.common.soap12"
 
--- Add a Worker Process for enabling the synchronous download of external entities
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
-
 --helpers.setenv("KONG_LOG_LEVEL", "debug")
 
 -- matches our plugin name defined in the plugins's schema.lua
@@ -487,6 +484,8 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
           nginx_conf = "spec/fixtures/custom_nginx.template",
+          -- Add a Worker Process for enabling the synchronous download of external entities
+          nginx_worker_processes = "2",
           -- make sure our plugin gets loaded
           plugins = "bundled," .. PLUGIN_NAME
           }))       

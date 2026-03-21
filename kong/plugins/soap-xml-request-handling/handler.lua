@@ -402,12 +402,13 @@ end
 -- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
 --
 -- Examples of error:
---  source=exit    status=200 => The request termination plugin returns a 200
---  source=exit    status=401 => The apikey plugin (or another auth plugins) returns an error
---  source=exit    status=503 => Kong can't reach the upstream hostname
---  source=error   status=502 => upstream invalid port
---  source=error   status=504 => The upstream response time exceeds the timeout configured in Kong
---  source=service status=XXX => Managed by the Response plugin
+--    source=exit     status=200 => The request termination plugin returns a 200
+--    source=exit     status=401 => The apikey plugin (or another auth plugins) returns an error
+--    source=exit     status=503 => Kong can't reach the upstream hostname
+--    source=error    status=502 => Upstream invalid port (seen as source=exit by Response plugin)
+--    source=error    status=504 => The upstream response time exceeds the timeout configured in Kong
+--                                  (seen as source=exit by Response plugin)
+--    source=service  status=XXX => Managed by the Response plugin
 ------------------------------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local soapFaultBody
@@ -430,7 +431,7 @@ kong.log.notice("**jerome get_source: " , kong.response.get_source(), " status: 
     if kong.ctx.shared.contentType.request ~= xmlgeneral.JSON then
       kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
       
-      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(plugin_conf.VerboseRequest, kong.ctx.shared.contentType.request)
+      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(xmlgeneral.RequestTypePlugin, plugin_conf.VerboseRequest, kong.ctx.shared.contentType.request)
       -- At this stage we cannot call 'kong.response.set_raw_body()' to change the body content
       -- but it will be done by 'body_filter' phase
       kong.response.set_header("Content-Length", #soapFaultBody)

@@ -198,7 +198,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -212,7 +212,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
       </detail>
@@ -226,7 +226,7 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_2_0_Error_Verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. compilation error. xsl:version: only 1.1 features are supported</errorMessage>
       </detail>
@@ -240,9 +240,9 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Unauthorized</faultstring>
+      <faultstring>Request processing %- Unauthorized</faultstring>
       <detail>
-        <errorMessage>HTTP Error code is 401</errorMessage>
+        <errorMessage>HTTP Error code backend is 401</errorMessage>
         <backendHttpCode>401</backendHttpCode>
       </detail>
     </soap:Fault>
@@ -255,9 +255,9 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>An invalid response was received from the upstream server</faultstring>
+      <faultstring>Request processing %- An invalid response was received from the upstream server</faultstring>
       <detail>
-        <errorMessage>HTTP Error code is 502</errorMessage>
+        <errorMessage>HTTP Error code backend is 502</errorMessage>
         <backendHttpCode>502</backendHttpCode>
       </detail>
     </soap:Fault>
@@ -415,7 +415,7 @@ s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/" xm
 ]]
 
 request_common.calculator_Request_XSD_VALIDATION_Failed_shortened = [[
-<faultstring>Request %- XSD validation failed</faultstring>
+<faultstring>Request processing %- XSD validation failed</faultstring>
 ]]
 
 request_common.calculator_Request_XSD_VALIDATION_Failed = [[
@@ -424,7 +424,7 @@ request_common.calculator_Request_XSD_VALIDATION_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -438,7 +438,7 @@ request_common.calculator_Request_XSD_VALIDATION_Failed_Client = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -452,7 +452,7 @@ request_common.calculator_Request_XSD_SOAP_INPUT_VALIDATION_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.</errorMessage>
       </detail>
@@ -466,7 +466,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_INPUT_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid WSDL/XSD schema. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
       </detail>
@@ -480,7 +480,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_Client_verb
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope2, Error code: 1845, Line: 1, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope2': No matching global declaration available for the validation root.</errorMessage>
       </detail>
@@ -494,7 +494,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Invalid_Namespace_
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope, Error code: 1845, Line: 2, Message: Element '{http://INVALID.NAMESPACE.org/}Envelope': No matching global declaration available for the validation root.</errorMessage>
       </detail>
@@ -508,7 +508,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_with_no_11_
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XSD schema. Unable to find schema for SOAP 1.1</errorMessage>
       </detail>
@@ -522,7 +522,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: intC, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}intC': This element is not expected. Expected is %( {http://tempuri.org/}intA %).</errorMessage>
       </detail>
@@ -536,7 +536,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Add_Expected_intB_F
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Add, Error code: 1871, Line: 4, Message: Element '{http://tempuri.org/}Add': Missing child element%(s%). Expected is %( {http://tempuri.org/}intB %).</errorMessage>
       </detail>
@@ -550,7 +550,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_Subtract_Expected_i
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Subtract, Error code: 1871, Line: 4, Message: Element '{http://tempuri.org/}Subtract': Missing child element%(s%). Expected is %( {http://tempuri.org/}intB %).</errorMessage>
       </detail>
@@ -564,7 +564,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_empty_SOAP_Failed_
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XML input. Error code: 4, Line: 1, Message: Document is empty</errorMessage>
       </detail>
@@ -578,7 +578,7 @@ request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_NO_soapBody_Failed
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Envelope, Error code: 1871, Line: ., Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}Envelope': Missing child element%(s%). Expected is one of %( {http://schemas.xmlsoap.org/soap/envelope/}Header, {http://schemas.xmlsoap.org/soap/envelope/}Body %).</errorMessage>
       </detail>
@@ -592,7 +592,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_no_operation_Failed_Client_
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid XML input. Unable to find the Operation tag in the 'soap:Body'</errorMessage>
       </detail>
@@ -606,7 +606,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_Power_Failed_Client_verbose
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Power, Error code: 1845, Line: 4, Message: Element '{http://tempuri.org/}Power': No matching global declaration available for the validation root.</errorMessage>
       </detail>
@@ -620,7 +620,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid WSDL/XSD schema. The root node of the imported WSDL definition is not Less Than wsdl:definitions Greater Than nor Less Than wsdl:description Greater Than</errorMessage>
       </detail>
@@ -634,7 +634,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'Less Than wsdl:types Greater Than'</errorMessage>
       </detail>
@@ -668,7 +668,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(after XSD validation%)</faultstring>
       <detail>
         <errorMessage>SOAP/XML process failure</errorMessage>
       </detail>
@@ -682,7 +682,7 @@ request_common.calculator_Request_XSLT_AFTER_Failed_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(after XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(after XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
       </detail>
@@ -733,7 +733,7 @@ request_common.calculator_Request_XSLT_AFTER_ROUTING_BY_XPATH_Failed_503_verbose
       <faultcode>soap:Server</faultcode>
       <faultstring>The upstream server is currently unavailable</faultstring>
       <detail>
-        <errorMessage>HTTP Error code is 503</errorMessage>
+        <errorMessage>HTTP Error code backend is 503</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1075,7 +1075,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_missing_intB_Add_Fa
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Error Node: Add, Error code: 1871, Line: 4, Message%: Element '{http://tempuri.org/}Add': Missing child element%(s%). Expected is %( {http://tempuri.org/}intB %).</errorMessage>
       </detail>

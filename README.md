@@ -121,7 +121,9 @@ WSDL and XSD definitions can import other XSD schemas by using `<xsd:import>` ta
   - File, example: `<import schemaLocation ="/usr/local/FaultMessage.xsd"/>`
     - The file name must not include space or tabulation
 
-In the event the `schemaLocation` attribute is nof defined in the `<import>` tag, the `wsdlApiSchemaForceSchemaLocation` can be enabled to automatically add the `schemaLocation` in <import> tag
+The XSD schema import is delivered by the `libxml2` - External entities.
+
+In the event the `schemaLocation` attribute is nof defined in the `<import>` tag, the `wsdlApiSchemaForceSchemaLocation` can be enabled to automatically add the `schemaLocation` in <import> tag.
 
 The plugins manage both types of import:
   - URL (`http(s)://`): the plugins synchronously or asynchronously download the XSD schema
@@ -139,6 +141,8 @@ The XSD schema External entity is processed in this order:
 WSDL definitions can import other WSDL definitions by using `<wsdl:import>` tag and `location` attribute. By enabling `config.wsdlApiRecursiveWsdlImport` the plugins recursively import the WSDL dependencies and merge all of them in a new main WSDL
 
 Example: `<wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>`
+
+The WSDL schema import is delivered by the plugin itself.
 
 The WSDL import is processed in this order:
   1) Get the WSDL raw content from the plugin configuration (defined in `config.xsdApiSchemaInclude`)
@@ -166,7 +170,9 @@ In case of misconfiguration or error from the Backend Service, the Plugins send 
 
 If `Verbose` is enabled:
 - the `<errorMessage>` contains the detail of the error
-- the `soap-xml-response-handling` adds a `<backendHttpCode>` with the Http status code of the Backend Service
+- the <backendHttpCode>` contains the Http status code:
+  - The `soap-xml-request-handling` retrieves the error code from other plugins (such as `401`, returned by the apikey plugin) or from a technical problem preventing access to the upstream server (invalid hostname or TCP port)
+  - the `soap-xml-response-handling` has the same behavior as `soap-xml-request-handling` and also retrieves the error code of the upstream server
 
 <a id="configuration_reference"></a>
 
@@ -453,7 +459,7 @@ Use command defined at step #3, **change** `<soap:Envelope>` by **`<soap:Envelop
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>Request - XSD validation failed</faultstring>
+<faultstring>Request processing - XSD validation failed</faultstring>
 <detail>
   <errorMessage>Error Node: EnvelopeKong, Error code: 1845, Line: 2, Message: Element '{http://schemas.xmlsoap.org/soap/envelope/}EnvelopeKong': No matching global declaration available for the validation root.</errorMessage>
 <detail/>
@@ -463,7 +469,7 @@ Use command defined at step #3, **remove ```<intA>5</intA>```** => there is an e
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>Request - XSD validation failed</faultstring>
+<faultstring>Request processing - XSD validation failed</faultstring>
 <detail>
   <errorMessage>Error Node: Add, Error code: 1871, Line: 1, Message: Element '{http://tempuri.org/}Add': Missing child element(s). Expected is ( {http://tempuri.org/}intA ).</errorMessage>
 <detail/>
@@ -943,7 +949,7 @@ Use previous command defined, **remove ```<intA>5</intA>```** => there is an err
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>Request - XSD validation failed</faultstring>
+<faultstring>Request processing - XSD validation failed</faultstring>
 <detail>
    <errorMessage>Error Node: intB, Error code: 1871, Line: 5, Message: Element '{http://tempuri.org/}intB': This element is not expected. Expected is ( {http://tempuri.org/}intA ). </errorMessage>
 <detail/>
@@ -1206,7 +1212,7 @@ The expected result is:
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>Request - XSD validation failed</faultstring>
+<faultstring>Request processing - XSD validation failed</faultstring>
 <detail>
    <errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</errorMessage>
 </detail>
@@ -1215,7 +1221,7 @@ HTTP/1.1 500 Internal Server Error
 ```xml
 HTTP/1.1 500 Internal Server Error
 ...
-<faultstring>Request - XSD validation failed</faultstring>
+<faultstring>Request processing - XSD validation failed</faultstring>
 <detail>
    <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</errorMessage>
 </detail>

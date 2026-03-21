@@ -37,9 +37,7 @@ for _, strategy in helpers.all_strategies() do
     describe("libxml+libxslt |", function()
 
       lazy_setup(function()
-        -- Change the request body size for testing large body requests
-        helpers.setenv("KONG_STREAM_LISTEN", "0.0.0.0:9999")
-
+        
         -- A BluePrint gives us a helpful database wrapper to
         --    manage Kong Gateway entities directly.
         -- This function also truncates any existing data in an existing db.
@@ -75,7 +73,7 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
           nginx_conf = "spec/fixtures/custom_nginx.template",
-          --stream_listen = "0.0.0.0:9999",
+          stream_listen = "0.0.0.0:9999",
           -- make sure our plugin gets loaded
           plugins = "bundled," .. PLUGIN_NAME
           }))       
