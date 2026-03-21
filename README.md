@@ -1640,7 +1640,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `WSDL Validation`: provided a support of `<wsdl:import>` tag to recursively import the wsdl dependencies
   - Validation of `SOAPAction` Http header: Changed the `xmlCtxtReadMemory` to `xmlReadMemory` for improving performance
 - v1.4.6:
-  - Bumped to Kong Gateway v3.13.0.2
   - `soap-xml-response-handling` with `Forward Proxy Advanced` plugin:
     - Added a control to avoid a Lua exception when `get_raw_body()` is called: it happens when the `Forward Proxy Advanced` and `soap-xml-response-handling` plugins are configured simultaneously on the same service or route
     - Added a topic in `Known Limitations` section
