@@ -170,9 +170,9 @@ In case of misconfiguration or error from the Backend Service, the Plugins send 
 
 If `Verbose` is enabled:
 - the `<errorMessage>` contains the detail of the error
-- the <backendHttpCode>` contains the Http status code:
-  - The `soap-xml-request-handling` retrieves the error code from other plugins (such as `401`, returned by the apikey plugin) or from a technical problem preventing access to the upstream server (invalid hostname or TCP port)
-  - the `soap-xml-response-handling` has the same behavior as `soap-xml-request-handling` and also retrieves the error code of the upstream server
+- the `<backendHttpCode>` contains the Http status code:
+  - `soap-xml-request-handling` retrieves the error code from other plugins (such as `401`, returned by the apikey plugin) or from a technical problem preventing access to the upstream server (invalid hostname or TCP port)
+  - `soap-xml-response-handling` has the same behavior as `soap-xml-request-handling` and also retrieves the error code of the upstream server
 
 <a id="configuration_reference"></a>
 

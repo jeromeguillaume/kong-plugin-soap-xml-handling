@@ -355,9 +355,7 @@ end
 -- Executed for every request from a client and before it is being proxied to the upstream service
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
-  
-  kong.log.notice("**jerome: access")
-  
+    
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
@@ -412,8 +410,7 @@ end
 ------------------------------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local soapFaultBody
-kong.log.notice("**jerome: header_filter")
-kong.log.notice("**jerome get_source: " , kong.response.get_source(), " status: ", kong.response.get_status()) 
+
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
   
@@ -463,7 +460,7 @@ end
 -- This function can be called multiple times
 ------------------------------------------------------------------------------------------------------------------
 function plugin:body_filter(plugin_conf)
-  kong.log.notice("**jerome: body_filter")
+
   -- In case of error set by other plugin (like Rate Limiting) or by the Service itself (timeout)
   --  => reformat the JSON message to SOAP/XML Fault (only if the Content-Type of the request is not a JSON)
   if  kong.ctx.shared.xmlSoapHandlingFault and 
@@ -471,6 +468,7 @@ function plugin:body_filter(plugin_conf)
       kong.ctx.shared.contentType.request ~= xmlgeneral.JSON then
       kong.response.set_raw_body(kong.ctx.shared.xmlSoapHandlingFault.soapEnvelope)
   end
+  
 end
 
 return plugin

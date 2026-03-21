@@ -273,10 +273,7 @@ function plugin:header_filter(plugin_conf)
   local soapDeflated
   local err
   
-  kong.log.notice("**jerome: header_filter")
-  kong.log.notice("**jerome get_source: " , kong.response.get_source(), " status: ", kong.response.get_status()) 
-
-
+  
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
 
