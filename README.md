@@ -1644,3 +1644,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `soap-xml-response-handling` with `Forward Proxy Advanced` plugin:
     - Added a control to avoid a Lua exception when `get_raw_body()` is called: it happens when the `Forward Proxy Advanced` and `soap-xml-response-handling` plugins are configured simultaneously on the same service or route
     - Added a topic in `Known Limitations` section
+  - Error management:
+    - Changed the fault message
+    - Forced the Http status code to 500 in the event there is an error

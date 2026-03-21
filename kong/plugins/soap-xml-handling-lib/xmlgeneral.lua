@@ -371,7 +371,7 @@ function xmlgeneral.detectContentType (contentType)
   elseif string.find(lowerContentType, "^%s*application/soap%+xml") then
     rc = xmlgeneral.schemaTypeSOAP1_2
   -- JSON
-  elseif string.match(lowerContentType, "^%s*application/json") or string.match(lowerContentType, "^%s*application/vnd.api%+json") then
+  elseif string.find(lowerContentType, "^%s*application/json") or string.find(lowerContentType, "^%s*application/vnd.api%+json") then
     rc = xmlgeneral.JSON
   end
   
