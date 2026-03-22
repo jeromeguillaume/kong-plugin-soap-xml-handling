@@ -44,16 +44,11 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     xmlPtrDoc, soapEnvelopeTransformed, xmlDeclaration, errMessage, soapFaultCode = 
       xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
                               pluginId,
-                              plugin_conf.ExternalEntityLoader_CacheTTL,
-                              plugin_conf.filePathPrefix,
+                              plugin_conf,
                               xmlgeneral.xsltBeforeXSD,
-                              plugin_conf.xsltLibrary,
-                              plugin_conf.xsltParams,
-                              xmlPtrDoc,                                                                                  
+                              xmlPtrDoc,
                               soapEnvelopeTransformed,
-                              plugin_conf.xsltTransformBefore,
-                              plugin_conf.VerboseResponse,
-                              plugin_conf.xsltRemoveEmptyNameSpace)
+                              plugin_conf.xsltTransformBefore)
 
     if errMessage ~= nil then
       -- Format a Fault code to Client
@@ -75,19 +70,18 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
 
     -- Validate the SOAP envelope with its schema
     xmlPtrDoc, errMessage, XMLXSDMatching, soapFaultCode = 
-      xmlgeneral.XMLValidateWithXSD ( xmlgeneral.ResponseTypePlugin, 
+      xmlgeneral.XMLValidateWithXSD ( xmlgeneral.ResponseTypePlugin,
                                       pluginId,
-                                      plugin_conf.ExternalEntityLoader_CacheTTL,                                                                               
-                                      plugin_conf.filePathPrefix,
-                                      xmlgeneral.schemaTypeSOAP_All, 
-                                      1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (stands for 1st XSD entry)
+                                      plugin_conf,
+                                      xmlgeneral.schemaTypeSOAP_All,
+                                      1, -- SOAP schema is based on XSD and not WSDL, so it's always '1' (for 1st XSD entry)
                                       xmlPtrDoc,
-                                      soapEnvelopeTransformed, 
+                                      soapEnvelopeTransformed,
                                       plugin_conf.xsdSoapSchema,
-                                      plugin_conf.xsdSoap12Schema, 
-                                      plugin_conf.VerboseResponse, 
-                                      false,
-                                      plugin_conf.ExternalEntityLoader_Async)
+                                      plugin_conf.xsdSoap12Schema,
+                                      false
+                                      )
+
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -107,18 +101,14 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     xmlPtrDoc, errMessage, soapFaultCode = 
       xmlgeneral.XMLValidateWithWSDL (xmlgeneral.ResponseTypePlugin,
                                       pluginId,
-                                      plugin_conf.ExternalEntityLoader_CacheTTL,
-                                      plugin_conf.filePathPrefix,
+                                      plugin_conf,
                                       xmlgeneral.schemaTypeAPI,
                                       xmlPtrDoc,
                                       soapEnvelopeTransformed,
                                       plugin_conf.xsdApiSchema,
-                                      plugin_conf.VerboseResponse,
-                                      false,
-                                      plugin_conf.ExternalEntityLoader_Async,
-                                      plugin_conf.wsdlApiSchemaForceSchemaLocation,
-                                      plugin_conf.wsdlApiRecursiveWsdlImport
+                                      false
                                     )
+
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -133,20 +123,16 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If there is 'XSLT Transformation After XSD' configuration then
   --    => Apply XSL Transformation (XSLT) After
   if soapFaultBody == nil and plugin_conf.xsltTransformAfter then    
-    xmlPtrDoc, soapEnvelopeTransformed, xmlDeclaration, errMessage, soapFaultCode =
+    xmlPtrDoc, soapEnvelopeTransformed, xmlDeclaration, errMessage, soapFaultCode =    
       xmlgeneral.XSLTransform(xmlgeneral.ResponseTypePlugin,
                               pluginId,
-                              plugin_conf.ExternalEntityLoader_CacheTTL,
-                              plugin_conf.filePathPrefix,
+                              plugin_conf,
                               xmlgeneral.xsltAfterXSD,
-                              plugin_conf.xsltLibrary,
-                              plugin_conf.xsltParams,
                               xmlPtrDoc,
                               soapEnvelopeTransformed,
-                              plugin_conf.xsltTransformAfter,
-                              plugin_conf.VerboseResponse,
-                              plugin_conf.xsltRemoveEmptyNameSpace)
-    
+                              plugin_conf.xsltTransformAfter)
+
+
     if errMessage ~= nil then
       -- Format a Fault code to Client
       soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
@@ -159,9 +145,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
 
   -- If there is no error
   --    AND
-  -- If an XSLT Transformation has been applied 
-  --    AND 
-  -- If there is no need to Remove Empty NameSpace (that has been previously lead to an 'xmlDump')
+  -- If an XSLT Transformation has been applied
+  --    AND
+  -- If there is no need to Remove Empty NameSpace
   --    => Dump the transformed SOAP envelope
   if soapFaultBody == nil and 
       (plugin_conf.xsltTransformBefore or plugin_conf.xsltTransformAfter) and

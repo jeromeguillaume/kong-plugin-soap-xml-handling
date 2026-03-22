@@ -557,14 +557,9 @@ end
 local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_entries)
   local errMessage
   local soapFaultCode
-  local child
-  local WSDL
-  local verbose
+  local wsdl_xsd
   local xsdHashKey
-  local filePathPrefix
   local xmlPtrDoc
-  local wsdlApiSchemaForceSchemaLocation
-  local wsdlApiRecursiveWsdlImport
   local rc = true
 
   kong.log.debug("asyncPrefetch_Schema_Validation_callback - Begin - PluginType:", conf.pluginType)
@@ -580,13 +575,8 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
     
     -- If the XSD 'hashKey' is found in the 'entityLoader.hashKeys'
     if xsdHashKey then
-      WSDL                              = prefetchConf_entry.xsdSchemaInclude
-      verbose                           = prefetchConf_entry.VerboseRequest
-      child                             = prefetchConf_entry.child
-      filePathPrefix                    = prefetchConf_entry.filePathPrefix
-      wsdlApiSchemaForceSchemaLocation  = prefetchConf_entry.wsdlApiSchemaForceSchemaLocation
-      wsdlApiRecursiveWsdlImport        = prefetchConf_entry.wsdlApiRecursiveWsdlImport
-
+      wsdl_xsd = prefetchConf_entry.wsdl_xsd
+      
       -- If the prefetch has been successfully done 
       if  xsdHashKey.prefetchStatus == xmlgeneral.prefetchStatusOk then
         kong.log.debug("asyncPrefetch_Schema_Validation_callback - prefetchStatus='Ok' - Nothing to do")
@@ -599,7 +589,7 @@ local asyncPrefetch_Schema_Validation_callback = function(conf, prefetchConf_ent
 
       -- Prefetch External Entities: just retrieve the URL of XSD External entities (not the XSD content)
       -- The 'asyncDownloadEntities' function is in charge of downloading the XSD content
-      xmlPtrDoc, errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.pluginType, nil, conf.cacheTTL, filePathPrefix, child, nil, nil, WSDL, verbose, true, true, wsdlApiSchemaForceSchemaLocation, wsdlApiRecursiveWsdlImport)
+      xmlPtrDoc, errMessage, soapFaultCode = xmlgeneral.XMLValidateWithWSDL (conf.pluginType, nil, prefetchConf_entry, prefetchConf_entry.child, nil, nil, wsdl_xsd, true)
       -- If the prefetch succeeded
       if not errMessage then
         xsdHashKey.prefetchStatus = xmlgeneral.prefetchStatusOk
@@ -646,9 +636,9 @@ end
 --  libxml -> Enable the prefetch Validation of SOAP Schema and WSDL/XSD Api Schemas
 --            It concerns the new ones and the existing schemas that previously failed
 ---------------------------------------------------------------------------------------
-function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, xsdSchemaInclude, child, queueName, queue_conf)
+function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType, wsdl_xsd, child, queueName, queue_conf)
 
-  local xsdHashKey = libxml2ex.hash_key(xsdSchemaInclude)
+  local xsdHashKey = libxml2ex.hash_key(wsdl_xsd)
   -- If it's the 1st time the XSD Schema is seen
   if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey] == nil then
     kong.log.debug("XSD_Validation_Prefetch: it's the 1st time the XSD Schema is seen, hashKey=", xsdHashKey)
@@ -682,12 +672,15 @@ function xmlgeneral.pluginConfigure_XSD_Validation_Prefetch (config, pluginType,
   -- If the Prefetch has the 'Init' status
   if kong.xmlSoapAsync.entityLoader.hashKeys[xsdHashKey].prefetchStatus == xmlgeneral.prefetchStatusInit then
     local prefetchConf = {
-      xsdSchemaInclude = xsdSchemaInclude,
-      VerboseRequest = config.VerboseRequest,
-      ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
-      xsdHashKey = xsdHashKey,
       child = child,
+      ExternalEntityLoader_Async  = config.ExternalEntityLoader_Async,
+      ExternalEntityLoader_CacheTTL = config.ExternalEntityLoader_CacheTTL,
+      ExternalEntityLoader_Timeout = config.ExternalEntityLoader_Timeout,
       filePathPrefix = config.filePathPrefix,
+      VerboseRequest = config.VerboseRequest,
+      VerboseResponse = config.VerboseResponse,
+      xsdHashKey = xsdHashKey,
+      wsdl_xsd = wsdl_xsd,
       wsdlApiSchemaForceSchemaLocation = config.wsdlApiSchemaForceSchemaLocation,
       wsdlApiRecursiveWsdlImport = config.wsdlApiRecursiveWsdlImport
     }
@@ -1022,14 +1015,18 @@ end
 ---------------------------------------------------
 -- libsaxon: Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, cacheTTL, filePathPrefix, xsltBeforeAfterXSD, xsltParams, XMLtoTransform, XSLT, verbose)
+function xmlgeneral.XSLTransform_libsaxon(pluginType, pluginId, pluginConf, xsltBeforeAfterXSD, XMLptrToTransform, XMLtoTransform, XSLT)
   local errMessage
   local xml_transformed_dump
   local context
   local errFaultCode
   local contentFile
-  local soapFaultCode = xmlgeneral.soapFaultCodeServer
-  
+  local soapFaultCode   = xmlgeneral.soapFaultCodeServer
+  local cacheTTL        = pluginConf.ExternalEntityLoader_CacheTTL
+  local filePathPrefix  = pluginConf.filePathPrefix
+  local verbose         = pluginConf.VerboseRequest or pluginConf.VerboseResponse               
+  local xsltParams      = pluginConf.xsltParams
+
   kong.log.debug ("XSLT transformation, BEGIN: ", XMLtoTransform)
 
   -- If the Pointers cache table is not initialized, return an error
@@ -1120,17 +1117,21 @@ end
 ---------------------------------------------------
 -- libxslt: Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform_libxslt(pluginType, pluginId, cacheTTL, filePathPrefix, xsltBeforeAfterXSD, xsltParams, XMLptrToTransform, XMLtoTransform, XSLT, verbose)
-  local errMessage  = nil
-  local err         = nil
-  local style       = nil
-  local xslt_doc    = nil
-  local errDump     = 0
+function xmlgeneral.XSLTransform_libxslt(pluginType, pluginId, pluginConf, xsltBeforeAfterXSD, XMLptrToTransform, XMLtoTransform, XSLT)
+  local errMessage            = nil
+  local err                   = nil
+  local style                 = nil
+  local xslt_doc              = nil
+  local errDump               = 0
   local xml_transformed_ptr   = nil
   local xmlNodePtrRoot        = nil
   local soapFaultCode         = xmlgeneral.soapFaultCodeServer
   local xml_doc               = XMLptrToTransform
   local xml_declaration       = nil
+  local cacheTTL              = pluginConf.ExternalEntityLoader_CacheTTL
+  local filePathPrefix        = pluginConf.filePathPrefix
+  local verbose               = pluginConf.VerboseRequest or pluginConf.VerboseResponse               
+  local xsltParams            = pluginConf.xsltParams
   
   if kong.configuration.log_level == "debug" then
     kong.log.debug("XSLT transformation, BEGIN: '", xmlgeneral.xmlDump(xml_doc, XMLtoTransform, nil, false) , "'")
@@ -1246,38 +1247,37 @@ end
 ---------------------------------------------------
 -- Transform XML with XSLT Transformation
 ---------------------------------------------------
-function xmlgeneral.XSLTransform(pluginType, pluginId, cacheTTL, filePathPrefix, xsltBeforeAfterXSD, xsltLibrary, xsltParams, XMLptrToTransform, XMLtoTransform, XSLT, verbose, xsltRemoveEmptyNameSpace)
+function xmlgeneral.XSLTransform(pluginType, pluginId, pluginConf, xsltBeforeAfterXSD, XMLptrToTransform, XMLtoTransform, XSLT)
   local errMessage
   local xml_declaration
   local xml_transformed_dump
   local xmlPtrTransformed
-  local soapFaultCode = xmlgeneral.soapFaultCodeServer
+  local soapFaultCode             = xmlgeneral.soapFaultCodeServer
+  local xsltLibrary               = pluginConf.xsltLibrary
+  local xsltRemoveEmptyNameSpace  = pluginConf.xsltRemoveEmptyNameSpace
   
   if xsltLibrary == 'libxslt' then
-    xmlPtrTransformed, xml_declaration, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libxslt(  pluginType,
-                                                                                                      pluginId,
-                                                                                                      cacheTTL,
-                                                                                                      filePathPrefix,
-                                                                                                      xsltBeforeAfterXSD,
-                                                                                                      xsltParams,
-                                                                                                      XMLptrToTransform,
-                                                                                                      XMLtoTransform,
-                                                                                                      XSLT,
-                                                                                                      verbose)    
+    xmlPtrTransformed, xml_declaration, errMessage, soapFaultCode = 
+      xmlgeneral.XSLTransform_libxslt(  pluginType,
+                                        pluginId,
+                                        pluginConf,
+                                        xsltBeforeAfterXSD,
+                                        XMLptrToTransform,
+                                        XMLtoTransform,
+                                        XSLT)
   elseif xsltLibrary == 'saxon' then
     -- If XMLtoTransform is a JSON type, we add a fake <InternalkongRoot> tag to be ingested as an XML
     if xmlgeneral.getBodyContentType(XMLtoTransform) == xmlgeneral.JSONContentTypeBody then
       XMLtoTransform = xmlgeneral.startInternalkongRoot .. XMLtoTransform .. xmlgeneral.endInternalkongRoot
     end
-    xml_transformed_dump, errMessage, soapFaultCode = xmlgeneral.XSLTransform_libsaxon(pluginType,
-                                                                                       pluginId,
-                                                                                       cacheTTL,
-                                                                                       filePathPrefix,
-                                                                                       xsltBeforeAfterXSD,
-                                                                                       xsltParams,
-                                                                                       XMLtoTransform,
-                                                                                       XSLT,
-                                                                                       verbose)
+    xml_transformed_dump, errMessage, soapFaultCode =
+      xmlgeneral.XSLTransform_libsaxon( pluginType,
+                                        pluginId,
+                                        pluginConf,
+                                        xsltBeforeAfterXSD,
+                                        XMLptrToTransform,
+                                        XMLtoTransform,
+                                        XSLT)
     -- There is no compatbility between the output of Saxon (which is a String) and the output pointer returned by 'xmlReadMemory' of libxml2
     xmlPtrTransformed = nil
   else
@@ -1659,24 +1659,30 @@ end
 ------------------------------
 -- Validate a XML with a WSDL
 ------------------------------
-function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePathPrefix, child, XMLptrToValidate, XMLtoValidate, WSDL, verbose, prefetch, async, forceSchemaLocation, recursiveWsdlImport)
-  local xml_doc           = nil
-  local xmlToValidate_doc = nil
-  local errMessage        = nil
-  local firstErrMessage   = nil
-  local firstCall         = false
-  local xsdSchema         = nil
-  local xmlNsXsdPrefix    = nil
-  local cacheWSDL         = nil
-  local wsdlNodeFound     = false
-  local typesNodeFound    = false
-  local validSchemaFound  = false
-  local XMLXSDMatching    = false
-  local currentNode       = ffi.NULL
-  local nodeName          = ""
-  local index             = 0
-  local schemaLocations   = nil
-  local soapFaultCode     = xmlgeneral.soapFaultCodeServer
+function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, pluginConf, child, XMLptrToValidate, XMLtoValidate, WSDL, prefetch)
+  local xml_doc             = nil
+  local xmlToValidate_doc   = nil
+  local errMessage          = nil
+  local firstErrMessage     = nil
+  local firstCall           = false
+  local xsdSchema           = nil
+  local xmlNsXsdPrefix      = nil
+  local cacheWSDL           = nil
+  local wsdlNodeFound       = false
+  local typesNodeFound      = false
+  local validSchemaFound    = false
+  local XMLXSDMatching      = false
+  local currentNode         = ffi.NULL
+  local nodeName            = ""
+  local index               = 0
+  local schemaLocations     = nil
+  local soapFaultCode       = xmlgeneral.soapFaultCodeServer
+  local async               = pluginConf.ExternalEntityLoader_Async
+  local cacheTTL            = pluginConf.ExternalEntityLoader_CacheTTL
+  local filePathPrefix      = pluginConf.filePathPrefix
+  local verbose             = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+  local forceSchemaLocation = pluginConf.wsdlApiSchemaForceSchemaLocation
+  local recursiveWsdlImport = pluginConf.wsdlApiRecursiveWsdlImport
 
   kong.log.debug("WSDL Validation, BEGIN PluginType:", pluginType, " child:", child, " prefetch:", tostring(prefetch), " async:", tostring(async))
   
@@ -1908,7 +1914,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
         end
       end
 
-    -- Else it's a not a WSDL it's a raw <xs:schema>
+    -- Else it's a not a WSDL it's a raw <xsd:schema>
     else
       currentNode = xmlNodePtrRoot
     end
@@ -1935,7 +1941,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
           errMessage = nil
          
           -- Validate the XML with the <xs:schema>'
-          xmlToValidate_doc, errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, index, XMLptrToValidate, XMLtoValidate, xsdSchema, nil, verbose, prefetch, async)
+          xmlToValidate_doc, errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, pluginConf, child, index, XMLptrToValidate, XMLtoValidate, xsdSchema, nil, prefetch)
                     
           -- If prefetch is enabled
           if prefetch then
@@ -1988,7 +1994,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, cacheTTL, filePat
         
         kong.log.debug ("Validation for schema #", index)
         
-        xmlToValidate_doc, errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, child, index, XMLptrToValidate, XMLtoValidate, xsdSchema, nil, verbose, prefetch, async)
+        xmlToValidate_doc, errMessage, XMLXSDMatching, soapFaultCode = xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, pluginConf, child, index, XMLptrToValidate, XMLtoValidate, xsdSchema, nil, prefetch)
         
         local msgDebug = errMessage or "Ok"
         kong.log.debug ("Validation for schema #", index, " RC_Message: '", msgDebug, "'")
@@ -2022,7 +2028,7 @@ end
 --------------------------------------
 -- Validate a XML with its XSD schema
 --------------------------------------
-function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePathPrefix, childInput, indexXSD, XMLptrToValidate, XMLtoValidate, XSDSchemaInput, XSDSchemaInput2, verbose, prefetch, async)
+function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, pluginConf, childInput, indexXSD, XMLptrToValidate, XMLtoValidate, XSDSchemaInput, XSDSchemaInput2, prefetch)
   local xmlToValidate_doc   = nil
   local errMessage          = nil
   local err                 = nil
@@ -2041,6 +2047,10 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, cacheTTL, filePath
   local i                   = 0
   local child               = nil
   local XSDSchema           = nil
+  local cacheTTL            = pluginConf.ExternalEntityLoader_CacheTTL
+  local filePathPrefix      = pluginConf.filePathPrefix
+  local verbose             = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+  local async               = pluginConf.ExternalEntityLoader_Async
 
   -- Prepare the error Message
   if childInput == xmlgeneral.schemaTypeSOAP_All then
@@ -2347,7 +2357,7 @@ end
 --------------------------------------------------------------------------------------------------------
 -- Get the 'SOAPAction' value from WSDL related to the Operation Name (retrieved from the SOAP Request)
 --------------------------------------------------------------------------------------------------------
-function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, WSDL, request_OperationName, xmlnsSOAPEnvelope_hRef, verbose, async)
+function xmlgeneral.getSOAPActionFromWSDL (pluginId, pluginConf, request_OperationName, xmlnsSOAPEnvelope_hRef)
 
   local wsdlDefinitions_type  = xmlgeneral.Unknown_WSDL
   local context               = nil
@@ -2378,6 +2388,11 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, cacheTTL, filePathPrefix, W
   local wsdlRequired_Value    = false
   local wsdl2_0_ActionFound   = false
   local rc                    = false
+  local cacheTTL              = pluginConf.ExternalEntityLoader_CacheTTL
+  local filePathPrefix        = pluginConf.filePathPrefix
+  local WSDL                  = pluginConf.xsdApiSchema
+  local verbose               = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+  local async                 = pluginConf.ExternalEntityLoader_Async
   
   -- If asnchronous download is enabled (the WSDL is not cached)
   if async then
@@ -2815,7 +2830,7 @@ end
 ------------------------------------
 -- Validate the 'SOAPAction' header
 ------------------------------------
-function xmlgeneral.validateSOAPAction_Header (pluginId, cacheTTL, filePathPrefix, SOAPptrToValidate, SOAPRequest, WSDL, SOAPAction_Header, verbose, async)
+function xmlgeneral.validateSOAPAction_Header (pluginId, pluginConf, SOAPptrToValidate, SOAPRequest)
   local i
   local temp
   local xmlWSDL_doc
@@ -2839,8 +2854,12 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, cacheTTL, filePathPrefi
   local wsdlRequired_Value    = false
   local soapBody_found        = false
   local wsdlDefinitions_found = false
-  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                        ffi.C.XML_PARSE_NOWARNING)
+  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR, ffi.C.XML_PARSE_NOWARNING)
+  local filePathPrefix        = pluginConf.filePathPrefix
+  local WSDL                  = pluginConf.xsdApiSchema
+  local SOAPAction_Header     = pluginConf.SOAPAction_Header
+  local verbose               = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+  
 
   -- If 'SOAPAction' header doesn't have to be validated 
   if SOAPAction_Header == xmlgeneral.SOAPAction_Header_No then
@@ -3003,13 +3022,10 @@ function xmlgeneral.validateSOAPAction_Header (pluginId, cacheTTL, filePathPrefi
   if not errMessage then
     wsdlSOAPAction_Header_Value, wsdlRequired_Value, errMessage = xmlgeneral.getSOAPActionFromWSDL(
                                                                     pluginId,
-                                                                    cacheTTL,
-                                                                    filePathPrefix,
-                                                                    WSDL, 
+                                                                    pluginConf,
                                                                     request_OperationName,
-                                                                    ffi.string(raw_namespaces[i].href),
-                                                                    verbose,
-                                                                    async)
+                                                                    ffi.string(raw_namespaces[i].href)
+                                                                  )
     if not errMessage then
       if  SOAPAction_Header_Value == nil then
         -- If the WSDL has soapActionRequired="true" attribute
@@ -3040,15 +3056,19 @@ end
 ---------------------------------------------
 -- Search an XPath and Compare it to a value
 ---------------------------------------------
-function xmlgeneral.RouteByXPath (pluginId, cacheTTL, XMLptrToSearch, XMLtoSearch, XPathRegisterNs, RouteXPathTargets, verbose)
-  local rcXpath         = 0
-  local rc              = false
-  local parserCtx       = nil
-  local context         = nil
-  local document_ptr    = XMLptrToSearch
-  local errMessage      = nil
-  local ptrsCacheTable  = nil
-
+function xmlgeneral.RouteByXPath (pluginId, pluginConf, XMLptrToSearch, XMLtoSearch)
+  local rcXpath           = 0
+  local rc                = false
+  local parserCtx         = nil
+  local context           = nil
+  local document_ptr      = XMLptrToSearch
+  local errMessage        = nil
+  local ptrsCacheTable    = nil
+  local cacheTTL          = pluginConf.ExternalEntityLoader_CacheTTL
+  local XPathRegisterNs   = pluginConf.RouteXPathRegisterNs
+  local RouteXPathTargets = pluginConf.RouteXPathTargets
+  local verbose           = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+  
   if kong.configuration.log_level == "debug" then
     kong.log.debug("RouteByXPath, BEGIN: XMLtoSearch:'", xmlgeneral.xmlDump(XMLptrToSearch, XMLtoSearch, nil) , "'")
   end
