@@ -101,6 +101,42 @@ response_common.calculator_Response_General_Failed_Backend_Http_source_service_4
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculator_Response_Http_source_exit_401_Error_verbose_with_Custom_Fault = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Client</faultcode>
+      <faultstring>**** My Error custom **** %('Response processing %- Unauthorized'%)</faultstring>
+      <detail><errorMessage>REDACTED</errorMessage><backendHttpCode>401</backendHttpCode></detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_General_Failed_Backend_Http_source_service_404_Error_verbose_with_Custom_Fault = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>**** My Error custom **** %('Response processing %- General process failed'%)</faultstring>
+      <detail><errorMessage>REDACTED</errorMessage><backendHttpCode>404</backendHttpCode></detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+response_common.calculator_Response_XSD_SOAP_invalid_definition_Failed_verbose_with_Custom_Fault = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>**** My Error custom **** %('Response processing %- XSD validation failed'%)</faultstring>
+      <detail><errorMessage>REDACTED</errorMessage><backendHttpCode>200</backendHttpCode></detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
 response_common.calculator_Response_XSLT_BEFORE = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -1144,6 +1180,59 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
+	local calculatorXSD_with_basic_auth_plugin_custom_fault_route = blue_print.routes:insert{
+    service = calculator_service,
+    paths = { "/calculatorXSD_with_basic_auth_plugin_custom_fault" }
+    }
+  blue_print.plugins:insert {
+    name = PLUGIN_NAME,
+    route = calculatorXSD_with_basic_auth_plugin_custom_fault_route,
+    config = {
+      VerboseResponse = true,
+			customFaultCode = request_common.customFaultCode,
+			customFaultXslt = request_common.customFault_XSLT			
+    }
+  }
+  blue_print.plugins:insert {
+    name = "basic-auth",
+    route = calculatorXSD_with_basic_auth_plugin_custom_fault_route,
+    config = {
+    } 
+  }
+
+	local calculatorXSD_upstream_returns_404_custom_fault_route = blue_print.routes:insert{
+		service = calculator_invalid_path_service,
+		paths = { "/calculatorXSD_upstream_returns_404_custom_fault_ko" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculatorXSD_upstream_returns_404_custom_fault_route,
+		config = {
+			VerboseResponse = true,
+			customFaultCode = request_common.customFaultCode,
+			customFaultXslt = request_common.customFault_XSLT,
+			ignoreProcessIfServiceHttpError = true,
+			xsdApiSchema = request_common.calculatorWSDL_no_import_multiple_xsd_ok
+		}
+	}
+
+	local calculator_xsd_soap_invalid_response_verbose_custom_fault_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorXSD_SOAP_invalid_response_verbose_custom_fault" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_xsd_soap_invalid_response_verbose_custom_fault_route,
+		config = {
+			VerboseResponse = true,
+			customFaultCode = request_common.customFaultCode,
+			customFaultXslt = request_common.customFault_XSLT,			
+			xsltLibrary = xsltLibrary,
+			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
+			xsdSoapSchema = response_common.calculator_Response_XSD_SOAP_invalid_definition
+		}
+	}
+
 	local calculator_XSLT_beforeXSD_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/localCalculatorXSLT_beforeXSD_ok" }
@@ -1878,6 +1967,54 @@ function response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_v
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_source_service_404_Error_verbose, body)
+end
+
+function response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_with_Custom_Fault_Ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_with_basic_auth_plugin_custom_fault", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_Http_source_exit_401_Error_verbose_with_Custom_Fault, body)
+end
+
+function response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_with_Custom_Fault_Ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_upstream_returns_404_custom_fault_ko", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = request_common.calculator_Full_Request,
+	})
+
+	-- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_General_Failed_Backend_Http_source_service_404_Error_verbose_with_Custom_Fault, body)
+end
+
+function response_common._5_6_XSD_Validation_Invalid_SOAP_response_with_verbose_with_Custom_Fault_Ko (assert, client)
+	-- invoke a test request
+	local r = client:post("/calculatorXSD_SOAP_invalid_response_verbose_custom_fault", {
+		headers = {
+			["Content-Type"] = "text/xml; charset=utf-8",
+		},
+		body = response_common.calculator_Request,
+	})
+
+	-- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	assert.matches(response_common.calculator_Response_XSD_SOAP_invalid_definition_Failed_verbose_with_Custom_Fault, body)
 end
 
 function response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)

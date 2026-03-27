@@ -286,7 +286,7 @@ ffi.cdef[[
         xsltDocumentPtr docList;		/* the include document list */
     
         /*
-         * General data on the style sheet document.
+         * General data on the stylesheet document.
          */
         xmlDocPtr doc;		/* the parsed XML stylesheet */
         xmlHashTablePtr stripSpaces;/* the hash table of the strip-space and

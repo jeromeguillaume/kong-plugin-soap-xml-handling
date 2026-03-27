@@ -57,9 +57,10 @@ Each handling is optional
     6. [Example (E): Request | Use a WSDL definition, which imports XSD schemas without schemaLocation](#Miscellaneous_example_E)
     7. [Example (F): Request | Use a WSDL definition, which imports other WSDL definitions with location atrribute](#Miscellaneous_example_F)
     7. [Example (G): Request and Response | XSLT 3.0 for JSON<->XML transformation with the saxon library](#Miscellaneous_example_G)
-    8. [Example (H): Request and Response | use a SOAP 1.2 (and SOAP 1.1) XSD definition and the calculator API XSD definition](#Miscellaneous_example_H)
-    9. [Example (I): Request | validate the SOAPAction Http header](#Miscellaneous_example_I)
+    8. [Example (H): Request and Response | Use a SOAP 1.2 (and SOAP 1.1) XSD definition and the calculator API XSD definition](#Miscellaneous_example_H)
+    9. [Example (I): Request | Validate the SOAPAction Http header](#Miscellaneous_example_I)
     10. [Example (J): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_J)
+    11. [Example (K): Request | Customize the SOAP Fault by applying an XSLT TRANSFORMATION](#Miscellaneous_example_K)
 8. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
 9. [Plugins Testing](#Plugins_Testing)
 10. [Known Limitations](#Known_Limitations)
@@ -94,12 +95,12 @@ Each handling is optional
 5) `XSLT TRANSFORMATION`:
     - Use `libxslt` for XSLT 1.0 (default XSLT library)
     - Use `saxon` for XSLT 2.0 and 3.0, especially to apply JSON <-> XML transformation
-    - Prefer disable `xsltRemoveEmptyNameSpace` for increasing performance. When the option is enabled it removes the `xmlns=""` in the XML trasformed by `XSLT`; it happens when an element, defined in the style sheet, has no namespace. But it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance
+    - Prefer disable `xsltRemoveEmptyNameSpace` for increasing performance. When the option is enabled it removes the `xmlns=""` in the XML trasformed by `XSLT`; it happens when an element, defined in the stylesheet, has no namespace. But it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance
 
 6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached:
     - A warning is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
-    - Despite this warning the Request plugin reads the file content and the regular process is achieved. The kong latency is increased due to I/O disk
+    - Despite this warning the Request plugin reads the file content (by using a blocking I/O) and the regular process is achieved. The kong latency is increased due to I/O disk and it can impact other pending requests
 
 7) It's recommended to enable `ignoreProcessIfServiceHttpError`: in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) the Response plugin ignores the SOAP/XML process and returns a generic SOAP Fault message
 
@@ -160,7 +161,7 @@ The WSDL import is processed in this order:
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Error management
-In case of misconfiguration or error from the Backend Service, the Plugins send to the Consumer a SOAP Fault (HTTP 500 Internal Server Error). The SOAP Version is first detected by analyzing the Content-Type request header, then parsed from the SOAP envelope. The SOAP Fault follows the W3C specification:
+In case of misconfiguration or error from the Backend Service, the Plugins send to the Consumer a SOAP Fault (HTTP 500 Internal Server Error). The SOAP Version is first detected by analyzing the Content-Type request header, then changed when SOAP envelope is parsed. The SOAP Fault follows the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
   - `<faultstring>`: name of the handling process of the plugin
   - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Backend Service)
@@ -202,7 +203,7 @@ If `Verbose` is enabled:
 |config.xsdSoap12SchemaInclude|N/A|For SOAP 1.2. See `xsdSoapSchemaInclude` description|
 |config.xsltLibrary|`libxslt`|Library name for `XSLT TRANSFORMATION`. Select `saxon` for supporting XSLT 2.0 or 3.0
 |config.xsltParams|N/A|Named parameter (`<xsl:param>`) to use in XSL schema. Used by `XSLT TRANSFORMATION` `BEFORE XSD` and `AFTER XSD`|
-|config.xsltRemoveEmptyNameSpace|`true`|Remove the `xmlns=""` in the XML transformed by `XSLT`. It happens when an element, defined in the style sheet, has no namespace. Therefore it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance|
+|config.xsltRemoveEmptyNameSpace|`true`|Remove the `xmlns=""` in the XML transformed by `XSLT`. It happens when an element, defined in the stylesheet, has no namespace. Therefore it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance|
 |config.xsltTransformAfter|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - AFTER XSD`. It can be a raw definition or a file name containing the definition|
 |config.xsltTransformBefore|N/A|`XSLT` definition used by `XSLT TRANSFORMATION - BEFORE XSD`. It can be a raw definition or a file name containing the definition|
 
@@ -740,7 +741,7 @@ Content-Encoding: gzip
 <a id="Miscellaneous_example_B"></a>
 
 ### Example (B): Request and Response | `WSDL VALIDATION`: use a WSDL definition, which imports XSD schemas from an external entity FILE (Example: `/usr/local/my.wsdl`)
-Call correctly `calculator`. The XSD schema of SOAP and WSDL of API content is read from the Kong file system
+Correctly call `calculator`. The XSD schema of SOAP and WSDL of API content is read from the Kong file system
 
 0) Place the following files on the Kong Gateway file system. Feel free to adapt the directory name:
   - [`/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd`](/spec/fixtures/calculator/2_6_soap11.xsd)
@@ -857,7 +858,7 @@ kubectl annotate ingress calculator-ingress konghq.com/plugins=calculator-soap-x
 <a id="Miscellaneous_example_D"></a>
 
 ### Example (D): Request | `WSDL VALIDATION`: use a WSDL definition, which imports an XSD schema from an external entity URL (i.e.: http(s)://)
-Call correctly `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
+Correctly call `calculator` and detect issue in the Request with a WSDL definition. The XSD schema content is not configured in the plugin itself but it's downloaded from an external entity. 
 In this example we use the Kong Gateway itself to serve the XSD schema (through the WSDL definition), see the import in `wsdl`
 ```xml
 <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/tempuri.org.request-response.xsd"/>
@@ -958,7 +959,7 @@ HTTP/1.1 500 Internal Server Error
 <a id="Miscellaneous_example_E"></a>
 
 ### Example (E): Request | Use a WSDL definition, which imports XSD schemas without `schemaLocation`
-Call correctly `calculator`. Validate the request with a WSDL that imports XSDs without `schemaLocation` attribute. As the WSDL expects `<ns_param_calc_c:intC>` and `<ns_param_calc_d:intD>` and `<ns_param_calc_e:intE>` that `calculator` doesn't know, an XSLT is used to remvove them. The `<ns_param_calc_*>` are imported without `schemaLocation`
+Correctly call `calculator`. Validate the request with a WSDL that imports XSDs without `schemaLocation` attribute. As the WSDL expects `<ns_param_calc_c:intC>` and `<ns_param_calc_d:intD>` and `<ns_param_calc_e:intE>` that `calculator` doesn't know, an XSLT is used to remvove them. The `<ns_param_calc_*>` are imported without `schemaLocation`
 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -1015,7 +1016,7 @@ The expected result is:
 <a id="Miscellaneous_example_F"></a>
 
 ### Example (F): Request | Use a WSDL definition, which imports other WSDL definitions with `location` atrribute
-Call correctly `calculator`. Validate the request with a WSDL that imports other WSDL definitions with the `<wsdl:import>` tag and its `location` attribute
+Correctly call `calculator`. Validate the request with a WSDL that imports other WSDL definitions with the `<wsdl:import>` tag and its `location` attribute
 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -1079,8 +1080,8 @@ See [SAXON.md](SAXON.md)
 
 <a id="Miscellaneous_example_H"></a>
 
-### Example (H): Request and Response | `SOAP 1.2` (and `SOAP 1.1`) `XSD VALIDATION`: use a `SOAP 1.2` `XSD` definition and the `calculator` API `XSD` definition
-Call correctly `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
+### Example (H): Request and Response | `SOAP 1.2` (and `SOAP 1.1`) `XSD VALIDATION`: Use a `SOAP 1.2` `XSD` definition and the `calculator` API `XSD` definition
+Correctly call `calculator` by using a `SOAP 1.2` enveloppe. The `SOAP 1.2` XSD imports `http://www.w3.org/2001/xml.xsd` schema. This XSD schema content is configured in the plugin itself and it isn't downloaded from an external entity
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins
 
 2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
@@ -1166,8 +1167,8 @@ The expected result is:
 ```
 <a id="Miscellaneous_example_I"></a>
 
-### Example (I): Request | `WSDL VALIDATION`: validate the `SOAPAction` Http header
-Call correctly `calculator` by setting the expected `SOAPAction` Http header. The header name depends of the SOAP version:
+### Example (I): Request | `WSDL VALIDATION`: Validate the `SOAPAction` Http header
+Correctly call `calculator` by setting the expected `SOAPAction` Http header. The header name depends of the SOAP version:
 - SOAP 1.1: `SOAPAction` Http header
 - SOAP 1.2: `action` in `Content-Type` Http header
 
@@ -1415,6 +1416,35 @@ The expected result is:
   </soapenv:Body>
 </soapenv:Envelope>
 ```
+
+<a id="Miscellaneous_example_K"></a>
+
+### Example (K): Request | Customize the SOAP Fault by applying an `XSLT TRANSFORMATION`
+Incorrectly call `calculator`. Customize the SOAP Fault and the Http status code
+
+```xml
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" />
+    </xsl:copy>
+  </xsl:template>
+  <xsl:variable name="backendHttpCode" select="//*[local-name()='backendHttpCode']"/>
+  <xsl:template match="//*[local-name()='faultstring']">
+    <faultstring>**** My Error custom **** ('<xsl:apply-templates select="@*|node()" />')</faultstring>
+  </xsl:template>
+  <xsl:template match="//*[local-name()='detail']">
+  	<detail>
+      <errorMessage>REDACTED</errorMessage>
+      <xsl:if test="$backendHttpCode!=''">
+        <backendHttpCode><xsl:value-of select="$backendHttpCode"/></backendHttpCode>
+	    </xsl:if>
+    </detail>
+  </xsl:template>
+</xsl:stylesheet>
+```
+
 <a id="W3C_Compatibility_Matrix"></a>
 
 ## W3C Compatibility Matrix
@@ -1622,7 +1652,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped to Kong Gateway v3.13.0.0
   - Removed the `stream_listen` limitation: it can be enabled without impacting the plugins' behavior
   - Improved the performance by drastically reduce the number of `xmlReadMemory`. In previous versions, the `xmlReadMemory` was made for each plugin action (`XSLT TRANSFORMATION`, `XSD VALIDATION`, `ROUTING BY XPATH`). Currently there is only one `xmlReadMemory` call per plugin instance
-  - `XSLT TRANSFORMATION`: added `xsltRemoveEmptyNameSpace` to enable/disable the deletion of `xmlns=""` automatically added in the transformed  XML; it concerns elements in the style sheet without namespace. In previous versions, this mechanism was provided by default without a way to disable it
+  - `XSLT TRANSFORMATION`: added `xsltRemoveEmptyNameSpace` to enable/disable the deletion of `xmlns=""` automatically added in the transformed  XML; it concerns elements in the stylesheet without namespace. In previous versions, this mechanism was provided by default without a way to disable it
   - `ROUTING BY XPATH`:
     - Checked correctly if `RouteXPathTargets` is empty; it avoids useless execution code
     - Added an error detection: return an error message to the client (`Failure to register NS` or `Context issue with xmlXPathNewContext`)
@@ -1643,6 +1673,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - `soap-xml-response-handling` with `Forward Proxy Advanced` plugin:
     - Added a control to avoid a Lua exception when `get_raw_body()` is called: it happens when the `Forward Proxy Advanced` and `soap-xml-response-handling` plugins are configured simultaneously on the same service or route
     - Added a topic in `Known Limitations` section
-  - Error management
-    - Changed the fault message
-    - Forced the Http status code to 500 in the event there is an error
+  - Enhanced the error management:
+    - Able to customize the Fault code and the Fault message (by using a stylesheet transformation)
+    - Forced the Http status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)

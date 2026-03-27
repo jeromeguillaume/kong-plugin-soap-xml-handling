@@ -69,7 +69,7 @@ services:
       retries: 10
 
   kong-bootstrap:
-    image: 'kong/kong-gateway:3.13.0.1'  # Kong Gateway image (default to latest version)
+    image: 'kong/kong-gateway:3.13.0.2'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
     container_name: kong-bootstrap
     networks:
@@ -84,8 +84,8 @@ services:
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
 
   kong-gateway-soap-xml-handling:
-    image: 'kong/kong-gateway:3.13.0.1'  # Main Kong Gateway Control Plane (default to latest version)
-    #image: 'jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.6-12.9'
+    image: 'kong/kong-gateway:3.13.0.2'  # Main Kong Gateway Control Plane (default to latest version)
+    #image: 'jeromeguillaume/kong-soap-xml:3.13.0.2-1.4.6-12.9'
     platform: linux/${ARCHITECTURE}
     container_name: kong-gateway-soap-xml-handling
     restart: on-failure

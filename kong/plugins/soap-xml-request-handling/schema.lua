@@ -10,8 +10,8 @@ return {
     { config = {
         type = "record",
         fields = {
-          { customErrorCode = { type = "integer", required = false, between = { 100, 599 } }, },
-          { customErrorTransform = { type = "string", required = false }, },
+          { customFaultCode = { type = "integer", required = false, between = { 100, 599 } }, },
+          { customFaultXslt = { type = "string", required = false }, },
           { ExternalEntityLoader_Async = { type = "boolean", default = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },

@@ -28,7 +28,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
   -- If the plugin is configured to ignore process in case of error then
   if responseStatus ~= 200 and plugin_conf.ignoreProcessIfServiceHttpError then
     -- Format a Fault code to Client
-    soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+    soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                pluginId,
+                                                plugin_conf,                                                  
                                                 xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                 xmlgeneral.ignoreIfServiceHttpError,
                                                 kong.ctx.shared.contentType.request,
@@ -52,7 +54,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
 
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -84,7 +88,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
 
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -111,7 +117,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
 
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -135,7 +143,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
 
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -156,7 +166,9 @@ function plugin:responseSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelopeTransformed, errMessage = xmlgeneral.xmlDump (xmlPtrDoc, nil, xmlDeclaration, plugin_conf.xsltRemoveEmptyNameSpace)
     if errMessage then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -240,11 +252,13 @@ end
 
 ------------------------------------------------------------------------------------------------------------
 -- Executed when all response headers bytes have been received from the upstream service
--- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
--- Examples of error:
+-- Also called when an error is set by the plugin itself (like not a valid body regarding its WSDL/XSD )
+-- or other plugin (like Rate Limiting) or by the Upstream service itself (timeout)
+--
 -- Examples of error:
 --    source=exit     status=200 => The request termination plugin returns a 200
 --    source=exit     status=401 => The apikey plugin (or another auth plugins) returns an error
+--    source=exit     status=500 => the plugin itself returns an error
 --    source=exit     status=503 => Kong can't reach the upstream hostname
 --    source=exit     status=502 => Upstream invalid port (seen as source=error by Request plugin)
 --    source=exit     status=504 => The upstream response time exceeds the timeout configured in Kong
@@ -258,7 +272,7 @@ function plugin:header_filter(plugin_conf)
   local soapEnvelope
   local soapDeflated
   local err
-  
+  local pluginId = kong.plugin.get_id()  
   
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
@@ -288,13 +302,14 @@ function plugin:header_filter(plugin_conf)
     -- Else the Request Content-Type is XML: we reformat the error messsage in SOAP/XML Fault
     else
       kong.log.debug("A pending error has been set by other plugin or by the Service itself: we format the error messsage in SOAP/XML Fault")
-      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(xmlgeneral.ResponseTypePlugin, plugin_conf.VerboseResponse, kong.ctx.shared.contentType.request)
+      local pluginId = kong.plugin.get_id()
+      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(xmlgeneral.ResponseTypePlugin, pluginId, plugin_conf, kong.ctx.shared.contentType.request)
       kong.response.clear_header("Content-Length")
       kong.response.set_header("Content-Type", xmlgeneral.getContentType(kong.ctx.shared.contentType.request))
       -- This code raises an unexpected error in Kong log, for instance: 
       --    "[error] ... atempt to set status 400 via ngx.exit after sending out the response status 500
       -- see: https://konghq.atlassian.net/browse/FTI-6970
-      kong.response.set_status(xmlgeneral.HTTPServerCodeSOAPFault)
+      kong.response.set_status(plugin_conf.customFaultCode or xmlgeneral.HTTPServerCodeSOAPFault)
     end
   else
     -- Get SOAP Envelope from the Body response
@@ -311,7 +326,9 @@ function plugin:header_filter(plugin_conf)
     else
       -- see: https://konghq.atlassian.net/browse/FTI-7359
       kong.log.warn("The service body with buffered proxying is not available. Possible conflict with other plugins like 'Forward Proxy Advanced'")
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   xmlgeneral.unableToGetBodyResponse,
                                                   kong.ctx.shared.contentType.request,
@@ -326,7 +343,9 @@ function plugin:header_filter(plugin_conf)
       local soapInflated, err = KongGzip.inflate_gzip(soapEnvelope)
       if err then
         err = "Failed to inflate the gzipped SOAP/XML Body: " .. err
-        soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+        soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                    pluginId,
+                                                    plugin_conf,                                                  
                                                     xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                     err,
                                                     kong.ctx.shared.contentType.request,
@@ -337,7 +356,9 @@ function plugin:header_filter(plugin_conf)
     -- If there is a 'Content-Encoding' type that is not supported (by 'KongGzip')
     elseif kong.response.get_header("Content-Encoding") then
       err = "Content-encoding of type '" .. kong.response.get_header("Content-Encoding") .. "' is not supported"
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseResponse,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.ResponseTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   err,
                                                   kong.ctx.shared.contentType.request,
@@ -365,7 +386,7 @@ function plugin:header_filter(plugin_conf)
       -- This code raises an unexpected error in Kong log, for instance: 
       --    "[error] ... atempt to set status 400 via ngx.exit after sending out the response status 500
       -- see: https://konghq.atlassian.net/browse/FTI-6970
-      kong.response.set_status(xmlgeneral.HTTPServerCodeSOAPFault)
+      kong.response.set_status(plugin_conf.customFaultCode or xmlgeneral.HTTPServerCodeSOAPFault)
     else
       -- When another plugin (like Rate Limiting) or 
       -- the Service itself (timeout) has already raised an error: we don't change the HTTP Error code

@@ -204,14 +204,26 @@ for _, strategy in helpers.all_strategies() do
 				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
 			end)
 
-			it("6|XSD Validation - 'basic_auth' plugin (401 | source=exit) with Verbose", function()
+			it("6|XSD Validation - 'basic_auth' plugin (401 | source=exit) with Verbose - Ko", function()
 				response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_Ko (assert, client)
 			end)			
 
-			it("6|XSD Validation - Upstream returns Not found (404 | source=service) with Verbose", function()
+			it("6|XSD Validation - Upstream returns Not found (404 | source=service) with Verbose - Ko", function()
 				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_Ko (assert, client)
 			end)
+
+			it("6|XSD Validation - 'basic_auth' plugin (401 | source=exit) with Verbose with Custom Fault - Ko", function()
+				response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+
+			it("6|XSD Validation - Upstream returns Not found (404 | source=service) with Verbose with Custom Fault - Ko", function()
+				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
 			
+			it("5+6|XSD Validation - Invalid SOAP response with verbose - Ko", function()
+				response_common._5_6_XSD_Validation_Invalid_SOAP_response_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+
 			it("6|WSDL Validation with Forward Proxy plugin - Ko", function()
 				response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_Ko (assert, client)
 			end)

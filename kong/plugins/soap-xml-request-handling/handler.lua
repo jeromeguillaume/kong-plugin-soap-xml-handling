@@ -54,7 +54,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     end
 
     if errMessage then
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -77,7 +79,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.BeforeXSD,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -115,7 +119,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
                                       )
     if errMessage ~= nil then
         -- Format a Fault code to Client
-        soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+        soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                    pluginId,
+                                                    plugin_conf,                                                    
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage,
                                                     kong.ctx.shared.contentType.request,
@@ -143,7 +149,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     
     if errMessage ~= nil then
         -- Format a Fault code to Client
-        soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+        soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                    pluginId,
+                                                    plugin_conf,                                                  
                                                     xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                     errMessage,
                                                     kong.ctx.shared.contentType.request,
@@ -164,7 +172,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSDError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -187,7 +197,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
 
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XSLTError .. xmlgeneral.AfterXSD,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -208,7 +220,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     
     if errMessage ~= nil then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.XPathRoutingError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -272,7 +286,9 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
     soapEnvelopeTransformed, errMessage = xmlgeneral.xmlDump (xmlPtrDoc, nil, xmlDeclaration, plugin_conf.xsltRemoveEmptyNameSpace)
     if errMessage then
       -- Format a Fault code to Client
-      soapFaultBody = xmlgeneral.formatSoapFault (plugin_conf.VerboseRequest,
+      soapFaultBody = xmlgeneral.formatSoapFault (xmlgeneral.RequestTypePlugin,
+                                                  pluginId,
+                                                  plugin_conf,                                                  
                                                   xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. xmlgeneral.GeneralError,
                                                   errMessage,
                                                   kong.ctx.shared.contentType.request,
@@ -330,7 +346,7 @@ end
 -- Executed for every request from a client and before it is being proxied to the upstream service
 ---------------------------------------------------------------------------------------------------
 function plugin:access(plugin_conf)
-    
+  
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
@@ -356,9 +372,10 @@ function plugin:access(plugin_conf)
       }
 
       -- Return a Fault code to Client
-      return xmlgeneral.returnSoapFault (soapFaultCode,                    
-                                        soapFaultBody,
-                                        kong.ctx.shared.contentType.request
+      return xmlgeneral.returnSoapFault ( plugin_conf,
+                                          soapFaultCode,                    
+                                          soapFaultBody,
+                                          kong.ctx.shared.contentType.request
                                         )
   end
 
@@ -372,11 +389,13 @@ end
 
 ------------------------------------------------------------------------------------------------------------
 -- Executed when all response headers bytes have been received from the upstream service
--- Also called when an error is set by other plugin (like Rate Limiting) or by the Service itself (timeout)
+-- Also called when an error is set by the plugin itself (like not a valid body regarding its WSDL/XSD )
+-- or other plugin (like Rate Limiting) or by the Upstream service itself (timeout)
 --
 -- Examples of error:
 --    source=exit     status=200 => The request termination plugin returns a 200
 --    source=exit     status=401 => The apikey plugin (or another auth plugins) returns an error
+--    source=exit     status=500 => the plugin itself returns an error
 --    source=exit     status=503 => Kong can't reach the upstream hostname
 --    source=error    status=502 => Upstream invalid port (seen as source=exit by Response plugin)
 --    source=error    status=504 => The upstream response time exceeds the timeout configured in Kong
@@ -385,6 +404,7 @@ end
 ------------------------------------------------------------------------------------------------------------
 function plugin:header_filter(plugin_conf)
   local soapFaultBody
+  local pluginId = kong.plugin.get_id()
 
   -- If needed: initialize the contentType table for storing the Content-Type of the Request
   xmlgeneral.initializeContentType ()
@@ -403,7 +423,7 @@ function plugin:header_filter(plugin_conf)
     if kong.ctx.shared.contentType.request ~= xmlgeneral.JSON then
       kong.log.debug("A pending error has been set by other plugin or by the service itself: we format the error messsage in SOAP/XML Fault")
       
-      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(xmlgeneral.RequestTypePlugin, plugin_conf.VerboseRequest, kong.ctx.shared.contentType.request)
+      soapFaultBody = xmlgeneral.addHttpErorCodeToSoapFault(xmlgeneral.RequestTypePlugin, pluginId, plugin_conf, kong.ctx.shared.contentType.request)
       -- At this stage we cannot call 'kong.response.set_raw_body()' to change the body content
       -- but it will be done by 'body_filter' phase
       kong.response.set_header("Content-Length", #soapFaultBody)
@@ -411,7 +431,7 @@ function plugin:header_filter(plugin_conf)
       -- This code raises an unexpected error in Kong log, for instance: 
       --    "[error] ... atempt to set status 500 via ngx.exit after sending out the response status 504
       -- see: https://konghq.atlassian.net/browse/FTI-6970
-      kong.response.set_status(xmlgeneral.HTTPServerCodeSOAPFault)
+      kong.response.set_status(plugin_conf.customFaultCode or xmlgeneral.HTTPServerCodeSOAPFault)
     end
 
     -- Set the Global Fault Code to the "Request and Response SOAP/XML handling" plugins 

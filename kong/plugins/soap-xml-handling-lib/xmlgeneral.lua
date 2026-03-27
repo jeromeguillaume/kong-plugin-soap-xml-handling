@@ -6,6 +6,7 @@ local lfs               = require("lfs")
 local libxml2ex         = require("kong.plugins.soap-xml-handling-lib.libxml2ex")
 local libxslt           = require("kong.plugins.soap-xml-handling-lib.libxslt")
 local libsaxon4kong     = require("kong.plugins.soap-xml-handling-lib.libsaxon4kong")
+local utils             = require "kong.tools.utils"
 
 local loaded, xml2 = pcall(ffi.load, "xml2")
 local loaded, xslt = pcall(ffi.load, "xslt")
@@ -24,6 +25,7 @@ xmlgeneral.SepTextError               = " - "
 xmlgeneral.XSLTError                  = "XSLT transformation failed"
 xmlgeneral.XSDError                   = "XSD validation failed"
 xmlgeneral.XPathRoutingError          = "XPath routing failed"
+xmlgeneral.customFaultError           = "Custom Fault transformation failed"
 xmlgeneral.BeforeXSD                  = " (before XSD validation)"
 xmlgeneral.AfterXSD                   = " (after XSD validation)"
 xmlgeneral.invalidXML                 = "Invalid XML input"
@@ -58,9 +60,10 @@ xmlgeneral.schemaTypeSOAP_All         = 1
 xmlgeneral.schemaTypeAPI              = 2
 xmlgeneral.xsltBeforeXSD              = 3
 xmlgeneral.xsltAfterXSD               = 4
-xmlgeneral.schemaTypeSOAP1_1          = 11
-xmlgeneral.schemaTypeSOAP1_2          = 12
-xmlgeneral.JSON                       = 30            -- JSON content type
+xmlgeneral.xsltCustomError            = 5
+xmlgeneral.schemaTypeSOAP1_1          = 11            -- SOAP 1.1 content type (text/xml)
+xmlgeneral.schemaTypeSOAP1_2          = 12            -- SOAP 1.2 content type (application/soap+xml)
+xmlgeneral.JSON                       = 30            -- JSON     content type (application/json)
 xmlgeneral.SOAP1_1ContentType         = "text/xml; charset=utf-8"
 xmlgeneral.SOAP1_2ContentType         = "application/soap+xml; charset=utf-8"
 xmlgeneral.JSONContentType            = "application/json"
@@ -90,7 +93,7 @@ xmlgeneral.prefetchQueueTimeout       = libxml2ex.externalEntityTimeout + 1  -- 
 xmlgeneral.prefetchReqQueueName       = "-prefetch-request-schema"
 xmlgeneral.prefetchResQueueName       = "-prefetch-response-schema"
 
-xmlgeneral.libxmlNoMatchGlobalDecl    = 1845  -- libxml Error code for 'No matching global declaration available for the validation root'.
+xmlgeneral.libxmlNoMatchGlobalDecl    = 1845  -- libxml2 Error code for 'No matching global declaration available for the validation root'.
                                               -- It means that the operation Name (example: Add/Subtract/Divide, etc.), which is
                                               -- the 1st child of '<soap:Body>', can't be found in the XML by matching it against the XSD
 
@@ -140,15 +143,16 @@ local HTTP_ERROR_MESSAGES = {
     [511] = "Network authentication required",
 }
 
----------------------------------
--- Format the SOAP Fault message
----------------------------------
-function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType, soapFaultCode)
+-------------------------
+-- Format the SOAP Fault
+-------------------------
+function xmlgeneral.formatSoapFault(pluginType, pluginId, pluginConf, ErrMsg, ErrEx, contentType, soapFaultCode)
   local soapErrMsg
   local errorMessage
   local backendHttpCode
   local soapFaultCodeStr
-  
+  local VerboseResponse = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+
   errorMessage = ErrEx
 
   -- if the last character is '\n' => we remove it
@@ -170,15 +174,24 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
   -- Replace " by '
   errorMessage = string.gsub(errorMessage, "\"", "'")
 
-  -- If it's a SOAP 1.1 or SOAP 1.2 request
-  if contentType == nil or contentType == xmlgeneral.schemaTypeSOAP1_1 or contentType == xmlgeneral.schemaTypeSOAP1_2 then
+  -- If it's a SOAP 1.1 or SOAP 1.2 request OR
+  -- If it's a JSON content type that requires to transform the default SOAP Fault (i.e. JSON -> XML -> JSON transformation)
+  if not (contentType == xmlgeneral.JSON and pluginConf.customFaultXslt == nil) then
     -- Replace '<' and '>' symbols by a full-text representation, thus avoiding incorrect XML parsing later
+    -- For JSON content type (only): the '<' and '>' symbols are re-injected back at the end of this process
     errorMessage = string.gsub(errorMessage, "<", "Less Than")
     errorMessage = string.gsub(errorMessage, ">", "Greater Than")
+  else
+    -- Else this is a JSON content type that doesn't require to transform the default SOAP Fault, 
+    -- Keep the original error message without replacing the '<' and '>' symbols
+  end
+
+  -- If it's a SOAP 1.1 or SOAP 1.2 request
+  if contentType == nil or contentType == xmlgeneral.schemaTypeSOAP1_1 or contentType == xmlgeneral.schemaTypeSOAP1_2 then
     kong.log.err ("<faultstring>", ErrMsg, "</faultstring><detail>", errorMessage, "</detail>")    
   end
 
-  -- If it's a SOAP 1.1 request, send a SOAP 1.1 fault message
+  -- If it's a SOAP 1.1 request, send a SOAP 1.1 Fault
   if contentType == xmlgeneral.schemaTypeSOAP1_1 or contentType == nil then
     -- If verbose is enable, send all the details
     if VerboseResponse then
@@ -191,7 +204,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
       end
       errorMessage = errorMessage .. "\
       </detail>"
-    -- If verbose is not enable, put in <Detail> a Generic message (as <detail> is required by the RFC)
+    -- If verbose is not enabled, put in <Detail> a Generic message (as <detail> is required by the RFC)
     else
       errorMessage = ""..
      "<detail>\
@@ -214,7 +227,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
   </soap:Body>\
 </soap:Envelope>"
 
-  -- If it's a SOAP 1.2 request, send a SOAP 1.2 fault message
+  -- If it's a SOAP 1.2 request, send a SOAP 1.2 Fault
   elseif contentType == xmlgeneral.schemaTypeSOAP1_2 then
     if VerboseResponse then
       errorMessage = ""..
@@ -259,7 +272,7 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
 
   -- Else the Fault Message is a JSON text
   else
-    kong.log.err ("message: '", ErrMsg, "' message_verbose: '", errorMessage, "'")
+    kong.log.err ("message: '", ErrMsg, "', message_verbose: '", errorMessage, "'")
     soapErrMsg = "{\n    \"message\": \"" .. ErrMsg .. "\""
     if VerboseResponse then
       soapErrMsg = soapErrMsg .. ",\n    \"message_verbose\": \"" .. errorMessage .. "\""
@@ -272,22 +285,76 @@ function xmlgeneral.formatSoapFault(VerboseResponse, ErrMsg, ErrEx, contentType,
     soapErrMsg = soapErrMsg .. "\n}"
   end
 
+  -- If there is a custom transformation of the default SOAP Fault
+  if pluginConf.customFaultXslt then
+    
+    -- Transform the default SOAP Fault
+    local customSoapErrMsg = xmlgeneral.transformDefaultSoapFault(pluginType, pluginId, pluginConf, soapErrMsg, ErrMsg, ErrEx, contentType, soapFaultCode)
+    if customSoapErrMsg then
+      if contentType == xmlgeneral.JSON then
+        -- Replace back the "Less Than" and "Greater Than" symbols by '<' and '>' respectively
+        customSoapErrMsg = string.gsub(customSoapErrMsg, "Less Than", "<")
+        customSoapErrMsg = string.gsub(customSoapErrMsg, "Greater Than", ">")
+      end
+      soapErrMsg = customSoapErrMsg
+    end
+
+  end
+
   return soapErrMsg
+end
+
+------------------------------------
+-- Transform the default SOAP Fault
+------------------------------------
+function xmlgeneral.transformDefaultSoapFault(pluginType, pluginId, pluginConf, soapErrMsg, ErrMsg, ErrEx, contentType, soapFaultCode)
+  local soapErrMsgPtrDoc
+  local soapErrMsgTransformed
+  local xmlDeclaration
+  local errMessage
+  local soapFaultCode
+
+  -- Apply an XSLT to transform the default SOAP Fault
+  soapErrMsgPtrDoc, soapErrMsgTransformed, xmlDeclaration, errMessage, soapFaultCode = 
+    xmlgeneral.XSLTransform(pluginType,
+                            pluginId,
+                            pluginConf,
+                            xmlgeneral.xsltCustomError,
+                            nil,
+                            soapErrMsg,                            
+                            pluginConf.customFaultXslt)
+
+  -- If there is an error during the transformation of the default SOAP Fault
+  if errMessage then
+    ErrMsg = ErrMsg .. xmlgeneral.SepTextError .. xmlgeneral.customFaultError
+    ErrEx = ErrEx .. xmlgeneral.SepTextError .. errMessage
+    
+    -- Not modify the 'pluginConf' and make a copy
+    local copyPluginConf = utils.deep_copy(pluginConf, false)
+    -- Disable the transformation of the default SOAP Fault
+    copyPluginConf.customFaultXslt = nil
+    -- Re-apply the default SOAP Fault message without Transformation and Include the error message related to the failure of the transformation
+    soapErrMsgTransformed = xmlgeneral.formatSoapFault(pluginType, pluginId, copyPluginConf, ErrMsg, ErrEx, contentType, soapFaultCode)
+  end
+
+  return soapErrMsgTransformed
+
 end
 
 -----------------------------------------------------
 -- Add the HTTP Error code to the SOAP Fault message
 -----------------------------------------------------
-function xmlgeneral.addHttpErorCodeToSoapFault(TypePlugin, VerboseResponse, contentType)
+function xmlgeneral.addHttpErorCodeToSoapFault(pluginType, pluginId, pluginConf, contentType)
   local soapFaultBody
-  local status = kong.response.get_status()
-  local msg = HTTP_ERROR_MESSAGES[status]
   local soapFaultCode
+  local status          = kong.response.get_status()
+  local VerboseResponse = pluginConf.VerboseRequest or pluginConf.VerboseResponse
+  local msg             = HTTP_ERROR_MESSAGES[status]
   
   if not msg then
     msg = "Error"
   end
-  if TypePlugin == xmlgeneral.RequestTypePlugin then
+  if pluginType == xmlgeneral.RequestTypePlugin then
     msg = xmlgeneral.RequestTextError .. xmlgeneral.SepTextError .. msg
   else
     msg = xmlgeneral.ResponseTextError .. xmlgeneral.SepTextError .. msg
@@ -298,14 +365,15 @@ function xmlgeneral.addHttpErorCodeToSoapFault(TypePlugin, VerboseResponse, cont
   else
     soapFaultCode = xmlgeneral.soapFaultCodeServer
   end
-  soapFaultBody = xmlgeneral.formatSoapFault(VerboseResponse, msg, "HTTP Error code backend is " .. status, contentType, soapFaultCode)
+  soapFaultBody = xmlgeneral.formatSoapFault(pluginType, pluginId, pluginConf, msg, "HTTP Error code backend is " .. status, contentType, soapFaultCode)
   
   return soapFaultBody
 end
 
----------------------------------------
--- Return a SOAP Fault to the Consumer
----------------------------------------
+----------------------------------------------------------------
+-- Return the Content-Type header value according to
+-- the content type of the Request (SOAP 1.1, SOAP 1.2 or JSON)
+----------------------------------------------------------------
 function xmlgeneral.getContentType (contentType)
   local contentTypeRC = xmlgeneral.SOAP1_1ContentType -- Default Content-Type
   
@@ -320,16 +388,22 @@ function xmlgeneral.getContentType (contentType)
   return contentTypeRC
 end
 
----------------------------------------
--- Return a SOAP Fault to the Consumer
----------------------------------------
-function xmlgeneral.returnSoapFault(soapFaultCode, soapErrMsg, contentType)
+-------------------------------------
+-- Return a SOAP Fault to the Client
+-------------------------------------
+function xmlgeneral.returnSoapFault(pluginConf, soapFaultCode, soapErrMsg, contentType)
   local HTTPcode = xmlgeneral.HTTPServerCodeSOAPFault
 
   -- If it's a JSON request and the Fault comes from the Client
   if contentType == xmlgeneral.JSON and soapFaultCode == xmlgeneral.soapFaultCodeClient then
     HTTPcode = xmlgeneral.HTTPClientCodeSOAPFault
   end
+
+  -- If there is a custom HTTP code for the SOAP Fault
+  if pluginConf.customFaultCode then
+    HTTPcode = pluginConf.customFaultCode
+  end
+  
   -- Send a Fault code to client
   return kong.response.exit(HTTPcode, soapErrMsg, {["Content-Type"] = xmlgeneral.getContentType(contentType)})
 end
@@ -776,6 +850,17 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
               libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr)
               cachePlugin.XSLTs[xmlgeneral.xsltAfterXSD].xsltPtr = ffi.NULL
             end
+
+            -- If 'XSLT Custom Error' is defined for Saxon libary
+            --    and
+            -- If there is a current Contex
+            if cachePlugin.xsltLibrary == 'saxon' and 
+              cachePlugin.XSLTs[xmlgeneral.xsltCustomError] and               
+              cachePlugin.XSLTs[xmlgeneral.xsltCustomError].xsltPtr ~= ffi.NULL then
+              libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltCustomError].xsltPtr)
+              cachePlugin.XSLTs[xmlgeneral.xsltCustomError].xsltPtr = ffi.NULL
+            end
+
           end
           
           kong.log.debug("pluginConfigure for Saxon, pluginId=", keyPluginId, " is deleted from the cache")
@@ -806,7 +891,6 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
 
       -- 'Saxon' library:
       if config.xsltLibrary == 'saxon' then
-        
         saxon = true
 
         -- If it's the first time this pluginId is seen: initialize the Pointers cache of the plugin 
@@ -817,10 +901,12 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
           pluginConf.pluginType = pluginType                
           pluginConf.xsltLibrary = config.xsltLibrary
           pluginConf.XSLTs = {}
-          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD] = {}
-          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD ] = {}
-          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD].started = ngx.now()
-          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD ].started = ngx.now()
+          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD   ] = {}
+          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD    ] = {}
+          pluginConf.XSLTs[xmlgeneral.xsltCustomError ] = {}
+          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD   ].started = ngx.now()
+          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD    ].started = ngx.now()
+          pluginConf.XSLTs[xmlgeneral.xsltCustomError ].started = ngx.now()
         else
           -- Force the refresh of the Pointers cache on next end-user Request
           -- and don't create a new table of Pointers cache (like the 1st time: 'pluginConf.XSLTs = {}')
@@ -829,8 +915,9 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
           local timeToRefresh = ngx.now() - config.ExternalEntityLoader_CacheTTL - 1
           
           -- Force a refresh for Pointers cache
-          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD].started = timeToRefresh
-          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD ].started = timeToRefresh
+          pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD   ].started = timeToRefresh
+          pluginConf.XSLTs[xmlgeneral.xsltAfterXSD    ].started = timeToRefresh
+          pluginConf.XSLTs[xmlgeneral.xsltCustomError ].started = timeToRefresh
         end
 
         -- As the plugin_id is sent by the CP for keeping in memory the Pointers cache table => set the flag to 'false'
@@ -1130,7 +1217,7 @@ function xmlgeneral.XSLTransform_libxslt(pluginType, pluginId, pluginConf, xsltB
   local xml_declaration       = nil
   local cacheTTL              = pluginConf.ExternalEntityLoader_CacheTTL
   local filePathPrefix        = pluginConf.filePathPrefix
-  local verbose               = pluginConf.VerboseRequest or pluginConf.VerboseResponse               
+  local verbose               = pluginConf.VerboseRequest or pluginConf.VerboseResponse
   local xsltParams            = pluginConf.xsltParams
   
   if kong.configuration.log_level == "debug" then
@@ -1195,7 +1282,7 @@ function xmlgeneral.XSLTransform_libxslt(pluginType, pluginId, pluginConf, xsltB
       errMessage = xmlgeneral.invalidXSLT .. ". " .. errMessage
       soapFaultCode = xmlgeneral.soapFaultCodeServer
     elseif style == ffi.NULL then
-      errMessage = xmlgeneral.invalidXSLT .. ". Unable to create a style sheet parser"
+      errMessage = xmlgeneral.invalidXSLT .. ". Unable to create a stylesheet parser"
       soapFaultCode = xmlgeneral.soapFaultCodeServer
     else      
       if xml_doc == nil then
@@ -1232,7 +1319,7 @@ function xmlgeneral.XSLTransform_libxslt(pluginType, pluginId, pluginConf, xsltB
         kong.log.debug("XSLT transformation, END: '", xmlgeneral.xmlDump (xml_transformed_ptr, XMLtoTransform, xml_declaration, false), "'")
       end
     else
-      errMessage = "Unable to apply the style sheet to the XML document"
+      errMessage = "Unable to apply the stylesheet to the XML document"
     end
   end
   
@@ -1503,8 +1590,9 @@ function xmlgeneral.initPointersCacheTable(pluginType)
   pointersCacheTable.WSDLs[xmlgeneral.schemaTypeAPI ].XSDs = {}
   
   pointersCacheTable.XSLTs = {}
-  pointersCacheTable.XSLTs[xmlgeneral.xsltBeforeXSD ] = {}
-  pointersCacheTable.XSLTs[xmlgeneral.xsltAfterXSD  ] = {}
+  pointersCacheTable.XSLTs[xmlgeneral.xsltBeforeXSD   ] = {}
+  pointersCacheTable.XSLTs[xmlgeneral.xsltAfterXSD    ] = {}
+  pointersCacheTable.XSLTs[xmlgeneral.xsltCustomError ] = {}
   pointersCacheTable.soapAction = {}
   pointersCacheTable.routeByXPath = {}
   return pointersCacheTable
