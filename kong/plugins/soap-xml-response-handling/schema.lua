@@ -10,7 +10,7 @@ return {
     { config = {
         type = "record",
         fields = {
-          { customFaultCode = { type = "integer", required = false, between = { 100, 599 } }, },
+          { customFaultCode = { type = "integer", between = { 100, 599 }, required = false }, },
           { customFaultXslt = { type = "string", required = false }, },
           { ExternalEntityLoader_Async = { type = "boolean", default = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },

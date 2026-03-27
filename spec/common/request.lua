@@ -1839,13 +1839,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     }
   }
 
-	local calculator_xsd_soap_invalid_verbose_invalid_XSLT_custom_fault_route = blue_print.routes:insert{
+	local calculator_xsd_soap_invalid_verbose_invalid_xslt_custom_fault_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSD_SOAP_invalid_verbose_invalid_XSLT_custom_fault_ko" }
 	}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = calculator_xsd_soap_invalid_verbose_invalid_XSLT_custom_fault_route,
+		route = calculator_xsd_soap_invalid_verbose_invalid_xslt_custom_fault_route,
 		config = {
 			customFaultCode = request_common.customFaultCode,
 			customFaultXslt = request_common.calculator_Request_XSLT_AFTER_invalid,
@@ -1856,13 +1856,13 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	local calculatorXSLT_beforeXSD_invalid_verbose_invalid_XSLT_custom_fault_route = blue_print.routes:insert{
+	local calculatorXSLT_beforeXSD_invalid_verbose_invalid_xslt_custom_fault_route = blue_print.routes:insert{
 		service = calculator_service,
 		paths = { "/calculatorXSLT_beforeXSD_invalid_verbose_invalid_XSLT_custom_fault_ko" }
 	}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = calculatorXSLT_beforeXSD_invalid_verbose_invalid_XSLT_custom_fault_route,
+		route = calculatorXSLT_beforeXSD_invalid_verbose_invalid_xslt_custom_fault_route,
 		-- it lacks the '<' beginning tag
 		config = {
 			customFaultCode = request_common.customFaultCode,

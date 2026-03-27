@@ -178,7 +178,7 @@ for _, strategy in helpers.all_strategies() do
 			it("1|XSLT (BEFORE XSD) - Invalid Hostname service (502 source=error) with Verbose with Custom Fault - Ko", function()
 				request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Verbose_with_Custom_Fault_Ko (assert, client)
 			end)
-
+			
 			it("1+2|XSD Validation - Invalid SOAP request with verbose with Custom Fault - Ko", function()
 				request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose_with_Custom_Fault_Ko (assert, client)
 			end)
