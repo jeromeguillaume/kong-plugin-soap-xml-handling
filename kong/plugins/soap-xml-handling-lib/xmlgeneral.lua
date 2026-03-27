@@ -152,7 +152,7 @@ function xmlgeneral.formatSoapFault(pluginType, pluginId, pluginConf, ErrMsg, Er
   local backendHttpCode
   local soapFaultCodeStr
   local VerboseResponse = pluginConf.VerboseRequest or pluginConf.VerboseResponse
-
+  
   errorMessage = ErrEx
 
   -- if the last character is '\n' => we remove it
