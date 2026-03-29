@@ -1414,7 +1414,7 @@ The expected result is:
 <a id="Miscellaneous_example_K"></a>
 
 ### Example (K): Request | Customize the HTTP status code and the SOAP Fault by applying an `XSLT TRANSFORMATION`
-Incorrectly call `calculator`. Customize the Http status code and the SOAP Fault
+Incorrectly call `calculator`. Customize the Http status code and the SOAP Fault.
 
 1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
 
@@ -1469,6 +1469,19 @@ HTTP/1.1 501 Not Implemented
 <detail>
   <errorMessage>REDACTED</errorMessage>
 </detail>
+```
+
+#### How return a `200 Ok` in the event of error
+In the event you want to mask all errors and return `200 Ok` with `<root>ok</root>` body response, you this configuration as an example:
+- `customFaultCode` property with the value `200`
+- `customFaultXslt` with this `XSLT` value:
+```xml
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
+  <xsl:template match="@*|node()">
+  	 <root xmlns="">ok</root>
+  </xsl:template>
+</xsl:stylesheet>
 ```
 
 <a id="W3C_Compatibility_Matrix"></a>
@@ -1703,4 +1716,3 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Enhanced the error management:
     - Forced the Http status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)
     - Added a feature to customize the Fault code and the Fault message (by using a stylesheet transformation - XSLT)
-    
