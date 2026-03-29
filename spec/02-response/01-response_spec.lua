@@ -4,9 +4,6 @@ local helpers = require "spec.helpers"
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-response-handling"
 
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 -- Debug HTTP/2 connection
 -- helpers.setenv("KONG_DEBUG_HTTP2", "1")
 
@@ -51,6 +48,7 @@ for _, strategy in helpers.all_strategies() do
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
 					nginx_conf = "spec/fixtures/custom_nginx.template",
+					log_level = "debug",
 					-- make sure our plugin gets loaded
 					plugins = "bundled," .. PLUGIN_NAME
 				}))
@@ -113,7 +111,7 @@ for _, strategy in helpers.all_strategies() do
       it("5+6|XSD Validation - Invalid SOAP XSD input with verbose", function()
 				response_common._5_6_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose (assert, client)
 			end)
-     
+      
       it("5+6|XSD Validation - Invalid API XSD input", function()
 				response_common._5_6_XSD_Validation_Invalid_API_XSD_input (assert, client)
 			end)
@@ -181,7 +179,7 @@ for _, strategy in helpers.all_strategies() do
 			it("6|WSDL Validation - Invalid API response (no Operation) with verbose - Ko", function()
 				response_common._6_WSDL_Validation_Invalid_API_response_without_operation_with_verbose_ko (assert, client)
 			end)
-
+			
 			it("5+6|WSDL Validation for Add with ForceSchemaLocation - Imports without schemaLocation - Ok", function()
 				response_common._5_6_WSDL_Add_Validation_with_ForceSchemaLocation_for_Imports_without_schemaLocation_with_verbose_ok (assert, client)
 			end)
@@ -205,9 +203,41 @@ for _, strategy in helpers.all_strategies() do
 			it("5+6+7|Ignore Plugin process in case of Backend HTTP Error - Ko", function()
 				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_ko (assert, client)
 			end)
+
+			it("5+6+7|Ignore Plugin process in case of Backend HTTP Error - with Custom Fault - Ko", function()
+				response_common._0_Ignore_Plugin_Process_in_case_of_HTTP_Error_with_verbose_with_Custom_Fault_ko (assert, client)
+			end)
+
+			it("6|XSD Validation - 'basic_auth' plugin (401 | source=exit) with Verbose - Ko", function()
+				response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_Ko (assert, client)
+			end)			
+
+			it("6|XSD Validation - Upstream returns Not found (404 | source=service) with Verbose - Ko", function()
+				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_Ko (assert, client)
+			end)
+
+			it("6|XSD Validation - 'basic_auth' plugin (401 | source=exit) with Verbose with Custom Fault - Ko", function()
+				response_common._6_XSD_Validation_with_basic_auth_plugin_401_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+
+			it("6|XSD Validation - Upstream returns Not found (404 | source=service) with Verbose with Custom Fault - Ko", function()
+				response_common._6_XSD_Validation_Upstream_returns_Not_found_404_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
 			
-			it("5+6+7|Disable 'XSLT Remove Empty NameSpace' (i.e. not remove xmlns=\"\") - One 'xmlReadMemory' call - Ok", function()
-				response_common._5_6_7_Disable_Xslt_Remove_Empty_NameSpace_with_verbose_ok (assert, client)
+			it("5+6|XSD Validation - Invalid SOAP response with verbose with Custom Fault - Ko", function()
+				response_common._5_6_XSD_Validation_Invalid_SOAP_response_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+
+			it("5+6|XSD Validation - Invalid SOAP response with verbose and Invalid XSLT Custom Fault - Ko", function()
+				response_common._5_6_XSD_Validation_Invalid_SOAP_response_with_verbose_Invalid_XSLT_Custom_Fault_Ko (assert, client)
+			end)
+
+			it("6|WSDL Validation with Forward Proxy plugin - Ko", function()
+				response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_Ko (assert, client)
+			end)
+
+			it("6|WSDL Validation with Forward Proxy plugin on a Loopback service - Ok", function()
+				response_common._6_WSDL_Validation_with_Forward_Proxy_plugin_on_loopback_service_Ok (assert, client)
 			end)
 			
   	end)

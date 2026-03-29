@@ -716,6 +716,39 @@ for _, strategy in helpers.all_strategies() do
             xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/___DOES_NOT_EXIST___.xml"
           }
         }
+        
+        local calculator_Request_Response_custom_fault_xml_def_file_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_Request_Response_custom_fault_xml_def_file_ko" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculator_Request_Response_custom_fault_xml_def_file_route,
+          config = {
+            customFaultCode = request_common.customFaultCode,
+			      customFaultXslt = "0_XSLT_Custom_Fault.xslt",
+            VerboseRequest = true,
+            xsltLibrary = xsltLibrary,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = 3600,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
+            xsdApiSchema = "2_6_WSDL11_soap12.wsdl",            
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculator_Request_Response_custom_fault_xml_def_file_route,
+          config = {
+            customFaultCode = request_common.customFaultCode,
+			      customFaultXslt = "0_XSLT_Custom_Fault.xslt",
+            VerboseResponse = true,
+            xsltLibrary = xsltLibrary,
+            ExternalEntityLoader_Async = false,
+            ExternalEntityLoader_CacheTTL = 3600,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
+            xsdApiSchema = "2_6_WSDL11_soap12_KongResult.wsdl"
+          }
+        }
 
         -- start kong
         assert(helpers.start_kong({
@@ -1211,6 +1244,39 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("'/kong%-plugin/spec/fixtures/calculator/___DOES_NOT_EXIST___%.xml: No such file or directory'", body)
       end)
 
+      it("2+6|Request and Response plugins|XSD Validation - Invalid SOAP request - Custom Fault - XML Definition in Files - Ko", function()
+				-- invoke a test request
+        local r = client:post("/calculator_Request_Response_custom_fault_xml_def_file_ko", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Request_SOAP_ko
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and Error message 'WSDL/XSD validation failed'
+        local body = assert.response(r).has.status(request_common.customFaultCode)
+      	local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	      assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_Client_verbose_with_Custom_Fault, body)
+
+      end)
+
+      it("2+6|Request and Response plugins|XSD Validation - Invalid SOAP response - Custom Fault - XML Definition in Files - Ko", function()
+				-- invoke a test request
+        local r = client:post("/calculator_Request_Response_custom_fault_xml_def_file_ko", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+          },
+          body = request_common.calculator_Full_Request
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and Error message 'WSDL/XSD validation failed'
+        local body = assert.response(r).has.status(request_common.customFaultCode)
+      	local content_type = assert.response(r).has.header("Content-Type")
+	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+	      assert.matches(response_common.calculator_Response_XSD_SOAP_invalid_definition_Failed_verbose_with_Custom_Fault, body)
+
+      end)
 
 		end)		
 	end)

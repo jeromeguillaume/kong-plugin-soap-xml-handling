@@ -153,7 +153,7 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
     -- Don't try to read a file as it's just an XML content or 'filePath' is nil
     return nil, nil
   end
-
+  
   -- check if there are space and tabulation (%s) characters, which stands for a SOAP/XML body Content Type
   -- check if it's an http URL
   local i, _ = string.find(filePath, "%s")

@@ -10,7 +10,9 @@ return {
     { config = {
         type = "record",
         fields = {
-          { ExternalEntityLoader_Async = { type = "boolean", default = false, required = false }, },
+          { customFaultCode = { type = "integer", between = { 100, 599 }, required = false }, },
+          { customFaultXslt = { type = "string", required = false }, },
+          { ExternalEntityLoader_Async = { type = "boolean", default = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
           { filePathPrefix = typedefs.path { required = false } },
@@ -40,9 +42,9 @@ return {
               "yes",
             },
           },},
-          { VerboseRequest = { type = "boolean", required = false }, },
-          { wsdlApiSchemaForceSchemaLocation = { type = "boolean", required = false }, },
-          { wsdlApiRecursiveWsdlImport = { type = "boolean", required = false }, },
+          { VerboseRequest = { type = "boolean", default = false }, },
+          { wsdlApiSchemaForceSchemaLocation = { type = "boolean", default = false }, },
+          { wsdlApiRecursiveWsdlImport = { type = "boolean", default = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 
               keys = { type = "string", required = true },

@@ -5,11 +5,6 @@ local helpers = require "spec.helpers"
 local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "2")
-
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 for _, strategy in helpers.all_strategies() do
 	--if strategy == "off" then
   --  goto continue
@@ -48,6 +43,8 @@ for _, strategy in helpers.all_strategies() do
 				assert(helpers.start_kong({
 					-- use the custom test template to create a local mock server
 					nginx_conf = "spec/fixtures/custom_nginx.template",
+					nginx_worker_processes = "2",
+					log_level = "debug",
 					-- make sure our plugin gets loaded
 					plugins = "bundled," .. PLUGIN_NAME
 				}))
@@ -84,14 +81,6 @@ for _, strategy in helpers.all_strategies() do
 
 			it("1|XSLT (BEFORE XSD) - Valid transformation with 'request-termination' plugin (200)", function()
 				request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_request_termination_plugin_200 (assert, client)
-			end)
-
-			it("1|XSLT (BEFORE XSD) - Valid transformation with 'basic_auth' plugin (401) with Verbose", function()
-				request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_basic_auth_plugin_401_with_Verbose (assert, client)
-			end)
-
-			it("1|XSLT (BEFORE XSD) - Invalid Hostname service (502) with Verbose", function()
-				request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Verbose (assert, client)
 			end)
 
 			it("1+2|XSD Validation - Ok", function()
@@ -169,9 +158,37 @@ for _, strategy in helpers.all_strategies() do
 			it("1+2+3+4|ROUTING BY XPATH with 'hostname' and XPath not succeeded - Ok", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_XPath_not_succeeded_Ok (assert, client)
 			end)			
-						
-			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (502) with verbose", function()
+			
+			it("1|XSLT (BEFORE XSD) - Valid transformation with 'basic_auth' plugin (401 source=exit) with Verbose", function()
+				request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_basic_auth_plugin_401_with_Verbose (assert, client)
+			end)
+			
+			it("1+2+3+4|ROUTING BY XPATH with 'hostname' - Invalid Hostname (502 source=error) with verbose", function()
 				request_common._1_2_3_4_ROUTING_BY_XPATH_with_hostname_Invalid_Hostname_502_with_verbose (assert, client)
+			end)
+
+			it("1|XSLT (BEFORE XSD) - Invalid Hostname service (502 source=error) with Verbose", function()
+				request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Verbose (assert, client)
+			end)
+			
+			it("1|XSLT (BEFORE XSD) - Valid transformation with 'basic_auth' plugin (401 source=exit) with Verbose with Custom Fault - Ko", function()
+				request_common._1_XSLT_BEFORE_XSD_Valid_transformation_with_basic_auth_plugin_401_with_Verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+			
+			it("1|XSLT (BEFORE XSD) - Invalid Hostname service (502 source=error) with Verbose with Custom Fault - Ko", function()
+				request_common._1_XSLT_BEFORE_XSD_Invalid_Hostname_service_502_with_Verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+			
+			it("1+2|XSD Validation - Invalid SOAP request with verbose with Custom Fault - Ko", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_request_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)
+			
+			it("1|XSLT (BEFORE XSD) - Invalid XSLT with Verbose and Invalid XSLT Custom Fault - Ko", function()
+				request_common._1_XSLT_BEFORE_XSD_Invalid_XSLT_with_Verbose_with_Invalid_XSLT_Custom_Fault_Ko (assert, client)
+			end)
+
+			it("1+2|XSD Validation - Invalid SOAP XSD input and Invalid XSLT Custom Fault - Ko", function()
+				request_common._1_2_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose_Invalid_XSLT_Custom_Fault_Ko (assert, client)
 			end)
 
 			it("2|WSDL Validation with import sync download - Ok", function()

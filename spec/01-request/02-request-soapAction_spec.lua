@@ -12,9 +12,6 @@ local soapAction_common = require "spec.common.soapAction"
 -- matches our plugin name defined in the plugins's schema.lua
 local PLUGIN_NAME = "soap-xml-request-handling"
 
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 local calculator_soap11_Subtract_Request= [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -118,7 +115,7 @@ local calculator_soap11_XSD_VALIDATION_Failed_No_Header_But_Required = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The 'SOAPAction' header is not set but according to the WSDL this value is 'Required'</errorMessage>
       </detail>
@@ -132,7 +129,7 @@ local calculator_soap11_Add_XSD_VALIDATION_Failed_No_Header_But_Required = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not ''</errorMessage>
       </detail>
@@ -146,7 +143,7 @@ local calculator_soap11_Add_XSD_VALIDATION_Failed_Mismatch_Header = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Add'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Add' and not 'http://tempuri.org/Subtract'</errorMessage>
       </detail>
@@ -160,7 +157,7 @@ local calculator_soap11_Subtract_XSD_VALIDATION_Failed_Empty_Header= [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not ''</errorMessage>
       </detail>
@@ -174,7 +171,7 @@ local calculator_soap11_Subtract_XSD_VALIDATION_Failed_Mismatch_Header= [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Subtract'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Subtract' and not 'http://tempuri.org/Add'</errorMessage>
       </detail>
@@ -188,7 +185,7 @@ local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Empty_Header= [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not ''</errorMessage>
       </detail>
@@ -202,7 +199,7 @@ local calculator_soap11_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: The Operation Name found in 'soap:Body' is 'Multiply'. According to the WSDL the 'SOAPAction' should be 'http://tempuri.org/Multiply' and not 'http://tempuri.org/Add'</errorMessage>
       </detail>
@@ -216,7 +213,7 @@ local calculator_soap11_Divide_XSD_VALIDATION_Failed_sopAction_attibute_is_empty
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Divide' Operation name</errorMessage>
       </detail>
@@ -230,7 +227,7 @@ local calculator_soap11_Power_XSD_VALIDATION_Failed_sopAction_attibute_is_not_de
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: Unable to get the value of 'soap:operation soapAction' attribute in the WSDL linked with 'Power' Operation name</errorMessage>
       </detail>
@@ -247,7 +244,7 @@ local calculator_soap12_XSD_VALIDATION_Failed_No_Header_But_Required = [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -267,7 +264,7 @@ local calculator_soap12_Add_XSD_VALIDATION_Failed_No_Header_But_Required = [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -287,7 +284,7 @@ local calculator_soap12_Add_XSD_VALIDATION_Failed_Mismatch_Header = [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -307,7 +304,7 @@ local calculator_soap12_Subtract_XSD_VALIDATION_Failed_Empty_Header= [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -327,7 +324,7 @@ local calculator_soap12_Subtract_XSD_VALIDATION_Failed_Mismatch_Header= [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -347,7 +344,7 @@ local calculator_soap12_Multiply_XSD_VALIDATION_Failed_Empty_Header= [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -367,7 +364,7 @@ local calculator_soap12_Multiply_XSD_VALIDATION_Failed_Mismatch_Header= [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -384,7 +381,7 @@ local calculator_soap11_XSD_VALIDATION_Failed_NO_WSDL_Definition= [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: No WSDL definition found: it's mandatory to validate the 'SOAPAction' header</errorMessage>
       </detail>
@@ -398,7 +395,7 @@ local calculator_soap11_XSD_VALIDATION_Failed_SOAPAction_and_action_defined_simu
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: 'SOAPAction' for SOAP 1.1 and 'action' for SOAP 1.2 have been defined simultaneously</errorMessage>
       </detail>
@@ -412,7 +409,7 @@ local calculator_soap11_XSD_VALIDATION_Failed_SOAP11_with_action= [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: Found a SOAP 1.1 envelope and an 'action' field in the 'Content%-Type' header linked with for SOAP 1.2</errorMessage>
       </detail>
@@ -429,7 +426,7 @@ local calculator_soap12_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction= [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -446,7 +443,7 @@ local calculator_soap11_Multiply_XSD_VALIDATION_WSDL20_Failed_Invalid_Pattern= [
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Client</faultcode>
-      <faultstring>Request %- XSD validation failed</faultstring>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
         <errorMessage>Validation of 'SOAPAction' header: the 'pattern' found in WSDL is 'http://www.w3.org/ns/wsdl/in%-%out%-INVALID%-URL%-FOR%-TEST%-ONLY' and must be 'http://www.w3.org/ns/wsdl/in%-out' or 'http://www.w3.org/ns/wsdl/in%-opt%-out'</errorMessage>
       </detail>
@@ -721,6 +718,8 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
           nginx_conf = "spec/fixtures/custom_nginx.template",
+          -- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+          log_level = "debug",
           -- make sure our plugin gets loaded
           plugins = "bundled," .. PLUGIN_NAME
           }))       

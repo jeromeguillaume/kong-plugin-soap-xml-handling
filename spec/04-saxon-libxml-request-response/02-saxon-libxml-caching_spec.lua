@@ -12,12 +12,6 @@ local pluginRequest  = caching_common.pluginRequest
 local pluginResponse = caching_common.pluginResponse
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
--- Force the number of Worker Process (for checking the cache behavior on the same worker)
-helpers.setenv("KONG_NGINX_WORKER_PROCESSES", "1")
-
--- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
-helpers.setenv("KONG_LOG_LEVEL", "debug")
-
 for _, strategy in helpers.all_strategies() do
   --if strategy == "off" then
   --  goto continue
@@ -87,7 +81,7 @@ for _, strategy in helpers.all_strategies() do
 
         local calculatorReq_XSLT_beforeXSD_invalid_verbose_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorReq_XSLT_beforeXSD_invalid_verbose" }
+          paths = { "/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault" }
         }
         blue_print.plugins:insert {
           name = pluginRequest,
@@ -114,7 +108,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = true,
             xsltLibrary = caching_common.libsaxon,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
+            xsltTransformBefore = response_common.calculator_XSLT_invalid
           }
         }
 
@@ -122,7 +116,11 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
             -- use the custom test template to create a local mock server
             nginx_conf = "spec/fixtures/custom_nginx.template",
-            proxy_listen = "0.0.0.0:9000 reuseport, 0.0.0.0:9443 ssl",         
+            proxy_listen = "0.0.0.0:9000 reuseport, 0.0.0.0:9443 ssl",
+            -- Force the number of Worker Process (for checking the cache behavior on the same worker)
+            nginx_worker_processes = "1",
+            -- Force the Debug level as pongo 3.11+ doesn't enable it by default anymore
+            log_level = "debug",
             -- make sure our plugin gets loaded
             plugins = "bundled," .. PLUGIN_NAME
           }))          
@@ -215,7 +213,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -239,7 +237,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"

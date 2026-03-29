@@ -15,7 +15,25 @@ x-kong-config: &kong-env
   KONG_LICENSE_DATA: "${KONG_LICENSE_DATA}"  # Kong Enterprise license passed via environment variable
 
 services:
-
+  #squid:
+  #  container_name: squid
+  #  image: ubuntu/squid:5.2-22.04_beta
+  #  platform: linux/arm64/v8
+  #  volumes:
+  #    - ${PROJECT_DIR}/spec/fixtures/squidcustom/squid.conf:/etc/squid/squid.conf
+  #    - ${PROJECT_DIR}/spec/fixtures/squidcustom/passwords:/etc/squid/passwords
+  #  healthcheck:
+  #    interval: 5s
+  #    retries: 10
+  #    test: ["CMD", "kill", "-0", "1"]
+  #    timeout: 10s
+  #  restart: on-failure
+  #  ports:
+  #    #- 127.0.0.1::3128
+  #    - "3128:3128"
+  #  networks:
+  #    - kong-soap-xml-net                  # Connect to the shared Kong network
+  
   calculator1:
     container_name: calculator1
     image: jeromeguillaume/ws-soap-calculator:1.0.4
@@ -23,7 +41,7 @@ services:
       - kong-soap-xml-net                  # Connect to the shared Kong network
     environment:
       X_SOAP_REGION: 	soap1.apim.eu
-  
+    
   calculator2:
     container_name: calculator2
     image: jeromeguillaume/ws-soap-calculator:1.0.4
@@ -51,7 +69,7 @@ services:
       retries: 10
 
   kong-bootstrap:
-    image: 'kong/kong-gateway:3.13.0.1'  # Kong Gateway image (default to latest version)
+    image: 'kong/kong-gateway:3.13.0.2'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
     container_name: kong-bootstrap
     networks:
@@ -66,8 +84,8 @@ services:
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
 
   kong-gateway-soap-xml-handling:
-    image: 'kong/kong-gateway:3.13.0.1'  # Main Kong Gateway Control Plane (default to latest version)
-    #image: 'jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9'
+    image: 'kong/kong-gateway:3.13.0.2'  # Main Kong Gateway Control Plane (default to latest version)
+    #image: 'jeromeguillaume/kong-soap-xml:3.13.0.2-1.4.6-12.9'
     platform: linux/${ARCHITECTURE}
     container_name: kong-gateway-soap-xml-handling
     restart: on-failure

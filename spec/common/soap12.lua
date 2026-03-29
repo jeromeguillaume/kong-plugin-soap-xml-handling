@@ -263,7 +263,7 @@ soap12_common.calculator_soap12_Request_XSD_VALIDATION_Failed_Invalid_NameSpace 
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -283,7 +283,7 @@ soap12_common.calculator_soap12_Request_XSD_VALIDATION_Failed_with_no_12_schema=
         <env:Value>env:Receiver</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -303,7 +303,7 @@ soap12_common.calculator_soap12_Request_XSD_VALIDATION_Failed_with_no_Body= [[
         <env:Value>env:Sender</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Request %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Request processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -323,7 +323,7 @@ soap12_common.calculator_soap12_Response_XSD_VALIDATION_Failed_Invalid_NameSpace
         <env:Value>env:Receiver</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Response %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Response processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>
@@ -344,7 +344,7 @@ soap12_common.calculator_soap12_Response_XSD_VALIDATION_Failed_with_no_Body = [[
         <env:Value>env:Receiver</env:Value>
       </env:Code>
       <env:Reason>
-        <env:Text xml:lang="en">Response %- XSD validation failed</env:Text>
+        <env:Text xml:lang="en">Response processing %- XSD validation failed</env:Text>
       </env:Reason>
       <env:Detail>
         <f:errorDetails>

@@ -47,11 +47,11 @@ cp /tmp/SaxonCHE-linux-arm64-12-9-0/SaxonCHE/include/saxonc/*.h ./saxonc/
 cd ./kong-plugin-soap-xml-handling/kong/saxon/notices
 cp /tmp/SaxonCHE-linux-arm64-12-9-0/notices/* .
 ```
-- Adapt the version of Kong image (example: `kong/kong-gateway:3.13.0.1`) in the following files:
+- Adapt the version of Kong image (example: `kong/kong-gateway:3.13.0.2`) in the following files:
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.13.0.2-1.4.6-12.9`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -80,7 +80,7 @@ make kong_saxon_initcontainer_docker_hub
 ### Run `Kong` with `Saxon` in Docker Compose and the standard image: `kong/kong-gateway`
 - Include in your `docker-compose` command:
   ```yaml
-  image: 'kong/kong-gateway:3.13.0.1'
+  image: 'kong/kong-gateway:3.13.0.2'
   volumes:
     - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
   environment:
@@ -92,11 +92,11 @@ make kong_saxon_initcontainer_docker_hub
 The image is based on `kong-gateway` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
 - Docker Compose
 ```yaml
-  image: 'jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9'
+  image: 'jeromeguillaume/kong-soap-xml:3.13.0.2-1.4.6-12.9'
 ```
 - Kubernetes:
   - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
-  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.13.0.1-1.4.5-12.9`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.13.0.2-1.4.6-12.9`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-soap-xml-initcontainer`
 The image is based on `Alpine` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries
@@ -124,7 +124,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.5-12.9
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.6-12.9
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol
@@ -304,6 +304,42 @@ You can change operation to the following values:
 - `Subtract`
 - `Divide`
 - `Multiply`
+
+#### How to customize the Fault message and the HTTP status code
+If you want to customize the Fault message and the HTTP status code, configure an XSLT in `customFaultXslt` and HTTP status code `customFaultCode` in of the plugin configuration. You can use this stylesheet below, as an example. The stylesheet makes those transformations:
+1) The default JSON error message is converted in an XML
+2) The XML is customized:
+  - `**** My Error custom ****` is added in `message`
+  - If `message_verbose` is present, the content is `REDACTED`
+  - If `backend_http_code` and `request_id` are present, they are added as is
+3) The XML is converted back into JSON
+```xml
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
+  <xsl:mode on-no-match="shallow-skip"/>
+  <xsl:output method="text"/>
+  <xsl:template match="/">
+    <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>
+    <xsl:variable name="message_verbose" select="$json_var/map/string[@key='message_verbose']"/>
+    <xsl:variable name="backend_http_code" select="$json_var/map/number[@key='backend_http_code']"/>
+    <xsl:variable name="request_id" select="$json_var/map/string[@key='request_id']"/>
+    <xsl:variable name="json-result">
+      <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="message">**** My Error custom **** ('<xsl:value-of select="$json_var/map/string[@key='message']"/>')</string>
+        <xsl:if test="$message_verbose!=''">
+          <string key="message_verbose">REDACTED</string>
+        </xsl:if>
+        <xsl:if test="$backend_http_code!=''">
+          <number key="backend_http_code"><xsl:value-of select="$backend_http_code"/></number>
+        </xsl:if>
+        <xsl:if test="$request_id!=''">
+          <string key="request_id"><xsl:value-of select="$request_id"/></string>
+        </xsl:if>
+      </map>
+    </xsl:variable>
+    <xsl:value-of select="fn:xml-to-json($json-result)"/>
+  </xsl:template>
+</xsl:stylesheet>
+```
 
 ### Example B: Request and Response | `XSLT 3.0 TRANSFORMATION`: XML (client) to JSON (server)
 Call the `httpbin` REST API by sending an `XML` request.

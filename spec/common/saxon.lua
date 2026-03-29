@@ -60,41 +60,63 @@ saxon_common.calculator_JSON_2_XML_Transformation_ok = {
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_val = {
-  message = 'Request - XSLT transformation failed (before XSD validation)'
+  message = 'Request processing - XSLT transformation failed (before XSD validation)'
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_val_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = 'Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.'
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Template_val_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = 'Template XXmainXX does not exist'
 }
 
+saxon_common.error_message_Request_XSD_validation_Invalid_SOAP_XSD_input_verbose_custom_fault = {
+  message = "**** My Error custom **** ('Request processing - XSD validation failed')",
+  message_verbose = "REDACTED (Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'.)"
+}
+
+saxon_common.error_message_Request_XSD_validation_Invalid_SOAP_XSD_input_verbose_Invalid_custom_fault = {
+  message = "Request processing - XSD validation failed - Custom Fault transformation failed",
+  message_verbose = "Invalid XSD schema. Error code: 4, Line: 1, Message: Start tag expected, '<' not found. Error code: 3067, Line: 0, Message: Failed to parse the XML resource 'in_memory_buffer'. - Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog."
+}
+
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val = {
-  message = 'Response - XSLT transformation failed (after XSD validation)'
+  message = 'Response processing - XSLT transformation failed (after XSD validation)'
 }
 
 saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose = {
-  message = 'Response - XSLT transformation failed (after XSD validation)',
+  message = 'Response processing - XSLT transformation failed (after XSD validation)',
   message_verbose = 'Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.',
   backend_http_code = 200
 }
 
+saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose_custom_fault = {
+  message = "**** My Error custom **** ('Response processing - XSLT transformation failed (after XSD validation)')",
+  message_verbose = "REDACTED (Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.)",
+  backend_http_code = 200
+}
+
+saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose_Invalid_custom_fault = {
+  message = "Response processing - XSLT transformation failed (after XSD validation) - Custom Fault transformation failed",
+  message_verbose = "Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog. - Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.",
+  backend_http_code = 200
+}
+
 saxon_common.error_message_Saxon_Library_not_Found_val_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = "Unable to load the XSLT library shared object or its dependency. Please check 'LD_LIBRARY_PATH' env variable and the presence of libraries"
 }
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Invalid_JSON_verbose = {
-  message = 'Request - XSLT transformation failed (before XSD validation)',
+  message = 'Request processing - XSLT transformation failed (before XSD validation)',
   message_verbose = 'Invalid JSON input on line 1: Unescaped control character (xa)'
 }
 
 saxon_common.error_message_Response_XSD_validation_400_No_Content_Type_error_from_Upstream_verbose = {
-  message = 'Response - XSD validation failed',
+  message = 'Response processing - XSD validation failed',
   message_verbose = "Invalid XML input. Error code: 4, Line: 1, Message: Start tag expected, '<' not found",
   backend_http_code = 400
 }
@@ -105,7 +127,7 @@ saxon_common.error_XML_message_Request_XSLT_transfo_before_XSD_val_verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error on line 1 column 1. SXXP0003   Error reported by XML parser: Content is not allowed in prolog.</errorMessage>
       </detail>
@@ -119,7 +141,7 @@ saxon_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose = [[
   <soap:Body>
     <soap:Fault>
       <faultcode>soap:Server</faultcode>
-      <faultstring>Request %- XSLT transformation failed %(before XSD validation%)</faultstring>
+      <faultstring>Request processing %- XSLT transformation failed %(before XSD validation%)</faultstring>
       <detail>
         <errorMessage>Invalid XSLT definition. Error code: 4, Line: 1, Message: Start tag expected, 'Less Than' not found</errorMessage>
       </detail>
@@ -308,6 +330,34 @@ saxon_common.httpbin_Response_XSLT_BEFORE = [[
 </xsl:stylesheet>
 ]]
 
+saxon_common.customFault_XSLT = [[
+<xsl:stylesheet version="3.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fn="http://www.w3.org/2005/xpath-functions" xpath-default-namespace="http://www.w3.org/2005/xpath-functions" exclude-result-prefixes="fn">
+  <xsl:mode on-no-match="shallow-skip"/>
+  <xsl:output method="text"/>
+  <xsl:template match="/">
+    <xsl:variable name="json_var" select="fn:json-to-xml(.)"/>
+    <xsl:variable name="message_verbose" select="$json_var/map/string[@key='message_verbose']"/>
+    <xsl:variable name="backend_http_code" select="$json_var/map/number[@key='backend_http_code']"/>
+    <xsl:variable name="request_id" select="$json_var/map/string[@key='request_id']"/>
+    <xsl:variable name="json-result">
+      <map xmlns="http://www.w3.org/2005/xpath-functions">
+        <string key="message">**** My Error custom **** ('<xsl:value-of select="$json_var/map/string[@key='message']"/>')</string>
+        <xsl:if test="$message_verbose!=''">
+			     <string key="message_verbose">REDACTED (<xsl:value-of select="$message_verbose"/>)</string>
+		    </xsl:if>
+        <xsl:if test="$backend_http_code!=''">
+			     <number key="backend_http_code"><xsl:value-of select="$backend_http_code"/></number>
+		    </xsl:if>
+        <xsl:if test="$request_id!=''">
+			     <string key="request_id"><xsl:value-of select="$request_id"/></string>
+		    </xsl:if>
+      </map>
+    </xsl:variable>
+    <xsl:value-of select="fn:xml-to-json($json-result)"/>
+  </xsl:template>
+</xsl:stylesheet>
+]]
+
 ---------------------------------------------------------------------------------------------------
 -- SOAP/XML REQUEST/RESPONSE plugin with Saxon: configure the Kong entities (Service/Route/Plugin)
 ---------------------------------------------------------------------------------------------------
@@ -481,7 +531,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
   local calculator_REQ_XSLT_beforeXSD_invalid_XSLT_route = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_XSLT" }
+		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_XSLT_Ko" }
 	}
   blue_print.plugins:insert {
     name = pluginRequest,
@@ -506,7 +556,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
   local calculator_REQ_XSLT_beforeXSD_invalid_XSLT_verbose_route = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_XSLT_verbose" }
+		paths = { "/calculator_REQ_XSLT_beforeXSD_invalid_XSLT_Ko_verbose_Ko" }
 	}
   blue_print.plugins:insert {
     name = pluginRequest,
@@ -530,9 +580,127 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
     }
   }
 
+  local calculator_JSON_2_XML_Transformation_REQ_invalid_XSD_SOAP_verbose_custom_fault_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_JSON_2_XML_Transformation_REQ_Invalid_XSD_SOAP_verbose_custom_fault_ko" }
+	  }
+	blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_JSON_2_XML_Transformation_REQ_invalid_XSD_SOAP_verbose_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = saxon_common.customFault_XSLT,
+      VerboseRequest = true,
+      xsltLibrary = xsltLibrary,
+      xsdSoapSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
+  blue_print.plugins:insert { 
+    name = pluginResponse,
+    route = calculator_JSON_2_XML_Transformation_REQ_invalid_XSD_SOAP_verbose_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = saxon_common.customFault_XSLT,
+      VerboseResponse = true,
+      xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
+    }
+  }
+
+  local calculator_JSON_2_XML_Transformation_REQ_invalid_XSD_SOAP_verbose_invalid_XSLT_custom_fault_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_JSON_2_XML_Transformation_REQ_Invalid_XSD_SOAP_verbose_invalid_XSLT_custom_fault_ko" }
+	  }
+	blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_JSON_2_XML_Transformation_REQ_invalid_XSD_SOAP_verbose_invalid_XSLT_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = request_common.calculator_XSLT_invalid,
+      VerboseRequest = true,
+      xsltLibrary = xsltLibrary,
+      xsdSoapSchema = request_common.calculator_Request_XSD_API_VALIDATION_invalid,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
+  blue_print.plugins:insert { 
+    name = pluginResponse,
+    route = calculator_JSON_2_XML_Transformation_REQ_invalid_XSD_SOAP_verbose_invalid_XSLT_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = saxon_common.customFault_XSLT,
+      VerboseResponse = true,
+      xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformAfter = saxon_common.calculator_Response_XSLT_AFTER
+    }
+  }
+
+  local calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_custom_fault_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_custom_fault_ko" }
+	  }
+	blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = saxon_common.customFault_XSLT,
+      VerboseRequest = true,
+      xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
+  blue_print.plugins:insert { 
+    name = pluginResponse,
+    route = calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = saxon_common.customFault_XSLT,
+      VerboseResponse = true,
+      xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformAfter = request_common.calculator_XSLT_invalid
+    }
+  }
+
+  local calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_invalid_XSLT_custom_fault_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_invalid_XSLT_custom_fault_ko" }
+	  }
+	blue_print.plugins:insert {
+    name = pluginRequest,
+    route = calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_invalid_XSLT_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = saxon_common.customFault_XSLT,
+      VerboseRequest = true,
+      xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformBefore = saxon_common.calculator_Request_XSLT_BEFORE
+    }
+  }
+  blue_print.plugins:insert { 
+    name = pluginResponse,
+    route = calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_invalid_XSLT_custom_fault_route,
+    config = {
+      customFaultCode = request_common.customFaultCode,
+			customFaultXslt = request_common.calculator_XSLT_invalid,
+      VerboseResponse = true,
+      xsltLibrary = xsltLibrary,
+      xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
+      xsltTransformAfter = request_common.calculator_XSLT_invalid
+    }
+  }
+
   local calculator_RES_XSLT_afterXSD_invalid_XSLT_route = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculator_RES_XSLT_afterXSD_invalid_XSLT" }
+		paths = { "/calculator_RES_XSLT_afterXSD_invalid_XSLT_Ko" }
 	}
   blue_print.plugins:insert {
     name = pluginRequest,
@@ -557,7 +725,7 @@ function saxon_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 
   local calculator_RES_XSLT_afterXSD_invalid_XSLT_verbose_route = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculator_RES_XSLT_afterXSD_invalid_XSLT_verbose" }
+		paths = { "/calculator_RES_XSLT_afterXSD_invalid_XSLT_verbose_Ko" }
 	}
   blue_print.plugins:insert {
     name = pluginRequest,
@@ -768,9 +936,9 @@ function saxon_common._1_5_RES_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, clie
   assert.matches("<kongResultFromParam>4444</kongResultFromParam>", body)
 end
 
-function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
+function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_Ko (assert, client)
   -- invoke a test request
-  local r = client:post("/calculator_REQ_XSLT_beforeXSD_invalid_XSLT", {
+  local r = client:post("/calculator_REQ_XSLT_beforeXSD_invalid_XSLT_Ko", {
     headers = {
 			["Content-Type"] = "application/json",
 		},
@@ -785,9 +953,9 @@ function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
   assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_val, json)
 end
 
-function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (assert, client)
+function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose_Ko (assert, client)
   -- invoke a test request
-  local r = client:post("/calculator_REQ_XSLT_beforeXSD_invalid_XSLT_verbose", {
+  local r = client:post("/calculator_REQ_XSLT_beforeXSD_invalid_XSLT_Ko_verbose_Ko", {
     headers = {
 			["Content-Type"] = "application/json",
 		},
@@ -802,9 +970,77 @@ function saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (as
   assert.same (saxon_common.error_message_Request_XSLT_transfo_before_XSD_val_verbose, json)
 end
 
-function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client)
+function saxon_common._1_2_6_7_JSON_2_XML_REQ_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose_with_Custom_Fault_Ko (assert, client)
   -- invoke a test request
-  local r = client:post("/calculator_RES_XSLT_afterXSD_invalid_XSLT", {
+  local r = client:post("/calculator_JSON_2_XML_Transformation_REQ_Invalid_XSD_SOAP_verbose_custom_fault_ko", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+  })
+
+  -- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Request_XSD_validation_Invalid_SOAP_XSD_input_verbose_custom_fault, json)
+end
+
+function saxon_common._1_2_6_7_JSON_2_XML_REQ_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose_with_Invalid_XSLT_Custom_Fault_Ko (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_JSON_2_XML_Transformation_REQ_Invalid_XSD_SOAP_verbose_invalid_XSLT_custom_fault_ko", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+  })
+
+  -- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Request_XSD_validation_Invalid_SOAP_XSD_input_verbose_Invalid_custom_fault, json)
+end
+
+function saxon_common._1_2_6_7_JSON_2_XML_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose_with_Custom_Fault_Ko (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_custom_fault_ko", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+  })
+
+  -- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose_custom_fault, json)
+end
+
+function saxon_common._1_2_6_7_JSON_2_XML_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose_with_Invalid_XSLT_Custom_Fault_Ko (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_JSON_2_XML_Transformation_RES_XSLT_afterXSD_invalid_XSLT_verbose_invalid_XSLT_custom_fault_ko", {
+    headers = {
+			["Content-Type"] = "application/json",
+		},
+    body = saxon_common.calculator_Request,
+  })
+
+  -- validate that the request failed: response status, Content-Type and right match
+	local body = assert.response(r).has.status(request_common.customFaultCode)
+	local content_type = assert.response(r).has.header("Content-Type")
+	assert.equal("application/json", content_type)
+  local json = assert.response(r).has.jsonbody()
+  assert.same (saxon_common.error_message_Response_XSLT_transfo_after_XSD_val_verbose_Invalid_custom_fault, json)
+end
+
+function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_Ko (assert, client)
+  -- invoke a test request
+  local r = client:post("/calculator_RES_XSLT_afterXSD_invalid_XSLT_Ko", {
     headers = {
 			["Content-Type"] = "application/json",
 		},
@@ -819,9 +1055,9 @@ function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, cl
   assert.same (saxon_common.error_message_Response_XSLT_transfo_after_XSD_val, json)
 end
 
-function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (assert, client)
+function saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose_Ko (assert, client)
   -- invoke a test request
-  local r = client:post("/calculator_RES_XSLT_afterXSD_invalid_XSLT_verbose", {
+  local r = client:post("/calculator_RES_XSLT_afterXSD_invalid_XSLT_verbose_Ko", {
     headers = {
 			["Content-Type"] = "application/json",
 		},
