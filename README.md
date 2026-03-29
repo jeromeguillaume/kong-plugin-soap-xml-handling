@@ -88,7 +88,7 @@ Each handling is optional
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
     - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
   
-4) For completly disable the `WSDL/XSD VALIDATION`:
+4) To completly disable the `WSDL/XSD VALIDATION`:
     - Change the SOAP 1.1 default value of `config.xsdSoapSchema` to `<!-- -->`
     - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`) or set `config.xsdSoap12Schema` to `<!-- -->`
 
@@ -100,7 +100,7 @@ Each handling is optional
 6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached:
     - A warning is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
-    - Despite this warning the Request plugin reads the file content (by using a blocking I/O) and the regular process is achieved. The kong latency is increased due to I/O disk and it can impact other pending requests
+    - Despite this warning the Request plugin reads the file content (by using a blocking I/O) and the regular process is achieved. The kong latency is increased due to I/O disk and it can impact other requests
 
 7) It's recommended to enable `ignoreProcessIfServiceHttpError`: in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) the Response plugin ignores the SOAP/XML process and returns a generic SOAP Fault message
 
@@ -151,7 +151,7 @@ The WSDL import is processed in this order:
   - There is no support for http(s) download
 
 ### Caching
-- The plugins compile/parse the `WSDL`/`SOAPAction`/`XSD`/`XSLT` definitions and keep them in a `kong_db_cache` memory cache for improving performance:
+- The plugins compile/parse the `WSDL`/`SOAPAction`/`XSD`/`XSLT` (`customFaultXslt` included) definitions and keep them in a `kong_db_cache` memory cache for improving performance:
   - When the TTL is reached, the plugins compile/parse the definitions once more
   - When the plugin configuration is changed, all the caches are invalidated and the plugins compile/parse the definitions once more (even if there is a change in only one plugin)
 - What's the behavior of plugins in the event of a compilation error (for instance due to an incorrect definition, e.g. missing a leading "<"):
@@ -161,7 +161,7 @@ The WSDL import is processed in this order:
 - The caching is not compatible with Asynchronous download of External Entities URL (`config.ExternalEntityLoader_Async`=`true`)
 
 ### Error management
-In case of misconfiguration or error from the Backend Service, the Plugins send to the Consumer a SOAP Fault (HTTP 500 Internal Server Error). The SOAP Version is first detected by analyzing the Content-Type request header, then changed when SOAP envelope is parsed. The SOAP Fault follows the W3C specification:
+In case of misconfiguration or error from the Backend Service, the Plugins send to the Consumer a SOAP Fault (`HTTP 500 Internal Server Error`). The SOAP Version is first detected by analyzing the `Content-Type` request header, then potentially changed when SOAP envelope is parsed. The SOAP Fault follows the W3C specification:
 - [SOAP Fault 1.1](https://www.w3.org/TR/2000/NOTE-SOAP-20000508/#_Toc478383507):
   - `<faultstring>`: name of the handling process of the plugin
   - `<faultcode>`: the values are `Client` (for a Consumer error) and `Server` (for a Server error: Kong or Backend Service)
@@ -175,6 +175,8 @@ If `Verbose` is enabled:
   - `soap-xml-request-handling` retrieves the error code from other plugins (such as `401`, returned by the apikey plugin) or from a technical problem preventing access to the upstream server (invalid hostname or TCP port)
   - `soap-xml-response-handling` has the same behavior as `soap-xml-request-handling` and also retrieves the error code of the upstream server
 
+The defaut HTTP code `HTTP 500 Internal Server Error` can be customized with `customFaultCode`. The default SOAP Fault can be customized with `customFaultXslt` that applies an XSLT Transformation.
+
 <a id="configuration_reference"></a>
 
 ## `soap-xml-request-handling` and `soap-xml-response-handling` configuration reference
@@ -185,7 +187,7 @@ If `Verbose` is enabled:
 |config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download. Plus, keep in `kong_db_cache` memory cache the compilation and parsing of `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions during the time specified|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
-|config.filePathPrefix|N/A|File Path Prefix of external entity files and XML definition files. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`. The `filePathPrefix` is ignored if the file name starts by a `/`|
+|config.filePathPrefix|N/A|File Path Prefix of external entity files and XML definition files. It works for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION` (`customFaultXslt` included). The `filePathPrefix` is ignored if the file name starts by a `/`|
 |config.ignoreProcessIfServiceHttpError|`false`|`soap-xml-response-handling` only: ignore the plugin process if the Backend Service returns an HTTP Error (i.e: an HTTP code other than 200) and returns a generic SOAP Fault|
 |config.RouteXPathTargets|N/A|Array of targets for routing by XPath. The plugin executes all the XPath expressions until the condition is satisfied. If no condition is satisfied the plugin keeps the original Route without error|
 |config.RouteXPathTargets.URL|N/A|URL to dynamically change the route to the Web Service. Syntax is: `scheme://kong_upstream/path` or `scheme://hostname[:port]/path`|
