@@ -71,6 +71,19 @@ response_common.calculator_Response_General_Failed_Backend_Http_400_Error_verbos
   </soap:Body>
 </soap:Envelope>]]
 
+response_common.calculator_Request_XSLT_BEFORE_Invalid_XSLT_verbose_with_Custom_Fault = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>**** My Error custom **** %('Response processing %- XSLT transformation failed %(before XSD validation%)'%)</faultstring>
+      <detail><errorMessage>REDACTED</errorMessage><backendHttpCode>200</backendHttpCode></detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+
 response_common.calculator_Response_General_Failed_Backend_Http_400_Error_verbose_with_custom_fault = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -243,7 +256,7 @@ response_common.calculator_Response_XSLT_AFTER_with_params = [[
 </xsl:stylesheet>
 ]]
 
-response_common.calculator_Response_XSLT_BEFORE_invalid = [[
+response_common.calculator_XSLT_invalid = [[
 xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 </xsl:stylesheet>
 ]]
@@ -751,7 +764,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseResponse = false,
 			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsltTransformBefore = response_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -765,7 +778,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseResponse = true,
 			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsltTransformBefore = response_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -824,7 +837,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = false,
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-			xsdSoapSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsdSoapSchema = response_common.calculator_XSLT_invalid
 		}
 	}
   
@@ -839,7 +852,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = true,
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-			xsdSoapSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsdSoapSchema = response_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -854,7 +867,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = false,
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-			xsdApiSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsdApiSchema = response_common.calculator_XSLT_invalid
 		}
 	}
   
@@ -869,7 +882,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			VerboseResponse = true,
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-			xsdApiSchema = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsdApiSchema = response_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -961,7 +974,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
-			xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsltTransformAfter = response_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -977,7 +990,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
 			xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
-			xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
+			xsltTransformAfter = response_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -1269,7 +1282,7 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_response_verbose_invalid_xslt_custom_fault_route,
 		config = {
 			customFaultCode = request_common.customFaultCode,
-			customFaultXslt = request_common.calculator_Request_XSLT_AFTER_invalid,
+			customFaultXslt = request_common.calculator_XSLT_invalid,
 			VerboseResponse = true,			
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,

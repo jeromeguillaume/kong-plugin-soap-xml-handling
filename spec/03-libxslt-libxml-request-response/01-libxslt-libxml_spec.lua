@@ -168,7 +168,7 @@ for _, strategy in helpers.all_strategies() do
             xsltLibrary = xsltLibrary,
             xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-            xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
+            xsltTransformAfter = response_common.calculator_XSLT_invalid
           }
         }
 
@@ -202,7 +202,7 @@ for _, strategy in helpers.all_strategies() do
             xsltLibrary = xsltLibrary,
             xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
             xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-            xsltTransformAfter = response_common.calculator_Response_XSLT_BEFORE_invalid
+            xsltTransformAfter = response_common.calculator_XSLT_invalid
           }
         }
 

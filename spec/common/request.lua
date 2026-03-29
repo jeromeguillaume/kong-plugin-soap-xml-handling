@@ -264,6 +264,18 @@ request_common.calculator_Request_XSLT_BEFORE_Failed_502_Error_Verbose = [[
   </soap:Body>
 </soap:Envelope>]]
 
+request_common.calculator_Request_XSLT_BEFORE_Invalid_XSLTVerbose_with_Custom_Fault = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>**** My Error custom **** %('Request processing %- XSLT transformation failed %(before XSD validation%)'%)</faultstring>
+      <detail><errorMessage>REDACTED</errorMessage></detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
 request_common.calculator_Request_XSLT_BEFORE_Failed_401_Error_Verbose_with_Custom_Fault = [[
 <%?xml version="1.0" encoding="utf%-8"%?>
 <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -721,7 +733,7 @@ request_common.calculator_Request_XSLT_AFTER = [[
 </xsl:stylesheet>
 ]]
 
-request_common.calculator_Request_XSLT_AFTER_invalid = [[
+request_common.calculator_XSLT_invalid = [[
 xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 </xsl:stylesheet>
 ]]
@@ -1655,7 +1667,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		-- it lacks the '<' beginning tag
 		config = {
 			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER_invalid,
+			xsltTransformBefore = request_common.calculator_XSLT_invalid,
 			xsdApiSchema = request_common.commentForEmptyXSD
 		}
 	}
@@ -1671,7 +1683,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		config = {
 			VerboseRequest = true,
 			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER_invalid,
+			xsltTransformBefore = request_common.calculator_XSLT_invalid,
 			xsdApiSchema = request_common.commentForEmptyXSD
 		}	
 	}
@@ -1848,7 +1860,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		route = calculator_xsd_soap_invalid_verbose_invalid_xslt_custom_fault_route,
 		config = {
 			customFaultCode = request_common.customFaultCode,
-			customFaultXslt = request_common.calculator_Request_XSLT_AFTER_invalid,
+			customFaultXslt = request_common.calculator_XSLT_invalid,
 			VerboseRequest = true,
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
@@ -1866,10 +1878,10 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		-- it lacks the '<' beginning tag
 		config = {
 			customFaultCode = request_common.customFaultCode,
-			customFaultXslt = request_common.calculator_Request_XSLT_AFTER_invalid,
+			customFaultXslt = request_common.calculator_XSLT_invalid,
 			VerboseRequest = true,
 			xsltLibrary = xsltLibrary,
-			xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER_invalid,
+			xsltTransformBefore = request_common.calculator_XSLT_invalid,
 			xsdApiSchema = request_common.commentForEmptyXSD
 		}	
 	}
@@ -2031,7 +2043,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
-			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_invalid
+			xsltTransformAfter = request_common.calculator_XSLT_invalid
 		}
 	}
 
@@ -2047,7 +2059,7 @@ function request_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 			xsltLibrary = xsltLibrary,
 			xsltTransformBefore = request_common.calculator_Request_XSLT_BEFORE,
 			xsdApiSchema = request_common.calculator_Request_XSD_VALIDATION,
-			xsltTransformAfter = request_common.calculator_Request_XSLT_AFTER_invalid
+			xsltTransformAfter = request_common.calculator_XSLT_invalid
 		}
 	}
 

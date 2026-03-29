@@ -60,7 +60,7 @@ xmlgeneral.schemaTypeSOAP_All         = 1
 xmlgeneral.schemaTypeAPI              = 2
 xmlgeneral.xsltBeforeXSD              = 3
 xmlgeneral.xsltAfterXSD               = 4
-xmlgeneral.xsltCustomError            = 5
+xmlgeneral.xsltCustomFault            = 5
 xmlgeneral.schemaTypeSOAP1_1          = 11            -- SOAP 1.1 content type (text/xml)
 xmlgeneral.schemaTypeSOAP1_2          = 12            -- SOAP 1.2 content type (application/soap+xml)
 xmlgeneral.JSON                       = 30            -- JSON     content type (application/json)
@@ -319,7 +319,7 @@ function xmlgeneral.transformDefaultSoapFault(pluginType, pluginId, pluginConf, 
     xmlgeneral.XSLTransform(pluginType,
                             pluginId,
                             pluginConf,
-                            xmlgeneral.xsltCustomError,
+                            xmlgeneral.xsltCustomFault,
                             nil,
                             soapErrMsg,                            
                             pluginConf.customFaultXslt)
@@ -855,10 +855,10 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
             --    and
             -- If there is a current Contex
             if cachePlugin.xsltLibrary == 'saxon' and 
-              cachePlugin.XSLTs[xmlgeneral.xsltCustomError] and               
-              cachePlugin.XSLTs[xmlgeneral.xsltCustomError].xsltPtr ~= ffi.NULL then
-              libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltCustomError].xsltPtr)
-              cachePlugin.XSLTs[xmlgeneral.xsltCustomError].xsltPtr = ffi.NULL
+              cachePlugin.XSLTs[xmlgeneral.xsltCustomFault] and               
+              cachePlugin.XSLTs[xmlgeneral.xsltCustomFault].xsltPtr ~= ffi.NULL then
+              libsaxon4kong.deleteContext (cachePlugin.XSLTs[xmlgeneral.xsltCustomFault].xsltPtr)
+              cachePlugin.XSLTs[xmlgeneral.xsltCustomFault].xsltPtr = ffi.NULL
             end
 
           end
@@ -903,10 +903,10 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
           pluginConf.XSLTs = {}
           pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD   ] = {}
           pluginConf.XSLTs[xmlgeneral.xsltAfterXSD    ] = {}
-          pluginConf.XSLTs[xmlgeneral.xsltCustomError ] = {}
+          pluginConf.XSLTs[xmlgeneral.xsltCustomFault ] = {}
           pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD   ].started = ngx.now()
           pluginConf.XSLTs[xmlgeneral.xsltAfterXSD    ].started = ngx.now()
-          pluginConf.XSLTs[xmlgeneral.xsltCustomError ].started = ngx.now()
+          pluginConf.XSLTs[xmlgeneral.xsltCustomFault ].started = ngx.now()
         else
           -- Force the refresh of the Pointers cache on next end-user Request
           -- and don't create a new table of Pointers cache (like the 1st time: 'pluginConf.XSLTs = {}')
@@ -917,7 +917,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
           -- Force a refresh for Pointers cache
           pluginConf.XSLTs[xmlgeneral.xsltBeforeXSD   ].started = timeToRefresh
           pluginConf.XSLTs[xmlgeneral.xsltAfterXSD    ].started = timeToRefresh
-          pluginConf.XSLTs[xmlgeneral.xsltCustomError ].started = timeToRefresh
+          pluginConf.XSLTs[xmlgeneral.xsltCustomFault ].started = timeToRefresh
         end
 
         -- As the plugin_id is sent by the CP for keeping in memory the Pointers cache table => set the flag to 'false'
@@ -1592,7 +1592,7 @@ function xmlgeneral.initPointersCacheTable(pluginType)
   pointersCacheTable.XSLTs = {}
   pointersCacheTable.XSLTs[xmlgeneral.xsltBeforeXSD   ] = {}
   pointersCacheTable.XSLTs[xmlgeneral.xsltAfterXSD    ] = {}
-  pointersCacheTable.XSLTs[xmlgeneral.xsltCustomError ] = {}
+  pointersCacheTable.XSLTs[xmlgeneral.xsltCustomFault ] = {}
   pointersCacheTable.soapAction = {}
   pointersCacheTable.routeByXPath = {}
   return pointersCacheTable

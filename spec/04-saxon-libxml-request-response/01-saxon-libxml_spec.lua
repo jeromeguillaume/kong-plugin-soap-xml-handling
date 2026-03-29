@@ -9,9 +9,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local saxon_common = require "spec.common.saxon"
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -78,17 +78,29 @@ for _, strategy in helpers.all_strategies() do
       it("1+5|XSLT (BEFORE XSD) - Request and Response - With xslt Params - Ok", function()
 				saxon_common._1_5_RES_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
 			end)
-      it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input", function()
-				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input (assert, client)
+      it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input - Ko", function()
+				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_Ko (assert, client)
 			end)
-      it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input with verbose", function()
-				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose (assert, client)
+      it("1|XSLT (BEFORE XSD) - Request - Invalid XSLT input with verbose - Ko", function()
+				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_XSLT_input_with_verbose_Ko (assert, client)
 			end)
-      it("1+2+6+7|XSLT (AFTER XSD) - Response - Invalid XSLT input", function()
-				saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input (assert, client)
+			it ("1+2+6+7|JSON to XML Transformation - Request - XSD Validation - Invalid SOAP XSD input - Custom Fault - Ko", function()
+				saxon_common._1_2_6_7_JSON_2_XML_REQ_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)      
+			it ("1+2|JSON to XML Transformation - Request - XSD Validation - Invalid SOAP XSD input - Invalid XSLT Custom Fault - Ko", function()
+				saxon_common._1_2_6_7_JSON_2_XML_REQ_XSD_Validation_Invalid_SOAP_XSD_input_with_verbose_with_Invalid_XSLT_Custom_Fault_Ko (assert, client)
 			end)
-      it("1+2+6+7|XSLT (AFTER XSD) - Response - Invalid XSLT input with verbose", function()
-				saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose (assert, client)
+			it ("1+2+6+7|JSON to XML Transformation - Response - XSLT (AFTER XSD) - Invalid XSLT input - Custom Fault - Ko", function()
+				saxon_common._1_2_6_7_JSON_2_XML_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose_with_Custom_Fault_Ko (assert, client)
+			end)      
+			it ("1+2+6+7|JSON to XML Transformation - Response - XSLT (AFTER XSD) - Invalid XSLT input - Invalid XSLT Custom Fault - Ko", function()
+				saxon_common._1_2_6_7_JSON_2_XML_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose_with_Invalid_XSLT_Custom_Fault_Ko (assert, client)
+			end)      
+      it("1+2+6+7|XSLT (AFTER XSD) - Response - Invalid XSLT input - Ko", function()
+				saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_Ko (assert, client)
+			end)
+      it("1+2+6+7|XSLT (AFTER XSD) - Response - Invalid XSLT input with verbose - Ko", function()
+				saxon_common._1_2_6_7_RES_XSLT_AFTER_XSD_Invalid_XSLT_input_with_verbose_Ko (assert, client)
 			end)
 			it("1|XSLT (BEFORE XSD) - Request - Invalid JSON request with verbose - Ko", function()
 				saxon_common._1_REQ_XSLT_BEFORE_XSD_Invalid_JSON_request_with_verbose_ko (assert, client)

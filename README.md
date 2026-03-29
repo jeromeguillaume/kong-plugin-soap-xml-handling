@@ -60,7 +60,7 @@ Each handling is optional
     8. [Example (H): Request and Response | Use a SOAP 1.2 (and SOAP 1.1) XSD definition and the calculator API XSD definition](#Miscellaneous_example_H)
     9. [Example (I): Request | Validate the SOAPAction Http header](#Miscellaneous_example_I)
     10. [Example (J): Request | XSLT with parameters applied by  libxslt (or saxon) library](#Miscellaneous_example_J)
-    11. [Example (K): Request | Customize the SOAP Fault by applying an XSLT TRANSFORMATION](#Miscellaneous_example_K)
+    11. [Example (K): Request | Customize the HTTP status code and the SOAP Fault by applying an XSLT TRANSFORMATION](#Miscellaneous_example_K)
 8. [W3C Compatibility Matrix](#w3c-compatibility-matrix)
 9. [Plugins Testing](#Plugins_Testing)
 10. [Known Limitations](#Known_Limitations)
@@ -402,7 +402,6 @@ Add `soap-xml-request-handling` plugin and configure the plugin with:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:ns="http://tempuri.org/">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-  <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
@@ -513,7 +512,6 @@ Open `soap-xml-request-handling` plugin and configure the plugin with:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
-  <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
@@ -641,7 +639,6 @@ Open `soap-xml-response-handling` plugin and configure the plugin with:
 - `xsltTransformAfter` property with this value:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" exclude-result-prefixes="soapenv">
-  <xsl:strip-space elements="*"/>
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <!-- remove all elements in the soapenv namespace -->
   <xsl:template match="soapenv:*">
@@ -690,7 +687,6 @@ In this example the XSLT converts the response from SOAP to XML
 - `xsltTransformAfter` property with this XSLT definition:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" exclude-result-prefixes="soapenv">
-  <xsl:strip-space elements="*"/>
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
   <!-- remove all elements in the soapenv namespace -->
   <xsl:template match="soapenv:*">
@@ -970,7 +966,6 @@ Correctly call `calculator`. Validate the request with a WSDL that imports XSDs 
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
-  <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
@@ -1341,7 +1336,6 @@ Restart the Kong node and pay attention to the `KONG_LOG_LEVEL=debug` as it will
    <xsl:param name="SOAP_USERNAME" select="MyUser"/>
    <xsl:param name="SOAP_PASSWORD" select="MyPassword"/>
   <xsl:output version="1.0" method="xml" encoding="utf-8" omit-xml-declaration="no"/>
-  <xsl:strip-space elements="*"/>
   <xsl:template match="node()|@*">
     <xsl:copy>
       <xsl:apply-templates select="node()|@*"/>
@@ -1419,9 +1413,15 @@ The expected result is:
 
 <a id="Miscellaneous_example_K"></a>
 
-### Example (K): Request | Customize the SOAP Fault by applying an `XSLT TRANSFORMATION`
-Incorrectly call `calculator`. Customize the SOAP Fault and the Http status code
+### Example (K): Request | Customize the HTTP status code and the SOAP Fault by applying an `XSLT TRANSFORMATION`
+Incorrectly call `calculator`. Customize the Http status code and the SOAP Fault
 
+1) 'Reset' the configuration of `calculator`: remove the `soap-xml-request-handling` and `soap-xml-response-handling` plugins 
+
+2) Add `soap-xml-request-handling` plugin to `calculator` and configure the plugin with:
+- `VerboseRequest` enabled
+- `customFaultCode` property with the value `501`
+- `customFaultXslt` with this `XSLT` value:
 ```xml
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -1439,10 +1439,36 @@ Incorrectly call `calculator`. Customize the SOAP Fault and the Http status code
       <errorMessage>REDACTED</errorMessage>
       <xsl:if test="$backendHttpCode!=''">
         <backendHttpCode><xsl:value-of select="$backendHttpCode"/></backendHttpCode>
-	    </xsl:if>
+      </xsl:if>
     </detail>
   </xsl:template>
 </xsl:stylesheet>
+```
+
+3) Incorrectly call the `calculator` through the Kong Gateway Route by setting a tag error: `<soap:EnvelopeInvalid>` instead of `<soap:Envelope>`
+```
+http POST http://localhost:8000/calculator \
+Content-Type:'text/xml; charset=utf-8' \
+--raw '<?xml version="1.0" encoding="utf-8"?>
+<soap:EnvelopeInvalid xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <Add xmlns="http://tempuri.org/">
+      <intA>5</intA>
+      <intB>7</intB>
+    </Add>
+  </soap:Body>
+</soap:EnvelopeInvalid>'
+```
+
+The Fault is customized. Pay attention to the Http status code (`501`), the `<faultstring>` that is overwritten and `<errorMessage>` that is redacted.
+```xml
+HTTP/1.1 501 Not Implemented
+...
+<faultcode>soap:Client</faultcode>
+<faultstring>**** My Error custom **** ('Request processing - XSD validation failed')</faultstring>
+<detail>
+  <errorMessage>REDACTED</errorMessage>
+</detail>
 ```
 
 <a id="W3C_Compatibility_Matrix"></a>
@@ -1506,9 +1532,9 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Declare 2 Gateway services: 
       - 1 x GW svc with `soap-xml-response-handling`
       - 1 x GW svc with `forward-proxy`
-    - Configure the GW svc (which handles `soap-xml-response-handling`) to execute a loopback call:
+    - Configure the GW svc (that handles `soap-xml-response-handling`) to execute a loopback call:
       - Host: `localhost:8000`
-      - Path: URL of GW svc which handles `forward-proxy`
+      - Path: URL of the route of GW svc that handles `forward-proxy`
 7) In the event the plugins change the HTTP status code (which was not initially `200 Ok`, but for example `502`) to a standard `500 Internal Server Error`, an unnecessary entry is created in the Kong logs. Don't take into account this message. For instance:
     - `[error] attempt to set status 502 via ngx.exit after sending out the response status 500`
 
@@ -1675,5 +1701,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Added a control to avoid a Lua exception when `get_raw_body()` is called: it happens when the `Forward Proxy Advanced` and `soap-xml-response-handling` plugins are configured simultaneously on the same service or route
     - Added a topic in `Known Limitations` section
   - Enhanced the error management:
-    - Able to customize the Fault code and the Fault message (by using a stylesheet transformation)
     - Forced the Http status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)
+    - Added a feature to customize the Fault code and the Fault message (by using a stylesheet transformation - XSLT)
+    

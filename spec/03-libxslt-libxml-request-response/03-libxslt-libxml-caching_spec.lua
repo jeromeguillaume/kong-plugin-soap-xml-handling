@@ -226,35 +226,36 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculatorReq_XSLT_beforeXSD_invalid_verbose_route = blue_print.routes:insert{
+        local calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorReq_XSLT_beforeXSD_invalid_verbose" }
+          paths = { "/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault" }
         }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculatorReq_XSLT_beforeXSD_invalid_verbose_route,
+          route = calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault_route,
           -- it lacks the '<' beginning tag
           config = {
+            customFaultCode = request_common.customFaultCode,
+			      customFaultXslt = request_common.customFault_XSLT,
             VerboseRequest = true,
             xsltLibrary = caching_common.libxslt,
-            xsltTransformBefore = [[
-              xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-              </xsl:stylesheet>
-            ]]
+            xsltTransformBefore = request_common.calculator_XSLT_invalid
           }	
         }
 
         local calculatorRes_XSLT_beforeXSD_invalid_verbose_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorRes_XSLT_beforeXSD_invalid_verbose" }
+          paths = { "/calculatorRes_XSLT_beforeXSD_invalid_verbose_custom_fault" }
           }
         blue_print.plugins:insert {
           name = pluginResponse,
           route = calculatorRes_XSLT_beforeXSD_invalid_verbose_route,
           config = {
+            customFaultCode = request_common.customFaultCode,
+			      customFaultXslt = request_common.customFault_XSLT,
             VerboseResponse = true,
             xsltLibrary = caching_common.libxslt,
-            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
+            xsltTransformBefore = response_common.calculator_XSLT_invalid
           }
         }
 
@@ -722,7 +723,6 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
         
       end)
-
      
       it("2|WSDL Validation with Async download - Invalid Import", function()
         -- invoke a test request
@@ -852,12 +852,12 @@ for _, strategy in helpers.all_strategies() do
 
       end)
       
-      it("1|XSLT (BEFORE XSD) - Invalid XSLT input", function()
+      it("1|XSLT (BEFORE XSD) - Invalid XSLT input - Custom Fault", function()
         -- clean the log file
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -865,23 +865,23 @@ for _, strategy in helpers.all_strategies() do
           body = request_common.calculator_Request,
         })
 
-        -- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
-        local body = assert.response(r).has.status(500)
+        -- validate that the request failed: response status, Content-Type and Error message 'XSLT transformation failed'
+        local body = assert.response(r).has.status(request_common.customFaultCode)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
+        assert.matches(request_common.calculator_Request_XSLT_BEFORE_Invalid_XSLTVerbose_with_Custom_Fault, body)
         
         -- Plugin Request: Check in the log that the XSLT definition was compiled for the 1st time (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
 
       end)
 
-      it("1|** Execute the same test - Invalid XSLT input: check that the definition is found in the cache **", function()
+      it("1|** Execute the same test - Invalid XSLT input - Custom Fault: check that the definition is found in the cache **", function()
         -- clean the log file
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -889,23 +889,23 @@ for _, strategy in helpers.all_strategies() do
           body = request_common.calculator_Request,
         })
 
-        -- validate that the request failed: response status 500, Content-Type and Error message 'XSLT transformation failed'
-        local body = assert.response(r).has.status(500)
+        -- validate that the request failed: response status, Content-Type and Error message 'XSLT transformation failed'
+        local body = assert.response(r).has.status(request_common.customFaultCode)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(request_common.calculator_Request_XSLT_BEFORE_Failed_XSLT_Error_Verbose, body)
+        assert.matches(request_common.calculator_Request_XSLT_BEFORE_Invalid_XSLTVerbose_with_Custom_Fault, body)
         
         -- Plugin Request: Check in the log that the XSLT definition used the cache
         assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
 
       end)
 
-      it("5|XSLT (BEFORE XSD) - Invalid XSLT input", function()
+      it("5|XSLT (BEFORE XSD) - Invalid XSLT input - Custom Fault", function()
         -- clean the log file
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorRes_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorRes_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -913,23 +913,23 @@ for _, strategy in helpers.all_strategies() do
           body = response_common.calculator_Request,
         })
 
-        -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
+        -- validate that the request failed: response status, Content-Type and right match
+        local body = assert.response(r).has.status(request_common.customFaultCode)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(response_common.calculator_Response_XSLT_BEFORE_Failed_verbose, body)
+        assert.matches(response_common.calculator_Request_XSLT_BEFORE_Invalid_XSLT_verbose_with_Custom_Fault, body)
         
         -- Plugin Response: Check in the log that the XSLT definition was compiled for the 1st time (and not found in the cache)
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
 
       end)
 
-      it("5|** Execute the same test - Invalid XSLT input: check that the definition is found in the cache **", function()
+      it("5|** Execute the same test - Invalid XSLT input - Custom Fault: check that the definition is found in the cache **", function()
         -- clean the log file
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorRes_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorRes_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -937,11 +937,11 @@ for _, strategy in helpers.all_strategies() do
           body = response_common.calculator_Request,
         })
 
-        -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
+        -- validate that the request failed: response status, Content-Type and right match
+        local body = assert.response(r).has.status(request_common.customFaultCode)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(response_common.calculator_Response_XSLT_BEFORE_Failed_verbose, body)
+        assert.matches(response_common.calculator_Request_XSLT_BEFORE_Invalid_XSLT_verbose_with_Custom_Fault, body)
         
         -- Plugin Response: Check in the log that the XSLT definition used the cache
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)

@@ -81,7 +81,7 @@ for _, strategy in helpers.all_strategies() do
 
         local calculatorReq_XSLT_beforeXSD_invalid_verbose_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorReq_XSLT_beforeXSD_invalid_verbose" }
+          paths = { "/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault" }
         }
         blue_print.plugins:insert {
           name = pluginRequest,
@@ -108,7 +108,7 @@ for _, strategy in helpers.all_strategies() do
             VerboseResponse = true,
             xsltLibrary = caching_common.libsaxon,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE_invalid
+            xsltTransformBefore = response_common.calculator_XSLT_invalid
           }
         }
 
@@ -213,7 +213,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -237,7 +237,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose", {
+        local r = client:post("/calculatorReq_XSLT_beforeXSD_invalid_verbose_custom_fault", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
