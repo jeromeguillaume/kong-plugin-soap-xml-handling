@@ -183,7 +183,7 @@ The defaut HTTP code `HTTP 500 Internal Server Error` can be customized with `cu
 |FORM PARAMETER                 |DEFAULT          |DESCRIPTION                                                 |
 |:------------------------------|:----------------|:-----------------------------------------------------------|
 |config.customFaultCode|N/A|HTTP status code returned in case of a SOAP Fault or an error|
-|config.customFaultXslt|N/A|`XSLT` definition to customize the SOAP Fault or the error|
+|config.customFaultXslt|N/A|`XSLT` definition to customize the SOAP Fault or the error. It can be a raw definition or a file name containing the definition|
 |config.ExternalEntityLoader_Async|`false`|Asynchronously download the XSD schema from an external entity (i.e.: http(s)://). It executes a WSDL/XSD validation prefetch on the `configure` phase (for downloading the ìmported XSD ahead of the 1st request)|
 |config.ExternalEntityLoader_CacheTTL|`3600`|Keep the XSD schema in Kong memory cache during the time specified (in second). It applies for synchronous and asynchronous XSD download. Plus, keep in `kong_db_cache` memory cache the compilation and parsing of `WSDL`/`SOAPAction`/`XSD`/`XSLT`/`RouteByXPath` definitions during the time specified|
 |config.ExternalEntityLoader_Timeout|`1`|Timeout in second for XSD schema downloading. It applies for synchronous and asynchronous XSD download|
