@@ -1473,7 +1473,7 @@ HTTP/1.1 501 Not Implemented
 </detail>
 ```
 
-#### How return a `200 Ok` in case of an error
+#### How to return a `200 Ok` in case of an error
 In the event you wish to hide all errors and return `200 Ok` with `<root>ok</root>` body response, use this configuration as an example:
 - `customFaultCode` property with the value `200`
 - `customFaultXslt` with this `XSLT` value:

@@ -305,7 +305,8 @@ You can change operation to the following values:
 - `Divide`
 - `Multiply`
 
-If you want to customize the Fault message and the Http status code, configure an XSLT in `customFaultXslt` and Http status code `customFaultCode` in of the plugin configuration. You can use thie stylesheet belown, as an example:
+#### How to customize the Fault message and the HTTP status code
+If you want to customize the Fault message and the HTTP status code, configure an XSLT in `customFaultXslt` and HTTP status code `customFaultCode` in of the plugin configuration. You can use this stylesheet belown, as an example. The stylesheet makes those transformations:
 1) The default JSON error message is converted in an XML
 2) The XML is customized:
   - `**** My Error custom ****` is added in `message`
