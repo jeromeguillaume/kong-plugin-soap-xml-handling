@@ -327,13 +327,13 @@ If you want to customize the Fault message and the HTTP status code, configure a
         <string key="message">**** My Error custom **** ('<xsl:value-of select="$json_var/map/string[@key='message']"/>')</string>
         <xsl:if test="$message_verbose!=''">
 			     <string key="message_verbose">REDACTED</string>
-		    </xsl:if>
+        </xsl:if>
         <xsl:if test="$backend_http_code!=''">
 			     <number key="backend_http_code"><xsl:value-of select="$backend_http_code"/></number>
-		    </xsl:if>
+        </xsl:if>
         <xsl:if test="$request_id!=''">
 			     <string key="request_id"><xsl:value-of select="$request_id"/></string>
-		    </xsl:if>
+        </xsl:if>
       </map>
     </xsl:variable>
     <xsl:value-of select="fn:xml-to-json($json-result)"/>
