@@ -1714,5 +1714,5 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Added a control to avoid a Lua exception when `get_raw_body()` is called: it happens when the `Forward Proxy Advanced` and `soap-xml-response-handling` plugins are configured simultaneously on the same service or route
     - Added a topic in `Known Limitations` section
   - Enhanced the error management:
-    - Forced the Http status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)
-    - Added a feature to customize the Fault code and the Fault message (by using a stylesheet transformation - XSLT)
+    - Forced the HTTP status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)
+    - Added a feature to customize HTTP status code and the Fault (by using a stylesheet transformation - XSLT)
