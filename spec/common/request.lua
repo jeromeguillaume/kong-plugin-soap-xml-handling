@@ -1506,11 +1506,13 @@ request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_DEFINITION_ok
                   name="calculator_DEFINITION_request"
                   targetNamespace="http://tempuri.org/definition">
   <wsdl:types>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
-      <xsd:include schemaLocation="calculator.request.xsd"/>
+    <!-- This WSL adds 2 x XSD definitions by using <xsd:include> and <xsd:import> -->
+    
+		<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.xsd"/>      
     </xsd:schema>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
-      <xsd:include schemaLocation="calculator.response.xsd"/>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="calculator.response.xsd"/>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="AddSoapIn">

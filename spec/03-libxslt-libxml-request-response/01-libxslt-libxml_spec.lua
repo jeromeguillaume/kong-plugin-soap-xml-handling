@@ -10,9 +10,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary    = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -549,7 +549,6 @@ for _, strategy in helpers.all_strategies() do
             xsdApiSchema = "calculator_2.0.wsdl"
           }
         }
-
 
         -- start kong
         assert(helpers.start_kong({
