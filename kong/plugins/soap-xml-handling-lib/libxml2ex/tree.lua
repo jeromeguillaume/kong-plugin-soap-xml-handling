@@ -6,7 +6,9 @@ ffi.cdef[[
                                 xmlNodePtr cur, 
                                 int level, 
                                 int format);
-    
+    int         xmlSaveFormatFile(const char * filename, 
+					            xmlDocPtr cur, 
+					            int format);
     void        xmlNodeDumpOutput(xmlOutputBufferPtr buf,
                                 xmlDocPtr doc,
                                 xmlNodePtr cur,

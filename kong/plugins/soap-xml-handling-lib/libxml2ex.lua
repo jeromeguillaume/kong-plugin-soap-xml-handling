@@ -141,7 +141,7 @@ local asyncDownloadEntities_callback = function(_, url_entries)
   return true
 end
 
--- Read a file (for instance WSDL/XSD/XSLT/XML) from the filesystem
+-- Read a file (for instance WSDL/XSD/XSLT/XML) from the file system
 function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   local ret
   local file
@@ -200,6 +200,19 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   
   return ret, errMsg
 end
+
+-- Dump an XML to the file system
+function libxml2ex.xmlDumpToFile(fileName, xml_doc)
+  local ret = -1
+  if xml_doc ~= ffi.NULL then
+    ret = xml2.xmlSaveFormatFile(fileName, xml_doc, 1)
+  end
+  if ret == -1 then
+    kong.log.err("Error calling 'xmlDumpToFile' for '", fileName, "' file")
+  end
+  return ret
+end
+
 
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)

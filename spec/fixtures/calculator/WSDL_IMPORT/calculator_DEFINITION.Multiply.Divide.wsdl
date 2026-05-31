@@ -2,41 +2,25 @@
 
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:tns="http://tempuri.org"
-                  name="calculator_DEFINITION_request"
+                  name="calculator_DEFINITION_Multiply_Divide"
                   targetNamespace="http://tempuri.org/">
   <wsdl:types>
     <!-- This WSDL adds 2 x XSD definitions by using <xsd:include> and <xsd:import> -->
     <xsd:schema elementFormDefault="qualified" 
                 xmlns:xsd="http://www.w3.org/2001/XMLSchema"                 
                 targetNamespace="http://tempuri.org/">
-      <!-- comment for debug #1: it must be there after the recursive import -->
-      <xsd:include schemaLocation="calculator.request.Add.Subtract.xsd"/>
-      <!-- comment for debug #2: it must be there after the recursive import -->
+      <!-- comment for debug #A: it must be there after the recursive import -->
       <xsd:include schemaLocation="calculator.request.Multiply.Divide.xsd"/>
-      <!-- comment for debug #3: it must be there after the recursive import -->
+      <!-- comment for debug #B: it must be there after the recursive import -->
     </xsd:schema>
     <xsd:schema elementFormDefault="qualified" 
                 xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
                 targetNamespace="http://tempuri.org/">
-      <!-- comment for debug #6: it must be there after the recursive import -->
-      <xsd:import schemaLocation="calculator.response.Add.Subtract.xsd"/>
-      <!-- comment for debug #7: it must be there after the recursive import -->
-      <xsd:import schemaLocation="calculator.response.Multiply.Divide.xsd"/>
-      <!-- comment for debug #8: it must be there after the recursive import -->
+      <!-- comment for debug #C: it must be there after the recursive import -->
+      <xsd:import import="" schemaLocation="calculator.response.Multiply.Divide.xsd"/>
+      <!-- comment for debug #D: it must be there after the recursive import -->
     </xsd:schema>
   </wsdl:types>
-  <wsdl:message name="AddSoapIn">
-    <wsdl:part name="parameters" element="tns:Add" />
-  </wsdl:message>
-  <wsdl:message name="AddSoapOut">
-    <wsdl:part name="parameters" element="tns:AddResponse" />
-  </wsdl:message>
-  <wsdl:message name="SubtractSoapIn">
-    <wsdl:part name="parameters" element="tns:Subtract" />
-  </wsdl:message>
-  <wsdl:message name="SubtractSoapOut">
-    <wsdl:part name="parameters" element="tns:SubtractResponse" />
-  </wsdl:message>
   <wsdl:message name="MultiplySoapIn">
     <wsdl:part name="parameters" element="tns:Multiply" />
   </wsdl:message>
@@ -50,14 +34,6 @@
     <wsdl:part name="parameters" element="tns:DivideResponse" />
   </wsdl:message>
   <wsdl:portType name="CalculatorPortType"> 
-    <wsdl:operation name="Add">
-      <wsdl:input message="tns:AddSoapIn" />
-      <wsdl:output message="tns:AddSoapOut" />
-    </wsdl:operation>
-    <wsdl:operation name="Subtract">
-      <wsdl:input message="tns:SubtractSoapIn" />
-      <wsdl:output message="tns:SubtractSoapOut" />
-    </wsdl:operation>
     <wsdl:operation name="Multiply">
       <wsdl:input message="tns:MultiplySoapIn" />
       <wsdl:output message="tns:MultiplySoapOut" />

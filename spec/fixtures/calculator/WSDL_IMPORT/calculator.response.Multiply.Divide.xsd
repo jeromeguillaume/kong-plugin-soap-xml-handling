@@ -1,6 +1,6 @@
 <xsd:schema attributeFormDefault="unqualified" 
-            elementFormDefault="qualified" 
-            targetNamespace="http://tempuri.org/" 
+            elementFormDefault="qualified"     
+            targetNamespace="http://tempuri.org/"        
             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
             
   <xsd:element name="MultiplyResponse" type="tem:MultiplyResponseType" xmlns:tem="http://tempuri.org/"/>

@@ -1720,3 +1720,6 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Enhanced the error management:
     - Forced the HTTP status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)
     - Added a feature to customize HTTP status code and the Fault (by using a stylesheet transformation - XSLT)
+- v1.5.0:
+  - Bumped to Kong Gateway v3.14.0.1
+  - Added `XML_PARSE_NOBLANKS` (to `xmlReadMemory`) for improving performance in case of highly indented XML files (lots of whitespace) and for a human readable file (`xmlDumpToFile`)

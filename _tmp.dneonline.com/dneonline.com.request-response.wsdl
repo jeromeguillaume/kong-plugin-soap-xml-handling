@@ -13,7 +13,6 @@
     <!-- XSD schema for the Request and the Response -->
       <xsd:schema
         xmlns:tns="http://tempuri.org/"
-        targetNamespace="http://schemas.xmlsoap.org/soap/envelope/"
         attributeFormDefault="qualified"
         elementFormDefault="qualified">
         <xsd:import namespace="http://tempuri.org/" schemaLocation="http://localhost:8000/dneonline.com.request-response.xsd"/>

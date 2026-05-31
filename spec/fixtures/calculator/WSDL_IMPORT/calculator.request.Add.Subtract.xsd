@@ -1,6 +1,6 @@
 <xsd:schema attributeFormDefault="unqualified" 
             elementFormDefault="qualified" 
-            targetNamespace="http://tempuri.org/" 
+            targetNamespace="http://tempuri.org/types"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema">
             
   <xsd:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>

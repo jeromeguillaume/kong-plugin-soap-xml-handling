@@ -4,7 +4,8 @@
                   xmlns:bind="http://tempuri.org/"                  
                   name="calculator"
                   targetNamespace="http://tempuri.org/">
-   <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/"/>
+   <wsdl:import location="calculator_BIND.Add.Subtract.wsdl" namespace="http://tempuri.org/"/>
+   <wsdl:import location="calculator_BIND.Multiply.Divide.wsdl" namespace="http://tempuri.org/"/>
 
    <wsdl:service name="Calculator">
 		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">
