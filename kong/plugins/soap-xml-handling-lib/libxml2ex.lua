@@ -753,12 +753,27 @@ end
 
 
 -- Copy a node list and all children into a new document.
--- doc:	the target document
--- node:	the first node in the list.
+-- Parameters
+--  doc:	the target document
+--  node:	the first node in the list.
 -- Returns: the head of the copied list or NULL if a memory allocation failed
 function libxml2ex.xmlDocCopyNodeList	(doc, node)
-  local head = xml2.xmlDocCopyNodeList	(doc, node);
+  local head = xml2.xmlDocCopyNodeList	(doc, node)
   return head
+end
+
+-- Copy a node into another document.
+-- Parameters
+--  node	the node
+--  doc	the document
+--  extended	mode of operation
+--    If extended is 0, make a shallow copy.
+--    If extended is 1, make a deep copy (properties, namespaces and children when applicable).
+--    If extended is 2, make a shallow copy including properties and namespaces of elements.
+-- Returns: the copied node or NULL if a memory allocation failed
+function libxml2ex.xmlDocCopyNode	(node, doc, extended)
+  local copy = xml2.xmlDocCopyNode	(node, doc, extended)
+  return copy
 end
 
 -- Append a node list to another node

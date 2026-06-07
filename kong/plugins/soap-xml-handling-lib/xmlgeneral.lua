@@ -1235,10 +1235,9 @@ function xmlgeneral.XSLTransform_libxslt(pluginType, pluginId, pluginConf, xsltB
     -- The error is related to the 'Server'
     soapFaultCode = xmlgeneral.soapFaultCodeServer
   end
-
+  
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                        ffi.C.XML_PARSE_NOWARNING,
-                                        ffi.C.XML_PARSE_NOBLANKS)
+                                        ffi.C.XML_PARSE_NOWARNING)
   -- Get the Pointers table from Cache
   local ptrsCacheTable, err = kong.cache:get(xmlgeneral.xmlSoapPtrCache..pluginId, { ttl = cacheTTL }, xmlgeneral.initPointersCacheTable, pluginType)
   if err then
@@ -1601,425 +1600,36 @@ function xmlgeneral.initPointersCacheTable(pluginType)
   return pointersCacheTable
 end
 
-
------------------------------------------------------------------------------------------------------------------
--- Add the the raw definition linked to the <import> and <include> tags as a child of the main WSDL/XSD document
------------------------------------------------------------------------------------------------------------------
-function xmlgeneral.addChildListToDoc (xmlOperation, xml_doc, xmlNodePtrRoot, xmlNodePtrChildImported, currentNode, unlinkNode)
-  local nodeToBeDel   = ffi.NULL
-  local next          = true
-  local errMessage    = nil
-  local currentNodeRC = currentNode
-
-  kong.log.debug("addChildListToDoc, BEGIN for ", xmlOperation)
-
-  -- Copy a node list and all children into a new document
-  local copied_list = libxml2ex.xmlDocCopyNodeList (xml_doc, xmlNodePtrChildImported)
-  if copied_list ~= ffi.NULL then
-    
-    kong.log.notice("**jeromeA copy the node: ", ffi.string(xmlNodePtrChildImported.name))
-    -- Add the root node of the imported WSDL definition as a child of the main WSDL document
-    -- If the Child list isn't successfully added to the main WSDL document
-    if libxml2ex.xmlAddChildList(xmlNodePtrRoot, copied_list) == ffi.NULL then
-      errMessage = "Unable to add the imported " .. xmlOperation .. " definition to the main document"
-    end
-  else
-    errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
-  end
-
-  if not errMessage then
-    kong.log.debug("addChildListToDoc, END with success")
-  else
-    kong.log.debug("addChildListToDoc, END with error: ", errMessage)
-  end
-  return currentNodeRC, next, errMessage
-
-end
-
------------------------------------------------------------------------------------------------------------------------------------
--- Depending on the XML operation, add the raw definition linked to the <import> and <include> tags as a child of the main 
--- WSDL/XSD document
---  -> for XSD:   the raw definition is added at root
---  -> for WSDL:  the raw definition is added under <wsdl:types> if the <import> is related to <xsd:schema> 
---                  OR
---                the raw definition is added at root (for other cases like <wsdl:message>, <wsdl:portType>, <wsdl:binding>, etc.)
------------------------------------------------------------------------------------------------------------------------------------
-function xmlgeneral.operationAddChildListToDoc(xmlOperation, xml_doc, xmlNodePtrRoot, xmlNodePtrCurrent, currentNode, xml_imported_doc, xmlNodePtrRootImported, verbose)
-  local errMessage          = nil
-  local nodeName            = nil
-  local xmlNodePtrRoot2     = ffi.NULL
-  local currentNode2        = ffi.NULL
-  local next                = true
-  local wsdlTypesNodeFound  = false
-  local xmlNodePtrChildImported  = libxml2.xmlFirstElementChild(xmlNodePtrRootImported)
-  
-  kong.log.debug("operationAddChildListToDoc, BEGIN for ", xmlOperation)
-
-  if xmlNodePtrChildImported == ffi.NULL then
-    errMessage = "Unable to find the 1st child of the imported " .. xmlOperation .. " definition"
-    kong.log.debug("operationAddChildListToDoc, END with error: ", errMessage)
-    return currentNode, next, errMessage
-  end
-
-  -- If the XML operation is a WSDL
-  if xmlOperation == xmlgeneral.WSDL then
-    
-    kong.log.notice("**jerome1 xmlFirstElementChild")
-    -- Check that the 'types' node isn't already defined in the main WSDL document
-    currentNode2 = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
-    kong.log.notice("**jerome2")
-    while currentNode2 ~= ffi.NULL do
-      kong.log.notice("**jerome3")
-      if tonumber(currentNode2.type) == ffi.C.XML_ELEMENT_NODE and currentNode2.name ~= ffi.NULL then      
-        nodeName = ffi.string(currentNode2.name) 
-        local mylocationPtr = libxml2.xmlGetProp(currentNode2, "location")
-        local mylocationStr
-        if mylocationPtr ~= ffi.NULL then
-          mylocationStr = ffi.string(mylocationPtr)
-        end
-        kong.log.notice("**jerome3a nodeName: ", nodeName, " location: ", mylocationStr or  "nil")
-        if  (nodeName == "types") then
-          -- <wsdl:types> node already defined in the main WSDL document
-          wsdlTypesNodeFound = true
-          kong.log.notice("**jerome4 WSDL found")
-          break
-        end
-      end
-      currentNode2 = ffi.cast("xmlNode *", currentNode2.next)
-    end
-
-    -- If <wsdl:types> node is already defined in the main WSDL document
-    -- we have to add the content of the <wsdl:types> node of the imported WSDL definition into main WSDL document node by node
-    if wsdlTypesNodeFound then
-      while xmlNodePtrChildImported ~= ffi.NULL and not errMessage do
-        if  tonumber(xmlNodePtrRootImported.type) == ffi.C.XML_ELEMENT_NODE and
-            xmlNodePtrRootImported.name ~= ffi.NULL then
-          kong.log.notice("**jerome5 nodeName: ", ffi.string(xmlNodePtrChildImported.name))
-          -- If it's an <wsdl:types> imported node
-          if ffi.string(xmlNodePtrChildImported.name) == "types" then
-            local xmlNodePtrChildImported2 = libxml2.xmlFirstElementChild(xmlNodePtrChildImported)
-            if xmlNodePtrChildImported2 ~= ffi.NULL then
-              kong.log.notice("**jerome5a nodeName: ", ffi.string(xmlNodePtrChildImported2.name))
-              currentNode, next, errMessage = xmlgeneral.addChildListToDoc (xmlOperation, xml_doc, currentNode2, xmlNodePtrChildImported2, currentNode, false)
-            end
-          else
-            -- Here the name of 'xmlNodePtrChildImported' could be '<wsdl:message>' or '<wsdl:portType>' or '<wsdl:binding>' etc.
-            currentNode, next, errMessage = xmlgeneral.addChildListToDoc (xmlOperation, xml_doc, xmlNodePtrRoot, xmlNodePtrChildImported, currentNode, false)
-          end
-        end
-        xmlNodePtrChildImported = ffi.cast("xmlNode *", xmlNodePtrChildImported.next)
-      end
-    else
-      -- the XML operation is a WSDL and there is no <wsdl:types> node in the main WSDL document
-      currentNode, next, errMessage = xmlgeneral.addChildListToDoc (xmlOperation, xml_doc, xmlNodePtrRoot, xmlNodePtrChildImported, currentNode, true)
-    end
-  
-  -- If the XML operation is an XSD
-  else
-    currentNode, next, errMessage = xmlgeneral.addChildListToDoc (xmlOperation, xml_doc, xmlNodePtrRoot, xmlNodePtrChildImported, currentNode, true)
-  end
-
-  if not errMessage  then
-    local nodeToBeDel = currentNode
-    currentNode = ffi.cast("xmlNode *", currentNode.next)
-    -- Remove the <wsdl:import> node from the main WSDL document as the WSDL definition is now imported with all its content
-    local locationPtr2 = libxml2.xmlGetProp(nodeToBeDel, "location")
-    local locationString2 = nil
-    if locationPtr2 ~= ffi.NULL then
-      locationString2 = ffi.string(locationPtr2)
-    end
-    kong.log.notice("**jerome7 nodeName To Delete: ", ffi.string(nodeToBeDel.name), " location: ", locationString2)
-    
-    libxml2.xmlUnlinkNode(nodeToBeDel)
-    next = false
-  end
-
-  if not errMessage then
-    kong.log.debug("operationAddChildListToDoc, END with success")
-  else
-    kong.log.debug("operationAddChildListToDoc, END with error: ", errMessage)
-  end
-
-  return currentNode, next, errMessage
-
-end
-
-------------------------------------------------------------------------------------------------------------
--- Replace the <import> and <include> tags by their raw defintion
--- It applies for WSDL or XSD definition
-------------------------------------------------------------------------------------------------------------
-function xmlgeneral.replaceImportByRawDefinition(xmlOperation, filePathPrefix, xml_doc, xmlNodePtrRoot, xmlNodePtrCurrent, verbose)
-  local errMessage  = nil
-  local nodeName    = nil
-  local currentNode = xmlNodePtrCurrent
-  local next        = false
-  
-  kong.log.debug("replaceImportByRawDefinition, BEGIN")
-  --------------------------------------------------------------------------------------------------
-  -- For xmlOperation = WSDL
-  --    Parse all the child nodes under <wsdl:definitions> or <wsdl:description>
-  --    Look for <wsdl:import>, for example:
-  --      <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
-  --
-  -- For xmlOperation = XSD | there are 2 types of XML definition => a WSDL or an XSD
-  --    Parse all the child nodes under:
-  --       <wsdl:types> then <xsd:schema> for WSDL definition
-  --       <xsd:schema> for XSD definition
-  --    Look for <xsd:include> or <xsd:import>, for example:
-  --       <xsd:include schemaLocation="calculator.request.xsd"/>
-  --       <xsd:import  namespace="http://tempuri.org/" schemaLocation="calculator.response.xsd"/>
-  --------------------------------------------------------------------------------------------------
-  while currentNode ~= ffi.NULL and not errMessage do
-    next = true
-    if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then      
-      nodeName = ffi.string(currentNode.name)
-
-      if  (nodeName == "import"   and xmlOperation == xmlgeneral.WSDL) or
-          (nodeName == "import"   and xmlOperation == xmlgeneral.XSD ) or
-          (nodeName == "include"  and xmlOperation == xmlgeneral.XSD ) then        
-        local locationPtr
-        if xmlOperation == xmlgeneral.WSDL then
-          locationPtr = libxml2.xmlGetProp(currentNode, "location")
-        else
-          locationPtr = libxml2.xmlGetProp(currentNode, "schemaLocation")
-        end
-        -- If a location is defined
-        if locationPtr ~= ffi.NULL then
-          local location = ffi.string(locationPtr)
-          kong.log.debug ("replaceImportByRawDefinition, Found <", nodeName, "> with location='", location, "'")
-          local xml_imported_doc
-          xml_imported_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, location, nil, verbose)
-          
-          if not errMessage and xml_imported_doc ~= ffi.NULL then            
-            local xmlNodePtrRootImported = libxml2.xmlDocGetRootElement(xml_imported_doc)
-            if xmlNodePtrRootImported ~= ffi.NULL and 
-                tonumber(xmlNodePtrRootImported.type) == ffi.C.XML_ELEMENT_NODE and
-                xmlNodePtrRootImported.name ~= ffi.NULL then
-              
-              local nodeNameImported = ffi.string(xmlNodePtrRootImported.name)
-              
-              if xmlOperation == xmlgeneral.WSDL then
-                if nodeNameImported == "definitions" or nodeNameImported == "description" then
-                  kong.log.debug ("replaceImportByRawDefinition, The root node of the imported ", xmlOperation, " definition is: '", nodeNameImported, "'")
-                else
-                  errMessage = "The root node of the imported " .. xmlOperation .. " definition is not < wsdl:definitions > nor < wsdl:description >"
-                end
-              elseif xmlOperation == xmlgeneral.XSD then
-                if nodeNameImported == "schema" then
-                  kong.log.debug ("replaceImportByRawDefinition, The root node of the imported ", xmlOperation, " definition is: '", nodeNameImported, "'")
-                else
-                  errMessage = "The root node of the imported " .. xmlOperation .. " definition is not < xsd:schema >"
-                end
-              end
-            else
-              errMessage = "Unable to retrieve the root node of the imported " .. xmlOperation .. " definition"
-            end
-            
-            if not errMessage then
-              -- Add the the raw defintion linked to the <import> and <include> tags as a child of the main WSDL/XSD document
-              -- The process depends on the 'xmlOperation'
-              currentNode, next, errMessage = xmlgeneral.operationAddChildListToDoc(xmlOperation, xml_doc, xmlNodePtrRoot, xmlNodePtrCurrent, currentNode, xml_imported_doc, xmlNodePtrRootImported, verbose)
-            end
-            
-          else
-            -- Here there is an error
-            -- But there is no need to add the error message as it is already logged in the recursive call
-          end          
-        else
-          kong.log.debug ("replaceImportByRawDefinition, Found <import> or <include> without 'location' or 'schemaLocation' attribute. Ignore this import.")
-        end
-      end
-    end
-    if next then
-      currentNode = ffi.cast("xmlNode *", currentNode.next)
-    end
-  end
-
-  if not errMessage then
-    kong.log.debug("replaceImportByRawDefinition, END with success")
-  else
-    kong.log.debug("replaceImportByRawDefinition, END with error: ", errMessage)
-  end
-  
-  return errMessage
-end
-
 ------------------------------------------------------------------------------------------------------------
 -- Load the API (WSDL or XSD) definition and 
 -- Recursively import the other definitions referred by <import> or <include>
 ------------------------------------------------------------------------------------------------------------
-function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, API_definition, importPtr, verbose)
-  local xml_doc             = nil
-  local errMessage          = nil
-  local nodeName            = nil
-  local wsdlNodeFound       = false
-  local wsdlTypesNodeFound  = false
-  local xsdNodeFound        = false
-  local contentFile         = nil
-  local currentNode         = ffi.NULL
-  
-  kong.log.debug("loadXMLwithRecursiveImport, BEGIN for ", xmlOperation)
-
-  if importPtr ~= ffi.NULL and importPtr ~= nil then
-    xml_doc = importPtr
-  else
-    local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
-                                          ffi.C.XML_PARSE_NOWARNING,
-                                          ffi.C.XML_PARSE_NOBLANKS)
-
-    -- check if there are space and tabulation (%s) characters, which stands for an XML Content Type
-    local i, _ = string.find(API_definition, "%s")
-    -- If the API definition doesn't contain a raw XML definition, consider the API as a file or an http URL
-    if not i then
-      -- Get the XML dependencies import from the plugin configuration
-      local xsdApiSchemaInclude
-      if  kong.ctx.shared.xmlSoapExternalEntity and
-          kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude then
-          xsdApiSchemaInclude = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
-      end
-      if xsdApiSchemaInclude then
-        for k,v in pairs(xsdApiSchemaInclude) do
-          if k == API_definition then
-            -- Replace the WSDL value (example: /kong/file1.wsdl or http://kong.com/file1.wsdl) by its raw WSDL definition
-            kong.log.debug ("loadXMLwithRecursiveImport, Found the location='", API_definition, "' import/include in the plugin configuration and replace it by its raw definition")
-            API_definition = v
-            break
-          end
-        end
-      end    
-    end
-    
-    if not errMessage then
-      -- Parse and structure in memory the XML document (WSDL or XSD)
-      xml_doc, errMessage = libxml2ex.xmlReadMemory(API_definition, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)
-    end
-  end
-
-  if errMessage then
-    kong.log.debug("loadXMLwithRecursiveImport, END with error: ", errMessage)
-    return nil, errMessage
-  end
-
-  -- If the XML doc is a WSDL
-  --    Retrieve the <wsdl:definitions> (WSDL 1.1) or <wsdl:description> (WSDL 2.0)
-  -- If the XML doc is an XSD
-  --    Retrieve the <xsd:schema>
-  local xmlNodePtrRoot = libxml2.xmlDocGetRootElement(xml_doc)
-  if  xmlNodePtrRoot ~= ffi.NULL and 
-      tonumber(xmlNodePtrRoot.type) == ffi.C.XML_ELEMENT_NODE and
-      xmlNodePtrRoot.name ~= ffi.NULL then
-    nodeName = ffi.string(xmlNodePtrRoot.name)
-    -- WSDL 1.1
-    if     nodeName == "definitions" then
-      wsdlNodeFound = true
-    -- WSDL 2.0
-    elseif nodeName == "description" then
-      wsdlNodeFound = true
-    -- raw XSD
-    elseif nodeName == "schema" then
-      xsdNodeFound = true
-    end
-  end
-  
-  -- If it's a WSDL doc and the XML operation is XSD
-  --    Retrieve the <wsdl:types>
-  if wsdlNodeFound and xmlOperation == xmlgeneral.XSD then
-    currentNode  = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
-    while currentNode ~= ffi.NULL do
-      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then      
-        nodeName = ffi.string(currentNode.name)        
-        if  (nodeName == "types") then
-          wsdlTypesNodeFound = true
-          break
-        end
-      end
-      currentNode = ffi.cast("xmlNode *", currentNode.next)
-    end
-  end
-  
-  -- If the XML operation is WSDL and it's not a WSDL definition and 
-  --   OR
-  -- If the XML operation is XSD  and it's not a WSDL definition with <wsdl:types> node or not an XSD definition
-  if (xmlOperation == xmlgeneral.WSDL and not wsdlNodeFound ) or
-     (xmlOperation == xmlgeneral.XSD  and not (xsdNodeFound or wsdlTypesNodeFound )) then
-    -- Do nothing and ignore the content
-    kong.log.debug("loadXMLwithRecursiveImport, END: not the expected definition for the '", xmlOperation, "' XML operation and nodeName: '", nodeName, "'")
-    return xml_doc, nil
-  else
-    kong.log.debug("loadXMLwithRecursiveImport, found the expected definition for the '", xmlOperation, "' XML operation and nodeName: '", nodeName, "'")
-  end
-  
-  -- If the XML operation is XSD and it's a WSDL definition with <wsdl:types> node
-  if xmlOperation == xmlgeneral.XSD and wsdlTypesNodeFound then
-    -- Go on <xsd:schema>
-    currentNode = libxml2.xmlFirstElementChild(currentNode)
-    -- Loop on all child nodes of <wsdl:types> and looking for <xsd:schema>
-    while currentNode ~= ffi.NULL and not errMessage do      
-      if tonumber(currentNode.type) == ffi.C.XML_ELEMENT_NODE and currentNode.name ~= ffi.NULL then      
-        nodeName = ffi.string(currentNode.name)        
-        if (nodeName == "schema") then
-          local xmlNodePtrSchema = currentNode
-          -- Go on children of <xsd:schema> that can be <xsd:import> or <xsd:include>
-          local currentNodeImport = libxml2.xmlFirstElementChild(currentNode)
-          -- Loop on all child nodes of <xsd:schema> and looking for <xsd:import> or <xsd:include>
-          while currentNodeImport ~= ffi.NULL and not errMessage do
-            errMessage = xmlgeneral.replaceImportByRawDefinition(xmlOperation, filePathPrefix, xml_doc, xmlNodePtrSchema, currentNodeImport, verbose)
-            currentNodeImport = ffi.cast("xmlNode *", currentNodeImport.next)
-          end
-        end
-      end
-      currentNode = ffi.cast("xmlNode *", currentNode.next)
-    end
-  else
-    -- Else the XML operation is XSD and it's a XSD definition
-    --    OR
-    -- the XML operation is WSDL and it's a WSDL definition
-    currentNode = libxml2.xmlFirstElementChild(xmlNodePtrRoot)
-
-    -- Replace the <import> and <include> tags by their raw definition
-    -- It applies for WSDL or XSD definition
-    errMessage = xmlgeneral.replaceImportByRawDefinition(xmlOperation, filePathPrefix, xml_doc, xmlNodePtrRoot, currentNode, verbose)
-  end
-  
-  if not errMessage then
-    kong.log.debug("loadXMLwithRecursiveImport, END with success")
-  else
-    kong.log.debug("loadXMLwithRecursiveImport, END with error: ", errMessage)
-  end
-  
-  return xml_doc, errMessage
-end
-
-------------------------------------------------------------------------------------------------------------
--- Load the API (WSDL or XSD) definition and 
--- Recursively import the other definitions referred by <import> or <include>
-------------------------------------------------------------------------------------------------------------
-function xmlgeneral.loadXMLwithRecursiveImport2(xmlOperation, filePathPrefix, input_API_definition, verbose)
-  local errMessage            = nil
-  local parentNodeName        = nil
-  local parentNodeName2       = nil
-  local parentWsdlNodeFound   = false
-  local parentTypesNodeFound   = false
-  local parentXsdNodeFound    = false
-  local parentXmlNodePtrRoot  = ffi.NULL
-  local parent_xml_doc        = ffi.NULL
-  local parent_currentNode    = ffi.NULL
-  local parent_currentNode2   = ffi.NULL
-  local parent_childNode      = ffi.NULL
-  local parent_NodeToBeDel    = ffi.NULL
-  local imported_xml_doc      = ffi.NULL
-  local importedNodeName      = nil
-  local importedWsdlNodeFound = false
-  local importedXsdNodeFound  = false
-  local importedXmlNodePtrRoot= ffi.NULL
-  local importedCurrentNode   = ffi.NULL
-  local importedChildCurrentNode  = ffi.NULL
-  local next                = true
-  local contentFile         = nil
-  local locationPtr         = ffi.NULL
-  local locationStr         = nil
-  local API_definition    = input_API_definition
-        
+function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, input_API_definition, verbose)
+  local errMessage              = nil
+  local parentNodeName          = nil
+  local parentChildNodeName     = nil
+  local parentChildNameProp     = nil
+  local parentWsdlNodeFound     = false
+  local parentNodeFound         = false
+  local parentXsdNodeFound      = false
+  local parentXmlNodePtrRoot    = ffi.NULL
+  local parent_xml_doc          = ffi.NULL
+  local parent_currentNode      = ffi.NULL
+  local parent_currentChildNode = ffi.NULL
+  local parent_NodeToBeDel      = ffi.NULL
+  local imported_xml_doc        = ffi.NULL
+  local importedNodeName        = nil
+  local importedNameProp        = nil
+  local importedWsdlNodeFound   = false
+  local importedXsdNodeFound    = false
+  local importedXmlNodePtrRoot  = ffi.NULL
+  local importedCurrentNode     = ffi.NULL
+  local importedChildCurrentNode= ffi.NULL
+  local next                    = true
+  local contentFile             = nil
+  local locationPtr             = ffi.NULL
+  local locationStr             = nil
+  local API_definition          = input_API_definition
   
   kong.log.debug("loadXMLwithRecursiveImport, BEGIN for ", xmlOperation)
 
@@ -2084,8 +1694,8 @@ function xmlgeneral.loadXMLwithRecursiveImport2(xmlOperation, filePathPrefix, in
   if (xmlOperation == xmlgeneral.WSDL and not parentWsdlNodeFound ) or
      (xmlOperation == xmlgeneral.XSD  and not parentXsdNodeFound  ) then
     -- Do nothing and ignore the content
-    kong.log.debug("loadXMLwithRecursiveImport, END: in the 'Parent' document not the expected definition for XML operation: '", xmlOperation, "'  and nodeName: '", parentNodeName, "'")
-    return parent_xml_doc, nil
+    errMessage = "The root node of the imported definition is not 'wsdl:definitions' nor 'wsdl:description' for WSDL and not 'xsd:schema' for XSD"
+    return parent_xml_doc, errMessage
   else
     kong.log.debug("loadXMLwithRecursiveImport, in the 'Parent' document found the expected definition for XML operation : '", xmlOperation, "' and nodeName: '", parentNodeName, "'")
   end
@@ -2114,7 +1724,8 @@ function xmlgeneral.loadXMLwithRecursiveImport2(xmlOperation, filePathPrefix, in
         if locationPtr ~= ffi.NULL then
           locationStr = ffi.string(locationPtr)
           kong.log.debug ("loadXMLwithRecursiveImport, Found <", parentNodeName, "> with location='", locationStr, "' in Parent document")
-          imported_xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport2(xmlOperation, filePathPrefix, locationStr, verbose)
+          -- Do a recusrive call to load the imported document and its dependencies
+          imported_xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, locationStr, verbose)
         end
       end
 
@@ -2149,54 +1760,61 @@ function xmlgeneral.loadXMLwithRecursiveImport2(xmlOperation, filePathPrefix, in
           while importedCurrentNode ~= ffi.NULL and not errMessage do
             importedNodeName = nil
             if tonumber(importedCurrentNode.type) == ffi.C.XML_ELEMENT_NODE and importedCurrentNode.name ~= ffi.NULL then
+              -- Here we can have:
+              -- Example #1: for <wsdl:types>                     => importedNodeName="types"   and importedNameProp=nil
+              -- Example #2: for <wsdl:message name="AddSoapIn">  => importedNodeName="message" and importedNameProp="AddSoapIn"
               importedNodeName = ffi.string(importedCurrentNode.name)
+              importedNameProp = libxml2.xmlGetProp(importedCurrentNode, "name")
             end
-            kong.log.debug("**jerome importedNodeName: ", importedNodeName)
-            if (importedNodeName == "types" and xmlOperation == xmlgeneral.WSDL) then
-              -- Look for an existing "types" node in the parent document
-              parent_currentNode2  = libxml2.xmlFirstElementChild(parentXmlNodePtrRoot)
-              parentTypesNodeFound = false
-              while parent_currentNode2 ~= ffi.NULL do
-                parentNodeName2 = nil
-                if tonumber(parent_currentNode2.type) == ffi.C.XML_ELEMENT_NODE and parent_currentNode2.name ~= ffi.NULL then
-                  parentNodeName2 = ffi.string(parent_currentNode2.name)
-                end
-                kong.log.debug("**jerome parentNodeName2: ", parentNodeName2)
-                if parentNodeName2 == "types" then
-                  parentTypesNodeFound  = true
-                  kong.log.debug("**jerome Found <types> node in Parent document")
-                  break
-                end
-                parent_currentNode2 = ffi.cast("xmlNode *", parent_currentNode2.next)
+            
+            -------------------------------------------------------------
+            -- Look for an existing Imported node in the Parent document
+            -------------------------------------------------------------
+            parent_currentChildNode = libxml2.xmlFirstElementChild(parentXmlNodePtrRoot)
+            parentNodeFound     = false
+            parentChildNameProp = nil
+            while parent_currentChildNode ~= ffi.NULL do
+              parentChildNodeName = nil
+              parentChildNameProp = nil
+              if tonumber(parent_currentChildNode.type) == ffi.C.XML_ELEMENT_NODE and parent_currentChildNode.name ~= ffi.NULL then
+                parentChildNodeName = ffi.string(parent_currentChildNode.name)
+                parentChildNameProp = libxml2.xmlGetProp(parent_currentChildNode, "name")
               end
-              -- If the parent document already contains a <types> node
-              -- we add the childs of the <types> node of the imported document into the <types> node of the parent document
-              if parentTypesNodeFound then
-                kong.log.debug("**jerome Parent with '<types>' node already exists")
-                importedChildCurrentNode = libxml2.xmlFirstElementChild(importedCurrentNode)
-                while importedChildCurrentNode ~= ffi.NULL and not errMessage do
-                  local copied_list = libxml2ex.xmlDocCopyNodeList (parent_xml_doc, importedChildCurrentNode)
-                  if copied_list ~= ffi.NULL then
-                    libxml2ex.xmlAddChildList(parent_currentNode2, copied_list)
-                    importedChildCurrentNode = ffi.cast("xmlNode *", importedChildCurrentNode.next)
-                    kong.log.debug("**jerome successfully added the child nodes into the Parent <types> node")
-                  else
-                    errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
-                  end
-                end
-              -- Else the parent document doesn't contain a <types> node
-              -- we add the <types> node of the imported document into the parent document
+              
+              if parentChildNameProp == importedNameProp and parentChildNodeName == importedNodeName then
+                -- Take into the name property to be sure to have the right node, for example:
+                -- if we have 2 <wsdl:message> with name="AddSoapIn" and name="AddSoapOut", we will be sure to add the child nodes of the imported <wsdl:message name="AddSoapIn"> 
+                -- into the right <wsdl:message name="AddSoapIn"> of the parent document
+                parentNodeFound = true
+                break
+              end
+              parent_currentChildNode = ffi.cast("xmlNode *", parent_currentChildNode.next)
+            end
+            -- If the parent document already contains the Imported node (<wsdl:types>, <wsdl:message>, etc.)            
+            -- we add the childs of the Imported node (of the imported document) into the corresponding node of the parent document            
+            if parentNodeFound == true then
+              
+              importedChildCurrentNode = libxml2.xmlFirstElementChild(importedCurrentNode)
+              -- xmlDocCopyNodeList: copies the node and the siblings nodes including the child Node
+              local copied_list = libxml2ex.xmlDocCopyNodeList (parent_xml_doc, importedChildCurrentNode)
+              if copied_list ~= ffi.NULL then
+                libxml2ex.xmlAddChildList(parent_currentChildNode, copied_list)                
               else
-                kong.log.debug("**jerome Parent with No '<types>' node")
-                local copied_list = libxml2ex.xmlDocCopyNodeList (parent_xml_doc, importedCurrentNode)
-                if copied_list ~= ffi.NULL then
-                  libxml2ex.xmlAddChildList(parentXmlNodePtrRoot, copied_list)
-                  kong.log.debug("**jerome successfully added the imported <types> node into the Parent document")
-                else
-                  errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
-                end
+                errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
+              end
+            -- Else the parent document doesn't contain the Imported node (<wsdl:types>, <wsdl:message>, etc.)
+            -- we add the Imported node (of the imported document) into the Parent document just below the root node of 
+            -- the Parent document, it could be <wsdl:definitions>, <wsdl:description>, <xsd:schema>
+            else
+              -- xmlDocCopyNodeList: copies the node including the child Node (but does NOT copy the siblings nodes)
+              local copied_list = libxml2ex.xmlDocCopyNode	(importedCurrentNode, parent_xml_doc, 1)
+              if copied_list ~= ffi.NULL then
+                libxml2ex.xmlAddChildList(parentXmlNodePtrRoot, copied_list)
+              else
+                errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
               end
             end
+            
             importedCurrentNode = ffi.cast("xmlNode *", importedCurrentNode.next)
           end
         end
@@ -2364,7 +1982,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, pluginConf, child
       
       -- Recursively import all WSDL definitions referenced by <wsdl:import>
       if recursiveWsdlImport then
-        xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport2(xmlgeneral.WSDL, filePathPrefix, WSDL, nil, verbose)
+        xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlgeneral.WSDL, filePathPrefix, WSDL, nil, verbose)
         cacheWSDL.xmlWsdlPtr = xml_doc
         if not errMessage then
           kong.log.debug("WSDL Validation, the WSDL has successfully imported WSDL dependencies and is parsed and compiled in memory")
@@ -2467,18 +2085,18 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, pluginConf, child
       if not typesNodeFound then
         -- Force the cache to nil. So for the next call there will have a new compilation/caching try
         cacheWSDL.xmlWsdlPtr = nil
-        errMessage = xmlgeneral.invalidWSDL_XSD .. ". " .. "Unable to find the '< wsdl:types >'"        
+        errMessage = xmlgeneral.invalidWSDL_XSD .. ". " .. "Unable to find the 'wsdl:types'"        
         soapFaultCode = xmlgeneral.soapFaultCodeServer
         kong.log.err (errMessage)
         return xmlToValidate_doc, errMessage, soapFaultCode
       end
     else
-      kong.log.debug("Unable to find the '< wsdl:definitions >', so considering the XSD as a raw '<xs:schema>'")
+      kong.log.debug("Unable to find the '<wsdl:definitions>', so considering the XSD as a raw '<xs:schema>'")
     end
 
     -- If we found the '<wsdl:types>' Node we select the first child Node which is '<xs:schema>'
     if typesNodeFound then
-      kong.log.debug("XMLValidateWithWSDL, found the '< wsdl:types >' Node")
+      kong.log.debug("XMLValidateWithWSDL, found the '<wsdl:types>' Node")
       currentNode  = libxml2.xmlFirstElementChild(currentNode)
 
       -- If the 'forceSchemaLocation' is enabled

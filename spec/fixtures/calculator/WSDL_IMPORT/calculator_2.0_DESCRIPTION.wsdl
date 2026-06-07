@@ -14,8 +14,10 @@
       <xsd:include schemaLocation="calculator.request.Add.Subtract.xsd"/>
       <xsd:include schemaLocation="calculator.request.Multiply.Divide.xsd"/>
     </xsd:schema>
-    <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+    <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/ResponseAddSubtract">
       <xsd:import namespace="http://tempuri.org/" schemaLocation="calculator.response.Add.Subtract.xsd"/>
+    </xsd:schema>
+    <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/ResponseMultiplyDivide">
       <xsd:import namespace="http://tempuri.org/" schemaLocation="calculator.response.Multiply.Divide.xsd"/>
     </xsd:schema>
   </wsdl2:types>

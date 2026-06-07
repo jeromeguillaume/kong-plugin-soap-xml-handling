@@ -6,9 +6,9 @@ local PLUGIN_NAME = "soap-xml-request-handling"
 local request_common = require "spec.common.request"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-	--end
+	if strategy == "off" then
+    goto continue
+	end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -264,11 +264,11 @@ for _, strategy in helpers.all_strategies() do
 			end)
 
 			it("2|WSDL Validation with mixed XSD imported - included - and downloaded - Add in XSD#1 - Ok", function()
-				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
+				request_common._2_WSDL_Validation_with_mixed_XSD_imported_included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
 			end)
 
 			it("2|WSDL Validation with mixed XSD imported - included - and downloaded - Subtract in XSD#2 - Ok", function()
-				request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
+				request_common._2_WSDL_Validation_with_mixed_XSD_imported_included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
 			end)
 
 			it("2|XSD Validation - large body 16K (due to low KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE) - Ok", function()

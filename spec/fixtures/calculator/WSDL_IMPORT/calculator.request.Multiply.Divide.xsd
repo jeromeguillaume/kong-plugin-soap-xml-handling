@@ -1,8 +1,8 @@
 <xsd:schema attributeFormDefault="unqualified" 
-            elementFormDefault="qualified"             
-            targetNamespace="http://tempuri.org/"
-            xmlns:xsd="http://www.w3.org/2001/XMLSchema">            
-  
+            elementFormDefault="qualified" 
+            targetNamespace="http://tempuri.org/" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            
   <xsd:element name="Multiply" type="tem:MultiplyType" xmlns:tem="http://tempuri.org/"/>
   <xsd:complexType name="MultiplyType">
     <xsd:sequence>

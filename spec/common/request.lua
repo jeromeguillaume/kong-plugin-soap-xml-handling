@@ -698,7 +698,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
       <faultcode>soap:Server</faultcode>
       <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Invalid WSDL/XSD schema. The root node of the imported WSDL definition is not Less Than wsdl:definitions Greater Than nor Less Than wsdl:description Greater Than</errorMessage>
+        <errorMessage>Invalid WSDL/XSD schema. The root node of the imported definition is not 'wsdl:definitions' nor 'wsdl:description' for WSDL and not 'xsd:schema' for XSD</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -712,7 +712,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
       <faultcode>soap:Server</faultcode>
       <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'Less Than wsdl:types Greater Than'</errorMessage>
+        <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'wsdl:types'</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -3447,7 +3447,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_de
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
-function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
+function request_common._2_WSDL_Validation_with_mixed_XSD_imported_included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_mixed_XSD_Add_in_XSD1_included_Subtract_in_XSD2_downloaded_with_verbose_ok", {
 		headers = {
@@ -3463,7 +3463,7 @@ function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_an
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
-function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
+function request_common._2_WSDL_Validation_with_mixed_XSD_imported_included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_mixed_XSD_Add_in_XSD1_included_Subtract_in_XSD2_downloaded_with_verbose_ok", {
 		headers = {

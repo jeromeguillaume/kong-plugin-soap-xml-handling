@@ -3,22 +3,13 @@
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:tns="http://tempuri.org"
                   name="calculator_DEFINITION_Multiply_Divide"
-                  targetNamespace="http://tempuri.org/">
+                  targetNamespace="http://tempuri.org/definition">
   <wsdl:types>
-    <!-- This WSDL adds 2 x XSD definitions by using <xsd:include> and <xsd:import> -->
-    <xsd:schema elementFormDefault="qualified" 
-                xmlns:xsd="http://www.w3.org/2001/XMLSchema"                 
-                targetNamespace="http://tempuri.org/">
-      <!-- comment for debug #A: it must be there after the recursive import -->
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
       <xsd:include schemaLocation="calculator.request.Multiply.Divide.xsd"/>
-      <!-- comment for debug #B: it must be there after the recursive import -->
     </xsd:schema>
-    <xsd:schema elementFormDefault="qualified" 
-                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-                targetNamespace="http://tempuri.org/">
-      <!-- comment for debug #C: it must be there after the recursive import -->
-      <xsd:import import="" schemaLocation="calculator.response.Multiply.Divide.xsd"/>
-      <!-- comment for debug #D: it must be there after the recursive import -->
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.response.Multiply.Divide.xsd"/>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="MultiplySoapIn">

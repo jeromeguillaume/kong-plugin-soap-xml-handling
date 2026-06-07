@@ -3,26 +3,13 @@
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
                   xmlns:tns="http://tempuri.org"
                   name="calculator_DEFINITION_request"
-                  targetNamespace="http://tempuri.org/">
+                  targetNamespace="http://tempuri.org/definition">
   <wsdl:types>
-    <!-- This WSDL adds 2 x XSD definitions by using <xsd:include> and <xsd:import> -->
-    <xsd:schema elementFormDefault="qualified" 
-                xmlns:xsd="http://www.w3.org/2001/XMLSchema"                 
-                targetNamespace="http://tempuri.org/">
-      <!-- comment for debug #1: it must be there after the recursive import -->
-      <xsd:include schemaLocation="calculator.request.Add.Subtract.xsd"/>
-      <!-- comment for debug #2: it must be there after the recursive import -->
-      <xsd:include schemaLocation="calculator.request.Multiply.Divide.xsd"/>
-      <!-- comment for debug #3: it must be there after the recursive import -->
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.xsd"/>
     </xsd:schema>
-    <xsd:schema elementFormDefault="qualified" 
-                xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-                targetNamespace="http://tempuri.org/">
-      <!-- comment for debug #6: it must be there after the recursive import -->
-      <xsd:import schemaLocation="calculator.response.Add.Subtract.xsd"/>
-      <!-- comment for debug #7: it must be there after the recursive import -->
-      <xsd:import schemaLocation="calculator.response.Multiply.Divide.xsd"/>
-      <!-- comment for debug #8: it must be there after the recursive import -->
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.response.xsd"/>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="AddSoapIn">

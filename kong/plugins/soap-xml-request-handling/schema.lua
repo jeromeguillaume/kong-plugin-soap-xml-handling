@@ -45,7 +45,6 @@ return {
           { VerboseRequest = { type = "boolean", default = false }, },
           { wsdlApiSchemaForceSchemaLocation = { type = "boolean", default = false }, },
           { wsdlApiRecursiveWsdlImport = { type = "boolean", default = false }, },
-          { wsdlApiRecursiveXsdImport = { type = "boolean", default = false }, },
           { xsdApiSchema = { type = "string", required = false }, },
           { xsdApiSchemaInclude = { type = "map", required = false, 
               keys = { type = "string", required = true },
