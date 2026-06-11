@@ -129,6 +129,18 @@ request_common.calculator_Subtract_Full_Request = [[
 </soap:Envelope>
 ]]
 
+request_common.calculator_Multiply_Full_Request = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<Multiply xmlns="http://tempuri.org/">
+			<intA>10</intA>
+			<intB>4</intB>
+		</Multiply>
+	</soap:Body>
+</soap:Envelope>
+]]
+
 request_common.calculator_Power_Full_Request = [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -698,7 +710,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
       <faultcode>soap:Server</faultcode>
       <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Invalid WSDL/XSD schema. The root node of the imported WSDL definition is not Less Than wsdl:definitions Greater Than nor Less Than wsdl:description Greater Than</errorMessage>
+        <errorMessage>Invalid WSDL/XSD schema. The root node of the imported definition is not 'wsdl:definitions' nor 'wsdl:description' for WSDL and not 'xsd:schema' for XSD</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -712,7 +724,7 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
       <faultcode>soap:Server</faultcode>
       <faultstring>Request processing %- XSD validation failed</faultstring>
       <detail>
-        <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'Less Than wsdl:types Greater Than'</errorMessage>
+        <errorMessage>Invalid WSDL/XSD schema. Unable to find the 'wsdl:types'</errorMessage>
       </detail>
     </soap:Fault>
   </soap:Body>
@@ -1506,11 +1518,13 @@ request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_DEFINITION_ok
                   name="calculator_DEFINITION_request"
                   targetNamespace="http://tempuri.org/definition">
   <wsdl:types>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
-      <xsd:include schemaLocation="calculator.request.xsd"/>
+    <!-- This WSL adds 2 x XSD definitions by using <xsd:include> and <xsd:import> -->
+    
+		<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.xsd"/>      
     </xsd:schema>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
-      <xsd:include schemaLocation="calculator.response.xsd"/>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="calculator.response.xsd"/>
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="AddSoapIn">
@@ -3445,7 +3459,7 @@ function request_common._2_WSDL_v2_Validation_no_Import_wsdl2_description_xsd_de
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
-function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
+function request_common._2_WSDL_Validation_with_mixed_XSD_imported_included_and_downloaded_Add_in_XSD1_with_verbose_ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_mixed_XSD_Add_in_XSD1_included_Subtract_in_XSD2_downloaded_with_verbose_ok", {
 		headers = {
@@ -3461,7 +3475,7 @@ function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_an
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
-function request_common._2_WSDL_Validation_with_mixed_XSD_imported___included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
+function request_common._2_WSDL_Validation_with_mixed_XSD_imported_included_and_downloaded_Subtract_in_XSD2_with_verbose_ok (assert, client)
 	-- invoke a test request
 	local r = client:post("/calculatorWSDL_with_mixed_XSD_Add_in_XSD1_included_Subtract_in_XSD2_downloaded_with_verbose_ok", {
 		headers = {

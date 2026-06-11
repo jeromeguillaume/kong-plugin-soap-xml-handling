@@ -9,11 +9,16 @@
     xmlns:wsam=      "http://www.w3.org/2007/05/addressing/metadata">
 
   <wsdl2:types>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
-      <xsd:include schemaLocation="calculator.request.xsd"/>
+    <!-- This WSL adds 2 x XSD definitions by using <xsd:include> and <xsd:import> -->
+    <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
+      <xsd:include schemaLocation="calculator.request.Add.Subtract.xsd"/>
+      <xsd:include schemaLocation="calculator.request.Multiply.Divide.xsd"/>
     </xsd:schema>
-    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/">
-      <xsd:include schemaLocation="calculator.response.xsd"/>
+    <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/ResponseAddSubtract">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="calculator.response.Add.Subtract.xsd"/>
+    </xsd:schema>
+    <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://tempuri.org/ResponseMultiplyDivide">
+      <xsd:import namespace="http://tempuri.org/" schemaLocation="calculator.response.Multiply.Divide.xsd"/>
     </xsd:schema>
   </wsdl2:types>
   

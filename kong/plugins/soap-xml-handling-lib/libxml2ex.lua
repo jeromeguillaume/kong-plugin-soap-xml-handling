@@ -141,7 +141,7 @@ local asyncDownloadEntities_callback = function(_, url_entries)
   return true
 end
 
--- Read a file (for instance WSDL/XSD/XSLT/XML) from the filesystem
+-- Read a file (for instance WSDL/XSD/XSLT/XML) from the file system
 function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   local ret
   local file
@@ -200,6 +200,19 @@ function libxml2ex.readFile(hasToRead, filePathPrefix, filePath)
   
   return ret, errMsg
 end
+
+-- Dump an XML to the file system
+function libxml2ex.xmlDumpToFile(fileName, xml_doc)
+  local ret = -1
+  if xml_doc ~= ffi.NULL then
+    ret = xml2.xmlSaveFormatFile(fileName, xml_doc, 1)
+  end
+  if ret == -1 then
+    kong.log.err("Error calling 'xmlDumpToFile' for '", fileName, "' file")
+  end
+  return ret
+end
+
 
 -- Custom XML entity loader function.
 function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
@@ -740,12 +753,27 @@ end
 
 
 -- Copy a node list and all children into a new document.
--- doc:	the target document
--- node:	the first node in the list.
+-- Parameters
+--  doc:	the target document
+--  node:	the first node in the list.
 -- Returns: the head of the copied list or NULL if a memory allocation failed
 function libxml2ex.xmlDocCopyNodeList	(doc, node)
-  local head = xml2.xmlDocCopyNodeList	(doc, node);
+  local head = xml2.xmlDocCopyNodeList	(doc, node)
   return head
+end
+
+-- Copy a node into another document.
+-- Parameters
+--  node	the node
+--  doc	the document
+--  extended	mode of operation
+--    If extended is 0, make a shallow copy.
+--    If extended is 1, make a deep copy (properties, namespaces and children when applicable).
+--    If extended is 2, make a shallow copy including properties and namespaces of elements.
+-- Returns: the copied node or NULL if a memory allocation failed
+function libxml2ex.xmlDocCopyNode	(node, doc, extended)
+  local copy = xml2.xmlDocCopyNode	(node, doc, extended)
+  return copy
 end
 
 -- Append a node list to another node

@@ -2,10 +2,10 @@
 <wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
                   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
                   xmlns:def="http://tempuri.org/" 
-                  name="calculator_BIND" 
+                  name="calculator_BIND_Add_Subtract" 
                   targetNamespace="http://tempuri.org/">
                   
-	<wsdl:import namespace="http://tempuri.org/" location="calculator_DEFINITION.wsdl" />
+	<wsdl:import namespace="http://tempuri.org/" location="calculator_DEFINITION.Add.Subtract.wsdl" />
   <wsdl:binding name="CalculatorBinding" type="defreq:CalculatorPortType">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
     <wsdl:operation name="Add">
@@ -19,24 +19,6 @@
     </wsdl:operation>
     <wsdl:operation name="Subtract">
       <soap:operation soapAction="http://tempuri.org/Subtract" soapActionRequired="false" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="Multiply">
-      <soap:operation soapAction="http://tempuri.org/Multiply" style="document" />
-      <wsdl:input>
-        <soap:body use="literal" />
-      </wsdl:input>
-      <wsdl:output>
-        <soap:body use="literal" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="Divide">
-      <soap:operation soapAction="http://tempuri.org/Divide" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>

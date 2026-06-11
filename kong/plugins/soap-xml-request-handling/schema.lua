@@ -141,6 +141,12 @@ return {
           return nil, "config.xsdApiSchema must be defined if config.wsdlApiRecursiveWsdlImport is enabled"
         end
 
+        -- Check that if 'wsdlApiRecursiveXsdImport' is enabled, the 'xsdApiSchema' is defined
+        if (type(config.wsdlApiRecursiveXsdImport) == 'boolean' and config.wsdlApiRecursiveXsdImport) and 
+            (type(config.xsdApiSchema) == 'userdata' or config.xsdApiSchema == '<!-- -->') then
+          return nil, "config.xsdApiSchema must be defined if config.wsdlApiRecursiveXsdImport is enabled"
+        end        
+
         return true
       end
     }},

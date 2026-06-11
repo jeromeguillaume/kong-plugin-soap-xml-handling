@@ -15,16 +15,4 @@
       <xsd:element type="xsd:integer" name="SubtractResult"/>      
     </xsd:sequence>
   </xsd:complexType>
-  <xsd:element name="MultiplyResponse" type="tem:MultiplyResponseType" xmlns:tem="http://tempuri.org/"/>
-  <xsd:complexType name="MultiplyResponseType">
-    <xsd:sequence>
-      <xsd:element type="xsd:integer" name="MultiplyResult"/>
-    </xsd:sequence>
-  </xsd:complexType>
-  <xsd:element name="DivideResponse" type="tem:DivideResponseType" xmlns:tem="http://tempuri.org/"/>
-  <xsd:complexType name="DivideResponseType">
-    <xsd:sequence>
-      <xsd:element type="xsd:integer" name="DivideResult"/>
-    </xsd:sequence>
-  </xsd:complexType>
 </xsd:schema>

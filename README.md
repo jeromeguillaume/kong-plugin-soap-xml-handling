@@ -86,7 +86,7 @@ Each handling is optional
       - To only allow SOAP 1.1 request and reject SOAP 1.2, set `config.xsdSoap12Schema` to `<!-- -->`
       - To reject SOAP 1.1 request and only allow SOAP 1.2, set `config.xsdSoapSchema` to `<!-- -->` and define `config.xsdSoap12Schema` and `config.xsdSoap12SchemaInclude`
     - `ROUTING BY XPATH`: define the targets twice in `config.RouteXPathTargets` one for SOAP 1.1 and another for SOAP 1.2
-    - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions. see [Known Limitations](#known-limitations)
+    - `XSLT TRANSFORMATION`: the same XSLT can be used for both SOAP versions
   
 4) To completly disable the `WSDL/XSD VALIDATION`:
     - Change the SOAP 1.1 default value of `config.xsdSoapSchema` to `<!-- -->`
@@ -99,10 +99,12 @@ Each handling is optional
 
 6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached:
-    - A warning is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+    - A warning is raised by kong (see log), for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
     - Despite this warning the Request plugin reads the file content (by using a blocking I/O) and the regular process is achieved. The kong latency is increased due to I/O disk and it can impact other requests
 
 7) It's recommended to enable `ignoreProcessIfServiceHttpError`: in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) the Response plugin ignores the SOAP/XML process and returns a generic SOAP Fault message
+
+8) Pay attention to [Known Limitations](#known-limitations)
 
 <a id="information"></a>
 
@@ -110,9 +112,9 @@ In the event the request body size is reached:
 ### XML Definitions in files
 The XML definitions (for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`) can be put on the Kong Gateway file system rather using a raw definition. 
 Example for `config.xsdApiSchema`:
-  - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
   - File WSDL definition: `/usr/local/apiclient.wsdl`
     - The file name must not include space or tabulation
+  - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
 
 The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
@@ -1720,3 +1722,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Enhanced the error management:
     - Forced the HTTP status code to a default 500 in the event there is a plugin error or an upstream server error (4XX or 5XX)
     - Added a feature to customize HTTP status code and the Fault (by using a stylesheet transformation - XSLT)
+- v1.4.7:
+  - Bumped to Kong Gateway v3.14.0.5
+  - `WSDL Validation`: improved the recursive import of wsdl dependencies (related to `wsdlApiRecursiveWsdlImport`) and taked into account more that one `<wsdl:import>` in the same WSDL file
+  - Added `XML_PARSE_NOBLANKS` (to `xmlReadMemory`) for improving performance in case of highly indented XML files (lots of whitespace) and for a human readable file (`xmlDumpToFile`)
