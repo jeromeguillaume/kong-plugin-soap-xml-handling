@@ -110,9 +110,9 @@ In the event the request body size is reached:
 ### XML Definitions in files
 The XML definitions (for `WSDL/XSD VALIDATION` and `XSLT TRANSFORMATION`) can be put on the Kong Gateway file system rather using a raw definition. 
 Example for `config.xsdApiSchema`:
-  - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
   - File WSDL definition: `/usr/local/apiclient.wsdl`
     - The file name must not include space or tabulation
+  - Raw WSDL definition: `<wsdl:definitions> ... </wsdl:definitions>`
 
 The user is in charge of putting the XML definition files on the Kong Gateway file system.
 
