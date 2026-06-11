@@ -129,6 +129,18 @@ request_common.calculator_Subtract_Full_Request = [[
 </soap:Envelope>
 ]]
 
+request_common.calculator_Multiply_Full_Request = [[
+<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<Multiply xmlns="http://tempuri.org/">
+			<intA>10</intA>
+			<intB>4</intB>
+		</Multiply>
+	</soap:Body>
+</soap:Envelope>
+]]
+
 request_common.calculator_Power_Full_Request = [[
 <?xml version="1.0" encoding="utf-8"?>
 <soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">

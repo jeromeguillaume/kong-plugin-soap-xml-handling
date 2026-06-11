@@ -69,7 +69,7 @@ services:
       retries: 10
 
   kong-bootstrap:
-    image: 'kong/kong-gateway:3.13.0.2'  # Kong Gateway image (default to latest version)
+    image: 'kong/kong-gateway:3.14.0.5'  # Kong Gateway image (default to latest version)
     platform: linux/${ARCHITECTURE}
     container_name: kong-bootstrap
     networks:
@@ -82,10 +82,11 @@ services:
       <<: *kong-env                 # Reuse environment config from x-kong-config
       KONG_PASSWORD: handyshake    # Admin GUI password (required for RBAC)
     command: kong migrations bootstrap  # Run DB migrations to initialize Kong schema
+    #command: kong migrations up  # Run DB migrations to initialize Kong schema
 
   kong-gateway-soap-xml-handling:
-    image: 'kong/kong-gateway:3.13.0.2'  # Main Kong Gateway Control Plane (default to latest version)
-    #image: 'jeromeguillaume/kong-soap-xml:3.13.0.2-1.4.6-12.9'
+    image: 'kong/kong-gateway:3.14.0.5'  # Main Kong Gateway Control Plane (default to latest version)
+    #image: 'jeromeguillaume/kong-soap-xml:3.14.0.5-1.4.7-12.9'
     platform: linux/${ARCHITECTURE}
     container_name: kong-gateway-soap-xml-handling
     restart: on-failure
@@ -99,6 +100,8 @@ services:
       - ${PROJECT_DIR}/kong/saxon/conf:/usr/local/lib/kongsaxon/conf
       - ${PROJECT_DIR}/spec/fixtures/:/kong-plugin/spec/fixtures
       - ${PROJECT_DIR}/temp:/kong-plugin/temp
+      # for calculator.apim.eu (or httpbin.apim.eu)
+      - ${PROJECT_DIR}/spec/fixtures/certificates:/etc/kongcertificates
       #- ${PROJECT_DIR}/kong/libxml2/2.14.6/arm64/:/usr/local/lib/kongsaxon
     environment:
       <<: *kong-env
@@ -115,6 +118,8 @@ services:
       SOAP_PASSWORD: KongP@ssswOrd!
       KONG_LOG_LEVEL: debug
       KONG_NGINX_HTTP_CLIENT_BODY_BUFFER_SIZE: 8k
+      KONG_LUA_SSL_TRUSTED_CERTIFICATE: /etc/kongcertificates/lets-encrypt/root-yr.pem,/etc/kongcertificates/lets-encrypt/root-ye.pem
+      KONG_LUA_SSL_VERIFY_DEPTH: 3
       #KONG_NGINX_PROXY_PROXY_REQUEST_BUFFERING: off
     depends_on:
       kong-bootstrap:

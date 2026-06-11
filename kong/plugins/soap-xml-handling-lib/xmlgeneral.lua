@@ -1779,14 +1779,15 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
               if tonumber(parent_currentChildNode.type) == ffi.C.XML_ELEMENT_NODE and parent_currentChildNode.name ~= ffi.NULL then
                 parentChildNodeName = ffi.string(parent_currentChildNode.name)
                 parentChildNameProp = libxml2.xmlGetProp(parent_currentChildNode, "name")
-              end
               
-              if parentChildNameProp == importedNameProp and parentChildNodeName == importedNodeName then
-                -- Take into the name property to be sure to have the right node, for example:
-                -- if we have 2 <wsdl:message> with name="AddSoapIn" and name="AddSoapOut", we will be sure to add the child nodes of the imported <wsdl:message name="AddSoapIn"> 
-                -- into the right <wsdl:message name="AddSoapIn"> of the parent document
-                parentNodeFound = true
-                break
+                if parentChildNameProp == importedNameProp and parentChildNodeName == importedNodeName then
+                  -- Take into the 'name' property to be sure to have the right node, for example:
+                  -- If we have 2 <wsdl:message name="AddSoapIn"> and <wsdl:message name="AddSoapOut">, we will be sure to add the child nodes of the imported <wsdl:message name="AddSoapIn"> 
+                  -- into the right <wsdl:message name="AddSoapIn"> of the parent document
+                  -- Else we have <wsdl:types>, there is no 'name' property to consider (and parentChildNameProp and importedNameProp are both 'nil' and equal)
+                  parentNodeFound = true
+                  break
+                end
               end
               parent_currentChildNode = ffi.cast("xmlNode *", parent_currentChildNode.next)
             end
@@ -1833,9 +1834,10 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
   end
   
   if not errMessage then
-    if not i then
-      libxml2ex.xmlDumpToFile ("/kong-plugin/temp/dump-"..input_API_definition, parent_xml_doc)
-    end
+    --if not i then
+    --  -- Dump in a file the complete WSDL document with all the imported definitions (for debug purpose)
+    --  libxml2ex.xmlDumpToFile ("/kong-plugin/temp/dump-"..input_API_definition, parent_xml_doc)
+    --end
     kong.log.debug("loadXMLwithRecursiveImport, END with success")
   else
     kong.log.debug("loadXMLwithRecursiveImport, END with error: ", errMessage)
@@ -1986,23 +1988,11 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, pluginConf, child
         cacheWSDL.xmlWsdlPtr = xml_doc
         if not errMessage then
           kong.log.debug("WSDL Validation, the WSDL has successfully imported WSDL dependencies and is parsed and compiled in memory")
-          libxml2ex.xmlDumpToFile ("/kong-plugin/temp/dumpRecursiveImportWSDL.wsdl", xml_doc)
         else
           kong.log.debug("WSDL Validation, fail to import WSDL dependencies and parse and compile it in memory, ", errMessage) 
         end
       end
 
-      -- Recursively import all XSD definitions referenced by <xsd:import> or <xsd:include>
-      --if not errMessage and recursiveXsdImport then
-      --  xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlgeneral.XSD, filePathPrefix, WSDL, xml_doc, verbose)
-      --  cacheWSDL.xmlWsdlPtr = xml_doc
-      --  if not errMessage then
-      --    kong.log.debug("WSDL Validation, the WSDL has successfully imported XSD dependencies and is parsed and compiled in memory")
-      --    libxml2ex.xmlDumpToFile ("/kong-plugin/temp/dumpRecursiveImportXSD.wsdl", xml_doc)
-      --  else
-      --    kong.log.debug("WSDL Validation, fail to import XSD dependencies and parse and compile it in memory, ", errMessage) 
-      --  end
-      --end
     else
       -- Parse an XML in-memory document of the WSDL and build a tree
       local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR, ffi.C.XML_PARSE_NOWARNING, ffi.C.XML_PARSE_NOBLANKS)

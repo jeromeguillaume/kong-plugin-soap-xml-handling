@@ -12,9 +12,9 @@ local pluginResponse = caching_common.pluginResponse
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
 for _, strategy in helpers.all_strategies() do
-  if strategy == "off" then
-    goto continue
-  end
+  --if strategy == "off" then
+  --  goto continue
+  --end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     
