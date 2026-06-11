@@ -99,7 +99,7 @@ Each handling is optional
 
 6) It's recommendeded to redefine the maximum request body size allowed by Kong: adapt the value of [nginx_http_client_body_buffer_size](https://developer.konghq.com/gateway/configuration/#nginx-http-client-body-buffer-size) in regards of the XML body request size. The default value is `8k` bytes. The response body is not concerned and it has no limit.
 In the event the request body size is reached:
-    - A warning is raised by kong, for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
+    - A warning is raised by kong (see log), for instance: `a client request body is buffered to a temporary file /usr/local/kong/client_body_temp/0000000001`
     - Despite this warning the Request plugin reads the file content (by using a blocking I/O) and the regular process is achieved. The kong latency is increased due to I/O disk and it can impact other requests
 
 7) It's recommended to enable `ignoreProcessIfServiceHttpError`: in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) the Response plugin ignores the SOAP/XML process and returns a generic SOAP Fault message
