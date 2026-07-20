@@ -584,6 +584,102 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
+        local calculatorWSDL11_import_and_merge_WSDL_dependencies_with_circular_import_with_verbose_ok_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL11_import_and_merge_WSDL_dependencies_with_circular_import_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL11_import_and_merge_WSDL_dependencies_with_circular_import_with_verbose_ok_route,
+          config = {
+            VerboseRequest = true,
+            SOAPAction_Header = "yes",
+            wsdlApiRecursiveWsdlImport = true,
+            xsltLibrary = xsltLibrary,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/WSDL_IMPORT",
+            xsdApiSchema = "calculator_circular.wsdl"
+          }
+        }
+        blue_print.plugins:insert {
+          name = pluginResponse,
+          route = calculatorWSDL11_import_and_merge_WSDL_dependencies_with_circular_import_with_verbose_ok_route,
+          config = {
+            VerboseResponse = true,
+            wsdlApiRecursiveWsdlImport = true,
+            xsltLibrary = xsltLibrary,
+            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/WSDL_IMPORT",
+            xsdApiSchema = "calculator_circular.wsdl"
+          }
+        }
+        
+        local calculatorWSDL11_import_and_merge_WSDL_dependencies_with_max_recursion_depth_import_with_verbose_ok_route = blue_print.routes:insert{
+          service= calculator_service,
+          paths= { "/calculatorWSDL11_import_and_merge_WSDL_dependencies_with_max_recursion_depth_import_with_verbose_ok" }
+          }
+        blue_print.plugins:insert {
+          name = pluginRequest,
+          route = calculatorWSDL11_import_and_merge_WSDL_dependencies_with_max_recursion_depth_import_with_verbose_ok_route,
+          config = {
+            VerboseRequest = true,
+            SOAPAction_Header = "yes",
+            wsdlApiRecursiveWsdlImport = true,
+            xsltLibrary = xsltLibrary,
+            xsdApiSchema = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" targetNamespace="http://tempuri.org/"><wsdl:import location="calculator_001.wsdl" namespace="http://tempuri.org/001"/></wsdl:definitions>]],
+            xsdApiSchemaInclude = {
+              ["calculator_001.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_002.wsdl" namespace="http://tempuri.org/002"/></wsdl:definitions>]],
+              ["calculator_002.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_003.wsdl" namespace="http://tempuri.org/003"/></wsdl:definitions>]],
+              ["calculator_003.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_004.wsdl" namespace="http://tempuri.org/004"/></wsdl:definitions>]],
+              ["calculator_004.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_005.wsdl" namespace="http://tempuri.org/005"/></wsdl:definitions>]],
+              ["calculator_005.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_006.wsdl" namespace="http://tempuri.org/006"/></wsdl:definitions>]],
+              ["calculator_006.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_007.wsdl" namespace="http://tempuri.org/007"/></wsdl:definitions>]],
+              ["calculator_007.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_008.wsdl" namespace="http://tempuri.org/008"/></wsdl:definitions>]],
+              ["calculator_008.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_009.wsdl" namespace="http://tempuri.org/009"/></wsdl:definitions>]],
+              ["calculator_009.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_010.wsdl" namespace="http://tempuri.org/010"/></wsdl:definitions>]],
+              ["calculator_010.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_011.wsdl" namespace="http://tempuri.org/011"/></wsdl:definitions>]],
+              ["calculator_011.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_012.wsdl" namespace="http://tempuri.org/012"/></wsdl:definitions>]],
+              ["calculator_012.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_013.wsdl" namespace="http://tempuri.org/013"/></wsdl:definitions>]],
+              ["calculator_013.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_014.wsdl" namespace="http://tempuri.org/014"/></wsdl:definitions>]],
+              ["calculator_014.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_015.wsdl" namespace="http://tempuri.org/015"/></wsdl:definitions>]],
+              ["calculator_015.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_016.wsdl" namespace="http://tempuri.org/016"/></wsdl:definitions>]],
+              ["calculator_016.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_017.wsdl" namespace="http://tempuri.org/017"/></wsdl:definitions>]],
+              ["calculator_017.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_018.wsdl" namespace="http://tempuri.org/018"/></wsdl:definitions>]],
+              ["calculator_018.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_019.wsdl" namespace="http://tempuri.org/019"/></wsdl:definitions>]],
+              ["calculator_019.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_020.wsdl" namespace="http://tempuri.org/020"/></wsdl:definitions>]],
+              ["calculator_020.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_021.wsdl" namespace="http://tempuri.org/021"/></wsdl:definitions>]],
+              ["calculator_021.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_022.wsdl" namespace="http://tempuri.org/022"/></wsdl:definitions>]],
+              ["calculator_022.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_023.wsdl" namespace="http://tempuri.org/023"/></wsdl:definitions>]],
+              ["calculator_023.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_024.wsdl" namespace="http://tempuri.org/024"/></wsdl:definitions>]],
+              ["calculator_024.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_025.wsdl" namespace="http://tempuri.org/025"/></wsdl:definitions>]],
+              ["calculator_025.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_026.wsdl" namespace="http://tempuri.org/026"/></wsdl:definitions>]],
+              ["calculator_026.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_027.wsdl" namespace="http://tempuri.org/027"/></wsdl:definitions>]],
+              ["calculator_027.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_028.wsdl" namespace="http://tempuri.org/028"/></wsdl:definitions>]],
+              ["calculator_028.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_029.wsdl" namespace="http://tempuri.org/029"/></wsdl:definitions>]],
+              ["calculator_029.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_030.wsdl" namespace="http://tempuri.org/030"/></wsdl:definitions>]],
+              ["calculator_030.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_031.wsdl" namespace="http://tempuri.org/031"/></wsdl:definitions>]],
+              ["calculator_031.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_032.wsdl" namespace="http://tempuri.org/032"/></wsdl:definitions>]],
+              ["calculator_032.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_033.wsdl" namespace="http://tempuri.org/033"/></wsdl:definitions>]],
+              ["calculator_033.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_034.wsdl" namespace="http://tempuri.org/034"/></wsdl:definitions>]],
+              ["calculator_034.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_035.wsdl" namespace="http://tempuri.org/035"/></wsdl:definitions>]],
+              ["calculator_035.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_036.wsdl" namespace="http://tempuri.org/036"/></wsdl:definitions>]],
+              ["calculator_036.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_037.wsdl" namespace="http://tempuri.org/037"/></wsdl:definitions>]],
+              ["calculator_037.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_038.wsdl" namespace="http://tempuri.org/038"/></wsdl:definitions>]],
+              ["calculator_038.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_039.wsdl" namespace="http://tempuri.org/039"/></wsdl:definitions>]],
+              ["calculator_039.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_040.wsdl" namespace="http://tempuri.org/040"/></wsdl:definitions>]],
+              ["calculator_040.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_041.wsdl" namespace="http://tempuri.org/041"/></wsdl:definitions>]],
+              ["calculator_041.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_042.wsdl" namespace="http://tempuri.org/042"/></wsdl:definitions>]],
+              ["calculator_042.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_043.wsdl" namespace="http://tempuri.org/043"/></wsdl:definitions>]],
+              ["calculator_043.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_044.wsdl" namespace="http://tempuri.org/044"/></wsdl:definitions>]],
+              ["calculator_044.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_045.wsdl" namespace="http://tempuri.org/045"/></wsdl:definitions>]],
+              ["calculator_045.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_046.wsdl" namespace="http://tempuri.org/046"/></wsdl:definitions>]],
+              ["calculator_046.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_047.wsdl" namespace="http://tempuri.org/047"/></wsdl:definitions>]],
+              ["calculator_047.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_048.wsdl" namespace="http://tempuri.org/048"/></wsdl:definitions>]],
+              ["calculator_048.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_049.wsdl" namespace="http://tempuri.org/049"/></wsdl:definitions>]],
+              ["calculator_049.wsdl"] = [[<?xml version="1.0" encoding="UTF-8"?><wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"><wsdl:import location="calculator_050.wsdl" namespace="http://tempuri.org/050"/></wsdl:definitions>]]
+            }
+
+          }
+        }
+
         -- start kong
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
@@ -897,6 +993,40 @@ for _, strategy in helpers.all_strategies() do
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
         assert.matches('<AddResult>12</AddResult>', body)
+      end)
+
+      it("2+6|Request and Response plugins|WSDL Validation - Import and Merge the WSDL 1.1 dependencies (with circular <wsdl:import>) - Ok", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL11_import_and_merge_WSDL_dependencies_with_circular_import_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Subtract"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<SubtractResult>4</SubtractResult>', body)
+      end)
+
+      it("2|Request plugin|WSDL Validation - Import and Merge the WSDL 1.1 dependencies - Reached the maximum Recursion Depth - Ko", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL11_import_and_merge_WSDL_dependencies_with_max_recursion_depth_import_with_verbose_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["SOAPAction"] = "http://tempuri.org/Subtract"
+          },
+          body = request_common.calculator_Subtract_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_maximum_Recursion_Depth_for_Imports_verbose, body)
       end)
       
 		end)		

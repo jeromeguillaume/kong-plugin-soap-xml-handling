@@ -100,6 +100,7 @@ xmlgeneral.libxmlNoMatchGlobalDecl    = 1845  -- libxml2 Error code for 'No matc
                                               -- the 1st child of '<soap:Body>', can't be found in the XML by matching it against the XSD
 
 xmlgeneral.commentForEmptyXSD         = "<!-- -->"
+xmlgeneral.maxRecursionDepthImport    = 50
 
 local HTTP_ERROR_MESSAGES = {
     [400] = "Bad request",
@@ -973,7 +974,7 @@ function xmlgeneral.pluginConfigure (configs, pluginType)
 
     local log_level = kong.configuration.log_level
     -- DEBUG only
-    if log_level == "debug" then      
+    if log_level == "debug" then 
       -- DEBUG only: Get the number of 'entityLoader.hashKeys' (related to Async External Entities URL)    
       countHashKeys = 0
       for k, v in next, kong.xmlSoapAsync.entityLoader.hashKeys do
@@ -1604,7 +1605,7 @@ end
 -- Load the API (WSDL or XSD) definition and 
 -- Recursively import the other definitions referred by <import> or <include>
 ------------------------------------------------------------------------------------------------------------
-function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, input_API_definition, verbose)
+function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, importsAlreadyProcessed, depthImportsProcessed, filePathPrefix, input_API_definition, verbose)
   local errMessage              = nil
   local parentNodeName          = nil
   local parentChildNodeName     = nil
@@ -1632,6 +1633,13 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
   local API_definition          = input_API_definition
   
   kong.log.debug("loadXMLwithRecursiveImport, BEGIN for ", xmlOperation)
+
+  -- If the maximum recursion depth for the import/include is reached, we return an error
+  if depthImportsProcessed == xmlgeneral.maxRecursionDepthImport then    
+    errMessage = "Maximum recursion depth reached for the import/include of the WSDL/XSD definitions"
+    kong.log.debug("loadXMLwithRecursiveImport, ", errMessage)
+    return nil, errMessage, importsAlreadyProcessed, depthImportsProcessed
+  end
 
   local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
                                         ffi.C.XML_PARSE_NOWARNING,
@@ -1666,7 +1674,7 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
   
   if errMessage then
     kong.log.debug("loadXMLwithRecursiveImport, END with error: ", errMessage)
-    return nil, errMessage
+    return nil, errMessage, importsAlreadyProcessed, depthImportsProcessed
   end
 
   -- If the XML doc is a WSDL
@@ -1695,7 +1703,7 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
      (xmlOperation == xmlgeneral.XSD  and not parentXsdNodeFound  ) then
     -- Do nothing and ignore the content
     errMessage = "The root node of the imported definition is not 'wsdl:definitions' nor 'wsdl:description' for WSDL and not 'xsd:schema' for XSD"
-    return parent_xml_doc, errMessage
+    return parent_xml_doc, errMessage, importsAlreadyProcessed, depthImportsProcessed
   else
     kong.log.debug("loadXMLwithRecursiveImport, in the 'Parent' document found the expected definition for XML operation : '", xmlOperation, "' and nodeName: '", parentNodeName, "'")
   end
@@ -1723,9 +1731,22 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
         -- If a location is defined
         if locationPtr ~= ffi.NULL then
           locationStr = ffi.string(locationPtr)
-          kong.log.debug ("loadXMLwithRecursiveImport, Found <", parentNodeName, "> with location='", locationStr, "' in Parent document")
-          -- Do a recusrive call to load the imported document and its dependencies
-          imported_xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, locationStr, verbose)
+
+          -- Check that the imported document is not already processed (to avoid an infinite loop)
+          if not importsAlreadyProcessed then
+            importsAlreadyProcessed = {}
+          end
+          if importsAlreadyProcessed[locationStr] then
+            kong.log.debug ("loadXMLwithRecursiveImport, the imported definition '", locationStr, "' is already processed. Do nothing and avoid an infinite loop")
+            imported_xml_doc = ffi.NULL
+          else
+            importsAlreadyProcessed[locationStr] = {}
+            kong.log.debug ("loadXMLwithRecursiveImport, Found <", parentNodeName, "> with location='", locationStr, "' in Parent document")
+            depthImportsProcessed = depthImportsProcessed + 1  
+            -- Do a recursive call to load the imported document and its dependencies
+            imported_xml_doc, errMessage, importsAlreadyProcessed, depthImportsProcessed = xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, importsAlreadyProcessed, depthImportsProcessed, filePathPrefix, locationStr, verbose)
+            depthImportsProcessed = depthImportsProcessed - 1
+          end                  
         end
       end
 
@@ -1796,12 +1817,17 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
             if parentNodeFound == true then
               
               importedChildCurrentNode = libxml2.xmlFirstElementChild(importedCurrentNode)
-              -- xmlDocCopyNodeList: copies the node and the siblings nodes including the child Node
-              local copied_list = libxml2ex.xmlDocCopyNodeList (parent_xml_doc, importedChildCurrentNode)
-              if copied_list ~= ffi.NULL then
-                libxml2ex.xmlAddChildList(parent_currentChildNode, copied_list)                
+              -- If there is a child node (of child node in the imported document), for instance: <xsd:schema>, <wsdl:operation>
+              if importedChildCurrentNode ~= ffi.NULL then
+                -- xmlDocCopyNodeList: copies the node and the siblings nodes including the child Node
+                local copied_list = libxml2ex.xmlDocCopyNodeList (parent_xml_doc, importedChildCurrentNode)
+                if copied_list ~= ffi.NULL then
+                  libxml2ex.xmlAddChildList(parent_currentChildNode, copied_list)                
+                else
+                  errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
+                end
               else
-                errMessage = "Unable to copy the imported " .. xmlOperation .. " definition"
+                kong.log.debug("loadXMLwithRecursiveImport, the imported node <", importedNodeName, "> has no child node to add in the parent document")
               end
             -- Else the parent document doesn't contain the Imported node (<wsdl:types>, <wsdl:message>, etc.)
             -- we add the Imported node (of the imported document) into the Parent document just below the root node of 
@@ -1834,16 +1860,24 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, filePathPrefix, inp
   end
   
   if not errMessage then
-    --if not i then
+    --if kong.configuration.log_level == "debug" then
+    --  local fileName
+    --  -- If the API content is a raw definition
+    --  if i then
+    --    fileName = "raw-"..string.format("%02d", depthImportsProcessed)..".wsdl"
+    --  -- Else the API content is defined in a file
+    --  else
+    --    fileName = input_API_definition
+    --  end
     --  -- Dump in a file the complete WSDL document with all the imported definitions (for debug purpose)
-    --  libxml2ex.xmlDumpToFile ("/kong-plugin/temp/dump-"..input_API_definition, parent_xml_doc)
+    --  libxml2ex.xmlDumpToFile ("/kong-plugin/temp/dump-"..fileName, parent_xml_doc)
     --end
     kong.log.debug("loadXMLwithRecursiveImport, END with success")
   else
     kong.log.debug("loadXMLwithRecursiveImport, END with error: ", errMessage)
   end
   
-  return parent_xml_doc, errMessage
+  return parent_xml_doc, errMessage, importsAlreadyProcessed, depthImportsProcessed
 end
 
 
@@ -1984,7 +2018,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, pluginConf, child
       
       -- Recursively import all WSDL definitions referenced by <wsdl:import>
       if recursiveWsdlImport then
-        xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlgeneral.WSDL, filePathPrefix, WSDL, nil, verbose)
+        xml_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlgeneral.WSDL, nil, 0, filePathPrefix, WSDL, nil, verbose)
         cacheWSDL.xmlWsdlPtr = xml_doc
         if not errMessage then
           kong.log.debug("WSDL Validation, the WSDL has successfully imported WSDL dependencies and is parsed and compiled in memory")
@@ -2160,7 +2194,7 @@ function xmlgeneral.XMLValidateWithWSDL (pluginType, pluginId, pluginConf, child
           elseif errMessage and not async and not firstErrMessage then
             local j, _ = string.find(errMessage, "failed.to.load.external.entity")            
             local k, _ = string.find(errMessage, "Failed.to.parse.the.XML.resource")
-            local l, _ = string.find(errMessage, "Failed.to.locate.a schema.at.location")            
+            local l, _ = string.find(errMessage, "Failed.to.locate.a.schema.at.location")            
             -- If there is an error related to a failure to 'load external entity'
             if j or k or l then
               firstErrMessage = errMessage
@@ -2593,12 +2627,15 @@ function xmlgeneral.getSOAPActionFromWSDL (pluginId, pluginConf, request_Operati
   local WSDL                  = pluginConf.xsdApiSchema
   local verbose               = pluginConf.VerboseRequest or pluginConf.VerboseResponse
   local async                 = pluginConf.ExternalEntityLoader_Async
-  
+  local default_parse_options = bit.bor(ffi.C.XML_PARSE_NOERROR,
+                                        ffi.C.XML_PARSE_NOWARNING,
+                                        ffi.C.XML_PARSE_NOBLANKS)
+
   -- If asnchronous download is enabled (the WSDL is not cached)
   if async then
     -- Parse an XML in-memory document of the WSDL and build a tree
     kong.log.debug ("getSOAPActionFromWSDL: no WSDL caching due to Asynchronous external entities")
-    xmlWSDL_doc, errMessage = xmlgeneral.loadXMLwithRecursiveImport(xmlgeneral.WSDL, filePathPrefix, WSDL, nil, verbose)
+    xmlWSDL_doc, errMessage = libxml2ex.xmlReadMemory(WSDL, true, filePathPrefix, nil, nil, default_parse_options, verbose, false)  
 
     cacheSoapAction = {}
   else 

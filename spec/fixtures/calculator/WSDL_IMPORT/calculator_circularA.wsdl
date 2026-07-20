@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+                  xmlns:def="http://tempuri.org/" 
+                  name="circularA" 
+                  targetNamespace="http://tempuri.org/">
+                  
+	<wsdl:import namespace="http://tempuri.org/" location="calculator_circularB.wsdl" />
+</wsdl:definitions>

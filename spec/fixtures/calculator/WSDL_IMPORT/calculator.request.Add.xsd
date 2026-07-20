@@ -1,0 +1,13 @@
+<xsd:schema attributeFormDefault="unqualified" 
+            elementFormDefault="qualified" 
+            targetNamespace="http://tempuri.org/" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+            
+  <xsd:element name="Add" type="tem:AddType" xmlns:tem="http://tempuri.org/"/>
+  <xsd:complexType name="AddType">
+    <xsd:sequence>
+      <xsd:element type="xsd:integer" name="intA" minOccurs="1"/>
+      <xsd:element type="xsd:integer" name="intB" minOccurs="1"/>
+    </xsd:sequence>
+  </xsd:complexType>
+</xsd:schema>

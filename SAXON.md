@@ -15,11 +15,11 @@ The `SaxonC` documentation is [here](https://www.saxonica.com/saxon-c/documentat
 Behind the scenes the `SaxonC-HE` library is developed in JAVA and it ships with a Java GraalVM Community Edition. So the library size is ~100MB.
 
 ## Prerequisite: download the `SaxonC-HE` Zip package
-1) The `SaxonC-HE` v12.9.0 is used
+1) The `SaxonC-HE` v12.10.0 is used
 - Linux AArch64:
-[https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-arm64-12-9-0.zip](https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-arm64-12-9-0.zip)
+[https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-arm64-12-10-0.zip](https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-arm64-12-10-0.zip)
 - Linux Intel x86_64:
-[https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-x86_64-12-9-0.zip](https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-x86_64-12-9-0.zip)
+[https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-x86_64-12-10-0.zip](https://downloads.saxonica.com/SaxonC/HE/12/SaxonCHE-linux-x86_64-12-10-0.zip)
 - General download page:
 [here](https://www.saxonica.com/html/download/c.html)
 2) Fork this repository
@@ -29,29 +29,34 @@ cd kong-plugin-soap-xml-handling/kong/saxon
 ```
 ## Extract/Build the `Saxon` Shared Objects and the Docker images
 - The `Saxon - Kong` integration requires 2 types of Shared Objects that are extracted and built with the `make` command:
-  - `libsaxonc*`: C++ shared objects (example: `libsaxonc-core-he.so.12.9.0`) extracted  from `SaxonCHE-linux-<arch>-12-9-0.zip`
+  - `libsaxonc*`: C++ shared objects (example: `libsaxonc-core-he.so.12.10.0`) extracted  from `SaxonCHE-linux-<arch>-12-10-0.zip`
   - `libsaxon-4-kong.so`: C shared object compiled from `kong-adapter.cpp`
 - Prerequisite: Unzip `SaxonCHE-linux` zip files
 ```sh
-unzip ~/Downloads/SaxonCHE-linux-arm64-12-9-0.zip -d /tmp
-unzip ~/Downloads/SaxonCHE-linux-x86_64-12-9-0.zip -d /tmp
+unzip ~/Downloads/SaxonCHE-linux-arm64-12-10-0.zip -d /tmp
+unzip ~/Downloads/SaxonCHE-linux-x86_64-12-10-0.zip -d /tmp
 ```
-  - Copy inlude files (`.h`) for C/C++ syntax checking
+  - Copy `SaxonCHE` inlude files (`.h`) for C/C++ syntax checking
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/saxon/include
-cp /tmp/SaxonCHE-linux-arm64-12-9-0/SaxonCHE/include/*.h .
-cp /tmp/SaxonCHE-linux-arm64-12-9-0/SaxonCHE/include/saxonc/*.h ./saxonc/
+cp /tmp/SaxonCHE-linux-arm64-12-10-0/SaxonCHE/include/*.h ./saxonc/
+cp /tmp/SaxonCHE-linux-arm64-12-10-0/SaxonCHE/include/saxonc/*.h ./saxonc/
+```
+  - Copy `SaxonCCoreHE` inlude files (`.h`) for C/C++ syntax checking
+```sh
+cd ./kong-plugin-soap-xml-handling/kong/saxon/include
+cp /tmp/SaxonCHE-linux-arm64-12-10-0/SaxonCCoreHE/include/*.h .
 ```
   - Copy notices files (`.txt`) for licensing
 ```sh
 cd ./kong-plugin-soap-xml-handling/kong/saxon/notices
-cp /tmp/SaxonCHE-linux-arm64-12-9-0/notices/* .
+cp /tmp/SaxonCHE-linux-arm64-12-10-0/notices/* .
 ```
-- Adapt the version of Kong image (example: `kong/kong-gateway:3.14.0.5`) in the following files:
+- Adapt the version of Kong image (example: `kong/kong-gateway:3.15.0.1`) in the following files:
   - [Dockerfile_Kong_Saxon](/kong/saxon/Dockerfile_Kong_Saxon)
   - [Dockerfile_Local_Lib](/kong/saxon/Dockerfile_Local_Lib)
   - [Makefile](/kong/Makefile): replace `jeromeguillaume` by `<your_docker_account>`
-- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.14.0.5-1.4.7-12.9`) in the following file:
+- Adapt the version of the initContainer, Plugins or saxon (example: `jeromeguillaume/kong-soap-xml:3.15.0.1-1.4.8-12.10`) in the following file:
   - [Makefile](/kong/Makefile)
 - Build all
 ```sh
@@ -80,7 +85,7 @@ make kong_saxon_initcontainer_docker_hub
 ### Run `Kong` with `Saxon` in Docker Compose and the standard image: `kong/kong-gateway`
 - Include in your `docker-compose` command:
   ```yaml
-  image: 'kong/kong-gateway:3.14.0.5'
+  image: 'kong/kong-gateway:3.15.0.1'
   volumes:
     - ${PROJECT_DIR}/kong/saxon/so/${ARCHITECTURE}:/usr/local/lib/kongsaxon
   environment:
@@ -92,11 +97,11 @@ make kong_saxon_initcontainer_docker_hub
 The image is based on `kong-gateway` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries and defines the environment variables (`LD_LIBRARY_PATH` and `KONG_PLUGINS`)
 - Docker Compose
 ```yaml
-  image: 'jeromeguillaume/kong-soap-xml:3.14.0.5-1.4.7-12.9'
+  image: 'jeromeguillaume/kong-soap-xml:3.15.0.1-1.4.8-12.10'
 ```
 - Kubernetes:
   - Prerequisite: see [How to deploy SOAP/XML Handling plugins **schema** in Konnect (Control Plane) for Kong Gateway](https://github.com/jeromeguillaume/kong-plugin-soap-xml-handling/tree/main?tab=readme-ov-file#Konnect_CP_for_Kong_Gateway)
-  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.14.0.5-1.4.7-12.9`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
+  - Set in `values.yaml` the `image.repository` to `jeromeguillaume/kong-soap-xml:3.15.0.1-1.4.8-12.10`. See a complete `values.yaml` example for Konnect: [values-4-Konnect.yaml](kong/saxon/kubernetes/values-4-Konnect.yaml)
 
 ### Run `Kong` with `Saxon` in Kubernetes with an `initContainer` image: `jeromeguillaume/kong-soap-xml-initcontainer`
 The image is based on `Alpine` and it includes the Lua SOAP/XML plugins, the `Saxon` libraries
@@ -124,7 +129,7 @@ customEnv:
 deployment:
   initContainers:
   - name: kongsaxon
-    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.7-12.9
+    image: jeromeguillaume/kong-soap-xml-initcontainer:1.0.5-1.4.8-12.10
     command: ["/bin/sh", "-c", "cp -r /kongsaxon/* /usr/local/lib/kongsaxon"]
     volumeMounts:
     - name: kongsaxon-vol

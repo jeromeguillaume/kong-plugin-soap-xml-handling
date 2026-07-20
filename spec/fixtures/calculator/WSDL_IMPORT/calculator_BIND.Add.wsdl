@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" 
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+                  xmlns:def="http://tempuri.org/" 
+                  name="calculator_BIND_Add_Subtract" 
+                  targetNamespace="http://tempuri.org/">
+                  
+	<wsdl:import namespace="http://tempuri.org/" location="calculator_DEFINITION.Add.wsdl" />
+  <wsdl:binding name="CalculatorBinding" type="defreq:CalculatorPortType">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="Add">
+      <soap:operation soapAction="http://tempuri.org/Add" soapActionRequired="true" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+</wsdl:definitions>

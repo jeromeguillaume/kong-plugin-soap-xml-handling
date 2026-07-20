@@ -93,7 +93,7 @@ Each handling is optional
     - Do not set a SOAP 1.2 value (`config.xsdSoap12Schema`) or set `config.xsdSoap12Schema` to `<!-- -->`
 
 5) `XSLT TRANSFORMATION`:
-    - Use `libxslt` for XSLT 1.0 (default XSLT library)
+    - Use `libxslt` for XSLT 1.0 (default and recommended XSLT library)
     - Use `saxon` for XSLT 2.0 and 3.0, especially to apply JSON <-> XML transformation
     - Prefer disable `xsltRemoveEmptyNameSpace` for increasing performance. When the option is enabled it removes the `xmlns=""` in the XML trasformed by `XSLT`; it happens when an element, defined in the stylesheet, has no namespace. But it forces the following actions' plugin (`WSDL/XSD VALIDATION` or `ROUTING BY XPATH`) to parse again the XML that decreases a little bit the performance
 
@@ -1706,7 +1706,7 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
     - Called `sleepForPrefetchEnd` one time per plugin call
     - Added the detection of `Failed to locate a schema at location` error message
   - `WSDL/XSD Validation`: enabled an XML comment (`<!-- -->`) in definition that stands for no definition and no validation. Useful for completly disable the SOAP 1.1 XSD Validation that is enabled by default
-  - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the Consumer SOAP version trhat is dynamically detected by tyhe Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a Consumer SOAP 1.1 envelope, even if the request `Content-Type` header is SOAP 1.2
+  - Aligned the SOAP Fault version (sent by the plugin in the event of error) to the Consumer SOAP version that is dynamically detected by the Request `XSD VALIDATION`. For instance, the plugin sends a SOAP Fault v1.1 if the Request `XSD VALIDATION` detects a Consumer SOAP 1.1 envelope, even if the request `Content-Type` header is SOAP 1.2
   - Removed `split_version` and `compare_versions` functions and used the regular `kong.version_num`
   - Added `ignoreProcessIfServiceHttpError`: ignores the SOAP/XML process of plugin Response in case of the Backend Service returns an HTTP error (i.e: an HTTP code other than 200) and returns a generic SOAP Fault message
   - Improved the Request plugin in the event of large request body size: if the request body size is greater than `nginx_http_client_body_buffer_size`, the plugin reads the request body from a buffered file and applies the regular process (without sending an error to the Consumer)
@@ -1726,3 +1726,10 @@ The Load testing benchmark is performed with K6. See [LOADTESTING.md](LOADTESTIN
   - Bumped to Kong Gateway v3.14.0.5
   - `WSDL Validation`: improved the recursive import of wsdl dependencies (related to `wsdlApiRecursiveWsdlImport`) and taked into account more that one `<wsdl:import>` in the same WSDL file
   - Added `XML_PARSE_NOBLANKS` (to `xmlReadMemory`) for improving performance in case of highly indented XML files (lots of whitespace) and for a human readable file (`xmlDumpToFile`)
+- v1.4.8:
+  - Bumped to Kong Gateway v3.15.0.1
+  - Bumped `saxon` Home Edition from v12.9 to v12.10
+  - `WSDL Validation`: added controls to recursively import the wsdl dependencies by:
+    - Checking & preventing circular `<import>`s
+    - Limiting the maximum recursive import depth
+  - Validation of `SOAPAction` Http header: removed the inappropiated usage of `loadXMLwithRecursiveImport` (and replaced it by `xmlReadMemory`) for asynchronous download
