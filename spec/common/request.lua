@@ -730,6 +730,21 @@ request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_invalid_WSDL_import
   </soap:Body>
 </soap:Envelope>]]
 
+request_common.calculator_Request_XSD_API_VALIDATION_REQUEST_maximum_Recursion_Depth_for_Imports_verbose = [[
+<%?xml version="1.0" encoding="utf%-8"%?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap:Body>
+    <soap:Fault>
+      <faultcode>soap:Server</faultcode>
+      <faultstring>Request processing %- XSD validation failed</faultstring>
+      <detail>
+        <errorMessage>Invalid WSDL/XSD schema. Maximum recursion depth reached for the import/include of the WSDL/XSD definitions</errorMessage>
+      </detail>
+    </soap:Fault>
+  </soap:Body>
+</soap:Envelope>]]
+
+
 request_common.calculator_Request_XSLT_AFTER = [[
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" version="1.0" encoding="utf-8" omit-xml-declaration="no" indent="yes"/>
@@ -1450,7 +1465,7 @@ request_common.calculatorWSDL11_Request_Response_WSDL_dependencies_import_one_im
                   name="calculator"
                   targetNamespace="http://tempuri.org/">
    <wsdl:import location="calculator_BIND.wsdl" namespace="http://tempuri.org/bind"/>
-	 <wsdl:import  namespace="http://tempuri.org/NO.LOCATION.ATTIBUTE"/>
+	 <wsdl:import namespace="http://tempuri.org/NO.LOCATION.ATTIBUTE"/>
 
    <wsdl:service name="Calculator">
 		<wsdl:port name="CalculatorPort" binding="bind:CalculatorBinding">

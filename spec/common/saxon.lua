@@ -112,7 +112,7 @@ saxon_common.error_message_Saxon_Library_not_Found_val_verbose = {
 
 saxon_common.error_message_Request_XSLT_transfo_before_XSD_Invalid_JSON_verbose = {
   message = 'Request processing - XSLT transformation failed (before XSD validation)',
-  message_verbose = 'Invalid JSON input on line 1: Unescaped control character (xa)'
+  message_verbose = 'Invalid JSON input on line 4: Unescaped control character (xa)'
 }
 
 saxon_common.error_message_Response_XSD_validation_400_No_Content_Type_error_from_Upstream_verbose = {

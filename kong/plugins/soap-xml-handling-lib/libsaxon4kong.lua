@@ -169,6 +169,7 @@ function libsaxon4kong.getErrorMessage(context)
       if splitn then        
         local errArray = splitn(err, '\n')
         local err2
+        
         -- Only take the 2 first parts of Err msg (separated by a return carriage)
         for k, v in pairs(errArray) do
           -- Trim leading and trailing spaces
@@ -180,6 +181,7 @@ function libsaxon4kong.getErrorMessage(context)
             err2 = v
           end
         end
+        
         if err2 then
           err = err2
         end      
@@ -188,6 +190,7 @@ function libsaxon4kong.getErrorMessage(context)
         err = string.gsub(err, ".\n", ". ")
         err = string.gsub(err, "\n", ". ")
       end
+      
     end    
   end
   return err
