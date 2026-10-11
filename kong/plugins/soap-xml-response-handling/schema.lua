@@ -12,7 +12,6 @@ return {
         fields = {
           { customFaultCode = { type = "integer", between = { 100, 599 }, required = false }, },
           { customFaultXslt = { type = "string", required = false }, },
-          { ExternalEntityLoader_Async = { type = "boolean", default = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
           { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
           { filePathPrefix = typedefs.path { required = false } },
@@ -74,14 +73,6 @@ return {
         if (config.xsdApiSchemaInclude and type(config.xsdApiSchemaInclude) == 'table' and next(config.xsdApiSchemaInclude)) and  
             (type(config.xsdApiSchema) == 'userdata' or (config.xsdApiSchema and config.xsdApiSchema == '<!-- -->')) then
           return nil, "config.xsdApiSchema must be defined if config.xsdApiSchemaInclude is defined"
-        end
-
-        -- Check that Asynchronous External Entity Loader and the Schema inclusion are not simutaneously enabled
-        if ((config.xsdSoapSchemaInclude    and type(config.xsdSoapSchemaInclude  ) == 'table' and next(config.xsdSoapSchemaInclude))   or 
-            (config.xsdSoap12SchemaInclude  and type(config.xsdSoap12SchemaInclude) == 'table' and next(config.xsdSoap12SchemaInclude)) or
-            (config.xsdApiSchemaInclude     and type(config.xsdApiSchemaInclude   ) == 'table' and next(config.xsdApiSchemaInclude)))   and
-            config.ExternalEntityLoader_Async then
-          return nil, "config.xsdSoapSchemaInclude or config.xsdSoap12SchemaInclude or config.xsdApiSchemaInclude cannot be used with config.ExternalEntityLoader_Async"
         end
 
         -- Check that if 'wsdlApiSchemaForceSchemaLocation' is enabled, the 'xsdApiSchema' is defined

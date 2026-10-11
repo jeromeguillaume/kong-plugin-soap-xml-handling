@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 75,
-    VERSION = "1.4.8",
+    VERSION = "1.5.0",
   }
 
 local xmlgeneral = nil
@@ -87,13 +87,6 @@ function plugin:requestSOAPXMLhandling(plugin_conf, soapEnvelope)
                                                   kong.ctx.shared.contentType.request,
                                                   soapFaultCode)
     end
-  end
-
-  -- If there is no error and
-  -- If Asynchronous External Entity Loader is enabled then
-  if soapFaultBody == nil and plugin_conf.ExternalEntityLoader_Async then
-    -- Do a sleep for waiting the end of Prefetch
-    xmlgeneral.sleepForPrefetchEnd (libxml2ex.queueNamePrefix .. xmlgeneral.prefetchReqQueueName)    
   end
   
   -- If there is no error and

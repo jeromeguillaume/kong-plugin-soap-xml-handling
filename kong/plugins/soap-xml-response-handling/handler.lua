@@ -1,7 +1,7 @@
 -- handler.lua
 local plugin = {
     PRIORITY = 70,
-    VERSION = "1.4.8",
+    VERSION = "1.5.0",
   }
 
 local xmlgeneral = nil
@@ -219,12 +219,6 @@ function plugin:access(plugin_conf)
   -- Initialize the contextual data related to the External Entities
   xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
-  -- If Asynchronous External Entity Loader is enabled then
-  if plugin_conf.ExternalEntityLoader_Async then
-    -- Do a sleep for waiting the end of Prefetch for (SOAP 1.1/SOAP 1.2/API Schemas)
-    xmlgeneral.sleepForPrefetchEnd (libxml2ex.queueNamePrefix .. xmlgeneral.prefetchResQueueName)  
-  end
-
   -- Enables buffered proxying, which allows plugins to access Service body and response headers at the same time
   -- Mandatory calling 'kong.service.response.get_raw_body()' in 'header_filter' phase
   
