@@ -12,9 +12,9 @@ local pluginResponse = caching_common.pluginResponse
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     
@@ -48,57 +48,22 @@ for _, strategy in helpers.all_strategies() do
             port = 8080,
             path = "/ws",
           })
-        
-        local calculator_fullSoapXml_handling_Request_Response_async_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_Async_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_async_route,
-          config = {
-            VerboseRequest = true,
-            xsltLibrary = caching_common.libxslt,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
-            xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
-            xsltTransformAfter = caching_common.calculator_Request_XSLT_change_intB,
-            SOAPAction_Header = "yes",
-            RouteXPathTargets = {
-              {
-                  URL= "http://ws.soap2.calculator:8080/ws",
-                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-                  XPathCondition= "5"
-              },
-            }
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_async_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = caching_common.TTL,            
-            xsltLibrary = caching_common.libxslt,
-            xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
-            xsltTransformBefore = response_common.calculator_Response_XSLT_BEFORE,
-            xsltTransformAfter = response_common.calculator_Request_XSLT_AFTER
-          }
-        }
 
-        local calculator_fullSoapXml_handling_Request_Response_sync_route = blue_print.routes:insert{
+        local calculator_no_plugin_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_Sync_ok" }
+          paths = { "/calculator_no_plugin_ok" }
+        }
+        
+        local calculator_fullSoapXml_handling_Request_Response_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_route,
           config = {
             VerboseRequest = true,
             xsltLibrary = caching_common.libxslt,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
             xsdApiSchema = soapAction_common.calculatorWSDL11_soap_soap12,
@@ -115,10 +80,9 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,            
             xsltLibrary = caching_common.libxslt,
             xsdApiSchema = response_common.calculator_Response_XSD_VALIDATION_Kong,
@@ -137,7 +101,6 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             xsltLibrary = caching_common.libxslt,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
             wsdlApiRecursiveWsdlImport = true,
             xsltTransformBefore = request_common.calculator_Request_XSLT_AFTER,
@@ -164,7 +127,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_fullSoapXml_handling_Request_Response_import_and_merge_WSDL_dependencies_ok_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
             wsdlApiRecursiveWsdlImport = true,       
             xsltLibrary = caching_common.libxslt,
@@ -181,17 +143,17 @@ for _, strategy in helpers.all_strategies() do
         }
 
         
-        local calculatorWSDL_with_async_download_invalid_import_route = blue_print.routes:insert{
+        local calculatorWSDL_with_invalid_import_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorWSDL_with_async_download_invalid_import" }
+          paths = { "/calculatorWSDL_with_invalid_import" }
         }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculatorWSDL_with_async_download_invalid_import_route,
+          route = calculatorWSDL_with_invalid_import_route,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = true,
-            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
+            xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed,
+            xsdSoapSchema = request_common.commentForEmptyXSD
           }
         }
 
@@ -273,13 +235,13 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_soap12_with_included_import_no_download_route_ok = blue_print.routes:insert{
+        local calculator_soap12_with_included_import_route_ok = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_soap12_with_included_import_no_download_route_ok" }
+          paths = { "/calculator_soap12_with_included_import_route_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_soap12_with_included_import_no_download_route_ok,
+          route = calculator_soap12_with_included_import_route_ok,
           config = {
             VerboseRequest = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
@@ -291,7 +253,7 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_soap12_with_included_import_no_download_route_ok,
+          route = calculator_soap12_with_included_import_route_ok,
           config = {
             VerboseResponse = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
@@ -299,31 +261,6 @@ for _, strategy in helpers.all_strategies() do
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
-          }
-        }
-
-        local calculator_soap12_with_import_async_download_route_ok = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_soap12_with_import_async_download_route_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_soap12_with_import_async_download_route_ok,
-          config = {
-            VerboseRequest = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = caching_common.TTL,            
-            xsdSoap12Schema = soap12_common.soap12_XSD
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_soap12_with_import_async_download_route_ok,
-          config = {
-            VerboseResponse = false,
-            ExternalEntityLoader_Async = true,            
-            ExternalEntityLoader_CacheTTL = caching_common.TTL,
-            xsdSoap12Schema = soap12_common.soap12_XSD
           }
         }
 
@@ -340,16 +277,15 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_multiple_soap_xsd_with_included_import_no_download_route_ok = blue_print.routes:insert{
+        local calculator_multiple_soap_xsd_with_included_import_route_ok = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok" }
+          paths = { "/calculator_multiple_soap_xsd_with_included_import_route_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_multiple_soap_xsd_with_included_import_no_download_route_ok,
+          route = calculator_multiple_soap_xsd_with_included_import_route_ok,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = caching_common.TTL,            
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
@@ -359,10 +295,9 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_multiple_soap_xsd_with_included_import_no_download_route_ok,
+          route = calculator_multiple_soap_xsd_with_included_import_route_ok,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,            
             ExternalEntityLoader_CacheTTL = caching_common.TTL,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
@@ -389,18 +324,23 @@ for _, strategy in helpers.all_strategies() do
 				helpers.stop_kong(nil, true)
 			end)
       
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Async download - Ok", function()
-        -- clean the log file
-        helpers.clean_logfile()
-        
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Async_ok", {
+      -- An 'invalidations:kong_db_cache' is done on the first request: the 'invalidation' prevents the Pongo script to correctly test the caching mechanism
+      -- 2 mechanisms are applied to avoid this 'invalidation' affecting the test:
+      --  1) 'wait_for_all_config_update' => Wait for all configuration updates before making the first request
+      --  2) Make a request to a route without the plugin to trigger the invalidation
+      --
+      -- Example of 'invalidation' log:
+      -- 2025/07/13 19:44:45 [debug] 127#0: *6 [lua] callback.lua:107: do_event(): worker-events: handling event; source=mlcache, event=mlcache:invalidations:kong_db_cache, wid=0
+      it("N/A|No plugin, - Ok", function()
+        -- Wait for all configuration updates: if we don't call it, the "kong.cache:invalidate_local" in 'xmlgeneral.pluginConfigure' invalidates the cache and the test fails
+        helpers.wait_for_all_config_update()
+        -- invoke a test request      
+        client = helpers.proxy_client()
+        local r = client:post("/calculator_no_plugin_ok", {
           headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add",
-            ["Connection"] = "keep-alive"
+            ["Content-Type"] = "text/xml; charset=utf-8"
           },
-          body = request_common.calculator_Subtract_Full_Request,
+          body = request_common.calculator_Full_Request,
         })
 
         -- validate that the request succeeded: response status 200, Content-Type and right match
@@ -408,104 +348,17 @@ for _, strategy in helpers.all_strategies() do
         local content_type = assert.response(r).has.header("Content-Type")
         local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-
-        -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction definitions were compiled for the 1st time (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.SOAPAction_async)
-        
-        -- Plugin Response: Check in the log that the XSLT / WSDL definition were compiled for the 1st time (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
+        assert.matches('<AddResult>12</AddResult>', body)
+        if client then client:close() end
       end)
 
-      it("1+2+3+4+5+6+7|** Execute the same test: check that the WSDL/XSD definitions are compiled again (due to Asynchronous) and XSLT/RouteByXPath are still cached (before TTL is exceeded) **", function()
+
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Ok", function()
         -- clean the log file
         helpers.clean_logfile()
         
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Async_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add",
-            ["Connection"] = "keep-alive"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-
-        -- Plugin Request: Check in the log that the WSDL / XSD / SOAPAction definitions were compiled for the 1st time (and not found in the cache)        
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.SOAPAction_async)
-        
-        -- Plugin Request: Check in the log that the XSLT definitions used the cache
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.get_xslt)
-        
-        -- Plugin Response: Check in the log that the WSDL / XSD definition were compiled for the 1st time (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
-
-        -- Plugin Response: Check in the log that the XSLT definition used the cache
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.get_xslt)
-        
-      end) 
-
-      it("1+2+3+4+5+6+7|** Execute the same test: check that the WSDL/XSD definitions are compiled again (due to Asynchronous) and XSLT/RouteByXPath are compiled again (after TTL is exceeded) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
-        
-        print("** Sleep "..(caching_common.TTL).." s for reaching the cache TTL **")
-        ngx.sleep(caching_common.TTL)
-
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Async_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add",
-            ["Connection"] = "keep-alive"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-
-        -- Plugin Request: Check in the log that the XSLT / WSDL / SOAPAction definitions were compiled for the 1st time (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xslt)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.SOAPAction_async)
-        
-        -- Plugin Response: Check in the log that the XSLT / WSDL definition were compiled for the 1st time (and not found in the cache)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xslt)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
-        
-      end)      
-
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - NO Import - Sync download - Ok", function()
-        -- clean the log file
-        helpers.clean_logfile()
-        
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Sync_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add",
@@ -539,7 +392,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
         
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Sync_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add",
@@ -578,7 +431,7 @@ for _, strategy in helpers.all_strategies() do
         ngx.sleep(caching_common.TTL)
         
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_Sync_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add",
@@ -724,9 +577,33 @@ for _, strategy in helpers.all_strategies() do
         
       end)
      
-      it("2|WSDL Validation with Async download - Invalid Import", function()
+      it("2|WSDL Validation with Invalid Import", function()
         -- invoke a test request
-        local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
+        local r = client:post("/calculatorWSDL_with_invalid_import", {
+          headers = {
+            ["Content-Type"] = "text/xml;charset=utf-8",
+            ["Connection"] = "keep-alive"
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request failed: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
+        local content_type = assert.response(r).has.header("Content-Type")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
+
+        -- Plugin Request: Check in the log that the WSDL definitions were compiled for the 1st time (and not found in the cache)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_TTL)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd_TTL)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
+      end)
+
+      it("** Execute the same test - Invalid Import: check that the definitions are compiled again **", function()
+        -- invoke a test request
+        local r = client:post("/calculatorWSDL_with_invalid_import", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -742,32 +619,11 @@ for _, strategy in helpers.all_strategies() do
 	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
 
         -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to Error
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)        
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl_XSDError)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_wsdl)
+        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.compile_xsd)
       end)
-
-      it("** Execute the same test - Invalid Import: check that the definitions are compiled again (due to Async) **", function()
-        -- invoke a test request
-        local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
-          headers = {
-            ["Content-Type"] = "text/xml;charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = request_common.calculator_Full_Request,
-        })
-
-        -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-	      assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
-
-        -- Plugin Request: Check in the log that the WSDL / XSDs definitions were recompiled due to Error
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.wsdl_async)
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
-      end)
-
+ 
       it("2+6|WSDL Validation with multiple imports included XSD no download - Add in XSD#1", function()
         -- invoke a test request
         local r = client:post("/calculatorWSDL_with_multiple_imports_include_XSD_no_download_Add_in_XSD1_Subtract_in_XSD2_with_verbose_ok", {
@@ -1001,12 +857,12 @@ for _, strategy in helpers.all_strategies() do
         
       end)
 
-      it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with included import no download - Ok", function()
+      it("2+6|SOAP 1.2 - XSD Validation (SOAP env) with included import - Ok", function()
         -- clean the log file
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_soap12_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_soap12_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1030,7 +886,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_soap12_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_soap12_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1058,7 +914,7 @@ for _, strategy in helpers.all_strategies() do
         ngx.sleep(caching_common.TTL)
 
         -- invoke a test request
-        local r = client:post("/calculator_soap12_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_soap12_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1079,54 +935,6 @@ for _, strategy in helpers.all_strategies() do
         assert.logfile().has.line(caching_common.pluginRes_log..caching_common.compile_xsd)
       end)
 
-      it("2+6|SOAP 1.2 - XSD Validation (SOAP 1.2 env) with import Async download - Ok", function()
-        -- clean the log file
-        helpers.clean_logfile()
-
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_import_async_download_route_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-
-        -- Plugin Request/Response: Check in the log that the XSD definition was compiled due to Asynchronous download
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
-      end)
-
-      it("2+6|** Execute the same test: check that the SOAP 1.2 XSD definitions are compiled again (due to Asynchronous) **", function()
-        -- clean the log file
-        helpers.clean_logfile()
-
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_with_import_async_download_route_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-            ["Connection"] = "keep-alive"
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-
-        -- Plugin Request/Response: Check in the log that the XSD definition was compiled due to Asynchronous download
-        assert.logfile().has.line(caching_common.pluginReq_log..caching_common.xsd_async)
-        assert.logfile().has.line(caching_common.pluginRes_log..caching_common.xsd_async)
-      end)
-        
       it("2|XSD Validation - Invalid SOAP XSD input", function()
         -- clean the log file
         helpers.clean_logfile()
@@ -1178,7 +986,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1201,7 +1009,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1224,7 +1032,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1247,7 +1055,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1273,7 +1081,7 @@ for _, strategy in helpers.all_strategies() do
         ngx.sleep(caching_common.TTL)
 
         -- invoke a test request
-        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
             ["Connection"] = "keep-alive"
@@ -1296,7 +1104,7 @@ for _, strategy in helpers.all_strategies() do
         helpers.clean_logfile()
 
         -- invoke a test request
-        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_no_download_route_ok", {
+        local r = client:post("/calculator_multiple_soap_xsd_with_included_import_route_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
             ["Connection"] = "keep-alive"

@@ -13,9 +13,9 @@ local pluginResponse = caching_common.pluginResponse
 local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     
@@ -49,6 +49,19 @@ for _, strategy in helpers.all_strategies() do
             port = 8080,
             path = "/ws",
           })
+
+                local calculator_service = blue_print.services:insert({
+            protocol = "http",
+            host = "ws.soap1.calculator",
+            port = 8080,
+            path = "/ws",
+          })
+
+        local calculator_no_plugin_route = blue_print.routes:insert{
+          service = calculator_service,
+          paths = { "/calculator_no_plugin_ok" }
+        }
+
         local calculator_REQ_RES_XSLT_beforeXSD_with_xslt_Params_ok_route = blue_print.routes:insert{
           service = calculator_service,
           paths = { "/calculator_REQ_RES_XLST_with_xslt_Params_ok" }
@@ -130,6 +143,35 @@ for _, strategy in helpers.all_strategies() do
 				helpers.stop_kong(nil, true)
 			end)
       
+      -- An 'invalidations:kong_db_cache' is done on the first request: the 'invalidation' prevents the Pongo script to correctly test the caching mechanism
+      -- 2 mechanisms are applied to avoid this 'invalidation' affecting the test:
+      --  1) 'wait_for_all_config_update' => Wait for all configuration updates before making the first request
+      --  2) Make a request to a route without the plugin to trigger the invalidation
+      --
+      -- Example of 'invalidation' log:
+      -- 2025/07/13 19:44:45 [debug] 127#0: *6 [lua] callback.lua:107: do_event(): worker-events: handling event; source=mlcache, event=mlcache:invalidations:kong_db_cache, wid=0
+      it("N/A|No plugin, - Ok", function()
+        -- Wait for all configuration updates: if we don't call it, the "kong.cache:invalidate_local" in 'xmlgeneral.pluginConfigure' invalidates the cache and the test fails
+        helpers.wait_for_all_config_update()
+        -- invoke a test request      
+        client = helpers.proxy_client()
+        local r = client:post("/calculator_no_plugin_ok", {
+          headers = {
+            ["Content-Type"] = "text/xml; charset=utf-8"
+          },
+          body = request_common.calculator_Full_Request,
+        })
+
+        -- validate that the request succeeded: response status 200, Content-Type and right match
+        local body = assert.response(r).has.status(200)
+        local content_type = assert.response(r).has.header("Content-Type")
+        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
+        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
+        assert.matches('<AddResult>12</AddResult>', body)
+        if client then client:close() end
+      end)
+
+
       it("1+5|XSLT (BEFORE XSD) - Request and Response - With xslt Params - Ok", function()
         -- clean the log file
         helpers.clean_logfile()

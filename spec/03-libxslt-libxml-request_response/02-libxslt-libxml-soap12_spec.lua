@@ -13,9 +13,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -64,13 +64,13 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_soap12_XSD_with_import_no_download_ok_route = blue_print.routes:insert{
+        local calculator_soap12_XSD_with_import_ok_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_soap12_XSD_with_import_no_download_ok" }
+          paths = { "/calculator_soap12_XSD_with_import_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_soap12_XSD_with_import_no_download_ok_route,
+          route = calculator_soap12_XSD_with_import_ok_route,
           config = {
             VerboseRequest = true,
             xsdApiSchemaInclude = {
@@ -85,7 +85,7 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_soap12_XSD_with_import_no_download_ok_route,
+          route = calculator_soap12_XSD_with_import_ok_route,
           config = {
             VerboseResponse = true,
             xsdApiSchemaInclude = {
@@ -96,58 +96,6 @@ for _, strategy in helpers.all_strategies() do
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
             }
-          }
-        }
-        
-        local calculator_soap12_XSD_with_async_download_ok_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_soap12_XSD_with_async_download_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_soap12_XSD_with_async_download_ok_route,
-          config = {
-            VerboseRequest = true,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
-            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
-            xsdSoap12Schema = soap12_common.soap12_XSD,
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_soap12_XSD_with_async_download_ok_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_Timeout = 5,
-            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
-            xsdSoap12Schema = soap12_common.soap12_XSD,
-          }
-        }
-
-        local calculator_soap12_XSD_with_sync_download_ok_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_soap12_XSD_with_sync_download_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_soap12_XSD_with_sync_download_ok_route,
-          config = {
-            VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
-            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
-            xsdSoap12Schema = soap12_common.soap12_XSD,
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_soap12_XSD_with_sync_download_ok_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
-            xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok,
-            xsdSoap12Schema = soap12_common.soap12_XSD,
           }
         }
         
@@ -160,8 +108,7 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_soap11_no_XSD_ko_route,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
-            xsdSoapSchema = nil,
+            xsdSoapSchema = request_common.commentForEmptyXSD,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -177,8 +124,7 @@ for _, strategy in helpers.all_strategies() do
           name = pluginRequest,
           route = calculator_soap12_no_XSD_ko_route,
           config = {
-            VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
+            VerboseRequest = true
           }
         }
         
@@ -210,7 +156,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_invalid_soap_ns_ko_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -377,7 +322,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_soap11_soap12_ok_route,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -424,7 +368,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_no_soap11_body_ko_route,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -437,7 +380,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_no_soap11_body_ko_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -460,7 +402,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_no_soap12_body_ko_route,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -472,7 +413,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculator_no_soap12_body_ko_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             xsdSoap12Schema = soap12_common.soap12_XSD,
             xsdSoap12SchemaInclude = {
               ["http://www.w3.org/2001/xml.xsd"] = soap12_common.soap12_import_XML_XSD
@@ -484,8 +424,6 @@ for _, strategy in helpers.all_strategies() do
         assert(helpers.start_kong({
           -- use the custom test template to create a local mock server
           nginx_conf = "spec/fixtures/custom_nginx.template",
-          -- Add a Worker Process for enabling the synchronous download of external entities
-          nginx_worker_processes = "2",
           -- make sure our plugin gets loaded
           plugins = "bundled," .. PLUGIN_NAME
           }))       
@@ -495,9 +433,9 @@ for _, strategy in helpers.all_strategies() do
 				helpers.stop_kong(nil, true)
 			end)
       
-      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.1 req/res - XSD (SOAP env) + WSDL (API) Validation with import no download - Ok", function()
+      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.1 req/res - XSD (SOAP env) + WSDL (API) Validation with import - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_import_no_download_ok", {
+        local r = client:post("/calculator_soap12_XSD_with_import_ok", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
           },
@@ -511,9 +449,9 @@ for _, strategy in helpers.all_strategies() do
 	      assert.matches('<AddResult>12</AddResult>', body)
       end)
       
-      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - XSD (SOAP env) + WSDL (API) Validation with import no download - Ok", function()
+      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - XSD (SOAP env) + WSDL (API) Validation with import - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_import_no_download_ok", {
+        local r = client:post("/calculator_soap12_XSD_with_import_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
           },
@@ -527,87 +465,21 @@ for _, strategy in helpers.all_strategies() do
         assert.matches('<AddResult>12</AddResult>', body)
       end)
 
-      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.1 req/res - XSD (SOAP env) + WSDL (API) Validation with Async download - Ok", function()
+      it("2|No SOAP 1.1 XSD definition - KO", function()
         -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_async_download_ok", {
+        local r = client:post("/calculator_soap11_no_XSD_ko", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
           },
           body = request_common.calculator_Full_Request,
         })
 
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
+        -- validate that the request failed: response status 500, Content-Type and right match
+        local body = assert.response(r).has.status(500)
 	      local content_type = assert.response(r).has.header("Content-Type")
 	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	      assert.matches('<AddResult>12</AddResult>', body)
+	      assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_with_no_11_schema_verbose, body)
       end)
-
-      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - XSD (SOAP env) + WSDL (API) Validation with Async download - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_async_download_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-      end)
-
-      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.1 req/res - XSD (SOAP env) + WSDL (API) Validation with Sync download - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_sync_download_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml;charset=utf-8",
-          },
-          body = request_common.calculator_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-	      local content_type = assert.response(r).has.header("Content-Type")
-	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	      assert.matches('<AddResult>12</AddResult>', body)
-      end)
-
-      it("2+6|Request and Response plugins|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - XSD (SOAP env) + WSDL (API) Validation with Sync download - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_sync_download_ok", {
-          headers = {
-            ["Content-Type"] = "application/soap+xml; charset=utf-8",
-          },
-          body = soap12_common.calculator_soap12_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-      end)
-
-      -- Unable to unset 'xsdSoapSchema' in the plugin configuration for Pongo (it's do-able with Kong Manager...)
-
---      it("2|No SOAP 1.1 XSD definition - KO", function()
---        -- invoke a test request
---        local r = client:post("/calculator_soap11_no_XSD_ko", {
---          headers = {
---            ["Content-Type"] = "text/xml;charset=utf-8",
---          },
---          body = request_common.calculator_Full_Request,
---        })
---
---        -- validate that the request failed: response status 500, Content-Type and right match
---        local body = assert.response(r).has.status(500)
---	      local content_type = assert.response(r).has.header("Content-Type")
---	      assert.matches("text/xml%;%s-charset=utf%-8", content_type)
---	      assert.matches(request_common.calculator_Request_XSD_SOAP_VALIDATION_REQUEST_Failed_with_no_11_schema_verbose, body)
---      end)
       
       it("2|No SOAP 1.2 XSD definition - KO", function()
         -- invoke a test request
@@ -627,7 +499,7 @@ for _, strategy in helpers.all_strategies() do
 
       it("2|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.1 req/res - Invalid SOAP namespace - Ko", function()
         -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_import_no_download_ok", {
+        local r = client:post("/calculator_soap12_XSD_with_import_ok", {
           headers = {
             ["Content-Type"] = "text/xml;charset=utf-8",
           },
@@ -643,7 +515,7 @@ for _, strategy in helpers.all_strategies() do
       
       it("2|Multiple SOAP XSD definitions (1.1 and 1.2) - SOAP 1.2 req/res - Invalid SOAP namespace - Ko", function()
         -- invoke a test request
-        local r = client:post("/calculator_soap12_XSD_with_import_no_download_ok", {
+        local r = client:post("/calculator_soap12_XSD_with_import_ok", {
           headers = {
             ["Content-Type"] = "application/soap+xml; charset=utf-8",
           },

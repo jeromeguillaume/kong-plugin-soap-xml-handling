@@ -13,9 +13,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary    = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -51,17 +51,16 @@ for _, strategy in helpers.all_strategies() do
             path = "/ws",
           })    
         
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_sync_route = blue_print.routes:insert{
+        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_sync_ok" }
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_route,
           config = {
             VerboseRequest = true,
             xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/1_XSLT_BEFORE.xslt",
             xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
@@ -79,10 +78,9 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,            
             xsltLibrary = caching_common.libxslt,
             xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/5_XSLT_BEFORE.xslt",
@@ -92,59 +90,16 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_async_route = blue_print.routes:insert{
+        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_async_ok" }
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_async_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_route,
           config = {
             VerboseRequest = true,
             xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_CacheTTL = 3600,
-            xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/1_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
-            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl",
-            xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/3_XSLT_AFTER.xslt",
-            SOAPAction_Header = "yes",
-            RouteXPathTargets = {
-              {
-                  URL= "http://ws.soap2.calculator:8080/ws",
-                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-                  XPathCondition= "5"
-              },
-            }
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_async_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,            
-            xsltLibrary = caching_common.libxslt,
-            xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/5_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
-            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_KongResult.wsdl",
-            xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/7_XSLT_AFTER.xslt"
-          }
-        }
-
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_sync_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_sync_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_sync_route,
-          config = {
-            VerboseRequest = true,
-            xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
             xsltTransformBefore = "1_XSLT_BEFORE.xslt",
@@ -163,10 +118,9 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,            
             xsltLibrary = caching_common.libxslt,
             filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
@@ -177,61 +131,16 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_async_route = blue_print.routes:insert{
+        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_async_ok" }
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_async_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_route,
           config = {
             VerboseRequest = true,
             xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_CacheTTL = 3600,
-            filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
-            xsltTransformBefore = "1_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "2_6_soap11.xsd",
-            xsdApiSchema = "2_6_WSDL11_soap12_KongResult.wsdl",
-            xsltTransformAfter = "3_XSLT_AFTER.xslt",
-            SOAPAction_Header = "yes",
-            RouteXPathTargets = {
-              {
-                  URL= "http://ws.soap2.calculator:8080/ws",
-                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-                  XPathCondition= "5"
-              },
-            }
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_async_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,            
-            xsltLibrary = caching_common.libxslt,
-            filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
-            xsltTransformBefore = "5_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "2_6_soap11.xsd",
-            xsdApiSchema = "2_6_WSDL11_soap12_KongResult.wsdl",
-            xsltTransformAfter = "7_XSLT_AFTER.xslt"
-          }
-        }
-
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_route,
-          config = {
-            VerboseRequest = true,
-            xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
             xsltTransformBefore = "../../1_XSLT_BEFORE.xslt",
@@ -250,10 +159,9 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,            
             xsltLibrary = caching_common.libxslt,
             filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
@@ -264,63 +172,18 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_route = blue_print.routes:insert{
+        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_ok" }
+          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_route,
           config = {
             VerboseRequest = true,
             xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_Timeout = 5,
             ExternalEntityLoader_CacheTTL = 3600,
-            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
-            xsltTransformBefore = "../../1_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "../../2_6_soap11.xsd",
-            xsdApiSchema = "../../2_6_WSDL11_soap12_file_import_relative_path.wsdl",
-            xsltTransformAfter = "../../3_XSLT_AFTER.xslt",
-            SOAPAction_Header = "yes",
-            RouteXPathTargets = {
-              {
-                  URL= "http://ws.soap2.calculator:8080/ws",
-                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-                  XPathCondition= "5"
-              },
-            }
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,            
-            xsltLibrary = caching_common.libxslt,
-            filePathPrefix = "/kong-plugin/spec/fixtures/calculator/empty1/empty2",
-            xsltTransformBefore = "../../5_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "../../2_6_soap11.xsd",
-            xsdApiSchema = "../../2_6_WSDL11_soap12_KongResult.wsdl",
-            xsltTransformAfter = "../../7_XSLT_AFTER.xslt"
-          }
-        }
-
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_route,
-          config = {
-            VerboseRequest = true,
-            xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = false,
-            ExternalEntityLoader_CacheTTL = 3600,
-            -- The '___DOES_NOT_EXIST___ is intentionally set to a non-existing path and is ignored bacause all other files path start by '/'
+            -- The '___DOES_NOT_EXIST___ is intentionally set to a non-existing path and is ignored because all other files path start by '/'
             filePathPrefix = "/kong-plugin/spec/fixtures/___DOES_NOT_EXIST___",
             xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/1_XSLT_BEFORE.xslt",
             xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
@@ -338,61 +201,15 @@ for _, strategy in helpers.all_strategies() do
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_route,
+          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,            
             xsltLibrary = caching_common.libxslt,
             -- The '___DOES_NOT_EXIST___ is intentionally set to a non-existing path and is ignored bacause all other files path start by '/'
             filePathPrefix = "/kong-plugin/spec/fixtures/___DOES_NOT_EXIST___",
             xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
             xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/5_XSLT_BEFORE.xslt",
-            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_KongResult.wsdl",
-            xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/7_XSLT_AFTER.xslt"
-          }
-        }
-
-        local calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_async_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_async_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_async_route,
-          config = {
-            VerboseRequest = true,
-            xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,
-            -- The '___DOES_NOT_EXIST___ is intentionally set to a non-existing path and is ignored bacause all other files path start by '/'
-            filePathPrefix = "/kong-plugin/spec/fixtures/___DOES_NOT_EXIST___",
-            xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/1_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
-            xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12.wsdl",
-            xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/3_XSLT_AFTER.xslt",
-            SOAPAction_Header = "yes",
-            RouteXPathTargets = {
-              {
-                  URL= "http://ws.soap2.calculator:8080/ws",
-                  XPath= "/soap:Envelope/soap:Body/*[local-name() = 'Add']/*[local-name() = 'intA']",
-                  XPathCondition= "5"
-              },
-            }
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_async_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_CacheTTL = 3600,            
-            xsltLibrary = caching_common.libxslt,
-            -- The '___DOES_NOT_EXIST___ is intentionally set to a non-existing path and is ignored bacause all other files path start by '/'
-            filePathPrefix = "/kong-plugin/spec/fixtures/___DOES_NOT_EXIST___",            
-            xsltTransformBefore = "/kong-plugin/spec/fixtures/calculator/5_XSLT_BEFORE.xslt",
-            xsdSoapSchema = "/kong-plugin/spec/fixtures/calculator/2_6_soap11.xsd",
             xsdApiSchema = "/kong-plugin/spec/fixtures/calculator/2_6_WSDL11_soap12_KongResult.wsdl",
             xsltTransformAfter = "/kong-plugin/spec/fixtures/calculator/7_XSLT_AFTER.xslt"
           }
@@ -407,7 +224,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculatorWSDL_soap12_with_multiple_XSD_http_imported_with_include_definition_xml_def_file_Add_in_XSD1_Subtract_in_XSD2_with_verbose_route,
           config = {
             VerboseRequest = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
             xsdSoap12SchemaInclude = {
@@ -425,7 +241,6 @@ for _, strategy in helpers.all_strategies() do
           route = calculatorWSDL_soap12_with_multiple_XSD_http_imported_with_include_definition_xml_def_file_Add_in_XSD1_Subtract_in_XSD2_with_verbose_route,
           config = {
             VerboseResponse = true,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             xsdSoap12Schema = "/kong-plugin/spec/fixtures/calculator/2_6_soap12.xsd",
             xsdSoap12SchemaInclude = {
@@ -729,7 +544,6 @@ for _, strategy in helpers.all_strategies() do
 			      customFaultXslt = "0_XSLT_Custom_Fault.xslt",
             VerboseRequest = true,
             xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
             xsdApiSchema = "2_6_WSDL11_soap12.wsdl",            
@@ -743,7 +557,6 @@ for _, strategy in helpers.all_strategies() do
 			      customFaultXslt = "0_XSLT_Custom_Fault.xslt",
             VerboseResponse = true,
             xsltLibrary = xsltLibrary,
-            ExternalEntityLoader_Async = false,
             ExternalEntityLoader_CacheTTL = 3600,
             filePathPrefix = "/kong-plugin/spec/fixtures/calculator",
             xsdApiSchema = "2_6_WSDL11_soap12_KongResult.wsdl"
@@ -764,29 +577,9 @@ for _, strategy in helpers.all_strategies() do
 				helpers.stop_kong(nil, true)
 			end)
       
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files - No import - Sync - Ok", function()
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files - No import - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_sync_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-        
-			end)
-
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files - No import - Async - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_async_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_no_import_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add"
@@ -804,9 +597,9 @@ for _, strategy in helpers.all_strategies() do
         
 			end)
       
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix - No import - Sync - Ok", function()
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix - No import - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_sync_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add"
@@ -824,9 +617,9 @@ for _, strategy in helpers.all_strategies() do
         
 			end)
 
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix - No import - Async - Ok", function()
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix and Relative path - No import - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_no_import_async_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add"
@@ -844,9 +637,9 @@ for _, strategy in helpers.all_strategies() do
         
 			end)
 
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix and Relative path - No import - Sync - Ok", function()
+      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files at root ignoring path Prefix - No import - Ok", function()
         -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_sync_ok", {
+        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_ok", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
             ["SOAPAction"] = "http://tempuri.org/Add"
@@ -864,65 +657,6 @@ for _, strategy in helpers.all_strategies() do
         
 			end)
 
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files with path Prefix and Relative path - No import - Async - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_path_prefix_relative_path_no_import_async_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-        
-			end)
-
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files at root ignoring path Prefix - No import - Sync - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_sync_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-        
-			end)
-
-      it("1+2+3+4+5+6+7|Request and Response plugins|Full SOAP/XML handling - XML Definitions in Files at root ignoring path Prefix - No import - Async - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculator_fullSoapXml_handling_Request_Response_xml_def_file_root_ignoring_path_prefix_no_import_async_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
-          },
-          body = request_common.calculator_Subtract_Full_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        local x_soap_region = assert.response(r).has.header("X-SOAP-Region")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.equal("soap2", x_soap_region)
-        assert.matches(response_common.calculator_Response_XML_18, body)        
-        
-			end)
 
       it("2+6|SOAP 1.2 - WSDL Validation with multiple XSD http imported with include definitions - XML Definition in Files - Add in XSD#1 - Ok", function()
         -- invoke a test request

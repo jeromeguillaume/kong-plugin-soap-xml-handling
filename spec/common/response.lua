@@ -1025,67 +1025,32 @@ function response_common.lazy_setup (PLUGIN_NAME, blue_print, xsltLibrary)
 		}
 	}
 
-	local calculator_wsdl_ok = blue_print.routes:insert{
+  local calculator_wsdl_with_import_route = blue_print.routes:insert{
 		service = calculator_service,
-		paths = { "/calculatorWSDL_with_async_download_ok" }
+		paths = { "/calculatorWSDL_with_import_ok" }
 		}
 	blue_print.plugins:insert {
 		name = PLUGIN_NAME,
-		route = calculator_wsdl_ok,
-		config = {
-			VerboseResponse = false,
-			ExternalEntityLoader_CacheTTL = 15,
-			ExternalEntityLoader_Async = true,
-			ExternalEntityLoader_Timeout = 5,
-			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
-		}
-	}
-
-  local calculator_wsdl_invalid_import_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorWSDL_with_async_download_invalid_import" }
-		}
-	blue_print.plugins:insert {
-		name = PLUGIN_NAME,
-		route = calculator_wsdl_invalid_import_route,
-		config = {
-			VerboseResponse = false,
-			ExternalEntityLoader_CacheTTL = 15,
-			ExternalEntityLoader_Async = true,
-			ExternalEntityLoader_Timeout = 5,
-			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
-		}
-	}
-
-	local calculator_wsdl_invalid_import_verbose_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorWSDL_with_async_download_invalid_import_verbose" }
-		}
-	blue_print.plugins:insert {
-		name = PLUGIN_NAME,
-		route = calculator_wsdl_invalid_import_verbose_route,
-		config = {
-			VerboseResponse = true,
-			ExternalEntityLoader_CacheTTL = 15,
-			ExternalEntityLoader_Async = true,
-			ExternalEntityLoader_Timeout = 5,
-			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
-		}
-	}
-
-  local calculator_wsdl_with_import_no_download_route = blue_print.routes:insert{
-		service = calculator_service,
-		paths = { "/calculatorWSDL_with_import_no_download_ok" }
-		}
-	blue_print.plugins:insert {
-		name = PLUGIN_NAME,
-		route = calculator_wsdl_with_import_no_download_route,
+		route = calculator_wsdl_with_import_route,
 		config = {
 			VerboseResponse = true,
 			xsdApiSchemaInclude = {
 				["http://localhost:9000/tempuri.org.request-response.xsd"] = request_common.calculator_Request_Response_XSD_VALIDATION
 			},
 			xsdApiSchema = request_common.calculatorWSDL_one_import_for_req_res_ok
+		}
+	}
+
+	local calculator_wsdl_invalid_import_verbose_route = blue_print.routes:insert{
+		service = calculator_service,
+		paths = { "/calculatorWSDL_invalid_import_verbose" }
+		}
+	blue_print.plugins:insert {
+		name = PLUGIN_NAME,
+		route = calculator_wsdl_invalid_import_verbose_route,
+		config = {
+			VerboseResponse = true,
+			xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
 		}
 	}
 
@@ -1900,9 +1865,9 @@ function response_common._5_7_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, clien
 	assert.matches("<kongResultFromParamAfterXSD>12</kongResultFromParamAfterXSD>", body)
 end
 
-function response_common._6_WSDL_Validation_with_async_download_Ok (assert, client)
+function response_common._6_WSDL_Validation_with_import_Ok (assert, client)
 	-- invoke a test request
-	local r = client:post("/calculatorWSDL_with_async_download_ok", {
+	local r = client:post("/calculatorWSDL_with_import_ok", {
 		headers = {
 			["Content-Type"] = "text/xml; charset=utf-8",
 		},
@@ -1916,25 +1881,9 @@ function response_common._6_WSDL_Validation_with_async_download_Ok (assert, clie
 	assert.matches('<AddResult>12</AddResult>', body)
 end
 
-function response_common._6_WSDL_Validation_with_async_download_Invalid_Import (assert, client)
+function response_common._6_WSDL_Validation_Invalid_Import_with_verbose (assert, client)
 	-- invoke a test request
-	local r = client:post("/calculatorWSDL_with_async_download_invalid_import", {
-		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
-		},
-		body = request_common.calculator_Full_Request,
-	})
-
-	-- validate that the request failed: response status 500, Content-Type and right match
-	local body = assert.response(r).has.status(500)
-	local content_type = assert.response(r).has.header("Content-Type")
-	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed, body)
-end
-
-function response_common._6_WSDL_Validation_with_async_download_Invalid_Import_with_verbose (assert, client)
-	-- invoke a test request
-	local r = client:post("/calculatorWSDL_with_async_download_invalid_import_verbose", {
+	local r = client:post("/calculatorWSDL_invalid_import_verbose", {
 		headers = {
 			["Content-Type"] = "text/xml; charset=utf-8",
 		},
@@ -1947,22 +1896,6 @@ function response_common._6_WSDL_Validation_with_async_download_Invalid_Import_w
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
 	assert.matches(response_common.calculator_Response_XSD_VALIDATION_Failed_shortened, body)
 	assert.matches("<detail>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</detail>", body)
-end
-
-function response_common._6_WSDL_Validation_with_import_no_download_Ok (assert, client)
-	-- invoke a test request
-	local r = client:post("/calculatorWSDL_with_import_no_download_ok", {
-		headers = {
-			["Content-Type"] = "text/xml; charset=utf-8",
-		},
-		body = request_common.calculator_Full_Request,
-	})
-
-	-- validate that the request succeeded: response status 200, Content-Type and right match
-	local body = assert.response(r).has.status(200)
-	local content_type = assert.response(r).has.header("Content-Type")
-	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches('<AddResult>12</AddResult>', body)
 end
 
 function response_common._6_WSDL_Validation_Invalid_SOAP_response_Blank_with_verbose_ko (assert, client)
@@ -2186,7 +2119,7 @@ function response_common._5_WSDL_Validation_Add_with_ForceSchemaLocation_and_All
 	local body = assert.response(r).has.status(500)
 	local content_type = assert.response(r).has.header("Content-Type")
 	assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-	assert.matches("Failed to parse the XML resource 'http://tempuri.org/paramCalcIntC/'.</errorMessage>", body)
+	assert.matches("failed to load 'http://tempuri.org/paramCalcIntC/'", body)
 end
 
 function response_common._5_XSLT_BEFORE_XSD_Valid_transformation_http2 (assert, http2_client)

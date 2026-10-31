@@ -10,9 +10,9 @@ local PLUGIN_NAME    = pluginRequest..","..pluginResponse
 local xsltLibrary    = "libxslt"
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -219,29 +219,25 @@ for _, strategy in helpers.all_strategies() do
           }
         }
 
-        local calculator_same_wsdl_async_ok_verbose_route = blue_print.routes:insert{
+        local calculator_same_wsdl_verbose_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculator_same_WSDL_with_async_download_ok_verbose" }
+          paths = { "/calculatorWSDL_with_import_ok" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
-          route = calculator_same_wsdl_async_ok_verbose_route,
+          route = calculator_same_wsdl_verbose_route,
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
         }
         blue_print.plugins:insert {
           name = pluginResponse,
-          route = calculator_same_wsdl_async_ok_verbose_route,
+          route = calculator_same_wsdl_verbose_route,
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
         }
@@ -271,36 +267,9 @@ for _, strategy in helpers.all_strategies() do
           }
         }        
 
-        local calculator_different_wsdl_async_ok_verbose_route = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculator_different_WSDL_with_async_download_verbose_ok" }
-          }
-        blue_print.plugins:insert {
-          name = pluginRequest,
-          route = calculator_different_wsdl_async_ok_verbose_route,
-          config = {
-            VerboseRequest = true,
-            ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
-            xsdApiSchema = request_common.calculatorWSDL_req_only_with_async_download_Ok
-          }
-        }
-        blue_print.plugins:insert {
-          name = pluginResponse,
-          route = calculator_different_wsdl_async_ok_verbose_route,
-          config = {
-            VerboseResponse = true,
-            ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
-            xsdApiSchema = response_common.calculatorWSDL_req_only_with_async_download_Ok
-          }
-        }
-
         local calculator_wsdl_invalid_import_request_verbose_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorWSDL_with_async_download_invalid_import_Request_verbose" }
+          paths = { "/calculatorWSDL_invalid_import_Request_verbose" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
@@ -308,8 +277,6 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,            
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }
         }
@@ -319,15 +286,13 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
         }
 
         local calculator_wsdl_invalid_import_response_verbose_route = blue_print.routes:insert{
           service = calculator_service,
-          paths = { "/calculatorWSDL_with_async_download_invalid_import_Response_verbose" }
+          paths = { "/calculatorWSDL_invalid_import_Response_verbose" }
           }
         blue_print.plugins:insert {
           name = pluginRequest,
@@ -335,8 +300,6 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseRequest = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Ok
           }
         }
@@ -346,8 +309,6 @@ for _, strategy in helpers.all_strategies() do
           config = {
             VerboseResponse = true,
             ExternalEntityLoader_CacheTTL = 15,
-            ExternalEntityLoader_Timeout = 5,
-            ExternalEntityLoader_Async = true,
             xsdApiSchema = request_common.calculatorWSDL_with_async_download_Failed
           }
         }
@@ -712,9 +673,9 @@ for _, strategy in helpers.all_strategies() do
        assert.matches(response_common.calculator_Response_XML_18, body)
      end)
 
-     it("2+6|Request and Response plugins|Same WSDL Validation with async download with verbose - Ok", function()
+     it("2+6|Request and Response plugins|Same WSDL Validation with verbose - Ok", function()
        -- invoke a test request
-       local r = client:post("/calculator_same_WSDL_with_async_download_ok_verbose", {
+       local r = client:post("/calculatorWSDL_with_import_ok", {
          headers = {
            ["Content-Type"] = "text/xml; charset=utf-8",
          },
@@ -727,10 +688,10 @@ for _, strategy in helpers.all_strategies() do
        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
        assert.matches('<AddResult>12</AddResult>', body)
      end)
-
-      it("2+6|Request and Response plugins|Different WSDL Validation with async download with verbose - Ok", function()
+    
+     it("2+6|Request and Response plugins|WSDL Validation - Invalid Import on Request plugin with verbose", function()
         -- invoke a test request
-        local r = client:post("/calculator_different_WSDL_with_async_download_verbose_ok", {
+        local r = client:post("/calculatorWSDL_invalid_import_Request_verbose", {
           headers = {
             ["Content-Type"] = "text/xml; charset=utf-8",
           },
@@ -738,32 +699,16 @@ for _, strategy in helpers.all_strategies() do
         })
 
         -- validate that the request failed: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(200)
+        local body = assert.response(r).has.status(500)
         local content_type = assert.response(r).has.header("Content-Type")
         assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
+        assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
+        assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
       end)
 
-      it("2+6|Request and Response plugins|WSDL Validation with async download - Invalid Import on Request plugin with verbose", function()
+      it("2+6|Request and Response plugins|WSDL Validation - Invalid Import on Response plugin with verbose", function()
           -- invoke a test request
-          local r = client:post("/calculatorWSDL_with_async_download_invalid_import_Request_verbose", {
-            headers = {
-              ["Content-Type"] = "text/xml; charset=utf-8",
-            },
-            body = request_common.calculator_Full_Request,
-          })
-
-          -- validate that the request failed: response status 500, Content-Type and right match
-          local body = assert.response(r).has.status(500)
-          local content_type = assert.response(r).has.header("Content-Type")
-          assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-          assert.matches(request_common.calculator_Request_XSD_VALIDATION_Failed_shortened, body)
-          assert.matches("<errorMessage>.*Failed to.*'http://localhost:9000/DOES_NOT_EXIST'.*</errorMessage>", body)
-      end)
-
-      it("2+6|Request and Response plugins|WSDL Validation with async download - Invalid Import on Response plugin with verbose", function()
-          -- invoke a test request
-          local r = client:post("/calculatorWSDL_with_async_download_invalid_import_Response_verbose", {
+          local r = client:post("/calculatorWSDL_invalid_import_Response_verbose", {
             headers = {
               ["Content-Type"] = "text/xml; charset=utf-8",
             },

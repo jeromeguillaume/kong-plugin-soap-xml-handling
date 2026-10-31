@@ -52,7 +52,7 @@ services:
 
   kong-database-soap-xml-handling:
     container_name: kong-database-soap-xml-handling
-    image: postgres:latest           # Official Postgres image
+    image: postgres:17           # Official Postgres image
     restart: on-failure              # Restart if the container fails
     volumes:
       - kong_db_data:/var/lib/postgresql/data  # Mount the volume for persistent data
@@ -82,7 +82,8 @@ services:
       <<: *kong-env                 # Reuse environment config from x-kong-config
       KONG_PASSWORD: handyshake    # Admin GUI password (required for RBAC)
     #command: kong migrations up  # Run DB migrations to initialize Kong schema
-    command: kong migrations finish  # Run DB migrations to initialize Kong schema
+    #command: kong migrations finish  # Run DB migrations to initialize Kong schema
+    command: kong migrations bootstrap
 
   kong-gateway-soap-xml-handling:
     image: 'kong/kong-gateway:3.15.0.6'  # Main Kong Gateway Control Plane (default to latest version)

@@ -483,7 +483,6 @@ function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
     kong.ctx.shared.xmlSoapExternalEntity = {}
   end
   kong.ctx.shared.xmlSoapExternalEntity.cacheTTL                = plugin_conf.ExternalEntityLoader_CacheTTL
-  kong.ctx.shared.xmlSoapExternalEntity.timeout                 = plugin_conf.ExternalEntityLoader_Timeout
   kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude     = plugin_conf.xsdApiSchemaInclude
   kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude    = plugin_conf.xsdSoapSchemaInclude
   kong.ctx.shared.xmlSoapExternalEntity.xsdSoap12SchemaInclude  = plugin_conf.xsdSoap12SchemaInclude
@@ -491,9 +490,6 @@ function xmlgeneral.initializeContextualDataExternalEntities (plugin_conf)
   
   if not kong.ctx.shared.xmlSoapExternalEntity.cacheTTL then
     kong.ctx.shared.xmlSoapExternalEntity.cacheTTL = libxml2ex.externalEntityCacheTTL
-  end
-  if not kong.ctx.shared.xmlSoapExternalEntity.timeout then
-    kong.ctx.shared.xmlSoapExternalEntity.timeout = libxml2ex.externalEntityTimeout
   end
 end
 
@@ -1456,9 +1452,9 @@ function xmlgeneral.loadXMLwithRecursiveImport(xmlOperation, importsAlreadyProce
   
   parent_currentNode  = libxml2.xmlFirstElementChild(parentXmlNodePtrRoot)
   
-  ------------------------------------------------------------------------------------------------------------------------------
-  -- Parse all WSDL/XSD nodes and look for <wsdl:import> or <xsd:import>/<xsd:include> and replace them by their raw definition
-  ------------------------------------------------------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------------------------------------------------------
+  -- Parse all WSDL/XSD nodes and look for <wsdl:import> or <xsd:import> or <xsd:include> and replace them by their raw definition
+  ---------------------------------------------------------------------------------------------------------------------------------
   while parent_currentNode ~= ffi.NULL and not errMessage do
     next = true
     locationStr = nil
@@ -2048,7 +2044,7 @@ function xmlgeneral.XMLValidateWithXSD (pluginType, pluginId, pluginConf, childI
             errMessage = xmlgeneral.invalidXSD .. ". Unable to find schema for SOAP 1.1"
             soapFaultCode = xmlgeneral.soapFaultCodeServer
           -- Else If it's the Request Plugin and
-          --      If there is a mismatch between SOP version of Content-Type and XML
+          --      If there is a mismatch between SOAP version of Content-Type and XML
           elseif pluginType == xmlgeneral.RequestTypePlugin and  
                   kong.ctx.shared.contentType.request == xmlgeneral.schemaTypeSOAP1_2 then
             kong.ctx.shared.contentType.request = xmlgeneral.schemaTypeSOAP1_1

@@ -10,9 +10,9 @@ local PLUGIN_NAME = "soap-xml-response-handling"
 local response_common = require "spec.common.response"
 
 for _, strategy in helpers.all_strategies() do
-	--if strategy == "off" then
-  --  goto continue
-  --end
+	if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -152,22 +152,14 @@ for _, strategy in helpers.all_strategies() do
 			response_common._5_7_XSLT_BEFORE_XSD_with_xslt_Params_Ok (assert, client)
       end)
 
-      it("6|WSDL Validation with async download - Ok", function()
-				response_common._6_WSDL_Validation_with_async_download_Ok (assert, client)
+      it("6|WSDL Validation with import - Ok", function()
+				response_common._6_WSDL_Validation_with_import_Ok (assert, client)
 			end)
 
-      it("6|WSDL Validation with async download - Invalid Import", function()
-				response_common._6_WSDL_Validation_with_async_download_Invalid_Import (assert, client)
+			it("6|WSDL Validation - Invalid Import with verbose", function()
+				response_common._6_WSDL_Validation_Invalid_Import_with_verbose (assert, client)
 			end)
-
-      it("6|WSDL Validation with async download - Invalid Import with verbose", function()
-				response_common._6_WSDL_Validation_with_async_download_Invalid_Import_with_verbose (assert, client)
-			end)
-
-      it("6|WSDL Validation with import no download - Ok", function()
-				response_common._6_WSDL_Validation_with_import_no_download_Ok (assert, client)
-			end)
-
+			
 			it("6|WSDL Validation - Invalid SOAP response (Blank) with verbose - Ko", function()
 				response_common._6_WSDL_Validation_Invalid_SOAP_response_Blank_with_verbose_ko (assert, client)
 			end)

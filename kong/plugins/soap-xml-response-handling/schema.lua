@@ -13,7 +13,6 @@ return {
           { customFaultCode = { type = "integer", between = { 100, 599 }, required = false }, },
           { customFaultXslt = { type = "string", required = false }, },
           { ExternalEntityLoader_CacheTTL = { type = "integer", default = 3600, required = false }, },
-          { ExternalEntityLoader_Timeout = { type = "integer", default = 1, required = false }, },
           { filePathPrefix = typedefs.path { required = false } },
           { ignoreProcessIfServiceHttpError = { type = "boolean", default = false }, },
           { VerboseResponse = { type = "boolean", default = false }, },

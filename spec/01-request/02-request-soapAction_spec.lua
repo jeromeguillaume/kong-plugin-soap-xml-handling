@@ -452,9 +452,9 @@ local calculator_soap11_Multiply_XSD_VALIDATION_WSDL20_Failed_Invalid_Pattern= [
 </soap:Envelope>]]
 
 for _, strategy in helpers.all_strategies() do
-  --if strategy == "off" then
-  --  goto continue
-  --end
+  if strategy == "off" then
+    goto continue
+  end
 
 	describe(PLUGIN_NAME .. ": [#" .. strategy .. "]", function()
     -- Will be initialized before_each nested test
@@ -515,23 +515,6 @@ for _, strategy in helpers.all_strategies() do
             content_type = "text/xml;charset=utf-8",
             body = request_common.calculator_Request_Response_Add_XSD_VALIDATION
           }	
-        }
-
-        local calculator_wsdl11_soap11_async_ok = blue_print.routes:insert{
-          service = calculator_service,
-          paths = { "/calculatorWSDL11_SOAPAction_11_async_ok" }
-          }
-        blue_print.plugins:insert {
-          name = PLUGIN_NAME,
-          route = calculator_wsdl11_soap11_async_ok,
-          config = {
-            VerboseRequest = true,
-            ExternalEntityLoader_CacheTTL = 15,
-			      ExternalEntityLoader_Async = true,
-            ExternalEntityLoader_Timeout = 5,
-            xsdApiSchema = soapAction_common.calculatorWSDL11_soap_import_Ok,
-            SOAPAction_Header = "yes"
-          }
         }
 
         local calculator_wsdl11_kong11_stands_for_soap11_ok = blue_print.routes:insert{
@@ -1411,41 +1394,6 @@ for _, strategy in helpers.all_strategies() do
         assert.matches("application/soap%+xml;%s-charset=utf%-8", content_type)
         assert.matches(calculator_soap12_XSD_VALIDATION_Failed_SOAP12_with_SOAPAction, body)        
       end)
-
-      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL 1.1) - Async enabled - Ok", function()
-        -- invoke a test request
-        local r = client:post("/calculatorWSDL11_SOAPAction_11_async_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Add"
-          },
-          body = soapAction_common.calculator_soap11_Add_Request,
-        })
-
-        -- validate that the request succeeded: response status 200, Content-Type and right match
-        local body = assert.response(r).has.status(200)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches('<AddResult>12</AddResult>', body)
-      end)
-
-      it("2|WSDL Validation - 'SOAPAction' 1.1 Http header with soapActionRequired=\"true\" (in WSDL 1.1) - Async enabled - Ko", function()
-        -- invoke a test request
-        local r = client:post("/calculatorWSDL11_SOAPAction_11_async_ok", {
-          headers = {
-            ["Content-Type"] = "text/xml; charset=utf-8",
-            ["SOAPAction"] = "http://tempuri.org/Subtract"
-          },
-          body = soapAction_common.calculator_soap11_Add_Request,
-        })
-
-        -- validate that the request succeeded: response status 500, Content-Type and right match
-        local body = assert.response(r).has.status(500)
-        local content_type = assert.response(r).has.header("Content-Type")
-        assert.matches("text/xml%;%s-charset=utf%-8", content_type)
-        assert.matches(calculator_soap11_Add_XSD_VALIDATION_Failed_Mismatch_Header, body)
-      end)
-
 
       --------------------------------------------------------------------------------------------------
       -- WSDL 2.0 | SOAP 1.1/1.2

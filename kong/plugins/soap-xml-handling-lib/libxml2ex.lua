@@ -133,7 +133,6 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   -- If this function is called in the context of an end-user Request (nginx 'access' phase)
   if kong.ctx.shared.xmlSoapExternalEntity then
     cacheTTL                = kong.ctx.shared.xmlSoapExternalEntity.cacheTTL
-    timeout                 = kong.ctx.shared.xmlSoapExternalEntity.timeout
     xsdApiSchemaInclude     = kong.ctx.shared.xmlSoapExternalEntity.xsdApiSchemaInclude
     xsdSoapSchemaInclude    = kong.ctx.shared.xmlSoapExternalEntity.xsdSoapSchemaInclude
     xsdSoap12SchemaInclude  = kong.ctx.shared.xmlSoapExternalEntity.xsdSoap12SchemaInclude
@@ -142,7 +141,6 @@ function libxml2ex.xmlMyExternalEntityLoader(URL, ID, ctxt)
   --   so there is no 'kong.ctx.shared'
   else
     cacheTTL                = libxml2ex.externalEntityCacheTTL
-    timeout                 = libxml2ex.externalEntityTimeout
     xsdApiSchemaInclude     = nil
     xsdSoapSchemaInclude    = nil
     xsdSoap12SchemaInclude  = nil
